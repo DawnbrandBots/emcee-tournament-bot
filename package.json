@@ -11,16 +11,12 @@
 	"author": "AlphaKretin",
 	"license": "AGPL-3.0-or-later",
 	"dependencies": {
-		"atob": "^2.1.2",
-		"btoa": "^1.2.1",
 		"dotenv": "^8.2.0",
 		"eris": "^0.11.2",
 		"node-fetch": "^2.6.0",
 		"ygopro-data": "^1.3.3"
 	},
 	"devDependencies": {
-		"@types/atob": "^2.1.2",
-		"@types/btoa": "^1.2.3",
 		"@types/node": "^13.11.0",
 		"@types/node-fetch": "^2.5.7",
 		"@typescript-eslint/eslint-plugin": "^2.26.0",

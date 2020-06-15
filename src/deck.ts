@@ -1,8 +1,6 @@
 import { Message } from "eris";
 import fetch from "node-fetch";
 import { enums } from "ygopro-data";
-import atob from "atob";
-import btoa from "btoa";
 import { data } from "./data";
 
 interface DeckSection {
@@ -57,8 +55,12 @@ export class Deck {
 		return c.charCodeAt(0);
 	}
 
+	private static atob(str: string): string {
+		return Buffer.from(str, "base64").toString("binary");
+	}
+
 	private static toPasscodes(base64: string): Uint32Array {
-		return new Uint32Array(Uint8Array.from(atob(base64), Deck.byte).buffer);
+		return new Uint32Array(Uint8Array.from(Deck.atob(base64), Deck.byte).buffer);
 	}
 
 	private static async urlToRecord(url: string): Promise<DeckRecord> {
@@ -190,8 +192,20 @@ export class Deck {
 		return await Deck.ydkToRecord(this.ydk);
 	}
 
+	private static btoa(str: number | string | Buffer): string {
+		let buffer;
+
+		if (str instanceof Buffer) {
+			buffer = str;
+		} else {
+			buffer = Buffer.from(str.toString(), "binary");
+		}
+
+		return buffer.toString("base64");
+	}
+
 	private static toBase64(array: Uint32Array): string {
-		return btoa(
+		return Deck.btoa(
 			Array.from(new Uint8Array(array.buffer))
 				.map(function (i) {
 					return String.fromCharCode(i);
