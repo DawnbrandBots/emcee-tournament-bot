@@ -190,9 +190,9 @@ export class Deck {
 		return await Deck.ydkToRecord(this.ydk);
 	}
 
-	private static toBase64(array: string[]): string {
+	private static toBase64(array: Uint32Array): string {
 		return btoa(
-			Array.from(new Uint8Array(new Buffer(array)))
+			Array.from(new Uint8Array(array.buffer))
 				.map(function (i) {
 					return String.fromCharCode(i);
 				})
@@ -201,35 +201,43 @@ export class Deck {
 	}
 
 	private recordToUrl(): string {
-		const main: string[] = [];
+		const main: number[] = [];
 		for (const code in this.record.monster) {
 			for (let i = 0; i < this.record.monster[code]; i++) {
-				main.push(code.toString());
+				main.push(parseInt(code, 10));
 			}
 		}
 		for (const code in this.record.spell) {
 			for (let i = 0; i < this.record.spell[code]; i++) {
-				main.push(code.toString());
+				main.push(parseInt(code, 10));
 			}
 		}
 		for (const code in this.record.trap) {
 			for (let i = 0; i < this.record.trap[code]; i++) {
-				main.push(code.toString());
+				main.push(parseInt(code, 10));
 			}
 		}
-		const extra: string[] = [];
+		const extra: number[] = [];
 		for (const code in this.record.extra) {
 			for (let i = 0; i < this.record.extra[code]; i++) {
-				extra.push(code.toString());
+				extra.push(parseInt(code, 10));
 			}
 		}
-		const side: string[] = [];
+		const side: number[] = [];
 		for (const code in this.record.side) {
 			for (let i = 0; i < this.record.side[code]; i++) {
-				side.push(code.toString());
+				side.push(parseInt(code, 10));
 			}
 		}
-		return "ydke://" + Deck.toBase64(main) + "!" + Deck.toBase64(extra) + "!" + Deck.toBase64(side) + "!";
+		return (
+			"ydke://" +
+			Deck.toBase64(Uint32Array.from(main)) +
+			"!" +
+			Deck.toBase64(Uint32Array.from(extra)) +
+			"!" +
+			Deck.toBase64(Uint32Array.from(side)) +
+			"!"
+		);
 	}
 
 	private recordToYdk(): string {
