@@ -21,6 +21,7 @@ interface DeckProfile {
 }
 
 type ProfileCounts = { [name: string]: number };
+type CodeCounts = { [code: string]: number };
 
 export class Deck {
 	readonly url: string;
@@ -246,6 +247,59 @@ export class Deck {
 			archetypes,
 			ydk: this.ydk,
 			url: this.url
+		};
+	}
+
+	public async validate(): Promise<{
+		result: boolean;
+		errors: string[];
+	}> {
+		let result = true;
+		const errors: string[] = [];
+		if (this.record.main.length < 40) {
+			result = false;
+			errors.push("Main Deck too small! Should be at least 40, is " + this.record.main.length + ".");
+		}
+		if (this.record.main.length > 60) {
+			result = false;
+			errors.push("Main Deck too large! Should be at most 60, is " + this.record.main.length + ".");
+		}
+		if (this.record.extra.length > 15) {
+			result = false;
+			errors.push("Extra Deck too large! Should be at most 15, is " + this.record.extra.length + ".");
+		}
+		if (this.record.side.length > 15) {
+			result = false;
+			errors.push("Side Deck too large! Should be at most 15, is " + this.record.side.length + ".");
+		}
+		const nameCounts: ProfileCounts = {};
+		for (const code of this.record.main) {
+			Deck.increment(nameCounts, code.toString());
+		}
+		for (const code of this.record.extra) {
+			Deck.increment(nameCounts, code.toString());
+		}
+		for (const code of this.record.side) {
+			Deck.increment(nameCounts, code.toString());
+		}
+
+		for (const code in nameCounts) {
+			if (nameCounts[code] > 3) {
+				result = false;
+				const card = await data.getCard(code, "en");
+				let name: string;
+				if (card && "en" in card.text) {
+					name = card.text.en.name;
+				} else {
+					name = code;
+				}
+				errors.push("Too many copies of " + name + "! Should be at most 3, is " + nameCounts[code] + ".");
+			}
+		}
+
+		return {
+			result,
+			errors
 		};
 	}
 }
