@@ -1,26 +1,23 @@
 import { Message } from "eris";
 import fetch from "node-fetch";
 import { TypedDeck, parseURL, toURL } from "ydke";
-import { data } from "./data";
-import { enums } from "ygopro-data";
-
-interface DeckProfile {
-	monster: { [name: string]: number };
-	spell: { [name: string]: number };
-	trap: { [name: string]: number };
-	miscMain: { [name: string]: number };
-	extra: { [name: string]: number };
-	side: { [name: string]: number };
-}
 
 export class Deck {
 	readonly url: string;
 	readonly ydk: string;
 	private record: TypedDeck;
-	constructor(record: TypedDeck, url: string, ydk: string) {
+	constructor(record: TypedDeck, url?: string, ydk?: string) {
 		this.record = record;
-		this.url = url;
-		this.ydk = ydk;
+		if (url) {
+			this.url = url;
+		} else {
+			this.url = this.recordToUrl();
+		}
+		if (ydk) {
+			this.ydk = ydk;
+		} else {
+			this.ydk = this.recordToYdk();
+		}
 	}
 
 	private static async messageToYdk(msg: Message): Promise<string> {
@@ -33,14 +30,12 @@ export class Deck {
 	private static async constructFromFile(msg: Message): Promise<Deck> {
 		const ydk = await Deck.messageToYdk(msg);
 		const record = Deck.ydkToRecord(ydk);
-		const url = Deck.recordToUrl(record);
-		return new Deck(record, url, ydk);
+		return new Deck(record, undefined, ydk);
 	}
 
 	private static constructFromUrl(url: string): Deck {
 		const record = Deck.urlToRecord(url);
-		const ydk = Deck.recordToYdk(record);
-		return new Deck(record, url, ydk);
+		return new Deck(record, url, undefined);
 	}
 
 	static async construct(msg: Message): Promise<Deck> {
@@ -91,103 +86,23 @@ export class Deck {
 		};
 	}
 
-	private static recordToUrl(record: TypedDeck): string {
-		return toURL(record);
+	private recordToUrl(): string {
+		return toURL(this.record);
 	}
 
-	private static recordToYdk(record: TypedDeck): string {
+	private recordToYdk(): string {
 		let ydk = "#created by Akira bot\n#main\n";
-		for (const code in record.main) {
+		for (const code in this.record.main) {
 			ydk += code + "\n";
 		}
 		ydk += "#extra\n";
-		for (const code in record.extra) {
+		for (const code in this.record.extra) {
 			ydk += code + "\n";
 		}
 		ydk += "!side\n";
-		for (const code in record.side) {
+		for (const code in this.record.side) {
 			ydk += code + "\n";
 		}
 		return ydk;
-	}
-
-	public async getProfile(): Promise<DeckProfile> {
-		const profile: DeckProfile = {
-			monster: {},
-			spell: {},
-			trap: {},
-			miscMain: {},
-			extra: {},
-			side: {}
-		};
-		for (const code of this.record.main) {
-			const card = await data.getCard(code, "en");
-			let name: string;
-			let target: "monster" | "spell" | "trap" | "miscMain" | "extra" | "side";
-			if (!card) {
-				name = code.toString();
-				target = "miscMain";
-			} else {
-				if ("en" in card.text) {
-					name = card.text.en.name;
-				} else {
-					name = code.toString();
-				}
-				if (card.data.isType(enums.type.TYPE_MONSTER)) {
-					target = "monster";
-				} else if (card.data.isType(enums.type.TYPE_SPELL)) {
-					target = "spell";
-				} else if (card.data.isType(enums.type.TYPE_TRAP)) {
-					target = "trap";
-				} else {
-					target = "miscMain";
-				}
-			}
-			if (name in profile[target]) {
-				profile[target][name]++;
-			} else {
-				profile[target][name] = 1;
-			}
-		}
-
-		for (const code of this.record.extra) {
-			const card = await data.getCard(code, "en");
-			let name: string;
-			if (!card) {
-				name = code.toString();
-			} else {
-				if ("en" in card.text) {
-					name = card.text.en.name;
-				} else {
-					name = code.toString();
-				}
-			}
-			if (name in profile.extra) {
-				profile.extra[name]++;
-			} else {
-				profile.extra[name] = 1;
-			}
-		}
-
-		for (const code of this.record.side) {
-			const card = await data.getCard(code, "en");
-			let name: string;
-			if (!card) {
-				name = code.toString();
-			} else {
-				if ("en" in card.text) {
-					name = card.text.en.name;
-				} else {
-					name = code.toString();
-				}
-			}
-			if (name in profile.side) {
-				profile.side[name]++;
-			} else {
-				profile.side[name] = 1;
-			}
-		}
-
-		return profile;
 	}
 }
