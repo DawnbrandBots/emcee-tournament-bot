@@ -26,18 +26,10 @@ export class Deck {
 	readonly url: string;
 	readonly ydk: string;
 	private record: TypedDeck;
-	constructor(record: TypedDeck, url?: string, ydk?: string) {
+	constructor(record: TypedDeck, url: string, ydk: string) {
 		this.record = record;
-		if (url) {
-			this.url = url;
-		} else {
-			this.url = this.recordToUrl();
-		}
-		if (ydk) {
-			this.ydk = ydk;
-		} else {
-			this.ydk = this.recordToYdk();
-		}
+		this.url = url;
+		this.ydk = ydk;
 	}
 
 	private static async messageToYdk(msg: Message): Promise<string> {
@@ -50,12 +42,14 @@ export class Deck {
 	private static async constructFromFile(msg: Message): Promise<Deck> {
 		const ydk = await Deck.messageToYdk(msg);
 		const record = Deck.ydkToRecord(ydk);
-		return new Deck(record, undefined, ydk);
+		const url = Deck.recordToUrl(record);
+		return new Deck(record, url, ydk);
 	}
 
 	private static constructFromUrl(url: string): Deck {
 		const record = Deck.urlToRecord(url);
-		return new Deck(record, url, undefined);
+		const ydk = Deck.recordToYdk(record);
+		return new Deck(record, url, ydk);
 	}
 
 	static async construct(msg: Message): Promise<Deck> {
@@ -106,21 +100,21 @@ export class Deck {
 		};
 	}
 
-	private recordToUrl(): string {
-		return toURL(this.record);
+	private static recordToUrl(record: TypedDeck): string {
+		return toURL(record);
 	}
 
-	private recordToYdk(): string {
+	private static recordToYdk(record: TypedDeck): string {
 		let ydk = "#created by Akira bot\n#main\n";
-		for (const code in this.record.main) {
+		for (const code of record.main) {
 			ydk += code + "\n";
 		}
 		ydk += "#extra\n";
-		for (const code in this.record.extra) {
+		for (const code of record.extra) {
 			ydk += code + "\n";
 		}
 		ydk += "!side\n";
-		for (const code in this.record.side) {
+		for (const code of record.side) {
 			ydk += code + "\n";
 		}
 		return ydk;
@@ -233,7 +227,7 @@ export class Deck {
 
 		const archetypes = [];
 		for (const set in archetypeCounts) {
-			if (archetypeCounts[set] > 4) {
+			if (archetypeCounts[set] > 9) {
 				archetypes.push(set);
 			}
 		}
