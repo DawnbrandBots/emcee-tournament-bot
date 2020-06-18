@@ -27,23 +27,32 @@ export class Deck {
 		return deck;
 	}
 
-	static async constructFromFile(msg: Message): Promise<Deck> {
+	private static async constructFromFile(msg: Message): Promise<Deck> {
 		const ydk = await Deck.messageToYdk(msg);
 		const record = Deck.ydkToRecord(ydk);
 		return new Deck(record, undefined, ydk);
 	}
 
-	static constructFromUrl(url: string): Deck {
+	private static constructFromUrl(url: string): Deck {
 		const record = Deck.urlToRecord(url);
 		return new Deck(record, url, undefined);
 	}
 
-	private static urlToRecord(url: string): TypedDeck {
-		return parseURL(url);
+	static async construct(msg: Message): Promise<Deck> {
+		if (msg.attachments.length > 0 && msg.attachments[0].filename.endsWith(".ydk")) {
+			return await this.constructFromFile(msg);
+		}
+		const ydkeReg = /ydke:\/\/[A-Za-z0-9+/=]*?![A-Za-z0-9+/=]*?![A-Za-z0-9+/=]*?!/g;
+		const match = ydkeReg.exec(msg.content);
+		if (match == null) {
+			throw new Error("Must provide either attached `.ydk` file or valid `ydke://` URL!");
+		}
+		const ydke = match[0];
+		return this.constructFromUrl(ydke);
 	}
 
-	private urlToRecord(): TypedDeck {
-		return Deck.urlToRecord(this.url);
+	private static urlToRecord(url: string): TypedDeck {
+		return parseURL(url);
 	}
 
 	private static ydkToRecord(ydk: string): TypedDeck {
@@ -75,10 +84,6 @@ export class Deck {
 			extra: typedExtra,
 			side: typedSide
 		};
-	}
-
-	private ydkToRecord(): TypedDeck {
-		return Deck.ydkToRecord(this.ydk);
 	}
 
 	private recordToUrl(): string {
