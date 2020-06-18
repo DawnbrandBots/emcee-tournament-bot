@@ -4,4 +4,4 @@ import dataOpts from "./config/dataOpts.json";
 import transOpts from "./config/transOpts.json";
 import { githubToken } from "./config/env";
 
-export const data = new YgoData(cardOpts, transOpts, dataOpts, "../dbs/", githubToken);
+export const data = new YgoData(cardOpts, transOpts, dataOpts, "./dbs", githubToken);
