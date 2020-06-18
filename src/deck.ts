@@ -1,6 +1,6 @@
 import { Message, MessageFile, MessageContent } from "eris";
 import fetch from "node-fetch";
-import { TypedDeck, parseURL, toURL } from "ydke";
+import { TypedDeck, parseURL, toURL, extractURLs } from "ydke";
 import { data } from "./data";
 import { enums } from "ygopro-data";
 
@@ -21,7 +21,6 @@ interface DeckProfile {
 }
 
 type ProfileCounts = { [name: string]: number };
-type CodeCounts = { [code: string]: number };
 
 export class Deck {
 	readonly url: string;
@@ -57,12 +56,11 @@ export class Deck {
 		if (msg.attachments.length > 0 && msg.attachments[0].filename.endsWith(".ydk")) {
 			return await this.constructFromFile(msg);
 		}
-		const ydkeReg = /ydke:\/\/[A-Za-z0-9+/=]*?![A-Za-z0-9+/=]*?![A-Za-z0-9+/=]*?!/g;
-		const match = ydkeReg.exec(msg.content);
-		if (match == null) {
+		const matches = extractURLs(msg.content);
+		if (matches.length === 0) {
 			throw new Error("Must provide either attached `.ydk` file or valid `ydke://` URL!");
 		}
-		const ydke = match[0];
+		const ydke = matches[0];
 		return this.constructFromUrl(ydke);
 	}
 
