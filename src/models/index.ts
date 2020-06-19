@@ -7,3 +7,5 @@ connect(mongoDbUrl, { useNewUrlParser: true, useUnifiedTopology: true })
 
 process.on("SIGINT", () => connection.close());
 process.on("SIGTERM", () => connection.close());
+
+export * from "./tournament";
