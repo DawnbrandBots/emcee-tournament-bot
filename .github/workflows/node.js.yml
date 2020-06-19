@@ -19,7 +19,6 @@ jobs:
         contains(github.event.head_commit.message, '[actions skip]') ||
         contains(github.event.head_commit.message, '[skip actions]')
       )
-    env:
     steps:
       - uses: actions/checkout@v2
       - name: Install Node
