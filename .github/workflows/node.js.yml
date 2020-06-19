@@ -30,3 +30,7 @@ jobs:
           DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN }},
           OCTOKIT_TOKEN: ${{ secrets.OCTOKIT_TOKEN }},
           MONGODB_URL: mongodb://localhost:27017/tournamentdb
+      - name: Coveralls
+          uses: coverallsapp/github-action@master
+          with:
+            github-token: ${{ secrets.GITHUB_TOKEN }}
