@@ -248,26 +248,18 @@ export class Deck {
 		};
 	}
 
-	public async validate(): Promise<{
-		result: boolean;
-		errors: string[];
-	}> {
-		let result = true;
+	public async validate(): Promise<string[]> {
 		const errors: string[] = [];
 		if (this.record.main.length < 40) {
-			result = false;
 			errors.push("Main Deck too small! Should be at least 40, is " + this.record.main.length + ".");
 		}
 		if (this.record.main.length > 60) {
-			result = false;
 			errors.push("Main Deck too large! Should be at most 60, is " + this.record.main.length + ".");
 		}
 		if (this.record.extra.length > 15) {
-			result = false;
 			errors.push("Extra Deck too large! Should be at most 15, is " + this.record.extra.length + ".");
 		}
 		if (this.record.side.length > 15) {
-			result = false;
 			errors.push("Side Deck too large! Should be at most 15, is " + this.record.side.length + ".");
 		}
 		const nameCounts: ProfileCounts = {};
@@ -283,7 +275,6 @@ export class Deck {
 
 		for (const code in nameCounts) {
 			if (nameCounts[code] > 3) {
-				result = false;
 				const card = await data.getCard(code, "en");
 				let name: string;
 				if (card && "en" in card.text) {
@@ -295,10 +286,7 @@ export class Deck {
 			}
 		}
 
-		return {
-			result,
-			errors
-		};
+		return errors;
 	}
 
 	private static messageCapSlice(outString: string, cap = 2000): string[] {
@@ -386,7 +374,7 @@ export class Deck {
 		for (const name in profile.nameCounts.side) {
 			sideBody += profile.nameCounts.side[name] + " " + name + "\n";
 		}
-		const result = await deck.validate();
+		const errors = await deck.validate();
 
 		const out: MessageContent = {
 			embed: { title, fields: [] }
@@ -414,8 +402,8 @@ export class Deck {
 				out.embed.fields.push({ name: "Archetypes", value: profile.archetypes.join(",") });
 			}
 			out.embed.fields.push({ name: "YDKE URL", value: profile.url });
-			if (!result.result) {
-				out.embed.fields.push({ name: "Deck is illegal!", value: result.errors.join("\n") });
+			if (errors.length > 0) {
+				out.embed.fields.push({ name: "Deck is illegal!", value: errors.join("\n") });
 			}
 		}
 		const file: MessageFile = {
