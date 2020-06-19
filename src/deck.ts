@@ -30,13 +30,13 @@ export class Deck {
 		this.ydk = ydk;
 	}
 
-	protected static async constructFromYdk(ydk: string): Promise<Deck> {
+	public static async constructFromYdk(ydk: string): Promise<Deck> {
 		const record = Deck.ydkToRecord(ydk);
 		const url = Deck.recordToUrl(record);
 		return new Deck(record, url, ydk);
 	}
 
-	protected static constructFromUrl(url: string): Deck {
+	public static constructFromUrl(url: string): Deck {
 		const record = Deck.urlToRecord(url);
 		const ydk = Deck.recordToYdk(record);
 		return new Deck(record, url, ydk);
