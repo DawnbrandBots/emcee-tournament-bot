@@ -274,15 +274,23 @@ export class Deck {
 		}
 
 		for (const code in nameCounts) {
-			if (nameCounts[code] > 3) {
-				const card = await data.getCard(code, "en");
+			const card = await data.getCard(code, "en");
+			let count = 3;
+			if (card) {
+				const status = await card.status;
+				const result = /TCG: (\d)/.exec(status);
+				if (result !== null) {
+					count = parseInt(result[1], 10);
+				}
+			}
+			if (nameCounts[code] > count) {
 				let name: string;
 				if (card && "en" in card.text) {
 					name = card.text.en.name;
 				} else {
 					name = code;
 				}
-				errors.push("Too many copies of " + name + "! Should be at most 3, is " + nameCounts[code] + ".");
+				errors.push("Too many copies of " + name + "! Should be at most " + count + ", is " + nameCounts[code] + ".");
 			}
 		}
 
