@@ -1,4 +1,23 @@
-import { model, Schema } from "mongoose";
+import { Document, Schema, model } from "mongoose";
+
+export interface ITournament extends Document {
+	name?: string;
+	description?: string;
+	organizers: number[];
+	owningDiscordServer: number;
+	discordChannels: number[];
+	status: "preparing" | "in progress" | "complete",
+	participantLimit: number;
+	confirmedParticipants: {
+		discord: number,
+		deck: {
+			main: number[],
+			extra: number[],
+			side: number[]
+		}
+	};
+	pendingParticipants: number[];
+}
 
 export const TournamentSchema = new Schema({
 	name: { type: String, default: "" },
@@ -9,9 +28,10 @@ export const TournamentSchema = new Schema({
 	status: {
 		type: String,
 		enum: ["preparing", "in progress", "complete"],
+		required: true,
 		default: "preparing",
 	},
-	participantLimit: { type: Number, default: 0 },
+	participantLimit: { type: Number, required: true, default: 0 },
 	confirmedParticipants: [{
 		discord: { type: Number, required: true },
 		deck: {
@@ -20,7 +40,7 @@ export const TournamentSchema = new Schema({
 			side: { type: [Number], required: true },
 		}
 	}],
-	pendingParticipants: { type: [Number], default: [] },
+	pendingParticipants: { type: [Number], required: true, default: [] },
 });
 
-export const Tournament = model("Tournament", TournamentSchema);
+export const Tournament = model<ITournament>("Tournament", TournamentSchema);
