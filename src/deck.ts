@@ -2,7 +2,7 @@ import { TypedDeck, parseURL, toURL } from "ydke";
 import { data } from "./data";
 import { enums } from "ygopro-data";
 
-interface DeckProfile {
+export interface DeckProfile {
 	nameCounts: {
 		main: ProfileCounts;
 		extra: ProfileCounts;

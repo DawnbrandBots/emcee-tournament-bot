@@ -4,7 +4,8 @@
 	"description": "",
 	"main": "dist/index.js",
 	"scripts": {
-		"test": "echo \"Error: no test specified\" && exit 1",
+		"test": "mocha dist/test/test.js --timeout 20000",
+		"cover": "nyc npm run test",
 		"lint": "eslint . --ext .js,.jsx,.ts,.tsx",
 		"build": "tsc"
 	},
@@ -19,13 +20,18 @@
 		"ygopro-data": "^1.3.3"
 	},
 	"devDependencies": {
+		"@types/chai": "^4.2.11",
+		"@types/mocha": "^7.0.2",
 		"@types/mongoose": "^5.7.27",
 		"@types/node": "^13.11.0",
 		"@types/node-fetch": "^2.5.7",
 		"@typescript-eslint/eslint-plugin": "^2.26.0",
 		"@typescript-eslint/parser": "^2.26.0",
+		"chai": "^4.2.0",
 		"eslint": "^6.8.0",
 		"eslint-config-prettier": "^6.10.1",
+		"mocha": "^8.0.1",
+		"nyc": "^15.1.0",
 		"prettier": "^2.0.2",
 		"typescript": "^3.8.3"
 	},
