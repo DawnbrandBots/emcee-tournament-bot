@@ -1,6 +1,6 @@
 import { Document, Schema, model } from "mongoose";
 
-export interface ITournament extends Document {
+export interface Tournament extends Document {
 	name?: string;
 	description?: string;
 	organizers: number[];
@@ -43,4 +43,4 @@ export const TournamentSchema = new Schema({
 	pendingParticipants: { type: [Number], required: true, default: [] },
 });
 
-export const Tournament = model<ITournament>("Tournament", TournamentSchema);
+export const TournamentModel = model<Tournament>("Tournament", TournamentSchema);
