@@ -4,7 +4,7 @@
 	"description": "",
 	"main": "dist/index.js",
 	"scripts": {
-		"test": "mocha dist/test/test.js --timeout 5000",
+		"test": "mocha dist/test/test.js --timeout 20000",
 		"cover": "nyc npm run test",
 		"lint": "eslint . --ext .js,.jsx,.ts,.tsx",
 		"build": "tsc"
