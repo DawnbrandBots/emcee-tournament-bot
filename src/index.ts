@@ -1,13 +1,13 @@
 import { Message, PrivateChannel } from "eris";
 import { bot } from "./bot";
-import { Deck } from "./deck";
+import { DiscordDeck } from "./discordDeck";
 
 bot.on("messageCreate", (msg: Message) => {
 	if (msg.author.bot) {
 		return;
 	}
 	if (msg.channel instanceof PrivateChannel) {
-		Deck.sendProfile(msg).catch(err => {
+		DiscordDeck.sendProfile(msg).catch(err => {
 			msg.channel.createMessage(err).catch(console.error);
 		});
 	}
