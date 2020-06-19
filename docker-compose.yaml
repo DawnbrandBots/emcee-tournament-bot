@@ -1,0 +1,17 @@
+version: "3"
+services:
+  mongo:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    volumes:
+      - tournamentdb:/data/db
+  bot:
+    build: .
+    environment:
+      DISCORD_TOKEN: ${DISCORD_TOKEN}
+      GITHUB_TOKEN: ${GITHUB_TOKEN}
+      MONGODB_URL: mongodb://mongo:27017/tournamentdb
+
+volumes:
+  tournamentdb:
