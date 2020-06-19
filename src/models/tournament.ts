@@ -6,6 +6,11 @@ export const TournamentSchema = new Schema({
 	organizers: { type: [Number], required: true },
 	owningDiscordServer: { type: Number, required: true },
 	discordChannels: { type: [Number], required: true },
+	status: {
+		type: String,
+		enum: ["preparing", "in progress", "complete"],
+		default: "preparing",
+	},
 	participantLimit: { type: Number, default: 0 },
 	confirmedParticipants: [{
 		discord: { type: Number, required: true },
