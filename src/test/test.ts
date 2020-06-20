@@ -1,6 +1,7 @@
 import { expect } from "chai";
 import { describe } from "mocha";
 import { Deck, DeckProfile } from "../deck";
+import { TypedDeck } from "ydke";
 
 const ydk =
 	"#created by AlphaKretin\n#main\n99249638\n99249638\n46659709\n46659709\n46659709\n65367484\n65367484\n65367484\n43147039\n30012506\n30012506\n30012506\n77411244\n77411244\n77411244\n3405259\n3405259\n3405259\n89132148\n39890958\n14558127\n14558127\n14558127\n32807846\n73628505\n12524259\n12524259\n12524259\n24224830\n24224830\n24224830\n80352158\n80352158\n80352158\n66399653\n66399653\n66399653\n10045474\n10045474\n10045474\n#extra\n1561110\n10443957\n10443957\n58069384\n58069384\n73289035\n581014\n21887175\n4280258\n38342335\n2857636\n75452921\n50588353\n83152482\n65741786\n!side\n43147039\n";
@@ -13,11 +14,23 @@ describe("Deck", function () {
 		expect(deck.ydk).to.equal(ydk);
 		expect(deck.url).to.equal(url);
 	});
-	it("#constructFromUrl", async function () {
+	it("#constructFromUrl", function () {
 		const deck = Deck.constructFromUrl(url);
 		const deckYdk = deck.ydk.split("\n").slice(1).join("\n");
 		const altYdk = ydk.split("\n").slice(1).join("\n");
 		expect(deck.url).to.equal(url);
+		expect(deckYdk).to.equal(altYdk);
+	});
+	it("#constructFromRecord", function () {
+		const record: TypedDeck = {
+			main: Uint32Array.from([70368879]),
+			extra: Uint32Array.from([]),
+			side: Uint32Array.from([])
+		};
+		const deck = Deck.constructFromRecord(record);
+		const deckYdk = deck.ydk.split("\n").slice(1).join("\n");
+		const altYdk = "#main\n70368879\n#extra\n!side\n";
+		expect(deck.url).to.equal("ydke://b74xBA==!!!");
 		expect(deckYdk).to.equal(altYdk);
 	});
 	it("#getProfile", async function () {

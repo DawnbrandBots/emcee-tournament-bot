@@ -42,6 +42,12 @@ export class Deck {
 		return new Deck(record, url, ydk);
 	}
 
+	public static constructFromRecord(record: TypedDeck): Deck {
+		const ydk = Deck.recordToYdk(record);
+		const url = Deck.recordToUrl(record);
+		return new Deck(record, url, ydk);
+	}
+
 	private static urlToRecord(url: string): TypedDeck {
 		return parseURL(url);
 	}
