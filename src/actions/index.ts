@@ -49,7 +49,7 @@ export async function removeAnnouncementChannel(
 	if (i < 0) {
 		return false;
 	}
-	tournament.discordChannels.splice(i, 1);
+	tournament.discordChannels.splice(i, 1); // consider $pullAll
 	await tournament.save();
 	return true;
 }
@@ -63,6 +63,11 @@ export async function isOrganizing(
 		throw new Error(`Unknown tournament ${tournamentId}`);
 	}
 	return tournament.organizers.includes(organizer);
+}
+
+export async function findTournamentByRegisterMessage(messageId: DiscordID): Promise<TournamentID | null> {
+	const tournament = await TournamentModel.findOne({ registerMessages: messageId });
+	return tournament ? tournament.id : null;
 }
 
 // Invoke after a registration message has been sent to an announcement channel.
@@ -84,10 +89,41 @@ export async function removeRegisterMessage(messageId: DiscordID): Promise<boole
 		return false;
 	}
 	const i = tournament.registerMessages.indexOf(messageId);
-	if (i < 0) {
+	// i < 0 is impossible by precondition
+	tournament.registerMessages.splice(i, 1); // consider $pullAll
+	await tournament.save();
+	return true;
+}
+
+// Invoke after a user requests to join a tournament and the appropriate response is delivered.
+export async function addPendingParticipant(
+	messageId: DiscordID, user: DiscordID
+): Promise<boolean> {
+	const tournament = await TournamentModel.findOne({ registerMessages: messageId });
+	if (!tournament) {
 		return false;
 	}
-	tournament.registerMessages.splice(i, 1);
+	if (!tournament.pendingParticipants.includes(user)) {
+		tournament.pendingParticipants.push(user);
+		await tournament.save();
+	}
+	return true;
+}
+
+// Invoke after a user requests to leave a tournament they haven't been confirmed for.
+export async function removePendingParticipant(
+	messageId: DiscordID, user: DiscordID
+): Promise<boolean> {
+	const tournament = await TournamentModel.findOne({
+		registerMessages: messageId,
+		pendingParticipants: user
+	});
+	if (!tournament) {
+		return false;
+	}
+	const i = tournament.pendingParticipants.indexOf(user);
+	// i < 0 is impossible by precondition
+	tournament.pendingParticipants.splice(i, 1); // consider $pullAll
 	await tournament.save();
 	return true;
 }
