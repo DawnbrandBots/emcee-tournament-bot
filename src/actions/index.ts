@@ -127,3 +127,31 @@ export async function removePendingParticipant(
 	await tournament.save();
 	return true;
 }
+
+// Invoke after a participant's deck is validated and they are registered on Challonge
+export async function confirmParticipant(
+	tournamentId: DiscordID, participantId: DiscordID, challongeId: number,
+	main: number[], extra: number[], side: []
+): Promise<boolean> {
+	const tournament = await TournamentModel.findById(tournamentId);
+	if (!tournament) {
+		return false;
+	}
+	const i = tournament.pendingParticipants.indexOf(participantId);
+	if (i >= 0) {
+		tournament.pendingParticipants.splice(i, 1); // consider $pullAll
+	}
+	const participant = tournament.confirmedParticipants.find(
+		p => p.discord === participantId);
+	if (participant) {
+		participant.deck = { main, extra, side };
+	} else {
+		tournament.confirmedParticipants.push({
+			challongeId,
+			discord: participantId,
+			deck: { main, extra, side }
+		});
+	}
+	await tournament.save();
+	return true;
+}
