@@ -9,6 +9,7 @@ export interface Tournament extends Document {
 	organizers: DiscordID[];
 	owningDiscordServer: DiscordID;
 	discordChannels: DiscordID[];
+	registerMessages: DiscordID[];
 	status: "preparing" | "in progress" | "complete",
 	participantLimit: DiscordID;
 	confirmedParticipants: [{
