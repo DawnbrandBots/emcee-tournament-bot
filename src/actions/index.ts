@@ -4,11 +4,13 @@ type DiscordID = string;
 type TournamentID = string;
 
 export async function initTournament(
-	organizer: DiscordID, server: DiscordID, name?: string, description?: string
+	organizer: DiscordID, server: DiscordID, challongeId: string,
+	name?: string, description?: string
 ): Promise<TournamentID> {
 	const tournament = new TournamentModel({
 		name,
 		description,
+		challongeId,
 		organizer,
 		owningDiscordServer: server
 	});
