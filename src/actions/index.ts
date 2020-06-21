@@ -162,7 +162,7 @@ export async function confirmParticipant(
 	challongeId: number,
 	main: number[],
 	extra: number[],
-	side: []
+	side: number[]
 ): Promise<boolean> {
 	const tournament = await TournamentModel.findById(tournamentId);
 	if (!tournament) {

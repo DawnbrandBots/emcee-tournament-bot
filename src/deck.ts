@@ -23,7 +23,7 @@ type ProfileCounts = { [name: string]: number };
 export class Deck {
 	readonly url: string;
 	readonly ydk: string;
-	private record: TypedDeck;
+	readonly record: TypedDeck;
 	constructor(record: TypedDeck, url: string, ydk: string) {
 		this.record = record;
 		this.url = url;

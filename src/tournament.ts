@@ -6,12 +6,14 @@ import {
 	addAnnouncementChannel,
 	removeAnnouncementChannel,
 	startTournament,
-	removeRegisterMessage
+	removeRegisterMessage,
+	confirmParticipant
 } from "./actions";
 import { bot } from "./bot";
 import { TournamentModel, TournamentDoc } from "./models";
+import { DiscordDeck } from "./discordDeck";
 
-export const tournaments: {
+const tournaments: {
 	[id: string]: Tournament;
 } = {};
 
@@ -222,10 +224,68 @@ bot.on("messageCreate", async msg => {
 	}
 	if (msg.channel instanceof PrivateChannel) {
 		// confirm participant
-		/*
-		DiscordDeck.sendProfile(msg).catch(err => {
-			msg.channel.createMessage(err).catch(console.error);
+		const docs = await TournamentModel.find({
+			pendingParticipants: msg.author.id
 		});
-		*/
+		if (docs.length === 0) {
+			try {
+				await DiscordDeck.sendProfile(msg);
+			} catch (e) {
+				// ignore "no deck" message
+				if (e.message !== "Must provide either attached `.ydk` file or valid `ydke://` URL!") {
+					throw e;
+				}
+			}
+			return;
+		}
+		if (docs.length > 1) {
+			await msg.channel.createMessage(
+				"You are registering in multiple tournaments. Please register in one at a time by unchecking the reaction on all others.\n" +
+					docs.map(t => t.name || t.challongeId).join("\n")
+			);
+			return;
+		}
+		// length === 1
+		const doc = docs[0];
+		const tournament = tournaments[doc.challongeId];
+		if (!tournament) {
+			throw new Error("Tournament database mismatch! " + doc.challongeId);
+		}
+		try {
+			const deck = (await DiscordDeck.constructFromMessage(msg)) as DiscordDeck;
+			const result = await deck.validate();
+			if (result.length > 0) {
+				await msg.channel.createMessage(
+					"Your deck is not legal, so you have not been registered. Please fix the issues listed below and try submitting again."
+				);
+				await deck.sendProfile(msg);
+				return;
+			}
+			const challongeUser = await challonge.addParticipant(doc.challongeId, {
+				name: msg.author.username + "#" + msg.author.discriminator,
+				misc: msg.author.id
+			});
+			await confirmParticipant(
+				doc.challongeId,
+				msg.author.id,
+				challongeUser.participant.id,
+				[...deck.record.main],
+				[...deck.record.extra],
+				[...deck.record.side]
+			);
+			await msg.channel.createMessage(
+				"Congratulations! You have been registered" +
+					(doc.name ? "in " + doc.name : "") +
+					" with the following deck."
+			);
+			await deck.sendProfile(msg);
+			// TODO: send deck to TO channels
+		} catch (e) {
+			if (e.message === "Must provide either attached `.ydk` file or valid `ydke://` URL!") {
+				await msg.channel.createMessage(e.message);
+			} else {
+				throw e;
+			}
+		}
 	}
 });

@@ -44,10 +44,8 @@ export class DiscordDeck extends Deck {
 		return outStrings;
 	}
 
-	public static async sendProfile(msg: Message): Promise<Message> {
-		const deck = await DiscordDeck.constructFromMessage(msg);
-		const profile = await deck.getProfile();
-
+	public async sendProfile(msg: Message): Promise<Message> {
+		const profile = await this.getProfile();
 		const title = "Contents of your deck:\n";
 		const mainCount =
 			profile.typeCounts.main.monster + profile.typeCounts.main.spell + profile.typeCounts.main.trap;
@@ -111,7 +109,7 @@ export class DiscordDeck extends Deck {
 		for (const name in profile.nameCounts.side) {
 			sideBody += profile.nameCounts.side[name] + " " + name + "\n";
 		}
-		const errors = await deck.validate();
+		const errors = await this.validate();
 
 		const out: MessageContent = {
 			embed: { title, fields: [] }
@@ -148,5 +146,10 @@ export class DiscordDeck extends Deck {
 			name: msg.author.username + msg.author.discriminator + ".ydk"
 		};
 		return await msg.channel.createMessage(out, file);
+	}
+
+	public static async sendProfile(msg: Message): Promise<Message> {
+		const deck = (await DiscordDeck.constructFromMessage(msg)) as DiscordDeck;
+		return await deck.sendProfile(msg);
 	}
 }
