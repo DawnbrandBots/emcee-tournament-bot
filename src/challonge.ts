@@ -104,6 +104,11 @@ interface CreateTournamentResponse {
 	};
 }
 
+interface StartTournamentSettings {
+	include_participants?: 0 | 1;
+	include_matches?: 0 | 1;
+}
+
 interface AddParticipantSettings {
 	name?: string;
 	challonge_username?: string;
@@ -145,6 +150,53 @@ interface AddParticipantReponse {
 	};
 }
 
+type ChallongeMatchState = "all" | "pending" | "open" | "complete";
+
+interface IndexMatchSettings {
+	state?: ChallongeMatchState;
+	participant_id?: number;
+}
+
+interface ChallongeMatch {
+	match: {
+		attachment_count: null | number;
+		created_at: Date;
+		group_id: null | number;
+		has_attachment: boolean;
+		id: number;
+		identifier: string;
+		location: null | string;
+		loser_id: null | number;
+		player1_id: number;
+		player1_is_prereq_match_loser: boolean;
+		player1_prereq_match_id: null | number;
+		player1_votes: null | number;
+		player2_id: number;
+		player2_is_prereq_match_loser: boolean;
+		player2_prereq_match_id: null | number;
+		player2_votes: null | number;
+		round: number;
+		scheduled_time: null | Date;
+		started_at: Date;
+		state: ChallongeMatchState;
+		tournament_id: number;
+		underway_at: null | Date;
+		updated_at: Date;
+		winner_id: null | number;
+		prerequisite_match_ids_csv: string;
+		scores_csv: string;
+	};
+}
+
+type IndexMatchResponse = ChallongeMatch[];
+
+interface UpdateMatchSettings {
+	scores_csv?: string;
+	winner_id?: number | "tie";
+	player1_votes?: number;
+	player2_votes?: number;
+}
+
 class Challonge {
 	private domain: string;
 	constructor(user: string, token: string) {
@@ -160,10 +212,62 @@ class Challonge {
 		return await response.json();
 	}
 
+	public async startTournament(tournament: string, settings: StartTournamentSettings): Promise<void> {
+		await fetch(this.domain + "tournaments/" + tournament + "/start.json", {
+			method: "POST",
+			body: JSON.stringify(settings),
+			headers: { "Content-Type": "application/json" }
+		});
+		return;
+	}
+
+	public async finalizeTournament(tournament: string, settings: StartTournamentSettings): Promise<void> {
+		await fetch(this.domain + "tournaments/" + tournament + "/finalize.json", {
+			method: "POST",
+			body: JSON.stringify(settings),
+			headers: { "Content-Type": "application/json" }
+		});
+		return;
+	}
+
 	public async addParticipant(tournament: string, settings: AddParticipantSettings): Promise<AddParticipantReponse> {
 		const response = await fetch(this.domain + "tournaments/" + tournament + "/participants.json", {
 			method: "POST",
 			body: JSON.stringify({ participant: settings }),
+			headers: { "Content-Type": "application/json" }
+		});
+		return await response.json();
+	}
+
+	public async indexMatches(
+		tournament: string,
+		state?: ChallongeMatchState,
+		participantId?: number
+	): Promise<IndexMatchResponse> {
+		let url = this.domain + "tournaments/" + tournament + "/matches.json";
+		if (state) {
+			url += "?state=" + state;
+			if (participantId) {
+				url += "&participant_id=" + participantId.toString();
+			}
+		} else if (participantId) {
+			url += "?participant_id=" + participantId.toString();
+		}
+		const response = await fetch(url, {
+			method: "GET",
+			headers: { "Content-Type": "application/json" }
+		});
+		return await response.json();
+	}
+
+	public async updateMatch(
+		tournament: string,
+		match: string,
+		settings: UpdateMatchSettings
+	): Promise<ChallongeMatch> {
+		const response = await fetch(this.domain + "tournaments/" + tournament + "/matches/" + match + ".json", {
+			method: "PUT",
+			body: JSON.stringify({ match: settings }),
 			headers: { "Content-Type": "application/json" }
 		});
 		return await response.json();
