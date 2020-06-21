@@ -7,11 +7,15 @@ import {
 	removeAnnouncementChannel,
 	startTournament,
 	removeRegisterMessage,
-	confirmParticipant
+	confirmParticipant,
+	findTournamentByRegisterMessage,
+	removePendingParticipant
 } from "./actions";
 import { bot } from "./bot";
 import { TournamentModel, TournamentDoc } from "./models";
 import { DiscordDeck } from "./discordDeck";
+
+const CHECK_EMOJI = "✅";
 
 const tournaments: {
 	[id: string]: Tournament;
@@ -116,9 +120,9 @@ export class Tournament {
 		if (desc) {
 			message += desc + "\n";
 		}
-		message += "Click the ✅ below to sign up!";
+		message += "Click the " + CHECK_EMOJI + " below to sign up!";
 		const msg = await channel.createMessage(message);
-		await msg.addReaction("✅");
+		await msg.addReaction(CHECK_EMOJI);
 		return msg.id;
 	}
 
@@ -210,12 +214,24 @@ bot.on("messageDelete", async msg => {
 	removeRegisterMessage(msg.id, msg.channel.id).catch(console.error);
 });
 
-bot.on("messageReactionAdd", async msg => {
+bot.on("messageReactionAdd", (msg, emoji, userID) => {
 	// register pending participant
 });
 
-bot.on("messageReactionRemove", async msg => {
+bot.on("messageReactionRemove", async (msg, emoji, userID) => {
 	// remove pending participant
+	if (emoji.name === CHECK_EMOJI && (await removePendingParticipant(msg.id, msg.channel.id, userID))) {
+		const chan = await bot.getDMChannel(userID);
+		const tournId = await findTournamentByRegisterMessage(msg.channel.id, msg.id);
+		if (!tournId) {
+			throw new Error("User " + userID + " removed from non-existent tournament!");
+		}
+		const tourn = await TournamentModel.findOne({ challongeId: tournId });
+		if (!tourn) {
+			throw new Error("User " + userID + " removed from non-existent tournament!");
+		}
+		await chan.createMessage("You have successfully dropped" + (tourn.name ? " from " + tourn.name : "") + ".");
+	}
 });
 
 bot.on("messageCreate", async msg => {
@@ -247,10 +263,6 @@ bot.on("messageCreate", async msg => {
 		}
 		// length === 1
 		const doc = docs[0];
-		const tournament = tournaments[doc.challongeId];
-		if (!tournament) {
-			throw new Error("Tournament database mismatch! " + doc.challongeId);
-		}
 		try {
 			const deck = (await DiscordDeck.constructFromMessage(msg)) as DiscordDeck;
 			const result = await deck.validate();
