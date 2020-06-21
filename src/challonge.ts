@@ -104,6 +104,47 @@ interface CreateTournamentResponse {
 	};
 }
 
+interface AddParticipantSettings {
+	name?: string;
+	challonge_username?: string;
+	email?: string;
+	seed?: number;
+	misc?: string;
+}
+
+interface AddParticipantReponse {
+	participant: {
+		active: boolean;
+		checked_in_at: null | Date;
+		created_at: Date;
+		final_rank: null | string;
+		group_id: null | string;
+		icon: null | string;
+		id: number;
+		invitation_id: null | number;
+		invite_email: null | string;
+		misc: null | string;
+		name: string;
+		on_waiting_list: boolean;
+		seed: number;
+		tournament_id: number;
+		updated_at: Date;
+		challonge_username: null | string;
+		challonge_email_address_verified: null | boolean;
+		removable: boolean;
+		participatable_or_invitation_attached: boolean;
+		confirm_remove: boolean;
+		invitation_pending: boolean;
+		display_name_with_invitation_email_address: string;
+		email_hash: null | string;
+		username: null | string;
+		attached_participatable_portrait_url: null | string;
+		can_check_in: boolean;
+		checked_in: boolean;
+		reactivatable: boolean;
+	};
+}
+
 class Challonge {
 	private domain: string;
 	constructor(user: string, token: string) {
@@ -114,6 +155,15 @@ class Challonge {
 		const response = await fetch(this.domain + "tournaments.json", {
 			method: "POST",
 			body: JSON.stringify({ tournament: settings }),
+			headers: { "Content-Type": "application/json" }
+		});
+		return await response.json();
+	}
+
+	public async addParticipant(tournament: string, settings: AddParticipantSettings): Promise<AddParticipantReponse> {
+		const response = await fetch(this.domain + "tournaments/" + tournament + "/participants.json", {
+			method: "POST",
+			body: JSON.stringify({ participant: settings }),
 			headers: { "Content-Type": "application/json" }
 		});
 		return await response.json();
