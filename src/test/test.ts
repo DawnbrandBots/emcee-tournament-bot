@@ -112,10 +112,10 @@ describe("Deck", function () {
 	});
 	it("#getProfile (archetype)", async function () {
 		const altUrl =
-			"ydke://M/D5BTPw+QUz8PkFNPD5BTTw+QU08PkFNfD5BTXw+QU18PkFkAYjACaQQgMmkEIDJpBCA9V80APVfNAD1XzQAybrAAQm6wAEJusABFl7YwQ78PkFO/D5BTvw+QU88PkFPPD5BT3w+QU98PkFPfD5BSJImQAiSJkAIkiZAG927wBvdu8Ab3bvAPsEeAL7BHgC+wR4Ag==!NvD5BTbw+QU58PkFOfD5BTjw+QU48PkFN/D5BTrw+QXH+E0BpJorAL8OSQI=!!";
+			"ydke://nzsnBKnyswWEuDgASCmYA0gpmANIKZgDLxkiBS8ZIgUvGSIFryPeAK8j3gCvI94AakgeAGpIHgBqSB4AakgeAB43ggEeN4IBHjeCAVl7YwRZe2MEuhxqBLocagS/idcCv4nXAr+J1wIiSJkAIkiZACJImQC2z/EEts/xBLbP8QRkmkAB+wR4AvsEeAL7BHgCnzsnBJ87JwSp8rMF!Xch8BMLDNgEuTncCLk53AhawzAWmzbsANskIAzbJCAP1PKkFa9TMBGvUzAR6cc4AwRpyBM3gIQCNJ5gD!!";
 		const deck = Deck.constructFromUrl(altUrl);
 		const profile = await deck.getProfile();
-		expect(profile.archetypes).to.deep.equal(["Appliancer"]);
+		expect(profile.archetypes).to.deep.equal(["Dragma"]);
 	});
 	it("#validate (passing)", async function () {
 		const deck = Deck.constructFromUrl(url);
@@ -124,12 +124,12 @@ describe("Deck", function () {
 	});
 	it("#validate (failing)", async function () {
 		const altUrl =
-			"ydke://M/D5BTPw+QUz8PkFM/D5BTTw+QU08PkFNPD5BTXw+QU18PkFNfD5BZAGIwCQBiMAJpBCAyaQQgMmkEID1XzQA9V80APVfNADJusABCbrAAQm6wAEWXtjBDvw+QU78PkFO/D5BTzw+QU88PkFPfD5BT3w+QU98PkFIkiZACJImQAiSJkAb3bvAG927wBvdu8A+wR4AvsEeAL7BHgC!NvD5BTbw+QU58PkFOfD5BTjw+QU48PkFN/D5BTrw+QXH+E0BpJorAL8OSQI=!!";
+			"ydke://nzsnBKnyswWEuDgASCmYA0gpmANIKZgDLxkiBS8ZIgUvGSIFryPeAK8j3gCvI94AakgeAGpIHgBqSB4AakgeAB43ggEeN4IBHjeCAVl7YwRZe2MEuhxqBLocagS/idcCv4nXAr+J1wIiSJkAIkiZACJImQC2z/EEts/xBLbP8QRkmkAB+wR4AvsEeAL7BHgCnzsnBJ87JwSp8rMF!Xch8BMLDNgEuTncCLk53AhawzAWmzbsANskIAzbJCAP1PKkFa9TMBGvUzAR6cc4AwRpyBM3gIQCNJ5gD!!";
 		const deck = Deck.constructFromUrl(altUrl);
 		const result = await deck.validate();
 		expect(result).to.contain("Main Deck too small! Should be at least 40, is 39.");
-		expect(result).to.contain("Too many copies of Appliancer Socketroll! Should be at most 3, is 4.");
-		expect(result).to.contain("Too many copies of One for One! Should be at most 1, is 2.");
+		expect(result).to.contain("Too many copies of Disciple from Nadir! Should be at most 3, is 4.");
+		expect(result).to.contain("Too many copies of Terraforming! Should be at most 1, is 2.");
 	});
 	it("#validate (too large)", async function () {
 		const altUrl =
