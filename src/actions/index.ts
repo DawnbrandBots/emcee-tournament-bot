@@ -155,6 +155,12 @@ export async function startTournament(tournamentId: TournamentID, organizer: Dis
 	return removedIDs;
 }
 
+// Progresses tournament to the next round or returns -1 if it was already the final round
+export async function nextRound(tournamentId: TournamentID, organizer: DiscordID): Promise<number> {
+	const tournament = await getAuthorizedTournament(tournamentId, organizer);
+	throw new Error("Not yet implemented!");
+}
+
 // Invoke after a participant's deck is validated and they are registered on Challonge
 export async function confirmParticipant(
 	tournamentId: DiscordID,

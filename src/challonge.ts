@@ -152,7 +152,7 @@ interface AddParticipantReponse {
 
 type ChallongeMatchState = "all" | "pending" | "open" | "complete";
 
-interface ChallongeMatch {
+export interface ChallongeMatch {
 	match: {
 		attachment_count: null | number;
 		created_at: Date;

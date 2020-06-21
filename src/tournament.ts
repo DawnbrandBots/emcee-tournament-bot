@@ -1,4 +1,4 @@
-import { challonge } from "./challonge";
+import { challonge, ChallongeMatch } from "./challonge";
 import { GuildChannel, Message, TextChannel, PrivateChannel, GuildTextableChannel } from "eris";
 import {
 	initTournament,
@@ -10,7 +10,8 @@ import {
 	confirmParticipant,
 	findTournamentByRegisterMessage,
 	removePendingParticipant,
-	addPendingParticipant
+	addPendingParticipant,
+	nextRound
 } from "./actions";
 import { bot } from "./bot";
 import { TournamentModel, TournamentDoc } from "./models";
@@ -156,14 +157,16 @@ export class Tournament {
 		await removeRegisterMessage(ids.message, ids.channel);
 	}
 
-	private async startTournamentInChannel(channelId: string, url: string, name?: string): Promise<string> {
+	private async startRound(channelId: string, url: string, round: number, name?: string): Promise<string> {
 		const channel = bot.getChannel(channelId);
 		if (!(channel instanceof GuildTextableChannel)) {
 			throw new Error("Channel " + channelId + " is not a valid text channel");
 		}
 		const role = await this.getRole(channelId);
 		const message =
-			"Round 1 of " +
+			"Round " +
+			round +
+			" of " +
 			(name || "the tournament") +
 			" has begun! <@&" +
 			role +
@@ -187,9 +190,7 @@ export class Tournament {
 		await Promise.all(messages.map(this.deleteRegisterMessage));
 		await challonge.startTournament(this.id, {});
 		const channels = tournament.discordChannels;
-		const announcements = await Promise.all(
-			channels.map(c => this.startTournamentInChannel(c, this.id, tournament.name))
-		);
+		const announcements = await Promise.all(channels.map(c => this.startRound(c, this.id, 1, tournament.name)));
 		return announcements;
 	}
 
@@ -202,16 +203,38 @@ export class Tournament {
 		throw new Error("Not yet implemented!");
 	}
 
-	public async nextRound(organiser: string): Promise<void> {
-		throw new Error("Not yet implemented!");
+	private async tieMatch(matchId: number): Promise<ChallongeMatch> {
+		return await challonge.updateMatch(this.id, matchId.toString(), {
+			winner_id: "tie",
+			scores_csv: "0-0"
+		});
 	}
 
-	public async finishTournament(organiser: string): Promise<void> {
+	public async nextRound(organiser: string): Promise<void> {
+		if (!isOrganizing(organiser, this.id)) {
+			throw new Error(`Organizer ${organiser} not authorized for tournament ${this.id}`);
+		}
+		const matches = await challonge.indexMatches(this.id, "pending");
+		await Promise.all(matches.map(m => this.tieMatch(m.match.id)));
+		const round = await nextRound(this.id, organiser);
+		// if was last round
+		if (round === -1) {
+			return await this.finishTournament(organiser);
+		}
+		const tournament = await this.getTournament();
+		const channels = tournament.discordChannels;
+		await Promise.all(channels.map(c => this.startRound(c, this.id, round, tournament.name)));
+	}
+
+	private async finishTournament(organiser: string): Promise<void> {
 		throw new Error("Not yet implemented!");
+		// send announcement to channels
+		// call mongo cleanup function
+		// delete tournaments[this.id];
 	}
 }
 
-bot.on("messageDelete", async msg => {
+bot.on("messageDelete", msg => {
 	removeRegisterMessage(msg.id, msg.channel.id).catch(console.error);
 });
 
