@@ -1,5 +1,5 @@
 import { challonge } from "./challonge";
-import Eris, { GuildChannel, Message, TextChannel, PrivateChannel } from "eris";
+import { GuildChannel, Message, TextChannel, PrivateChannel, GuildTextableChannel } from "eris";
 import {
 	initTournament,
 	isOrganizing,
@@ -50,7 +50,7 @@ export class Tournament {
 
 	private async getRole(channelId: string): Promise<string> {
 		const channel = bot.getChannel(channelId);
-		if (!(channel instanceof Eris.GuildChannel)) {
+		if (!(channel instanceof GuildChannel)) {
 			throw new Error("Channel " + channelId + " is not a valid text channel");
 		}
 		const guild = channel.guild;
@@ -151,7 +151,7 @@ export class Tournament {
 
 	private async startTournamentInChannel(channelId: string, url: string, name?: string): Promise<string> {
 		const channel = bot.getChannel(channelId);
-		if (!(channel instanceof Eris.GuildTextableChannel)) {
+		if (!(channel instanceof GuildTextableChannel)) {
 			throw new Error("Channel " + channelId + " is not a valid text channel");
 		}
 		const role = await this.getRole(channelId);

@@ -152,11 +152,6 @@ interface AddParticipantReponse {
 
 type ChallongeMatchState = "all" | "pending" | "open" | "complete";
 
-interface IndexMatchSettings {
-	state?: ChallongeMatchState;
-	participant_id?: number;
-}
-
 interface ChallongeMatch {
 	match: {
 		attachment_count: null | number;
