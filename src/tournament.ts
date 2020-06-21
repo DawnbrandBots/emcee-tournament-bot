@@ -9,7 +9,8 @@ import {
 	removeRegisterMessage,
 	confirmParticipant,
 	findTournamentByRegisterMessage,
-	removePendingParticipant
+	removePendingParticipant,
+	addPendingParticipant
 } from "./actions";
 import { bot } from "./bot";
 import { TournamentModel, TournamentDoc } from "./models";
@@ -214,8 +215,24 @@ bot.on("messageDelete", async msg => {
 	removeRegisterMessage(msg.id, msg.channel.id).catch(console.error);
 });
 
-bot.on("messageReactionAdd", (msg, emoji, userID) => {
+bot.on("messageReactionAdd", async (msg, emoji, userID) => {
 	// register pending participant
+	if (emoji.name === CHECK_EMOJI && (await addPendingParticipant(msg.id, msg.channel.id, userID))) {
+		const chan = await bot.getDMChannel(userID);
+		const tournId = await findTournamentByRegisterMessage(msg.channel.id, msg.id);
+		if (!tournId) {
+			throw new Error("User " + userID + " removed from non-existent tournament!");
+		}
+		const tourn = await TournamentModel.findOne({ challongeId: tournId });
+		if (!tourn) {
+			throw new Error("User " + userID + " removed from non-existent tournament!");
+		}
+		await chan.createMessage(
+			"You have successfully registered" +
+				(tourn.name ? " for " + tourn.name : "") +
+				". Please submit a deck to complete your registration, by uploading a YDK file or sending a message with a YDKE URL."
+		);
+	}
 });
 
 bot.on("messageReactionRemove", async (msg, emoji, userID) => {
