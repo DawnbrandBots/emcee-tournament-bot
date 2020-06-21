@@ -13,3 +13,11 @@ if (process.env.MONGODB_URL === undefined) {
 	throw new Error("Missing environment variable MONGODB_URL!");
 }
 export const mongoDbUrl: string = process.env.MONGODB_URL;
+if (process.env.CHALLONGE_USERNAME === undefined) {
+	throw new Error("Missing environment variable CHALLONGE_TOKEN!");
+}
+export const challongeUsername: string = process.env.CHALLONGE_USERNAME;
+if (process.env.CHALLONGE_TOKEN === undefined) {
+	throw new Error("Missing environment variable CHALLONGE_TOKEN!");
+}
+export const challongeToken: string = process.env.CHALLONGE_TOKEN;
