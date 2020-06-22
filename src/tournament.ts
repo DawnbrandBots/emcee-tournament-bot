@@ -2,7 +2,7 @@ import { challonge, ChallongeMatch } from "./challonge";
 import { GuildChannel, Message, TextChannel, PrivateChannel, GuildTextableChannel } from "eris";
 import {
 	initTournament,
-	isOrganizing,
+	isOrganising,
 	addAnnouncementChannel,
 	removeAnnouncementChannel,
 	startTournament,
@@ -13,8 +13,8 @@ import {
 	addPendingParticipant,
 	nextRound,
 	finishTournament,
-	addOrganizer,
-	removeOrganizer
+	addOrganiser,
+	removeOrganiser
 } from "./actions";
 import { bot } from "./bot";
 import { TournamentModel, TournamentDoc } from "./models";
@@ -87,8 +87,8 @@ export class Tournament {
 	}
 
 	public async addChannel(channelId: string, organiser: string, isPrivate = false): Promise<string> {
-		if (!isOrganizing(organiser, this.id)) {
-			throw new Error(`Organizer ${organiser} not authorized for tournament ${this.id}`);
+		if (!isOrganising(organiser, this.id)) {
+			throw new Error(`Organiser ${organiser} not authorized for tournament ${this.id}`);
 		}
 		const channel = bot.getChannel(channelId);
 		if (!(channel instanceof TextChannel)) {
@@ -103,8 +103,8 @@ export class Tournament {
 	}
 
 	public async removeChannel(channelId: string, organiser: string, isPrivate = false): Promise<void> {
-		if (!isOrganizing(organiser, this.id)) {
-			throw new Error(`Organizer ${organiser} not authorized for tournament ${this.id}`);
+		if (!isOrganising(organiser, this.id)) {
+			throw new Error(`Organiser ${organiser} not authorized for tournament ${this.id}`);
 		}
 		const channel = bot.getChannel(channelId);
 		if (!(channel instanceof TextChannel)) {
@@ -139,8 +139,8 @@ export class Tournament {
 	}
 
 	public async openRegistration(organiser: string): Promise<string[]> {
-		if (!isOrganizing(organiser, this.id)) {
-			throw new Error(`Organizer ${organiser} not authorized for tournament ${this.id}`);
+		if (!isOrganising(organiser, this.id)) {
+			throw new Error(`Organiser ${organiser} not authorized for tournament ${this.id}`);
 		}
 		const tournament = await this.getTournament();
 		const channels = tournament.publicChannels;
@@ -181,8 +181,8 @@ export class Tournament {
 	}
 
 	public async start(organiser: string): Promise<string[]> {
-		if (!isOrganizing(organiser, this.id)) {
-			throw new Error(`Organizer ${organiser} not authorized for tournament ${this.id}`);
+		if (!isOrganising(organiser, this.id)) {
+			throw new Error(`Organiser ${organiser} not authorized for tournament ${this.id}`);
 		}
 		const tournament = await this.getTournament();
 		if (tournament.confirmedParticipants.length < 2) {
@@ -205,8 +205,8 @@ export class Tournament {
 		loserScore: number,
 		organiser: string
 	): Promise<ChallongeMatch> {
-		if (!isOrganizing(organiser, this.id)) {
-			throw new Error(`Organizer ${organiser} not authorized for tournament ${this.id}`);
+		if (!isOrganising(organiser, this.id)) {
+			throw new Error(`Organiser ${organiser} not authorized for tournament ${this.id}`);
 		}
 		const doc = await this.getTournament();
 		const winner = doc.confirmedParticipants.find(p => p.discord === winnerId);
@@ -236,8 +236,8 @@ export class Tournament {
 	}
 
 	public async nextRound(organiser: string): Promise<void> {
-		if (!isOrganizing(organiser, this.id)) {
-			throw new Error(`Organizer ${organiser} not authorized for tournament ${this.id}`);
+		if (!isOrganising(organiser, this.id)) {
+			throw new Error(`Organiser ${organiser} not authorized for tournament ${this.id}`);
 		}
 		const matches = await challonge.indexMatches(this.id, "open");
 		await Promise.all(matches.map(m => this.tieMatch(m.match.id)));
@@ -267,8 +267,8 @@ export class Tournament {
 	}
 
 	public async finishTournament(organiser: string): Promise<void> {
-		if (!isOrganizing(organiser, this.id)) {
-			throw new Error(`Organizer ${organiser} not authorized for tournament ${this.id}`);
+		if (!isOrganising(organiser, this.id)) {
+			throw new Error(`Organiser ${organiser} not authorized for tournament ${this.id}`);
 		}
 		const tournament = await this.getTournament();
 		const channels = tournament.publicChannels;
@@ -278,20 +278,20 @@ export class Tournament {
 	}
 
 	public async addOrganiser(organiser: string, newOrganiser: string): Promise<boolean> {
-		if (!isOrganizing(organiser, this.id)) {
-			throw new Error(`Organizer ${organiser} not authorized for tournament ${this.id}`);
+		if (!isOrganising(organiser, this.id)) {
+			throw new Error(`Organiser ${organiser} not authorized for tournament ${this.id}`);
 		}
-		return await addOrganizer(newOrganiser, this.id);
+		return await addOrganiser(newOrganiser, this.id);
 	}
 
 	public async removeOrganiser(organiser: string, toRemove: string): Promise<boolean> {
-		if (!isOrganizing(organiser, this.id)) {
-			throw new Error(`Organizer ${organiser} not authorized for tournament ${this.id}`);
+		if (!isOrganising(organiser, this.id)) {
+			throw new Error(`Organiser ${organiser} not authorized for tournament ${this.id}`);
 		}
 		if (organiser === toRemove) {
 			throw new Error("You cannot remove yourself from organising a tournament!");
 		}
-		return await removeOrganizer(toRemove, this.id);
+		return await removeOrganiser(toRemove, this.id);
 	}
 }
 
@@ -304,7 +304,8 @@ bot.on("messageReactionAdd", async (msg, emoji, userID) => {
 	if (emoji.name === CHECK_EMOJI && (await addPendingParticipant(msg.id, msg.channel.id, userID))) {
 		const chan = await bot.getDMChannel(userID);
 		const tournament = await findTournamentByRegisterMessage(msg.channel.id, msg.id);
-		if (!tournament) { // impossible because of addPendingParticipant except in the case of a race condition
+		if (!tournament) {
+			// impossible because of addPendingParticipant except in the case of a race condition
 			throw new Error(`User ${userID} added to non-existent tournament!`);
 		}
 		await chan.createMessage(
@@ -319,7 +320,8 @@ bot.on("messageReactionRemove", async (msg, emoji, userID) => {
 	if (emoji.name === CHECK_EMOJI && (await removePendingParticipant(msg.id, msg.channel.id, userID))) {
 		const chan = await bot.getDMChannel(userID);
 		const tournament = await findTournamentByRegisterMessage(msg.channel.id, msg.id);
-		if (!tournament) { // impossible because of removePendingParticipant except in the case of a race condition
+		if (!tournament) {
+			// impossible because of removePendingParticipant except in the case of a race condition
 			throw new Error(`User ${userID} removed from non-existent tournament!`);
 		}
 		await chan.createMessage(`You have successfully dropped from ${tournament.name || "the tournament"}.`);
