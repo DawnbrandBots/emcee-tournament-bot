@@ -1,8 +1,10 @@
 import { challongeUsername, challongeToken } from "./config/env";
-import fetch from "node-fetch";
+import fetch, { Response } from "node-fetch";
 
 type TournamentType = "single elimination" | "double elimination" | "round robin" | "swiss";
 type RankedBy = "match wins" | "game wins" | "points scored" | "points difference" | "custom";
+
+export class ChallongeAPIError extends Error {}
 
 interface ChallongeTournamentSettings {
 	name?: string;
@@ -198,44 +200,53 @@ class Challonge {
 		this.baseUrl = `https://${user}:${token}@api.challonge.com/v1/`;
 	}
 
+	private async validateResponse(response: Response): Promise<unknown> {
+		const body = await response.json();
+		if (body.errors) {
+			throw new ChallongeAPIError(body.errors[0]);
+		}
+		return body;
+	}
+
 	public async createTournament(settings: ChallongeTournamentSettings): Promise<CreateTournamentResponse> {
 		const response = await fetch(`${this.baseUrl}tournaments.json`, {
 			method: "POST",
 			body: JSON.stringify({ tournament: settings }),
 			headers: { "Content-Type": "application/json" }
 		});
-		return await response.json();
+		return (await this.validateResponse(response)) as CreateTournamentResponse;
 	}
 
 	public async updateTournament(tournament: string, settings: ChallongeTournamentSettings): Promise<void> {
-		await fetch(`${this.baseUrl}tournaments/${tournament}.json`, {
+		const response = await fetch(`${this.baseUrl}tournaments/${tournament}.json`, {
 			method: "PUT",
 			body: JSON.stringify({ tournament: settings }),
 			headers: { "Content-Type": "application/json" }
 		});
+		await this.validateResponse(response);
 	}
 
 	public async showTournament(tournament: string): Promise<CreateTournamentResponse> {
 		const response = await fetch(`${this.baseUrl}tournaments/${tournament}.json`);
-		return await response.json();
+		return (await this.validateResponse(response)) as CreateTournamentResponse;
 	}
 
 	public async startTournament(tournament: string, settings: StartTournamentSettings): Promise<void> {
-		await fetch(`${this.baseUrl}tournaments/${tournament}/start.json`, {
+		const response = await fetch(`${this.baseUrl}tournaments/${tournament}/start.json`, {
 			method: "POST",
 			body: JSON.stringify(settings),
 			headers: { "Content-Type": "application/json" }
 		});
-		return;
+		await this.validateResponse(response);
 	}
 
 	public async finalizeTournament(tournament: string, settings: StartTournamentSettings): Promise<void> {
-		await fetch(`${this.baseUrl}tournaments/${tournament}/finalize.json`, {
+		const response = await fetch(`${this.baseUrl}tournaments/${tournament}/finalize.json`, {
 			method: "POST",
 			body: JSON.stringify(settings),
 			headers: { "Content-Type": "application/json" }
 		});
-		return;
+		await this.validateResponse(response);
 	}
 
 	public async addParticipant(tournament: string, settings: AddParticipantSettings): Promise<AddParticipantReponse> {
@@ -244,7 +255,7 @@ class Challonge {
 			body: JSON.stringify({ participant: settings }),
 			headers: { "Content-Type": "application/json" }
 		});
-		return await response.json();
+		return (await this.validateResponse(response)) as AddParticipantReponse;
 	}
 
 	public async indexMatches(
@@ -262,7 +273,7 @@ class Challonge {
 			url += `?participant_id=${participantId.toString()}`;
 		}
 		const response = await fetch(url);
-		return await response.json();
+		return (await this.validateResponse(response)) as IndexMatchResponse;
 	}
 
 	public async updateMatch(
@@ -275,7 +286,7 @@ class Challonge {
 			body: JSON.stringify({ match: settings }),
 			headers: { "Content-Type": "application/json" }
 		});
-		return await response.json();
+		return (await this.validateResponse(response)) as ChallongeMatch;
 	}
 }
 
