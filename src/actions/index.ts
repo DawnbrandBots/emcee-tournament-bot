@@ -44,7 +44,7 @@ export class UnauthorisedOrganiserError extends Error {
 
 	constructor(organiser: DiscordID, challongeId: TournamentID) {
 		super(`Organiser ${organiser} not authorised for tournament ${challongeId}`);
-		this.organiser = organiser
+		this.organiser = organiser;
 		this.challongeId = challongeId;
 	}
 }
@@ -149,11 +149,7 @@ export async function removeRegisterMessage(message: DiscordID, channel: Discord
 }
 
 // Invoke after a user requests to join a tournament and the appropriate response is delivered.
-export async function addPendingParticipant(
-	message: DiscordID,
-	channel: DiscordID,
-	user: DiscordID
-): Promise<boolean> {
+export async function addPendingParticipant(message: DiscordID, channel: DiscordID, user: DiscordID): Promise<boolean> {
 	const tournament = await findTournamentByRegisterMessage(message, channel);
 	if (!tournament) {
 		return false;
@@ -267,4 +263,19 @@ export async function setTournamentDescription(challongeId: string, description:
 		throw new TournamentNotFoundError(challongeId);
 	}
 	return old.description;
+}
+
+interface MongoPlayer {
+	challongeId: number;
+	discord: string;
+	deck: {
+		main: number[];
+		extra: number[];
+		side: number[];
+	};
+}
+
+export async function getPlayerFromId(challongeId: string, playerId: number): Promise<MongoPlayer | undefined> {
+	const tournament = await findTournament(challongeId);
+	return tournament.confirmedParticipants.find(p => p.challongeId === playerId);
 }

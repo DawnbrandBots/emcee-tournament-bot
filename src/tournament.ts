@@ -244,18 +244,20 @@ export class Tournament {
 		});
 	}
 
-	public async nextRound(organiser: string): Promise<void> {
+	public async nextRound(organiser: string): Promise<number> {
 		await this.verifyOrganiser(organiser);
 		const matches = await challonge.indexMatches(this.id, "open");
 		await Promise.all(matches.map(m => this.tieMatch(m.match.id)));
 		const round = await nextRound(this.id, organiser);
 		// if was last round
 		if (round === -1) {
-			return await this.finishTournament(organiser);
+			await this.finishTournament(organiser);
+			return -1;
 		}
 		const tournament = await this.getTournament();
 		const channels = tournament.publicChannels;
 		await Promise.all(channels.map(c => this.startRound(c, this.id, round, tournament.name)));
+		return round;
 	}
 
 	private async sendConclusionMessage(

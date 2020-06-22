@@ -1,8 +1,10 @@
 import { Message, GuildTextableChannel } from "eris";
 import { Tournament, getTournament, AssertTextChannelError, MiscUserError, MiscInternalError } from "../tournament";
-import { findTournament, TournamentNotFoundError, UnauthorisedOrganiserError } from "../actions";
+import { findTournament, TournamentNotFoundError, UnauthorisedOrganiserError, getPlayerFromId } from "../actions";
 import { bot } from "../bot";
 import { DeckNotFoundError } from "../discordDeck";
+import { TournamentDoc } from "../models";
+import { stat } from "fs";
 
 type UserError =
 	| MiscUserError
@@ -17,13 +19,13 @@ export async function parseCommand(msg: Message): Promise<void> {
 	throw new Error("Not yet implemented!");
 }
 
-async function getTournamentInterface(id: string): Promise<Tournament> {
+async function getTournamentInterface(id: string): Promise<[Tournament, TournamentDoc]> {
 	const doc = await findTournament(id);
 	const tournament = getTournament(doc.challongeId);
 	if (!tournament) {
 		throw new TournamentNotFoundError(doc.challongeId);
 	}
-	return tournament;
+	return [tournament, doc];
 }
 
 function getChannel(msg: Message, mention?: string): GuildTextableChannel {
@@ -51,38 +53,60 @@ async function createTournament(msg: Message, args: string[]): Promise<void> {
 }
 
 async function addChannel(msg: Message, args: string[]): Promise<void> {
-	const [id, isPrivate, channelMention] = args;
-	const tournament = await getTournamentInterface(id);
+	const [id, privString, channelMention] = args;
+	const [tournament, doc] = await getTournamentInterface(id);
 	const channel = getChannel(msg, channelMention);
-	tournament.addChannel(channel.id, msg.author.id, isPrivate.toLowerCase() === "private");
+	const isPrivate = privString.toLowerCase() === "private";
+	await tournament.addChannel(channel.id, msg.author.id, isPrivate);
+	const status = isPrivate ? "private" : "public";
+	await msg.channel.createMessage(
+		`<#${channel.id}> has successfully been added as a ${status} announcement channel for ${doc.name}.`
+	);
 }
 
 async function removeChannel(msg: Message, args: string[]): Promise<void> {
-	const [id, isPrivate, channelMention] = args;
-	const tournament = await getTournamentInterface(id);
+	const [id, privString, channelMention] = args;
+	const [tournament, doc] = await getTournamentInterface(id);
 	const channel = getChannel(msg, channelMention);
-	tournament.removeChannel(channel.id, msg.author.id, isPrivate.toLowerCase() === "private");
+	const isPrivate = privString.toLowerCase() === "private";
+	await tournament.removeChannel(channel.id, msg.author.id, isPrivate);
+	const status = isPrivate ? "private" : "public";
+	await msg.channel.createMessage(
+		`<#${channel.id}> has successfully been removed as a ${status} announcement channel for ${doc.name}.`
+	);
 }
 
 async function open(msg: Message, args: string[]): Promise<void> {
 	const [id] = args;
-	const tournament = await getTournamentInterface(id);
+	const [tournament, doc] = await getTournamentInterface(id);
 	await tournament.openRegistration(msg.author.id);
+	await msg.channel.createMessage(`${doc.name} has successfully been opened for registration.`);
 }
 
 async function start(msg: Message, args: string[]): Promise<void> {
 	const [id] = args;
-	const tournament = await getTournamentInterface(id);
+	const [tournament, doc] = await getTournamentInterface(id);
 	await tournament.start(msg.author.id);
+	await msg.channel.createMessage(`${doc.name} has successfully been commenced.`);
+}
+
+function getMentionedUserId(msg: Message): string {
+	const user = msg.mentions[0];
+	if (!user) {
+		throw new MiscUserError("You must @mention the winner of the match you are reporting for!");
+	}
+	return user.id;
+}
+
+async function getPlayerDiscord(tournamentId: string, playerId: number): Promise<string | undefined> {
+	const player = await getPlayerFromId(tournamentId, playerId);
+	return player?.discord;
 }
 
 async function submitScore(msg: Message, args: string[]): Promise<void> {
 	const [id, score] = args;
-	const tournament = await getTournamentInterface(id);
-	const winner = msg.mentions[0]?.id;
-	if (!winner) {
-		throw new MiscUserError("You must @mention the winner of the match you are reporting for!");
-	}
+	const [tournament, doc] = await getTournamentInterface(id);
+	const winner = getMentionedUserId(msg);
 	const scoreRegex = /(\d)-(\d)/;
 	const scoreMatch = scoreRegex.exec(score);
 	const winnerScore = parseInt(scoreMatch ? scoreMatch[1] : "");
@@ -90,17 +114,31 @@ async function submitScore(msg: Message, args: string[]): Promise<void> {
 	if (!scoreMatch || isNaN(winnerScore) || isNaN(loserScore)) {
 		throw new MiscUserError("You must report the score in the format `#-#`, with the winner first, e.g. `2-1`!");
 	}
-	await tournament.submitScore(winner, winnerScore, loserScore, msg.author.id);
+	const result = await tournament.submitScore(winner, winnerScore, loserScore, msg.author.id);
+	const loser =
+		result.match.winner_id === result.match.player1_id
+			? await getPlayerDiscord(id, result.match.player2_id)
+			: await getPlayerDiscord(id, result.match.player1_id);
+	const loserString = loser ? ` over <@${loser}>` : "";
+	await msg.channel.createMessage(
+		`Score successfully submitted for ${doc.name}. <@${winner}> won ${scoreMatch[0]}${loserString}.`
+	);
 }
 
 async function nextRound(msg: Message, args: string[]): Promise<void> {
 	const [id] = args;
-	const tournament = await getTournamentInterface(id);
-	await tournament.nextRound(msg.author.id);
+	const [tournament, doc] = await getTournamentInterface(id);
+	const round = await tournament.nextRound(msg.author.id);
+	if (round === -1) {
+		await msg.channel.createMessage(`${doc.name} has successfully been concluded.`);
+	} else {
+		await msg.channel.createMessage(`${doc.name} has successfully progressed to Round ${round}.`);
+	}
 }
 
 async function cancelTournament(msg: Message, args: string[]): Promise<void> {
 	const [id] = args;
-	const tournament = await getTournamentInterface(id);
+	const [tournament, doc] = await getTournamentInterface(id);
 	await tournament.finishTournament(msg.author.id, true);
+	await msg.channel.createMessage(`${doc.name} has successfully been cancelled.`);
 }
