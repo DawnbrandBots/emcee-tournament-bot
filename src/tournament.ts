@@ -16,7 +16,9 @@ import {
 	addOrganiser,
 	removeOrganiser,
 	findTournament,
-	UnauthorisedOrganiserError
+	UnauthorisedOrganiserError,
+	setTournamentName,
+	setTournamentDescription
 } from "./actions";
 import { bot } from "./bot";
 import { TournamentModel, TournamentDoc } from "./models";
@@ -129,9 +131,21 @@ export class Tournament {
 			throw new MiscUserError(`Channel ${channel.name} is not a registered announcement channel`);
 		}
 		const tournament = await this.getTournament();
-		await channel.createMessage(
-			`This channel no longer displaying announcements for ${tournament.name}`
-		);
+		await channel.createMessage(`This channel no longer displaying announcements for ${tournament.name}`);
+	}
+
+	public async updateTournament(name: string, desc: string, organiser: string): Promise<[string, string]> {
+		await this.verifyOrganiser(organiser);
+		const tournament = await this.getTournament();
+		if (!(tournament.status === "preparing")) {
+			throw new MiscUserError(`It's too late to update the information for ${tournament.name}.`);
+		}
+		await challonge.updateTournament(this.id, {
+			name,
+			description: desc
+		});
+		const newName = await setTournamentName(this.id, name);
+		return [newName, await setTournamentDescription(this.id, desc)];
 	}
 
 	private async openRegistrationInChannel(channelId: string, name: string, desc: string): Promise<string> {
@@ -159,7 +173,8 @@ export class Tournament {
 		const channel = await bot.getDMChannel(participant);
 		const msg = await channel.createMessage(
 			`Sorry, the ${name} tournament you registered for has started, and you had not submitted a valid decklist, so you have been dropped.
-			If you think this is a mistake, contact the tournament organiser.`);
+			If you think this is a mistake, contact the tournament organiser.`
+		);
 		return msg.id;
 	}
 
@@ -247,12 +262,7 @@ export class Tournament {
 		return round;
 	}
 
-	private async sendConclusionMessage(
-		channelId: string,
-		url: string,
-		name: string,
-		cancel = false
-	): Promise<string> {
+	private async sendConclusionMessage(channelId: string, url: string, name: string, cancel = false): Promise<string> {
 		const channel = bot.getChannel(channelId);
 		if (!(channel instanceof GuildTextableChannel)) {
 			throw new AssertTextChannelError(channelId);
@@ -348,9 +358,7 @@ async function sendTournamentRegistration(
 	if (!(channel instanceof GuildTextableChannel)) {
 		throw new AssertTextChannelError(channelId);
 	}
-	const msg = await channel.createMessage(
-		`<@${user}> has signed up for ${name} with the following deck.`
-	);
+	const msg = await channel.createMessage(`<@${user}> has signed up for ${name} with the following deck.`);
 	await deck.sendProfile(msg);
 	return msg.id;
 }
