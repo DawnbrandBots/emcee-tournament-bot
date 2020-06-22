@@ -188,11 +188,12 @@ export class Tournament {
 		if (tournament.confirmedParticipants.length < 2) {
 			throw new Error("Cannot start a tournament without at least 2 confirmed participants!");
 		}
-		const removedIDs = await startTournament(this.id, organiser);
+		await challonge.startTournament(this.id, {});
+		const tournData = await challonge.showTournament(this.id);
+		const removedIDs = await startTournament(this.id, organiser, tournData.tournament.swiss_rounds);
 		await Promise.all(removedIDs.map(i => this.warnClosedParticipant(i, tournament.name)));
 		const messages = tournament.registerMessages;
 		await Promise.all(messages.map(this.deleteRegisterMessage));
-		await challonge.startTournament(this.id, {});
 		const channels = tournament.publicChannels;
 		const announcements = await Promise.all(channels.map(c => this.startRound(c, this.id, 1, tournament.name)));
 		return announcements;

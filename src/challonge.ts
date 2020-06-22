@@ -207,6 +207,14 @@ class Challonge {
 		return await response.json();
 	}
 
+	public async showTournament(tournament: string): Promise<CreateTournamentResponse> {
+		const response = await fetch(`${this.domain}tournaments/${tournament}.json`, {
+			method: "GET",
+			headers: { "Content-Type": "application/json" }
+		});
+		return await response.json();
+	}
+
 	public async startTournament(tournament: string, settings: StartTournamentSettings): Promise<void> {
 		await fetch(`${this.domain}tournaments/${tournament}/start.json`, {
 			method: "POST",

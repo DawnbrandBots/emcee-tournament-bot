@@ -177,11 +177,17 @@ export async function removePendingParticipant(
 }
 
 // Remove all pending participants and start the tournament
-export async function startTournament(tournamentId: TournamentID, organizer: DiscordID): Promise<string[]> {
+export async function startTournament(
+	tournamentId: TournamentID,
+	organizer: DiscordID,
+	rounds: number
+): Promise<string[]> {
 	const tournament = await getAuthorizedTournament(tournamentId, organizer);
 	const removedIDs = tournament.pendingParticipants.slice(); // clone values
 	tournament.pendingParticipants = [];
 	tournament.status = "in progress";
+	tournament.currentRound = 1;
+	tournament.totalRounds = rounds;
 	await tournament.save();
 	return removedIDs;
 }
