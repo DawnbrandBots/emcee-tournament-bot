@@ -193,13 +193,13 @@ interface UpdateMatchSettings {
 }
 
 class Challonge {
-	private domain: string;
+	private baseUrl: string;
 	constructor(user: string, token: string) {
-		this.domain = `https://${user}:${token}@api.challonge.com/v1/`;
+		this.baseUrl = `https://${user}:${token}@api.challonge.com/v1/`;
 	}
 
 	public async createTournament(settings: ChallongeTournamentSettings): Promise<CreateTournamentResponse> {
-		const response = await fetch(`${this.domain}tournaments.json`, {
+		const response = await fetch(`${this.baseUrl}tournaments.json`, {
 			method: "POST",
 			body: JSON.stringify({ tournament: settings }),
 			headers: { "Content-Type": "application/json" }
@@ -208,7 +208,7 @@ class Challonge {
 	}
 
 	public async updateTournament(tournament: string, settings: ChallongeTournamentSettings): Promise<void> {
-		await fetch(`${this.domain}tournaments/${tournament}.json`, {
+		await fetch(`${this.baseUrl}tournaments/${tournament}.json`, {
 			method: "PUT",
 			body: JSON.stringify({ tournament: settings }),
 			headers: { "Content-Type": "application/json" }
@@ -216,15 +216,12 @@ class Challonge {
 	}
 
 	public async showTournament(tournament: string): Promise<CreateTournamentResponse> {
-		const response = await fetch(`${this.domain}tournaments/${tournament}.json`, {
-			method: "GET",
-			headers: { "Content-Type": "application/json" }
-		});
+		const response = await fetch(`${this.baseUrl}tournaments/${tournament}.json`);
 		return await response.json();
 	}
 
 	public async startTournament(tournament: string, settings: StartTournamentSettings): Promise<void> {
-		await fetch(`${this.domain}tournaments/${tournament}/start.json`, {
+		await fetch(`${this.baseUrl}tournaments/${tournament}/start.json`, {
 			method: "POST",
 			body: JSON.stringify(settings),
 			headers: { "Content-Type": "application/json" }
@@ -233,7 +230,7 @@ class Challonge {
 	}
 
 	public async finalizeTournament(tournament: string, settings: StartTournamentSettings): Promise<void> {
-		await fetch(`${this.domain}tournaments/${tournament}/finalize.json`, {
+		await fetch(`${this.baseUrl}tournaments/${tournament}/finalize.json`, {
 			method: "POST",
 			body: JSON.stringify(settings),
 			headers: { "Content-Type": "application/json" }
@@ -242,7 +239,7 @@ class Challonge {
 	}
 
 	public async addParticipant(tournament: string, settings: AddParticipantSettings): Promise<AddParticipantReponse> {
-		const response = await fetch(`${this.domain}tournaments/${tournament}/participants.json`, {
+		const response = await fetch(`${this.baseUrl}tournaments/${tournament}/participants.json`, {
 			method: "POST",
 			body: JSON.stringify({ participant: settings }),
 			headers: { "Content-Type": "application/json" }
@@ -255,7 +252,7 @@ class Challonge {
 		state?: ChallongeMatchState,
 		participantId?: number
 	): Promise<IndexMatchResponse> {
-		let url = `${this.domain}tournaments/${tournament}/matches.json`;
+		let url = `${this.baseUrl}tournaments/${tournament}/matches.json`;
 		if (state) {
 			url += `?state=${state}`;
 			if (participantId) {
@@ -264,10 +261,7 @@ class Challonge {
 		} else if (participantId) {
 			url += `?participant_id=${participantId.toString()}`;
 		}
-		const response = await fetch(url, {
-			method: "GET",
-			headers: { "Content-Type": "application/json" }
-		});
+		const response = await fetch(url);
 		return await response.json();
 	}
 
@@ -276,7 +270,7 @@ class Challonge {
 		match: string,
 		settings: UpdateMatchSettings
 	): Promise<ChallongeMatch> {
-		const response = await fetch(`${this.domain}tournaments/${tournament}/matches/${match}.json`, {
+		const response = await fetch(`${this.baseUrl}tournaments/${tournament}/matches/${match}.json`, {
 			method: "PUT",
 			body: JSON.stringify({ match: settings }),
 			headers: { "Content-Type": "application/json" }
