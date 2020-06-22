@@ -1,5 +1,5 @@
 import { Message, GuildTextableChannel } from "eris";
-import { Tournament, getTournament, AssertTextChannelError } from "../tournament";
+import { Tournament, getTournament, AssertTextChannelError, MiscUserError } from "../tournament";
 import { findTournament, TournamentNotFoundError } from "../actions";
 import { bot } from "../bot";
 
@@ -65,4 +65,21 @@ async function start(msg: Message, args: string[]): Promise<void> {
 	const [id] = args;
 	const tournament = await getTournamentInterface(id);
 	await tournament.start(msg.author.id);
+}
+
+async function submitScore(msg: Message, args: string[]): Promise<void> {
+	const [id, score] = args;
+	const tournament = await getTournamentInterface(id);
+	const winner = msg.mentions[0]?.id;
+	if (!winner) {
+		throw new MiscUserError("You must @mention the winner of the match you are reporting for!");
+	}
+	const scoreRegex = /(\d)-(\d)/;
+	const scoreMatch = scoreRegex.exec(score);
+	const winnerScore = parseInt(scoreMatch ? scoreMatch[1] : "");
+	const loserScore = parseInt(scoreMatch ? scoreMatch[2] : "");
+	if (!scoreMatch || isNaN(winnerScore) || isNaN(loserScore)) {
+		throw new MiscUserError("You must report the score in the format `#-#`, with the winner first, e.g. `2-1`!");
+	}
+	await tournament.submitScore(winner, winnerScore, loserScore, msg.author.id);
 }
