@@ -28,6 +28,10 @@ const tournaments: {
 	[id: string]: Tournament;
 } = {};
 
+export function getTournament(id: string): Tournament | undefined {
+	return tournaments[id];
+}
+
 export class AssertTextChannelError extends Error {
 	channelId: string;
 
@@ -67,7 +71,7 @@ export class Tournament {
 	}
 
 	private async verifyOrganiser(organiser: string): Promise<void> {
-		if (!await isOrganising(organiser, this.id)) {
+		if (!(await isOrganising(organiser, this.id))) {
 			throw new UnauthorisedOrganiserError(organiser, this.id);
 		}
 	}
