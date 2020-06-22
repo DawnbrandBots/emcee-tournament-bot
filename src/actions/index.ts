@@ -252,3 +252,19 @@ export async function confirmParticipant(
 	await tournament.save();
 	return true;
 }
+
+export async function setTournamentName(challongeId: string, name: string): Promise<string | undefined> {
+	const old = await TournamentModel.findOneAndUpdate({ challongeId }, { name });
+	if (!old) {
+		throw new TournamentNotFoundError(challongeId);
+	}
+	return old.name;
+}
+
+export async function setTournamentDescription(challongeId: string, description: string): Promise<string | undefined> {
+	const old = await TournamentModel.findOneAndUpdate({ challongeId }, { description });
+	if (!old) {
+		throw new TournamentNotFoundError(challongeId);
+	}
+	return old.description;
+}
