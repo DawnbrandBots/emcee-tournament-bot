@@ -1,4 +1,4 @@
-import { Deck } from "./deck";
+import { Deck } from ".";
 import { Message, MessageContent, MessageFile } from "eris";
 import fetch from "node-fetch";
 import { extractURLs } from "ydke";

@@ -1,7 +1,7 @@
 import { Message } from "eris";
 import { AssertTextChannelError, MiscUserError } from "../tournament";
 import { TournamentNotFoundError, UnauthorisedOrganiserError } from "../actions";
-import { DeckNotFoundError } from "../discordDeck";
+import { DeckNotFoundError } from "../deck/discordDeck";
 import { prefix } from "../config/config.json";
 import { createTournament, updateTournament } from "./tournament";
 import { addChannel, removeChannel } from "./channels";

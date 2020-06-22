@@ -23,7 +23,7 @@ import {
 } from "./actions";
 import { bot } from "./bot";
 import { TournamentModel, TournamentDoc } from "./models";
-import { DiscordDeck, DeckNotFoundError } from "./discordDeck";
+import { DiscordDeck, DeckNotFoundError } from "./deck/discordDeck";
 import { defaultOrganisers, defaultPublicChannels, defaultPrivateChannels } from "./config/config.json";
 
 const CHECK_EMOJI = "✅";

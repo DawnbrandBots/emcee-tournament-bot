@@ -1,5 +1,5 @@
 import { TypedDeck, parseURL, toURL } from "ydke";
-import { data } from "./data";
+import { data } from "../data";
 import { enums } from "ygopro-data";
 
 export interface DeckProfile {
@@ -18,7 +18,7 @@ export interface DeckProfile {
 	url: string;
 }
 
-type ProfileCounts = { [name: string]: number };
+export type ProfileCounts = { [name: string]: number };
 
 export class Deck {
 	readonly url: string;
@@ -103,7 +103,7 @@ export class Deck {
 		return ydk;
 	}
 
-	private static increment(obj: ProfileCounts, key: string): void {
+	protected static increment(obj: ProfileCounts, key: string): void {
 		if (key in obj) {
 			obj[key]++;
 		} else {
@@ -234,18 +234,13 @@ export class Deck {
 
 	public async validate(): Promise<string[]> {
 		const errors: string[] = [];
-		if (this.record.main.length < 40) {
-			errors.push(`Main Deck too small! Should be at least 40, is ${this.record.main.length}.`);
-		}
-		if (this.record.main.length > 60) {
-			errors.push(`Main Deck too large! Should be at most 60, is ${this.record.main.length}.`);
-		}
-		if (this.record.extra.length > 15) {
-			errors.push(`Extra Deck too large! Should be at most 15, is ${this.record.extra.length}.`);
-		}
-		if (this.record.side.length > 15) {
-			errors.push(`Side Deck too large! Should be at most 15, is ${this.record.side.length}.`);
-		}
+		errors.push(...this.validateLength());
+		errors.push(...(await this.validateCounts()));
+		return errors;
+	}
+
+	protected async validateCounts(): Promise<string[]> {
+		const errors = [];
 		const nameCounts: ProfileCounts = {};
 		for (const code of this.record.main) {
 			Deck.increment(nameCounts, code.toString());
@@ -277,7 +272,23 @@ export class Deck {
 				errors.push(`Too many copies of ${name}! Should be at most ${count}, is ${nameCounts[code]}.`);
 			}
 		}
+		return errors;
+	}
 
+	protected validateLength(): string[] {
+		const errors = [];
+		if (this.record.main.length < 40) {
+			errors.push(`Main Deck too small! Should be at least 40, is ${this.record.main.length}.`);
+		}
+		if (this.record.main.length > 60) {
+			errors.push(`Main Deck too large! Should be at most 60, is ${this.record.main.length}.`);
+		}
+		if (this.record.extra.length > 15) {
+			errors.push(`Extra Deck too large! Should be at most 15, is ${this.record.extra.length}.`);
+		}
+		if (this.record.side.length > 15) {
+			errors.push(`Side Deck too large! Should be at most 15, is ${this.record.side.length}.`);
+		}
 		return errors;
 	}
 }
