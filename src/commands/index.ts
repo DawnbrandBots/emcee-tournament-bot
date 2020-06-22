@@ -83,3 +83,9 @@ async function submitScore(msg: Message, args: string[]): Promise<void> {
 	}
 	await tournament.submitScore(winner, winnerScore, loserScore, msg.author.id);
 }
+
+async function nextRound(msg: Message, args: string[]): Promise<void> {
+	const [id] = args;
+	const tournament = await getTournamentInterface(id);
+	await tournament.nextRound(msg.author.id);
+}
