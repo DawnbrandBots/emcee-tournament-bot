@@ -116,8 +116,8 @@ export async function removeOrganiser(organiser: DiscordID, challongeId: Tournam
 }
 
 export async function findTournamentByRegisterMessage(
-	channelId: DiscordID,
-	messageId: DiscordID
+	messageId: DiscordID,
+	channelId: DiscordID
 ): Promise<TournamentDoc | null> {
 	return await TournamentModel.findOne({
 		registerMessages: {
@@ -140,7 +140,7 @@ export async function addRegisterMessage(
 
 // Invoke after a registration message gets deleted.
 export async function removeRegisterMessage(messageId: DiscordID, channelId: DiscordID): Promise<boolean> {
-	const tournament = await TournamentModel.findOne({ registerMessages: { message: messageId, channel: channelId } });
+	const tournament = await findTournamentByRegisterMessage(messageId, channelId);
 	if (!tournament) {
 		return false;
 	}
@@ -157,7 +157,7 @@ export async function addPendingParticipant(
 	channelId: DiscordID,
 	user: DiscordID
 ): Promise<boolean> {
-	const tournament = await TournamentModel.findOne({ registerMessages: { message: messageId, channel: channelId } });
+	const tournament = await findTournamentByRegisterMessage(messageId, channelId);
 	if (!tournament) {
 		return false;
 	}

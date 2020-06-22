@@ -303,7 +303,7 @@ bot.on("messageReactionAdd", async (msg, emoji, userID) => {
 	// register pending participant
 	if (emoji.name === CHECK_EMOJI && (await addPendingParticipant(msg.id, msg.channel.id, userID))) {
 		const chan = await bot.getDMChannel(userID);
-		const tournament = await findTournamentByRegisterMessage(msg.channel.id, msg.id);
+		const tournament = await findTournamentByRegisterMessage(msg.id, msg.channel.id);
 		if (!tournament) {
 			// impossible because of addPendingParticipant except in the case of a race condition
 			throw new Error(`User ${userID} added to non-existent tournament!`);
@@ -319,7 +319,7 @@ bot.on("messageReactionRemove", async (msg, emoji, userID) => {
 	// remove pending participant
 	if (emoji.name === CHECK_EMOJI && (await removePendingParticipant(msg.id, msg.channel.id, userID))) {
 		const chan = await bot.getDMChannel(userID);
-		const tournament = await findTournamentByRegisterMessage(msg.channel.id, msg.id);
+		const tournament = await findTournamentByRegisterMessage(msg.id, msg.channel.id);
 		if (!tournament) {
 			// impossible because of removePendingParticipant except in the case of a race condition
 			throw new Error(`User ${userID} removed from non-existent tournament!`);
