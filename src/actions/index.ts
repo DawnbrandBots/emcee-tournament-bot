@@ -161,6 +161,13 @@ export async function nextRound(tournamentId: TournamentID, organizer: DiscordID
 	throw new Error("Not yet implemented!");
 }
 
+// Sets tournament status to completed
+export async function finishTournament(tournamentId: TournamentID, organizer: DiscordID): Promise<void> {
+	const tournament = await getAuthorizedTournament(tournamentId, organizer);
+	tournament.status = "complete";
+	await tournament.save();
+}
+
 // Invoke after a participant's deck is validated and they are registered on Challonge
 export async function confirmParticipant(
 	tournamentId: DiscordID,

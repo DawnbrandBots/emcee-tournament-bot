@@ -11,7 +11,8 @@ import {
 	findTournamentByRegisterMessage,
 	removePendingParticipant,
 	addPendingParticipant,
-	nextRound
+	nextRound,
+	finishTournament
 } from "./actions";
 import { bot } from "./bot";
 import { TournamentModel, TournamentDoc } from "./models";
@@ -226,11 +227,31 @@ export class Tournament {
 		await Promise.all(channels.map(c => this.startRound(c, this.id, round, tournament.name)));
 	}
 
-	private async finishTournament(organiser: string): Promise<void> {
-		throw new Error("Not yet implemented!");
-		// send announcement to channels
-		// call mongo cleanup function
-		// delete tournaments[this.id];
+	private async sendConclusionMessage(channelId: string, url: string, name?: string): Promise<string> {
+		const channel = bot.getChannel(channelId);
+		if (!(channel instanceof GuildTextableChannel)) {
+			throw new Error("Channel " + channelId + " is not a valid text channel");
+		}
+		const role = await this.getRole(channelId);
+		const message =
+			(name || "The tournament") +
+			" has concluded! Thank you all for playing! <@&" +
+			role +
+			">\nResults: https://challonge.com/" +
+			url;
+		const msg = await channel.createMessage(message);
+		return msg.id;
+	}
+
+	public async finishTournament(organiser: string): Promise<void> {
+		if (!isOrganizing(organiser, this.id)) {
+			throw new Error(`Organizer ${organiser} not authorized for tournament ${this.id}`);
+		}
+		const tournament = await this.getTournament();
+		const channels = tournament.discordChannels;
+		await Promise.all(channels.map(c => this.sendConclusionMessage(c, this.id, tournament.name)));
+		await finishTournament(this.id, organiser);
+		delete tournaments[this.id];
 	}
 }
 
