@@ -4,7 +4,7 @@ import fetch from "node-fetch";
 type TournamentType = "single elimination" | "double elimination" | "round robin" | "swiss";
 type RankedBy = "match wins" | "game wins" | "points scored" | "points difference" | "custom";
 
-interface CreateTournamentSettings {
+interface ChallongeTournamentSettings {
 	name?: string;
 	tournament_type?: TournamentType;
 	url?: string;
@@ -198,13 +198,21 @@ class Challonge {
 		this.domain = `https://${user}:${token}@api.challonge.com/v1/`;
 	}
 
-	public async createTournament(settings: CreateTournamentSettings): Promise<CreateTournamentResponse> {
+	public async createTournament(settings: ChallongeTournamentSettings): Promise<CreateTournamentResponse> {
 		const response = await fetch(`${this.domain}tournaments.json`, {
 			method: "POST",
 			body: JSON.stringify({ tournament: settings }),
 			headers: { "Content-Type": "application/json" }
 		});
 		return await response.json();
+	}
+
+	public async updateTournament(tournament: string, settings: ChallongeTournamentSettings): Promise<void> {
+		await fetch(`${this.domain}tournaments/${tournament}.json`, {
+			method: "PUT",
+			body: JSON.stringify({ tournament: settings }),
+			headers: { "Content-Type": "application/json" }
+		});
 	}
 
 	public async showTournament(tournament: string): Promise<CreateTournamentResponse> {
