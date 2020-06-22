@@ -19,7 +19,8 @@ import {
 	UnauthorisedOrganiserError,
 	setTournamentName,
 	setTournamentDescription,
-	getOngoingTournaments
+	getOngoingTournaments,
+	addRegisterMessage
 } from "./actions";
 import { bot } from "./bot";
 import { TournamentModel, TournamentDoc } from "./models";
@@ -183,6 +184,7 @@ export class Tournament {
 			`**New Tournament Open: ${name}**\n${desc}\nClick the ${CHECK_EMOJI} below to sign up!`
 		);
 		await msg.addReaction(CHECK_EMOJI);
+		await addRegisterMessage(msg.id, channelId, this.id);
 		return msg.id;
 	}
 
