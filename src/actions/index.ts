@@ -8,8 +8,8 @@ export async function initTournament(
 	organiser: DiscordID,
 	server: DiscordID,
 	challongeId: TournamentID,
-	name?: string,
-	description?: string
+	name: string,
+	description: string
 ): Promise<void> {
 	const tournament = new TournamentModel({
 		name,
@@ -249,7 +249,7 @@ export async function confirmParticipant(
 	return true;
 }
 
-export async function setTournamentName(challongeId: string, name: string): Promise<string | undefined> {
+export async function setTournamentName(challongeId: string, name: string): Promise<string> {
 	const old = await TournamentModel.findOneAndUpdate({ challongeId }, { name });
 	if (!old) {
 		throw new TournamentNotFoundError(challongeId);
@@ -257,7 +257,7 @@ export async function setTournamentName(challongeId: string, name: string): Prom
 	return old.name;
 }
 
-export async function setTournamentDescription(challongeId: string, description: string): Promise<string | undefined> {
+export async function setTournamentDescription(challongeId: string, description: string): Promise<string> {
 	const old = await TournamentModel.findOneAndUpdate({ challongeId }, { description });
 	if (!old) {
 		throw new TournamentNotFoundError(challongeId);
