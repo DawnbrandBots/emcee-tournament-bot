@@ -113,7 +113,7 @@ export class Tournament {
 		}
 		const tournament = await this.getTournament();
 		const mes = await channel.createMessage(
-			`This channel now displaying announcements for ${tournament.name || this.id}`
+			`This channel now displaying announcements for ${tournament.name} (${this.id})`
 		);
 		await addAnnouncementChannel(channelId, this.id, organiser, isPrivate ? "private" : "public");
 		return mes.id;
@@ -130,25 +130,18 @@ export class Tournament {
 		}
 		const tournament = await this.getTournament();
 		await channel.createMessage(
-			`This channel no longer displaying announcements for ${tournament.name || this.id}`
+			`This channel no longer displaying announcements for ${tournament.name}`
 		);
 	}
 
-	private async openRegistrationInChannel(channelId: string, name?: string, desc?: string): Promise<string> {
+	private async openRegistrationInChannel(channelId: string, name: string, desc: string): Promise<string> {
 		const channel = bot.getChannel(channelId);
 		if (!(channel instanceof TextChannel)) {
 			throw new AssertTextChannelError(channelId);
 		}
-		let message = "**New Tournament Open";
-		if (name) {
-			message += `: ${name}`;
-		}
-		message += "**\n";
-		if (desc) {
-			message += `${desc}\n`;
-		}
-		message += `Click the ${CHECK_EMOJI} below to sign up!`;
-		const msg = await channel.createMessage(message);
+		const msg = await channel.createMessage(
+			`**New Tournament Open: ${name}**\n${desc}\nClick the ${CHECK_EMOJI} below to sign up!`
+		);
 		await msg.addReaction(CHECK_EMOJI);
 		return msg.id;
 	}
@@ -162,15 +155,11 @@ export class Tournament {
 		);
 	}
 
-	private async warnClosedParticipant(participant: string, name?: string): Promise<string> {
+	private async warnClosedParticipant(participant: string, name: string): Promise<string> {
 		const channel = await bot.getDMChannel(participant);
-		let message = "Sorry, the tournament you registered for";
-		if (name) {
-			message += `, ${name},`;
-		}
-		message +=
-			" has started, and you had not submitted a valid decklist, so you have been dropped. If you think this is a mistake, contact the tournament organiser.";
-		const msg = await channel.createMessage(message);
+		const msg = await channel.createMessage(
+			`Sorry, the ${name} tournament you registered for has started, and you had not submitted a valid decklist, so you have been dropped.
+			If you think this is a mistake, contact the tournament organiser.`);
 		return msg.id;
 	}
 
@@ -180,15 +169,13 @@ export class Tournament {
 		await removeRegisterMessage(ids.message, ids.channel);
 	}
 
-	private async startRound(channelId: string, url: string, round: number, name?: string): Promise<string> {
+	private async startRound(channelId: string, url: string, round: number, name: string): Promise<string> {
 		const channel = bot.getChannel(channelId);
 		if (!(channel instanceof GuildTextableChannel)) {
 			throw new AssertTextChannelError(channelId);
 		}
 		const role = await this.getRole(channelId);
-		const message = `Round ${round} of ${
-			name || "the tournament"
-		} has begun! <@&${role}>\nPairings: https://challonge.com/${url}`;
+		const message = `Round ${round} of ${name} has begun! <@&${role}>\nPairings: https://challonge.com/${url}`;
 		const msg = await channel.createMessage(message);
 		return msg.id;
 	}
@@ -263,7 +250,7 @@ export class Tournament {
 	private async sendConclusionMessage(
 		channelId: string,
 		url: string,
-		name?: string,
+		name: string,
 		cancel = false
 	): Promise<string> {
 		const channel = bot.getChannel(channelId);
@@ -271,7 +258,7 @@ export class Tournament {
 			throw new AssertTextChannelError(channelId);
 		}
 		const role = await this.getRole(channelId);
-		const message = `${name || "The tournament"} has ${
+		const message = `${name} has ${
 			cancel ? "been cancelled." : "concluded!"
 		} Thank you all for playing! <@&${role}>\nResults: https://challonge.com/${url}`;
 		const msg = await channel.createMessage(message);
@@ -317,8 +304,8 @@ bot.on("messageReactionAdd", async (msg, emoji, userID) => {
 			throw new MiscInternalError(`User ${userID} added to non-existent tournament!`);
 		}
 		await chan.createMessage(
-			`You have successfully registered for ${tournament.name || "a tournament"}. ` +
-				"Please submit a deck to complete your registration, by uploading a YDK file or sending a message with a YDKE URL."
+			`You have successfully registered for ${tournament.name}.
+			Please submit a deck to complete your registration, by uploading a YDK file or sending a message with a YDKE URL.`
 		);
 	}
 });
@@ -332,7 +319,7 @@ bot.on("messageReactionRemove", async (msg, emoji, userID) => {
 			// impossible because of removePendingParticipant except in the case of a race condition
 			throw new MiscInternalError(`User ${userID} removed from non-existent tournament!`);
 		}
-		await chan.createMessage(`You have successfully dropped from ${tournament.name || "the tournament"}.`);
+		await chan.createMessage(`You have successfully dropped from ${tournament.name}.`);
 	}
 });
 
@@ -355,14 +342,14 @@ async function sendTournamentRegistration(
 	channelId: string,
 	user: string,
 	deck: DiscordDeck,
-	name?: string
+	name: string
 ): Promise<string> {
 	const channel = bot.getChannel(channelId);
 	if (!(channel instanceof GuildTextableChannel)) {
 		throw new AssertTextChannelError(channelId);
 	}
 	const msg = await channel.createMessage(
-		`<@${user}> has signed up${name ? ` for ${name}` : ""} with the following deck.`
+		`<@${user}> has signed up for ${name} with the following deck.`
 	);
 	await deck.sendProfile(msg);
 	return msg.id;
@@ -419,7 +406,7 @@ export async function confirmDeck(msg: Message): Promise<void> {
 			const channels = doc.publicChannels;
 			await Promise.all(channels.map(c => grantTournamentRole(c, msg.author.id, doc.challongeId)));
 			await msg.channel.createMessage(
-				`Congratulations! You have been registered${doc.name ? `in ${doc.name}` : ""} with the following deck.`
+				`Congratulations! You have been registered in ${doc.name} with the following deck.`
 			);
 			await deck.sendProfile(msg);
 			await Promise.all(
