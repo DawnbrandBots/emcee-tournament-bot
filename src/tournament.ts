@@ -360,10 +360,7 @@ async function sendTournamentRegistration(
 	return msg.id;
 }
 
-bot.on("messageCreate", async msg => {
-	if (msg.author.bot) {
-		return;
-	}
+export async function confirmDeck(msg: Message): Promise<void> {
 	if (msg.channel instanceof PrivateChannel) {
 		// confirm participant
 		const docs = await TournamentModel.find({
@@ -429,4 +426,4 @@ bot.on("messageCreate", async msg => {
 			}
 		}
 	}
-});
+}
