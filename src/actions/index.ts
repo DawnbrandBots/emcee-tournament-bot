@@ -37,24 +37,28 @@ async function getAuthorizedTournament(tournamentId: TournamentID, organizer: Di
 export async function addAnnouncementChannel(
 	channel: DiscordID,
 	tournamentId: TournamentID,
-	organizer: DiscordID
+	organizer: DiscordID,
+	kind: "public" | "private" = "public"
 ): Promise<void> {
 	const tournament = await getAuthorizedTournament(tournamentId, organizer);
-	tournament.discordChannels.push(channel);
+	const channels = kind === "public" ? tournament.publicChannels : tournament.privateChannels;
+	channels.push(channel);
 	await tournament.save();
 }
 
 export async function removeAnnouncementChannel(
 	channel: DiscordID,
 	tournamentId: TournamentID,
-	organizer: DiscordID
+	organizer: DiscordID,
+	kind: "public" | "private" = "public"
 ): Promise<boolean> {
 	const tournament = await getAuthorizedTournament(tournamentId, organizer);
-	const i = tournament.discordChannels.indexOf(channel);
+	const channels = kind === "public" ? tournament.publicChannels : tournament.privateChannels;
+	const i = channels.indexOf(channel);
 	if (i < 0) {
 		return false;
 	}
-	tournament.discordChannels.splice(i, 1); // consider $pullAll
+	channels.splice(i, 1); // consider $pullAll
 	await tournament.save();
 	return true;
 }
