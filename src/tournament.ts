@@ -1,5 +1,5 @@
 import { challonge, ChallongeMatch } from "./challonge";
-import { GuildChannel, Message, TextChannel, PrivateChannel, GuildTextableChannel } from "eris";
+import { GuildChannel, Message, TextChannel, PrivateChannel } from "eris";
 import {
 	initTournament,
 	isOrganising,
@@ -212,7 +212,7 @@ export class Tournament {
 
 	private async startRound(channelId: string, url: string, round: number, name: string): Promise<string> {
 		const channel = bot.getChannel(channelId);
-		if (!(channel instanceof GuildTextableChannel)) {
+		if (!(channel instanceof TextChannel)) {
 			throw new AssertTextChannelError(channelId);
 		}
 		const role = await this.getRole(channelId);
@@ -290,7 +290,7 @@ export class Tournament {
 
 	private async sendConclusionMessage(channelId: string, url: string, name: string, cancel = false): Promise<string> {
 		const channel = bot.getChannel(channelId);
-		if (!(channel instanceof GuildTextableChannel)) {
+		if (!(channel instanceof TextChannel)) {
 			throw new AssertTextChannelError(channelId);
 		}
 		const role = await this.getRole(channelId);
@@ -381,7 +381,7 @@ async function sendTournamentRegistration(
 	name: string
 ): Promise<string> {
 	const channel = bot.getChannel(channelId);
-	if (!(channel instanceof GuildTextableChannel)) {
+	if (!(channel instanceof TextChannel)) {
 		throw new AssertTextChannelError(channelId);
 	}
 	const msg = await channel.createMessage(`<@${user}> has signed up for ${name} with the following deck.`);
