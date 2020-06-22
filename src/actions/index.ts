@@ -21,14 +21,39 @@ export async function initTournament(
 	await tournament.save();
 }
 
-// Internal helper
-async function getAuthorizedTournament(challongeId: TournamentID, organiser: DiscordID): Promise<TournamentDoc> {
+export class TournamentNotFoundError extends Error {
+	challongeId: TournamentID;
+
+	constructor(challongeId: TournamentID) {
+		super(`Unknown tournament ${challongeId}`);
+		this.challongeId = challongeId;
+	}
+}
+
+export async function findTournament(challongeId: TournamentID): Promise<TournamentDoc> {
 	const tournament = await TournamentModel.findOne({ challongeId });
 	if (!tournament) {
-		throw new Error(`Unknown tournament ${challongeId}`);
+		throw new TournamentNotFoundError(challongeId);
 	}
+	return tournament;
+}
+
+export class UnauthorizedOrganiserError extends Error {
+	organiser: DiscordID;
+	challongeId: TournamentID;
+
+	constructor(challongeId: TournamentID, organiser: DiscordID) {
+		super(`Organiser ${organiser} not authorized for tournament ${challongeId}`);
+		this.organiser = organiser
+		this.challongeId = challongeId;
+	}
+}
+
+// Internal helper
+async function getAuthorizedTournament(challongeId: TournamentID, organiser: DiscordID): Promise<TournamentDoc> {
+	const tournament = await findTournament(challongeId);
 	if (!tournament.organisers.includes(organiser)) {
-		throw new Error(`Organiser ${organiser} not authorized for tournament ${challongeId}`);
+		throw new UnauthorizedOrganiserError(challongeId, organiser);
 	}
 	return tournament;
 }
@@ -64,18 +89,12 @@ export async function removeAnnouncementChannel(
 
 // Check if a Discord user can perform a Discord action related to a tournament.
 export async function isOrganising(organiser: DiscordID, challongeId: TournamentID): Promise<boolean> {
-	const tournament = await TournamentModel.findOne({ challongeId });
-	if (!tournament) {
-		throw new Error(`Unknown tournament ${challongeId}`);
-	}
+	const tournament = await findTournament(challongeId);
 	return tournament.organisers.includes(organiser);
 }
 
 export async function addOrganiser(organiser: DiscordID, challongeId: TournamentID): Promise<boolean> {
-	const tournament = await TournamentModel.findOne({ challongeId });
-	if (!tournament) {
-		throw new Error(`Unknown tournament ${challongeId}`);
-	}
+	const tournament = await findTournament(challongeId);
 	if (tournament.organisers.includes(organiser)) {
 		return false;
 	}
@@ -85,10 +104,7 @@ export async function addOrganiser(organiser: DiscordID, challongeId: Tournament
 }
 
 export async function removeOrganiser(organiser: DiscordID, challongeId: TournamentID): Promise<boolean> {
-	const tournament = await TournamentModel.findOne({ challongeId });
-	if (!tournament) {
-		throw new Error(`Unknown tournament ${challongeId}`);
-	}
+	const tournament = await findTournament(challongeId);
 	if (tournament.organisers.length < 2 || !tournament.organisers.includes(organiser)) {
 		return false;
 	}
@@ -117,10 +133,7 @@ export async function addRegisterMessage(
 	channelId: DiscordID,
 	challongeId: TournamentID
 ): Promise<void> {
-	const tournament = await TournamentModel.findOne({ challongeId });
-	if (!tournament) {
-		throw new Error(`Unknown tournament ${challongeId}`);
-	}
+	const tournament = await findTournament(challongeId);
 	tournament.registerMessages.push({ message: messageId, channel: channelId });
 	await tournament.save();
 }
