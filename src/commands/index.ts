@@ -60,3 +60,9 @@ async function open(msg: Message, args: string[]): Promise<void> {
 	const tournament = await getTournamentInterface(id);
 	await tournament.openRegistration(msg.author.id);
 }
+
+async function start(msg: Message, args: string[]): Promise<void> {
+	const [id] = args;
+	const tournament = await getTournamentInterface(id);
+	await tournament.start(msg.author.id);
+}
