@@ -103,14 +103,13 @@ export async function removeOrganizer(organizer: DiscordID, tournamentId: Tourna
 export async function findTournamentByRegisterMessage(
 	channelId: DiscordID,
 	messageId: DiscordID
-): Promise<TournamentID | null> {
-	const tournament = await TournamentModel.findOne({
+): Promise<TournamentDoc | null> {
+	return await TournamentModel.findOne({
 		registerMessages: {
 			channel: channelId,
 			message: messageId
 		}
 	});
-	return tournament ? tournament.id : null;
 }
 
 // Invoke after a registration message has been sent to an announcement channel.
