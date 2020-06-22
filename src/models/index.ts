@@ -5,7 +5,13 @@ connect(mongoDbUrl, { useNewUrlParser: true, useUnifiedTopology: true })
 	.then(() => console.log("Connected to MongoDB at", process.env.MONGODB_URL))
 	.catch(console.error);
 
-process.on("SIGINT", () => connection.close());
-process.on("SIGTERM", () => connection.close());
+process.on("SIGINT", () => {
+	connection.close();
+	process.exit(130);
+});
+process.on("SIGTERM", () => {
+	connection.close();
+	process.exit(130);
+});
 
 export * from "./tournament";
