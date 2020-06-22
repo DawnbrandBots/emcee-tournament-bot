@@ -2,6 +2,7 @@ import { expect } from "chai";
 import { describe } from "mocha";
 import { Deck, DeckProfile } from "../deck";
 import { TypedDeck } from "ydke";
+import { HistlanderDeck } from "../deck/histlanderDeck";
 
 const ydk =
 	"#created by AlphaKretin\n#main\n99249638\n99249638\n46659709\n46659709\n46659709\n65367484\n65367484\n65367484\n43147039\n30012506\n30012506\n30012506\n77411244\n77411244\n77411244\n3405259\n3405259\n3405259\n89132148\n39890958\n14558127\n14558127\n14558127\n32807846\n73628505\n12524259\n12524259\n12524259\n24224830\n24224830\n24224830\n80352158\n80352158\n80352158\n66399653\n66399653\n66399653\n10045474\n10045474\n10045474\n#extra\n1561110\n10443957\n10443957\n58069384\n58069384\n73289035\n581014\n21887175\n4280258\n38342335\n2857636\n75452921\n50588353\n83152482\n65741786\n!side\n43147039\n";
@@ -139,5 +140,19 @@ describe("Deck", function () {
 		expect(result).to.contain("Main Deck too large! Should be at most 60, is 61.");
 		expect(result).to.contain("Extra Deck too large! Should be at most 15, is 19.");
 		expect(result).to.contain("Side Deck too large! Should be at most 15, is 16.");
+	});
+});
+
+describe("HistlanderDeck", function () {
+	it("#validate", async function () {
+		const altUrl =
+			"ydke:///j8NBf4/DQX+Pw0FMDoiBDA6IgSJkVIEiZFSBFvA4gNYc/sB!tDPwAbQz8AG0M/ABnzC0BJ8wtATE7EwA!gDVTAw==!";
+		const deck = HistlanderDeck.constructFromUrl(altUrl) as HistlanderDeck;
+		const result = await deck.validate();
+		expect(result).to.contain("Main Deck too small! Should be at least 30, is 9.");
+		expect(result).to.contain("Side Deck too large! Should be at most 0, is 1");
+		expect(result).to.contain("Too many copies of Dark Artist! Should be at most 1, is 2.");
+		expect(result).to.contain("Too many copies of Metalfoes Volflame! Should be at most 1, is 2.");
+		expect(result).to.contain("Too many copies of Shaman of the Tenyi! Should be at most 1, is 2.");
 	});
 });
