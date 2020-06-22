@@ -7,8 +7,11 @@ export async function createTournament(msg: Message, args: string[]): Promise<vo
 	if (name.length === 0 || desc.length === 0) {
 		throw new MiscUserError("You must provide a valid tournament name and description!");
 	}
-	await Tournament.init(name, desc, msg);
-	await msg.channel.createMessage(`Tournament ${name} created!`);
+	const tournament = await Tournament.init(name, desc, msg);
+	const [, doc] = await getTournamentInterface(tournament.id);
+	await msg.channel.createMessage(
+		`Tournament ${name} created! You can find it at https://challonge.com/${doc.challongeId}. For future commands, refer to this tournament by the id \`${doc.challongeId}\``
+	);
 }
 
 export async function updateTournament(msg: Message, args: string[]): Promise<void> {

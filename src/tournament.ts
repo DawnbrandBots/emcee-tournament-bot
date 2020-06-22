@@ -49,7 +49,7 @@ export class MiscUserError extends Error {}
 export class MiscInternalError extends Error {}
 
 export class Tournament {
-	private id: string;
+	readonly id: string;
 	private roles: { [guild: string]: string } = {};
 	constructor(id: string) {
 		this.id = id;
