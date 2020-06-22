@@ -15,7 +15,7 @@ export async function initTournament(
 		name,
 		description,
 		challongeId,
-		organiser,
+		organisers: [organiser],
 		owningDiscordServer: server
 	});
 	await tournament.save();
