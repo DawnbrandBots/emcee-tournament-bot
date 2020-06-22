@@ -41,6 +41,9 @@ export class AssertTextChannelError extends Error {
 	}
 }
 
+export class MiscUserError extends Error {}
+export class MiscInternalError extends Error {}
+
 export class Tournament {
 	private id: string;
 	private roles: { [guild: string]: string } = {};
@@ -50,7 +53,7 @@ export class Tournament {
 
 	public static async init(name: string, description: string, msg: Message): Promise<Tournament> {
 		if (!(msg.channel instanceof GuildChannel)) {
-			throw new Error("Tournaments cannot be constructed in Direct Messages!");
+			throw new MiscUserError("Tournaments cannot be constructed in Direct Messages!");
 		}
 		const tournament = await challonge.createTournament({
 			name,
@@ -123,7 +126,7 @@ export class Tournament {
 			throw new AssertTextChannelError(channelId);
 		}
 		if (!(await removeAnnouncementChannel(channelId, this.id, organiser, isPrivate ? "private" : "public"))) {
-			throw new Error(`Channel ${channel.name} is not a registered announcement channel`);
+			throw new MiscUserError(`Channel ${channel.name} is not a registered announcement channel`);
 		}
 		const tournament = await this.getTournament();
 		await channel.createMessage(
@@ -194,7 +197,7 @@ export class Tournament {
 		await this.verifyOrganiser(organiser);
 		const tournament = await this.getTournament();
 		if (tournament.confirmedParticipants.length < 2) {
-			throw new Error("Cannot start a tournament without at least 2 confirmed participants!");
+			throw new MiscUserError("Cannot start a tournament without at least 2 confirmed participants!");
 		}
 		await challonge.startTournament(this.id, {});
 		const tournData = await challonge.showTournament(this.id);
@@ -217,11 +220,11 @@ export class Tournament {
 		const doc = await this.getTournament();
 		const winner = doc.confirmedParticipants.find(p => p.discord === winnerId);
 		if (!winner) {
-			throw new Error(`Could not find a participant for <@${winnerId}>!`);
+			throw new MiscUserError(`Could not find a participant for <@${winnerId}>!`);
 		}
 		const matches = await challonge.indexMatches(this.id, "open", winner.challongeId);
 		if (matches.length < 1) {
-			throw new Error(`Could not find an unfinished match for <@${winnerId}>!`);
+			throw new MiscUserError(`Could not find an unfinished match for <@${winnerId}>!`);
 		}
 		const match = matches[0]; // if there's more than one something's gone very wack
 		return await challonge.updateMatch(this.id, match.match.id.toString(), {
@@ -287,7 +290,7 @@ export class Tournament {
 	public async removeOrganiser(organiser: string, toRemove: string): Promise<boolean> {
 		await this.verifyOrganiser(organiser);
 		if (organiser === toRemove) {
-			throw new Error("You cannot remove yourself from organising a tournament!");
+			throw new MiscUserError("You cannot remove yourself from organising a tournament!");
 		}
 		return await removeOrganiser(toRemove, this.id);
 	}
@@ -304,7 +307,7 @@ bot.on("messageReactionAdd", async (msg, emoji, userID) => {
 		const tournament = await findTournamentByRegisterMessage(msg.id, msg.channel.id);
 		if (!tournament) {
 			// impossible because of addPendingParticipant except in the case of a race condition
-			throw new Error(`User ${userID} added to non-existent tournament!`);
+			throw new MiscInternalError(`User ${userID} added to non-existent tournament!`);
 		}
 		await chan.createMessage(
 			`You have successfully registered for ${tournament.name || "a tournament"}. ` +
@@ -320,7 +323,7 @@ bot.on("messageReactionRemove", async (msg, emoji, userID) => {
 		const tournament = await findTournamentByRegisterMessage(msg.id, msg.channel.id);
 		if (!tournament) {
 			// impossible because of removePendingParticipant except in the case of a race condition
-			throw new Error(`User ${userID} removed from non-existent tournament!`);
+			throw new MiscInternalError(`User ${userID} removed from non-existent tournament!`);
 		}
 		await chan.createMessage(`You have successfully dropped from ${tournament.name || "the tournament"}.`);
 	}
