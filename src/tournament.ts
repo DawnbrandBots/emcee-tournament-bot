@@ -90,7 +90,7 @@ export class Tournament {
 	}
 
 	public async addChannel(channelId: string, organiser: string, isPrivate = false): Promise<string> {
-		this.verifyOrganiser(organiser);
+		await this.verifyOrganiser(organiser);
 		const channel = bot.getChannel(channelId);
 		if (!(channel instanceof TextChannel)) {
 			throw new Error(`Channel ${channelId} is not a valid text channel`);
@@ -104,7 +104,7 @@ export class Tournament {
 	}
 
 	public async removeChannel(channelId: string, organiser: string, isPrivate = false): Promise<void> {
-		this.verifyOrganiser(organiser);
+		await this.verifyOrganiser(organiser);
 		const channel = bot.getChannel(channelId);
 		if (!(channel instanceof TextChannel)) {
 			throw new Error(`Channel ${channelId} is not a valid text channel`);
@@ -138,7 +138,7 @@ export class Tournament {
 	}
 
 	public async openRegistration(organiser: string): Promise<string[]> {
-		this.verifyOrganiser(organiser);
+		await this.verifyOrganiser(organiser);
 		const tournament = await this.getTournament();
 		const channels = tournament.publicChannels;
 		return await Promise.all(
@@ -178,7 +178,7 @@ export class Tournament {
 	}
 
 	public async start(organiser: string): Promise<string[]> {
-		this.verifyOrganiser(organiser);
+		await this.verifyOrganiser(organiser);
 		const tournament = await this.getTournament();
 		if (tournament.confirmedParticipants.length < 2) {
 			throw new Error("Cannot start a tournament without at least 2 confirmed participants!");
@@ -200,7 +200,7 @@ export class Tournament {
 		loserScore: number,
 		organiser: string
 	): Promise<ChallongeMatch> {
-		this.verifyOrganiser(organiser);
+		await this.verifyOrganiser(organiser);
 		const doc = await this.getTournament();
 		const winner = doc.confirmedParticipants.find(p => p.discord === winnerId);
 		if (!winner) {
@@ -229,7 +229,7 @@ export class Tournament {
 	}
 
 	public async nextRound(organiser: string): Promise<void> {
-		this.verifyOrganiser(organiser);
+		await this.verifyOrganiser(organiser);
 		const matches = await challonge.indexMatches(this.id, "open");
 		await Promise.all(matches.map(m => this.tieMatch(m.match.id)));
 		const round = await nextRound(this.id, organiser);
@@ -258,7 +258,7 @@ export class Tournament {
 	}
 
 	public async finishTournament(organiser: string): Promise<void> {
-		this.verifyOrganiser(organiser);
+		await this.verifyOrganiser(organiser);
 		const tournament = await this.getTournament();
 		const channels = tournament.publicChannels;
 		await Promise.all(channels.map(c => this.sendConclusionMessage(c, this.id, tournament.name)));
@@ -267,12 +267,12 @@ export class Tournament {
 	}
 
 	public async addOrganiser(organiser: string, newOrganiser: string): Promise<boolean> {
-		this.verifyOrganiser(organiser);
+		await this.verifyOrganiser(organiser);
 		return await addOrganiser(newOrganiser, this.id);
 	}
 
 	public async removeOrganiser(organiser: string, toRemove: string): Promise<boolean> {
-		this.verifyOrganiser(organiser);
+		await this.verifyOrganiser(organiser);
 		if (organiser === toRemove) {
 			throw new Error("You cannot remove yourself from organising a tournament!");
 		}
