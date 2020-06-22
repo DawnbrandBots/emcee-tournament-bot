@@ -200,8 +200,24 @@ export class Tournament {
 		winnerScore: number,
 		loserScore: number,
 		organiser: string
-	): Promise<void> {
-		throw new Error("Not yet implemented!");
+	): Promise<ChallongeMatch> {
+		if (!isOrganizing(organiser, this.id)) {
+			throw new Error(`Organizer ${organiser} not authorized for tournament ${this.id}`);
+		}
+		const doc = await this.getTournament();
+		const winner = doc.confirmedParticipants.find(p => p.discord === winnerId);
+		if (!winner) {
+			throw new Error("Could not find a participant for <@" + winnerId + ">!");
+		}
+		const matches = await challonge.indexMatches(this.id, "open", winner.challongeId);
+		if (matches.length < 1) {
+			throw new Error("Could not find an unfinished match for <@" + winnerId + ">!");
+		}
+		const match = matches[0]; // if there's more than one something's gone very wack
+		return await challonge.updateMatch(this.id, match.match.id.toString(), {
+			winner_id: winner.challongeId,
+			scores_csv: winnerScore + "-" + loserScore
+		});
 	}
 
 	private async tieMatch(matchId: number): Promise<ChallongeMatch> {
@@ -215,7 +231,7 @@ export class Tournament {
 		if (!isOrganizing(organiser, this.id)) {
 			throw new Error(`Organizer ${organiser} not authorized for tournament ${this.id}`);
 		}
-		const matches = await challonge.indexMatches(this.id, "pending");
+		const matches = await challonge.indexMatches(this.id, "open");
 		await Promise.all(matches.map(m => this.tieMatch(m.match.id)));
 		const round = await nextRound(this.id, organiser);
 		// if was last round
