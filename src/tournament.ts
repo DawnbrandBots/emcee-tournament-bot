@@ -59,11 +59,22 @@ export class Tournament {
 		if (!(msg.channel instanceof GuildChannel)) {
 			throw new MiscUserError("Tournaments cannot be constructed in Direct Messages!");
 		}
+
+		// generate a URL based on the name, with added numbers to prevent conflicts
+		const baseUrl = name.toLowerCase().replace(/[^a-zA-Z0-9_]/g, "");
+		let candidateUrl = `mc_${baseUrl}`;
+		let i = 0;
+		while (await TournamentModel.findOne({ challongeId: candidateUrl })) {
+			candidateUrl = baseUrl + i;
+			i++;
+		}
+
 		const tournament = await challonge.createTournament({
 			name,
 			description,
 			// eslint-disable-next-line @typescript-eslint/camelcase
-			tournament_type: "swiss"
+			tournament_type: "swiss",
+			url: candidateUrl
 		});
 
 		await initTournament(msg.author.id, msg.channel.guild.id, tournament.tournament.url, name, description);
