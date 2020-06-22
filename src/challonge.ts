@@ -195,11 +195,11 @@ interface UpdateMatchSettings {
 class Challonge {
 	private domain: string;
 	constructor(user: string, token: string) {
-		this.domain = "https://" + user + ":" + token + "@api.challonge.com/v1/";
+		this.domain = `https://${user}:${token}@api.challonge.com/v1/`;
 	}
 
 	public async createTournament(settings: CreateTournamentSettings): Promise<CreateTournamentResponse> {
-		const response = await fetch(this.domain + "tournaments.json", {
+		const response = await fetch(`${this.domain}tournaments.json`, {
 			method: "POST",
 			body: JSON.stringify({ tournament: settings }),
 			headers: { "Content-Type": "application/json" }
@@ -208,7 +208,7 @@ class Challonge {
 	}
 
 	public async startTournament(tournament: string, settings: StartTournamentSettings): Promise<void> {
-		await fetch(this.domain + "tournaments/" + tournament + "/start.json", {
+		await fetch(`${this.domain}tournaments/${tournament}/start.json`, {
 			method: "POST",
 			body: JSON.stringify(settings),
 			headers: { "Content-Type": "application/json" }
@@ -217,7 +217,7 @@ class Challonge {
 	}
 
 	public async finalizeTournament(tournament: string, settings: StartTournamentSettings): Promise<void> {
-		await fetch(this.domain + "tournaments/" + tournament + "/finalize.json", {
+		await fetch(`${this.domain}tournaments/${tournament}/finalize.json`, {
 			method: "POST",
 			body: JSON.stringify(settings),
 			headers: { "Content-Type": "application/json" }
@@ -226,7 +226,7 @@ class Challonge {
 	}
 
 	public async addParticipant(tournament: string, settings: AddParticipantSettings): Promise<AddParticipantReponse> {
-		const response = await fetch(this.domain + "tournaments/" + tournament + "/participants.json", {
+		const response = await fetch(`${this.domain}tournaments/${tournament}/participants.json`, {
 			method: "POST",
 			body: JSON.stringify({ participant: settings }),
 			headers: { "Content-Type": "application/json" }
@@ -239,14 +239,14 @@ class Challonge {
 		state?: ChallongeMatchState,
 		participantId?: number
 	): Promise<IndexMatchResponse> {
-		let url = this.domain + "tournaments/" + tournament + "/matches.json";
+		let url = `${this.domain}tournaments/${tournament}/matches.json`;
 		if (state) {
-			url += "?state=" + state;
+			url += `?state=${state}`;
 			if (participantId) {
-				url += "&participant_id=" + participantId.toString();
+				url += `&participant_id=${participantId.toString()}`;
 			}
 		} else if (participantId) {
-			url += "?participant_id=" + participantId.toString();
+			url += `?participant_id=${participantId.toString()}`;
 		}
 		const response = await fetch(url, {
 			method: "GET",
@@ -260,7 +260,7 @@ class Challonge {
 		match: string,
 		settings: UpdateMatchSettings
 	): Promise<ChallongeMatch> {
-		const response = await fetch(this.domain + "tournaments/" + tournament + "/matches/" + match + ".json", {
+		const response = await fetch(`${this.domain}tournaments/${tournament}/matches/${match}.json`, {
 			method: "PUT",
 			body: JSON.stringify({ match: settings }),
 			headers: { "Content-Type": "application/json" }

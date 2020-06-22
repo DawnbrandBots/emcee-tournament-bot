@@ -63,13 +63,13 @@ export class Tournament {
 	public async getRole(channelId: string): Promise<string> {
 		const channel = bot.getChannel(channelId);
 		if (!(channel instanceof GuildChannel)) {
-			throw new Error("Channel " + channelId + " is not a valid text channel");
+			throw new Error(`Channel ${channelId} is not a valid text channel`);
 		}
 		const guild = channel.guild;
 		if (guild.id in this.roles) {
 			return this.roles[guild.id];
 		}
-		const name = "MC-Tournament-" + this.id;
+		const name = `MC-Tournament-${this.id}`;
 		const role = guild.roles.find(r => r.name === name);
 		if (role) {
 			this.roles[guild.id] = role.id;
@@ -92,11 +92,11 @@ export class Tournament {
 		}
 		const channel = bot.getChannel(channelId);
 		if (!(channel instanceof TextChannel)) {
-			throw new Error("Channel " + channelId + " is not a valid text channel");
+			throw new Error(`Channel ${channelId} is not a valid text channel`);
 		}
 		const tournament = await this.getTournament();
 		const mes = await channel.createMessage(
-			"This channel now displaying announcements for " + (tournament.name || this.id)
+			`This channel now displaying announcements for ${tournament.name || this.id}`
 		);
 		await addAnnouncementChannel(channelId, this.id, organiser, isPrivate ? "private" : "public");
 		return mes.id;
@@ -108,31 +108,31 @@ export class Tournament {
 		}
 		const channel = bot.getChannel(channelId);
 		if (!(channel instanceof TextChannel)) {
-			throw new Error("Channel " + channelId + " is not a valid text channel");
+			throw new Error(`Channel ${channelId} is not a valid text channel`);
 		}
 		if (!(await removeAnnouncementChannel(channelId, this.id, organiser, isPrivate ? "private" : "public"))) {
-			throw new Error("Channel " + channel.name + "is not a registered announcement channel");
+			throw new Error(`Channel ${channel.name}is not a registered announcement channel`);
 		}
 		const tournament = await this.getTournament();
 		await channel.createMessage(
-			"This channel no longer displaying announcements for " + (tournament.name || this.id)
+			`This channel no longer displaying announcements for ${tournament.name || this.id}`
 		);
 	}
 
 	private async openRegistrationInChannel(channelId: string, name?: string, desc?: string): Promise<string> {
 		const channel = bot.getChannel(channelId);
 		if (!(channel instanceof TextChannel)) {
-			throw new Error("Channel " + channelId + " is not a valid text channel");
+			throw new Error(`Channel ${channelId} is not a valid text channel`);
 		}
 		let message = "**New Tournament Open";
 		if (name) {
-			message += ": " + name;
+			message += `: ${name}`;
 		}
 		message += "**\n";
 		if (desc) {
-			message += desc + "\n";
+			message += `${desc}\n`;
 		}
-		message += "Click the " + CHECK_EMOJI + " below to sign up!";
+		message += `Click the ${CHECK_EMOJI} below to sign up!`;
 		const msg = await channel.createMessage(message);
 		await msg.addReaction(CHECK_EMOJI);
 		return msg.id;
@@ -153,7 +153,7 @@ export class Tournament {
 		const channel = await bot.getDMChannel(participant);
 		let message = "Sorry, the tournament you registered for";
 		if (name) {
-			message += ", " + name + ",";
+			message += `, ${name},`;
 		}
 		message +=
 			" has started, and you had not submitted a valid decklist, so you have been dropped. If you think this is a mistake, contact the tournament organiser.";
@@ -170,18 +170,12 @@ export class Tournament {
 	private async startRound(channelId: string, url: string, round: number, name?: string): Promise<string> {
 		const channel = bot.getChannel(channelId);
 		if (!(channel instanceof GuildTextableChannel)) {
-			throw new Error("Channel " + channelId + " is not a valid text channel");
+			throw new Error(`Channel ${channelId} is not a valid text channel`);
 		}
 		const role = await this.getRole(channelId);
-		const message =
-			"Round " +
-			round +
-			" of " +
-			(name || "the tournament") +
-			" has begun! <@&" +
-			role +
-			">\nPairings: https://challonge.com/" +
-			url;
+		const message = `Round ${round} of ${
+			name || "the tournament"
+		} has begun! <@&${role}>\nPairings: https://challonge.com/${url}`;
 		const msg = await channel.createMessage(message);
 		return msg.id;
 	}
@@ -216,18 +210,18 @@ export class Tournament {
 		const doc = await this.getTournament();
 		const winner = doc.confirmedParticipants.find(p => p.discord === winnerId);
 		if (!winner) {
-			throw new Error("Could not find a participant for <@" + winnerId + ">!");
+			throw new Error(`Could not find a participant for <@${winnerId}>!`);
 		}
 		const matches = await challonge.indexMatches(this.id, "open", winner.challongeId);
 		if (matches.length < 1) {
-			throw new Error("Could not find an unfinished match for <@" + winnerId + ">!");
+			throw new Error(`Could not find an unfinished match for <@${winnerId}>!`);
 		}
 		const match = matches[0]; // if there's more than one something's gone very wack
 		return await challonge.updateMatch(this.id, match.match.id.toString(), {
 			// eslint-disable-next-line @typescript-eslint/camelcase
 			winner_id: winner.challongeId,
 			// eslint-disable-next-line @typescript-eslint/camelcase
-			scores_csv: winnerScore + "-" + loserScore
+			scores_csv: `${winnerScore}-${loserScore}`
 		});
 	}
 
@@ -259,15 +253,12 @@ export class Tournament {
 	private async sendConclusionMessage(channelId: string, url: string, name?: string): Promise<string> {
 		const channel = bot.getChannel(channelId);
 		if (!(channel instanceof GuildTextableChannel)) {
-			throw new Error("Channel " + channelId + " is not a valid text channel");
+			throw new Error(`Channel ${channelId} is not a valid text channel`);
 		}
 		const role = await this.getRole(channelId);
-		const message =
-			(name || "The tournament") +
-			" has concluded! Thank you all for playing! <@&" +
-			role +
-			">\nResults: https://challonge.com/" +
-			url;
+		const message = `${
+			name || "The tournament"
+		} has concluded! Thank you all for playing! <@&${role}>\nResults: https://challonge.com/${url}`;
 		const msg = await channel.createMessage(message);
 		const roleMembers = channel.guild.members.filter(m => m.roles.includes(role));
 		await Promise.all(roleMembers.map(m => m.removeRole(role, "Tournament concluded")));
@@ -317,7 +308,7 @@ bot.on("messageReactionAdd", async (msg, emoji, userID) => {
 		}
 		await chan.createMessage(
 			`You have successfully registered for ${tournament.name || "a tournament"}. ` +
-			"Please submit a deck to complete your registration, by uploading a YDK file or sending a message with a YDKE URL."
+				"Please submit a deck to complete your registration, by uploading a YDK file or sending a message with a YDKE URL."
 		);
 	}
 });
@@ -337,7 +328,7 @@ bot.on("messageReactionRemove", async (msg, emoji, userID) => {
 async function grantTournamentRole(channelId: string, user: string, tournamentId: string): Promise<boolean> {
 	const channel = bot.getChannel(channelId);
 	if (!(channel instanceof GuildChannel)) {
-		throw new Error("Channel " + channelId + " is not a valid text channel");
+		throw new Error(`Channel ${channelId} is not a valid text channel`);
 	}
 	const member = channel.guild.members.get(user);
 	if (!member) {
@@ -357,10 +348,10 @@ async function sendTournamentRegistration(
 ): Promise<string> {
 	const channel = bot.getChannel(channelId);
 	if (!(channel instanceof GuildTextableChannel)) {
-		throw new Error("Channel " + channelId + " is not a valid text channel");
+		throw new Error(`Channel ${channelId} is not a valid text channel`);
 	}
 	const msg = await channel.createMessage(
-		"<@" + user + "> has signed up" + (name ? " for " + name : "") + " with the following deck."
+		`<@${user}> has signed up${name ? ` for ${name}` : ""} with the following deck.`
 	);
 	await deck.sendProfile(msg);
 	return msg.id;
@@ -388,8 +379,9 @@ bot.on("messageCreate", async msg => {
 		}
 		if (docs.length > 1) {
 			await msg.channel.createMessage(
-				"You are registering in multiple tournaments. Please register in one at a time by unchecking the reaction on all others.\n" +
-					docs.map(t => t.name || t.challongeId).join("\n")
+				`You are registering in multiple tournaments. Please register in one at a time by unchecking the reaction on all others.\n${docs
+					.map(t => t.name || t.challongeId)
+					.join("\n")}`
 			);
 			return;
 		}
@@ -406,7 +398,7 @@ bot.on("messageCreate", async msg => {
 				return;
 			}
 			const challongeUser = await challonge.addParticipant(doc.challongeId, {
-				name: msg.author.username + "#" + msg.author.discriminator,
+				name: `${msg.author.username}#${msg.author.discriminator}`,
 				misc: msg.author.id
 			});
 			await confirmParticipant(
@@ -420,9 +412,7 @@ bot.on("messageCreate", async msg => {
 			const channels = doc.publicChannels;
 			await Promise.all(channels.map(c => grantTournamentRole(c, msg.author.id, doc.challongeId)));
 			await msg.channel.createMessage(
-				"Congratulations! You have been registered" +
-					(doc.name ? "in " + doc.name : "") +
-					" with the following deck."
+				`Congratulations! You have been registered${doc.name ? `in ${doc.name}` : ""} with the following deck.`
 			);
 			await deck.sendProfile(msg);
 			await Promise.all(

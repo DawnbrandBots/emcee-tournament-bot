@@ -49,21 +49,21 @@ export class DiscordDeck extends Deck {
 		const title = "Contents of your deck:\n";
 		const mainCount =
 			profile.typeCounts.main.monster + profile.typeCounts.main.spell + profile.typeCounts.main.trap;
-		let mainHeader = "Main Deck (" + mainCount + " cards - ";
+		let mainHeader = `Main Deck (${mainCount} cards - `;
 		const mainHeaderParts: string[] = [];
 		if (profile.typeCounts.main.monster > 0) {
-			mainHeaderParts.push(profile.typeCounts.main.monster + " Monsters");
+			mainHeaderParts.push(`${profile.typeCounts.main.monster} Monsters`);
 		}
 		if (profile.typeCounts.main.spell > 0) {
-			mainHeaderParts.push(profile.typeCounts.main.spell + " Spells");
+			mainHeaderParts.push(`${profile.typeCounts.main.spell} Spells`);
 		}
 		if (profile.typeCounts.main.trap > 0) {
-			mainHeaderParts.push(profile.typeCounts.main.trap + " Traps");
+			mainHeaderParts.push(`${profile.typeCounts.main.trap} Traps`);
 		}
-		mainHeader += mainHeaderParts.join(", ") + ")";
+		mainHeader += `${mainHeaderParts.join(", ")})`;
 		let mainBody = "";
 		for (const name in profile.nameCounts.main) {
-			mainBody += profile.nameCounts.main[name] + " " + name + "\n";
+			mainBody += `${profile.nameCounts.main[name]} ${name}\n`;
 		}
 
 		const extraCount =
@@ -71,43 +71,43 @@ export class DiscordDeck extends Deck {
 			profile.typeCounts.extra.synchro +
 			profile.typeCounts.extra.xyz +
 			profile.typeCounts.extra.link;
-		let extraHeader = "Extra Deck (" + extraCount + " cards - ";
+		let extraHeader = `Extra Deck (${extraCount} cards - `;
 		const extraHeaderParts: string[] = [];
 		if (profile.typeCounts.extra.fusion > 0) {
-			extraHeaderParts.push(profile.typeCounts.extra.fusion + " Fusion");
+			extraHeaderParts.push(`${profile.typeCounts.extra.fusion} Fusion`);
 		}
 		if (profile.typeCounts.extra.synchro > 0) {
-			extraHeaderParts.push(profile.typeCounts.extra.synchro + " Synchro");
+			extraHeaderParts.push(`${profile.typeCounts.extra.synchro} Synchro`);
 		}
 		if (profile.typeCounts.extra.xyz > 0) {
-			extraHeaderParts.push(profile.typeCounts.extra.xyz + " Xyz");
+			extraHeaderParts.push(`${profile.typeCounts.extra.xyz} Xyz`);
 		}
 		if (profile.typeCounts.extra.link > 0) {
-			extraHeaderParts.push(profile.typeCounts.extra.link + " Link");
+			extraHeaderParts.push(`${profile.typeCounts.extra.link} Link`);
 		}
-		extraHeader += extraHeaderParts.join(", ") + ")";
+		extraHeader += `${extraHeaderParts.join(", ")})`;
 		let extraBody = "";
 		for (const name in profile.nameCounts.extra) {
-			extraBody += profile.nameCounts.extra[name] + " " + name + "\n";
+			extraBody += `${profile.nameCounts.extra[name]} ${name}\n`;
 		}
 
 		const sideCount =
 			profile.typeCounts.side.monster + profile.typeCounts.side.spell + profile.typeCounts.side.trap;
-		let sideHeader = "Side Deck (" + sideCount + " cards - ";
+		let sideHeader = `Side Deck (${sideCount} cards - `;
 		const sideHeaderParts: string[] = [];
 		if (profile.typeCounts.side.monster > 0) {
-			sideHeaderParts.push(profile.typeCounts.side.monster + " Monsters");
+			sideHeaderParts.push(`${profile.typeCounts.side.monster} Monsters`);
 		}
 		if (profile.typeCounts.main.spell > 0) {
-			sideHeaderParts.push(profile.typeCounts.side.spell + " Spells");
+			sideHeaderParts.push(`${profile.typeCounts.side.spell} Spells`);
 		}
 		if (profile.typeCounts.main.trap > 0) {
-			sideHeaderParts.push(profile.typeCounts.side.trap + " Traps");
+			sideHeaderParts.push(`${profile.typeCounts.side.trap} Traps`);
 		}
-		sideHeader += sideHeaderParts.join(", ") + ")";
+		sideHeader += `${sideHeaderParts.join(", ")})`;
 		let sideBody = "";
 		for (const name in profile.nameCounts.side) {
-			sideBody += profile.nameCounts.side[name] + " " + name + "\n";
+			sideBody += `${profile.nameCounts.side[name]} ${name}\n`;
 		}
 		const errors = await this.validate();
 
@@ -143,7 +143,7 @@ export class DiscordDeck extends Deck {
 		}
 		const file: MessageFile = {
 			file: profile.ydk,
-			name: msg.author.username + msg.author.discriminator + ".ydk"
+			name: `${msg.author.username + msg.author.discriminator}.ydk`
 		};
 		return await msg.channel.createMessage(out, file);
 	}

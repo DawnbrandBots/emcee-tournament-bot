@@ -41,7 +41,7 @@ export const TournamentSchema = new Schema({
 	registerMessages: [
 		{
 			channel: { type: String, required: true },
-			message: { type: String, required: true },
+			message: { type: String, required: true }
 		}
 	],
 	status: {
@@ -64,7 +64,7 @@ export const TournamentSchema = new Schema({
 	],
 	pendingParticipants: { type: [String], required: true, default: [] },
 	currentRound: { type: Number, required: true, default: 0 },
-	totalRounds: { type: Number, required: true, default: 0 },
+	totalRounds: { type: Number, required: true, default: 0 }
 });
 
 export const TournamentModel = model<TournamentDoc>("Tournament", TournamentSchema);

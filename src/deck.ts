@@ -90,15 +90,15 @@ export class Deck {
 	private static recordToYdk(record: TypedDeck): string {
 		let ydk = "#created by Emcee bot\n#main\n";
 		for (const code of record.main) {
-			ydk += code + "\n";
+			ydk += `${code}\n`;
 		}
 		ydk += "#extra\n";
 		for (const code of record.extra) {
-			ydk += code + "\n";
+			ydk += `${code}\n`;
 		}
 		ydk += "!side\n";
 		for (const code of record.side) {
-			ydk += code + "\n";
+			ydk += `${code}\n`;
 		}
 		return ydk;
 	}
@@ -235,16 +235,16 @@ export class Deck {
 	public async validate(): Promise<string[]> {
 		const errors: string[] = [];
 		if (this.record.main.length < 40) {
-			errors.push("Main Deck too small! Should be at least 40, is " + this.record.main.length + ".");
+			errors.push(`Main Deck too small! Should be at least 40, is ${this.record.main.length}.`);
 		}
 		if (this.record.main.length > 60) {
-			errors.push("Main Deck too large! Should be at most 60, is " + this.record.main.length + ".");
+			errors.push(`Main Deck too large! Should be at most 60, is ${this.record.main.length}.`);
 		}
 		if (this.record.extra.length > 15) {
-			errors.push("Extra Deck too large! Should be at most 15, is " + this.record.extra.length + ".");
+			errors.push(`Extra Deck too large! Should be at most 15, is ${this.record.extra.length}.`);
 		}
 		if (this.record.side.length > 15) {
-			errors.push("Side Deck too large! Should be at most 15, is " + this.record.side.length + ".");
+			errors.push(`Side Deck too large! Should be at most 15, is ${this.record.side.length}.`);
 		}
 		const nameCounts: ProfileCounts = {};
 		for (const code of this.record.main) {
@@ -274,9 +274,7 @@ export class Deck {
 				} else {
 					name = code;
 				}
-				errors.push(
-					"Too many copies of " + name + "! Should be at most " + count + ", is " + nameCounts[code] + "."
-				);
+				errors.push(`Too many copies of ${name}! Should be at most ${count}, is ${nameCounts[code]}.`);
 			}
 		}
 
