@@ -28,6 +28,15 @@ const tournaments: {
 	[id: string]: Tournament;
 } = {};
 
+export class AssertTextChannelError extends Error {
+	channelId: string;
+
+	constructor(channelId: string) {
+		super(`Channel ${channelId} is not a valid text channel`);
+		this.channelId = channelId;
+	}
+}
+
 export class Tournament {
 	private id: string;
 	private roles: { [guild: string]: string } = {};
@@ -66,7 +75,7 @@ export class Tournament {
 	public async getRole(channelId: string): Promise<string> {
 		const channel = bot.getChannel(channelId);
 		if (!(channel instanceof GuildChannel)) {
-			throw new Error(`Channel ${channelId} is not a valid text channel`);
+			throw new AssertTextChannelError(channelId);
 		}
 		const guild = channel.guild;
 		if (guild.id in this.roles) {
@@ -93,7 +102,7 @@ export class Tournament {
 		await this.verifyOrganiser(organiser);
 		const channel = bot.getChannel(channelId);
 		if (!(channel instanceof TextChannel)) {
-			throw new Error(`Channel ${channelId} is not a valid text channel`);
+			throw new AssertTextChannelError(channelId);
 		}
 		const tournament = await this.getTournament();
 		const mes = await channel.createMessage(
@@ -107,10 +116,10 @@ export class Tournament {
 		await this.verifyOrganiser(organiser);
 		const channel = bot.getChannel(channelId);
 		if (!(channel instanceof TextChannel)) {
-			throw new Error(`Channel ${channelId} is not a valid text channel`);
+			throw new AssertTextChannelError(channelId);
 		}
 		if (!(await removeAnnouncementChannel(channelId, this.id, organiser, isPrivate ? "private" : "public"))) {
-			throw new Error(`Channel ${channel.name}is not a registered announcement channel`);
+			throw new Error(`Channel ${channel.name} is not a registered announcement channel`);
 		}
 		const tournament = await this.getTournament();
 		await channel.createMessage(
@@ -121,7 +130,7 @@ export class Tournament {
 	private async openRegistrationInChannel(channelId: string, name?: string, desc?: string): Promise<string> {
 		const channel = bot.getChannel(channelId);
 		if (!(channel instanceof TextChannel)) {
-			throw new Error(`Channel ${channelId} is not a valid text channel`);
+			throw new AssertTextChannelError(channelId);
 		}
 		let message = "**New Tournament Open";
 		if (name) {
@@ -167,7 +176,7 @@ export class Tournament {
 	private async startRound(channelId: string, url: string, round: number, name?: string): Promise<string> {
 		const channel = bot.getChannel(channelId);
 		if (!(channel instanceof GuildTextableChannel)) {
-			throw new Error(`Channel ${channelId} is not a valid text channel`);
+			throw new AssertTextChannelError(channelId);
 		}
 		const role = await this.getRole(channelId);
 		const message = `Round ${round} of ${
@@ -245,7 +254,7 @@ export class Tournament {
 	private async sendConclusionMessage(channelId: string, url: string, name?: string): Promise<string> {
 		const channel = bot.getChannel(channelId);
 		if (!(channel instanceof GuildTextableChannel)) {
-			throw new Error(`Channel ${channelId} is not a valid text channel`);
+			throw new AssertTextChannelError(channelId);
 		}
 		const role = await this.getRole(channelId);
 		const message = `${
@@ -316,7 +325,7 @@ bot.on("messageReactionRemove", async (msg, emoji, userID) => {
 async function grantTournamentRole(channelId: string, user: string, tournamentId: string): Promise<boolean> {
 	const channel = bot.getChannel(channelId);
 	if (!(channel instanceof GuildChannel)) {
-		throw new Error(`Channel ${channelId} is not a valid text channel`);
+		throw new AssertTextChannelError(channelId);
 	}
 	const member = channel.guild.members.get(user);
 	if (!member) {
@@ -336,7 +345,7 @@ async function sendTournamentRegistration(
 ): Promise<string> {
 	const channel = bot.getChannel(channelId);
 	if (!(channel instanceof GuildTextableChannel)) {
-		throw new Error(`Channel ${channelId} is not a valid text channel`);
+		throw new AssertTextChannelError(channelId);
 	}
 	const msg = await channel.createMessage(
 		`<@${user}> has signed up${name ? ` for ${name}` : ""} with the following deck.`
