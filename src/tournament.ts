@@ -24,6 +24,7 @@ import {
 import { bot } from "./bot";
 import { TournamentModel, TournamentDoc } from "./models";
 import { DiscordDeck, DeckNotFoundError } from "./discordDeck";
+import { defaultOrganisers, defaultPublicChannels, defaultPrivateChannels } from "./config/config.json";
 
 const CHECK_EMOJI = "✅";
 
@@ -67,8 +68,21 @@ export class Tournament {
 
 		await initTournament(msg.author.id, msg.channel.guild.id, tournament.tournament.url, name, description);
 
-		const tourn = new Tournament(tournament.tournament.id.toString());
+		const tourn = new Tournament(tournament.tournament.url);
 		tournaments[tourn.id] = tourn;
+
+		if (defaultOrganisers && defaultOrganisers.length > 0) {
+			await Promise.all(defaultOrganisers.map(o => tourn.addOrganiser(msg.author.id, o)));
+		}
+
+		if (defaultPublicChannels && defaultPublicChannels.length > 0) {
+			await Promise.all(defaultPublicChannels.map(c => tourn.addChannel(c, msg.author.id)));
+		}
+
+		if (defaultPrivateChannels && defaultPrivateChannels.length > 0) {
+			await Promise.all(defaultPrivateChannels.map(c => tourn.addChannel(c, msg.author.id, true)));
+		}
+
 		return tourn;
 	}
 
