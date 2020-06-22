@@ -258,26 +258,31 @@ export class Tournament {
 		await Promise.all(channels.map(c => this.startRound(c, this.id, round, tournament.name)));
 	}
 
-	private async sendConclusionMessage(channelId: string, url: string, name?: string): Promise<string> {
+	private async sendConclusionMessage(
+		channelId: string,
+		url: string,
+		name?: string,
+		cancel = false
+	): Promise<string> {
 		const channel = bot.getChannel(channelId);
 		if (!(channel instanceof GuildTextableChannel)) {
 			throw new AssertTextChannelError(channelId);
 		}
 		const role = await this.getRole(channelId);
-		const message = `${
-			name || "The tournament"
-		} has concluded! Thank you all for playing! <@&${role}>\nResults: https://challonge.com/${url}`;
+		const message = `${name || "The tournament"} has ${
+			cancel ? "been cancelled." : "concluded!"
+		} Thank you all for playing! <@&${role}>\nResults: https://challonge.com/${url}`;
 		const msg = await channel.createMessage(message);
 		const roleMembers = channel.guild.members.filter(m => m.roles.includes(role));
 		await Promise.all(roleMembers.map(m => m.removeRole(role, "Tournament concluded")));
 		return msg.id;
 	}
 
-	public async finishTournament(organiser: string): Promise<void> {
+	public async finishTournament(organiser: string, cancel = false): Promise<void> {
 		await this.verifyOrganiser(organiser);
 		const tournament = await this.getTournament();
 		const channels = tournament.publicChannels;
-		await Promise.all(channels.map(c => this.sendConclusionMessage(c, this.id, tournament.name)));
+		await Promise.all(channels.map(c => this.sendConclusionMessage(c, this.id, tournament.name, cancel)));
 		await finishTournament(this.id, organiser);
 		delete tournaments[this.id];
 	}

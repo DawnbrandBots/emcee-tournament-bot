@@ -98,3 +98,9 @@ async function nextRound(msg: Message, args: string[]): Promise<void> {
 	const tournament = await getTournamentInterface(id);
 	await tournament.nextRound(msg.author.id);
 }
+
+async function cancelTournament(msg: Message, args: string[]): Promise<void> {
+	const [id] = args;
+	const tournament = await getTournamentInterface(id);
+	await tournament.finishTournament(msg.author.id, true);
+}
