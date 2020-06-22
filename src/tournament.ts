@@ -18,7 +18,7 @@ import {
 } from "./actions";
 import { bot } from "./bot";
 import { TournamentModel, TournamentDoc } from "./models";
-import { DiscordDeck } from "./discordDeck";
+import { DiscordDeck, DeckNotFoundError } from "./discordDeck";
 
 const CHECK_EMOJI = "✅";
 
@@ -371,7 +371,7 @@ export async function confirmDeck(msg: Message): Promise<void> {
 				await DiscordDeck.sendProfile(msg);
 			} catch (e) {
 				// ignore "no deck" message
-				if (e.message !== "Must provide either attached `.ydk` file or valid `ydke://` URL!") {
+				if (!(e instanceof DeckNotFoundError)) {
 					throw e;
 				}
 			}
@@ -418,7 +418,7 @@ export async function confirmDeck(msg: Message): Promise<void> {
 				doc.privateChannels.map(c => sendTournamentRegistration(c, msg.author.id, deck, doc.name))
 			);
 		} catch (e) {
-			if (e.message === "Must provide either attached `.ydk` file or valid `ydke://` URL!") {
+			if (e instanceof DeckNotFoundError) {
 				await msg.channel.createMessage(e.message);
 			} else {
 				throw e;
