@@ -38,12 +38,12 @@ export async function findTournament(challongeId: TournamentID): Promise<Tournam
 	return tournament;
 }
 
-export class UnauthorizedOrganiserError extends Error {
+export class UnauthorisedOrganiserError extends Error {
 	organiser: DiscordID;
 	challongeId: TournamentID;
 
-	constructor(challongeId: TournamentID, organiser: DiscordID) {
-		super(`Organiser ${organiser} not authorized for tournament ${challongeId}`);
+	constructor(organiser: DiscordID, challongeId: TournamentID) {
+		super(`Organiser ${organiser} not authorised for tournament ${challongeId}`);
 		this.organiser = organiser
 		this.challongeId = challongeId;
 	}
@@ -53,7 +53,7 @@ export class UnauthorizedOrganiserError extends Error {
 async function getAuthorizedTournament(challongeId: TournamentID, organiser: DiscordID): Promise<TournamentDoc> {
 	const tournament = await findTournament(challongeId);
 	if (!tournament.organisers.includes(organiser)) {
-		throw new UnauthorizedOrganiserError(challongeId, organiser);
+		throw new UnauthorisedOrganiserError(organiser, challongeId);
 	}
 	return tournament;
 }
