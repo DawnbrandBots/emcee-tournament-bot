@@ -1,5 +1,5 @@
 import { challonge, ChallongeMatch } from "./challonge";
-import { GuildChannel, Message, TextChannel, PrivateChannel, GuildTextableChannel, User } from "eris";
+import { GuildChannel, Message, TextChannel, PrivateChannel, GuildTextableChannel } from "eris";
 import {
 	initTournament,
 	isOrganizing,
@@ -40,6 +40,7 @@ export class Tournament {
 		const tournament = await challonge.createTournament({
 			name,
 			description,
+			// eslint-disable-next-line @typescript-eslint/camelcase
 			tournament_type: "swiss"
 		});
 
@@ -217,14 +218,18 @@ export class Tournament {
 		}
 		const match = matches[0]; // if there's more than one something's gone very wack
 		return await challonge.updateMatch(this.id, match.match.id.toString(), {
+			// eslint-disable-next-line @typescript-eslint/camelcase
 			winner_id: winner.challongeId,
+			// eslint-disable-next-line @typescript-eslint/camelcase
 			scores_csv: winnerScore + "-" + loserScore
 		});
 	}
 
 	private async tieMatch(matchId: number): Promise<ChallongeMatch> {
 		return await challonge.updateMatch(this.id, matchId.toString(), {
+			// eslint-disable-next-line @typescript-eslint/camelcase
 			winner_id: "tie",
+			// eslint-disable-next-line @typescript-eslint/camelcase
 			scores_csv: "0-0"
 		});
 	}
