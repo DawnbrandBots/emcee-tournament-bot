@@ -39,8 +39,9 @@ export async function parseCommand(msg: Message): Promise<void> {
 		return;
 	}
 	const terms = msg.content.split(" ");
-	const cmdName = terms.splice(0)[0].slice(prefix.length).toLowerCase();
+	const cmdName = terms[0].slice(prefix.length).toLowerCase();
 	const args = terms
+		.slice(1)
 		.join(" ")
 		.split("|")
 		.map(s => s.trim());
