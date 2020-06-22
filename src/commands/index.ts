@@ -1,7 +1,16 @@
 import { Message, GuildTextableChannel } from "eris";
-import { Tournament, getTournament, AssertTextChannelError, MiscUserError } from "../tournament";
-import { findTournament, TournamentNotFoundError } from "../actions";
+import { Tournament, getTournament, AssertTextChannelError, MiscUserError, MiscInternalError } from "../tournament";
+import { findTournament, TournamentNotFoundError, UnauthorisedOrganiserError } from "../actions";
 import { bot } from "../bot";
+import { DeckNotFoundError } from "../discordDeck";
+
+type UserError =
+	| MiscUserError
+	| DeckNotFoundError
+	| UnauthorisedOrganiserError
+	| TournamentNotFoundError
+	| AssertTextChannelError;
+type InternalError = MiscInternalError;
 
 export async function parseCommand(msg: Message): Promise<void> {
 	// const args = content.split("|")
