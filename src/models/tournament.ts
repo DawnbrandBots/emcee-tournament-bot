@@ -26,7 +26,8 @@ export interface TournamentDoc extends Document {
 		};
 	}[];
 	pendingParticipants: DiscordID[];
-
+	currentRound: number;
+	totalRounds: number;
 }
 
 export const TournamentSchema = new Schema({
@@ -61,7 +62,9 @@ export const TournamentSchema = new Schema({
 			}
 		}
 	],
-	pendingParticipants: { type: [String], required: true, default: [] }
+	pendingParticipants: { type: [String], required: true, default: [] },
+	currentRound: { type: Number, required: true, default: 0 },
+	totalRounds: { type: Number, required: true, default: 0 },
 });
 
 export const TournamentModel = model<TournamentDoc>("Tournament", TournamentSchema);

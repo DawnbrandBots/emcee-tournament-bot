@@ -190,7 +190,15 @@ export async function startTournament(tournamentId: TournamentID, organizer: Dis
 // Progresses tournament to the next round or returns -1 if it was already the final round
 export async function nextRound(tournamentId: TournamentID, organizer: DiscordID): Promise<number> {
 	const tournament = await getAuthorizedTournament(tournamentId, organizer);
-	throw new Error("Not yet implemented!");
+	if (tournament.status !== "in progress") {
+		throw new Error(`Tournament ${tournamentId} is not in progress.`);
+	}
+	if (tournament.currentRound < tournament.totalRounds) {
+		++tournament.currentRound;
+		await tournament.save();
+		return tournament.currentRound;
+	}
+	return -1;
 }
 
 // Sets tournament status to completed
