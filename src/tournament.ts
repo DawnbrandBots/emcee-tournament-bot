@@ -1,5 +1,5 @@
 import { challonge, ChallongeMatch } from "./challonge";
-import { GuildChannel, Message, TextChannel, PrivateChannel, GuildTextableChannel } from "eris";
+import { GuildChannel, Message, TextChannel, PrivateChannel, GuildTextableChannel, User } from "eris";
 import {
 	initTournament,
 	isOrganizing,
@@ -57,7 +57,7 @@ export class Tournament {
 		return tournament;
 	}
 
-	private async getRole(channelId: string): Promise<string> {
+	public async getRole(channelId: string): Promise<string> {
 		const channel = bot.getChannel(channelId);
 		if (!(channel instanceof GuildChannel)) {
 			throw new Error("Channel " + channelId + " is not a valid text channel");
@@ -240,6 +240,8 @@ export class Tournament {
 			">\nResults: https://challonge.com/" +
 			url;
 		const msg = await channel.createMessage(message);
+		const roleMembers = channel.guild.members.filter(m => m.roles.includes(role));
+		await Promise.all(roleMembers.map(m => m.removeRole(role, "Tournament concluded")));
 		return msg.id;
 	}
 
@@ -295,6 +297,21 @@ bot.on("messageReactionRemove", async (msg, emoji, userID) => {
 	}
 });
 
+async function grantTournamentRole(channelId: string, user: string, tournamentId: string): Promise<boolean> {
+	const channel = bot.getChannel(channelId);
+	if (!(channel instanceof GuildChannel)) {
+		throw new Error("Channel " + channelId + " is not a valid text channel");
+	}
+	const member = channel.guild.members.get(user);
+	if (!member) {
+		return false;
+	}
+	const tournament = tournaments[tournamentId];
+	const role = await tournament.getRole(channelId);
+	await member.addRole(role, "Tournament registration");
+	return true;
+}
+
 bot.on("messageCreate", async msg => {
 	if (msg.author.bot) {
 		return;
@@ -346,6 +363,8 @@ bot.on("messageCreate", async msg => {
 				[...deck.record.extra],
 				[...deck.record.side]
 			);
+			const channels = doc.discordChannels;
+			await Promise.all(channels.map(c => grantTournamentRole(c, msg.author.id, doc.challongeId)));
 			await msg.channel.createMessage(
 				"Congratulations! You have been registered" +
 					(doc.name ? "in " + doc.name : "") +
