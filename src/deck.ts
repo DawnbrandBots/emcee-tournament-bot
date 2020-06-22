@@ -88,7 +88,7 @@ export class Deck {
 	}
 
 	private static recordToYdk(record: TypedDeck): string {
-		let ydk = "#created by Akira bot\n#main\n";
+		let ydk = "#created by Emcee bot\n#main\n";
 		for (const code of record.main) {
 			ydk += code + "\n";
 		}
