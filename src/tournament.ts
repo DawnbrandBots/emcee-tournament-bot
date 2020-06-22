@@ -378,10 +378,9 @@ export async function confirmDeck(msg: Message): Promise<void> {
 			return;
 		}
 		if (docs.length > 1) {
+			const tournaments = docs.map(t => t.name || t.challongeId).join("\n");
 			await msg.channel.createMessage(
-				`You are registering in multiple tournaments. Please register in one at a time by unchecking the reaction on all others.\n${docs
-					.map(t => t.name || t.challongeId)
-					.join("\n")}`
+				`You are registering in multiple tournaments. Please register in one at a time by unchecking the reaction on all others.\n${tournaments}`
 			);
 			return;
 		}
