@@ -120,7 +120,8 @@ export async function findTournamentByRegisterMessage(
 	channel: DiscordID
 ): Promise<TournamentDoc | null> {
 	return await TournamentModel.findOne({
-		registerMessages: { channel, message }
+		"registerMessages.channel": channel,
+		"registerMessages.message": message
 	});
 }
 
@@ -168,7 +169,8 @@ export async function removePendingParticipant(
 	user: DiscordID
 ): Promise<boolean> {
 	const tournament = await TournamentModel.findOne({
-		registerMessages: { message, channel },
+		"registerMessages.channel": channel,
+		"registerMessages.message": message,
 		pendingParticipants: user
 	});
 	if (!tournament) {
