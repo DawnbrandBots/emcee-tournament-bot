@@ -12,6 +12,8 @@ services:
       DISCORD_TOKEN: ${DISCORD_TOKEN}
       GITHUB_TOKEN: ${GITHUB_TOKEN}
       MONGODB_URL: mongodb://mongo:27017/tournamentdb
+      CHALLONGE_USERNAME: ${CHALLONGE_USERNAME}
+      CHALLONGE_TOKEN: ${CHALLONGE_TOKEN}
 
 volumes:
   tournamentdb:
