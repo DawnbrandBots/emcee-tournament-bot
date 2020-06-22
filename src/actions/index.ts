@@ -279,3 +279,8 @@ export async function getPlayerFromId(challongeId: string, playerId: number): Pr
 	const tournament = await findTournament(challongeId);
 	return tournament.confirmedParticipants.find(p => p.challongeId === playerId);
 }
+
+// Get persisted tournaments that are not finished, for restoration upon launch
+export async function getOngoingTournaments(): Promise<TournamentDoc[]> {
+	return await TournamentModel.find({ $or: [{ status: "in progress" }, { status: "preparing" }] });
+}

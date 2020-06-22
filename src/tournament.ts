@@ -18,7 +18,8 @@ import {
 	findTournament,
 	UnauthorisedOrganiserError,
 	setTournamentName,
-	setTournamentDescription
+	setTournamentDescription,
+	getOngoingTournaments
 } from "./actions";
 import { bot } from "./bot";
 import { TournamentModel, TournamentDoc } from "./models";
@@ -429,3 +430,10 @@ export async function confirmDeck(msg: Message): Promise<void> {
 		}
 	}
 }
+
+getOngoingTournaments().then(ts => {
+	for (const t of ts) {
+		tournaments[t.challongeId] = new Tournament(t.challongeId);
+	}
+	console.log("Loaded persistent tournaments!");
+});
