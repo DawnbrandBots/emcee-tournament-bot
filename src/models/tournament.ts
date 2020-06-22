@@ -33,7 +33,7 @@ export interface TournamentDoc extends Document {
 export const TournamentSchema = new Schema({
 	name: { type: String, default: "" },
 	description: { type: String, default: "" },
-	challongeId: { type: String, required: true },
+	challongeId: { type: String, required: true, unique: true },
 	organizers: { type: [String], required: true },
 	owningDiscordServer: { type: String, required: true },
 	publicChannels: { type: [String], required: true },
