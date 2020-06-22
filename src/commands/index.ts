@@ -48,6 +48,9 @@ function getChannel(msg: Message, mention?: string): GuildTextableChannel {
 
 async function createTournament(msg: Message, args: string[]): Promise<void> {
 	const [name, desc] = args;
+	if (name.length === 0 || desc.length === 0) {
+		throw new MiscUserError("You must provide a valid tournament name and description!");
+	}
 	await Tournament.init(name, desc, msg);
 	await msg.channel.createMessage(`Tournament ${name} created!`);
 }
