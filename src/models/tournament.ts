@@ -8,7 +8,8 @@ export interface TournamentDoc extends Document {
 	challongeId: string;
 	organizers: DiscordID[];
 	owningDiscordServer: DiscordID;
-	discordChannels: DiscordID[];
+	publicChannels: DiscordID[];
+	privateChannels: DiscordID[];
 	registerMessages: {
 		channel: DiscordID;
 		message: DiscordID;
@@ -25,6 +26,7 @@ export interface TournamentDoc extends Document {
 		};
 	}[];
 	pendingParticipants: DiscordID[];
+
 }
 
 export const TournamentSchema = new Schema({
@@ -33,7 +35,8 @@ export const TournamentSchema = new Schema({
 	challongeId: { type: String, required: true },
 	organizers: { type: [String], required: true },
 	owningDiscordServer: { type: String, required: true },
-	discordChannels: { type: [String], required: true },
+	publicChannels: { type: [String], required: true },
+	privateChannels: { type: [String], required: true },
 	registerMessages: [
 		{
 			channel: { type: String, required: true },

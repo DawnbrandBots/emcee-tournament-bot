@@ -136,7 +136,7 @@ export class Tournament {
 			throw new Error(`Organizer ${organiser} not authorized for tournament ${this.id}`);
 		}
 		const tournament = await this.getTournament();
-		const channels = tournament.discordChannels;
+		const channels = tournament.publicChannels;
 		return await Promise.all(
 			channels.map(c => this.openRegistrationInChannel(c, tournament.name, tournament.description))
 		);
@@ -192,7 +192,7 @@ export class Tournament {
 		const messages = tournament.registerMessages;
 		await Promise.all(messages.map(this.deleteRegisterMessage));
 		await challonge.startTournament(this.id, {});
-		const channels = tournament.discordChannels;
+		const channels = tournament.publicChannels;
 		const announcements = await Promise.all(channels.map(c => this.startRound(c, this.id, 1, tournament.name)));
 		return announcements;
 	}
@@ -241,7 +241,7 @@ export class Tournament {
 			return await this.finishTournament(organiser);
 		}
 		const tournament = await this.getTournament();
-		const channels = tournament.discordChannels;
+		const channels = tournament.publicChannels;
 		await Promise.all(channels.map(c => this.startRound(c, this.id, round, tournament.name)));
 	}
 
@@ -268,7 +268,7 @@ export class Tournament {
 			throw new Error(`Organizer ${organiser} not authorized for tournament ${this.id}`);
 		}
 		const tournament = await this.getTournament();
-		const channels = tournament.discordChannels;
+		const channels = tournament.publicChannels;
 		await Promise.all(channels.map(c => this.sendConclusionMessage(c, this.id, tournament.name)));
 		await finishTournament(this.id, organiser);
 		delete tournaments[this.id];
@@ -398,7 +398,7 @@ bot.on("messageCreate", async msg => {
 				[...deck.record.extra],
 				[...deck.record.side]
 			);
-			const channels = doc.discordChannels;
+			const channels = doc.publicChannels;
 			await Promise.all(channels.map(c => grantTournamentRole(c, msg.author.id, doc.challongeId)));
 			await msg.channel.createMessage(
 				"Congratulations! You have been registered" +
