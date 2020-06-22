@@ -1,3 +1,40 @@
-# deck-parse-bot
-![Build](https://github.com/AlphaKretin/deck-parse-bot/workflows/Build/badge.svg) [![Coverage Status](https://coveralls.io/repos/github/AlphaKretin/deck-parse-bot/badge.svg?t=iUM0Et)](https://coveralls.io/github/AlphaKretin/deck-parse-bot)  
-A deck to parse and validate YGOPro deck files for tournament legality. 
+# [Project Ignis](https://github.com/ProjectIgnis): Emcee
+![Build](https://github.com/AlphaKretin/deck-parse-bot/workflows/Build/badge.svg)&nbsp;
+[![Coverage Status](https://coveralls.io/repos/github/AlphaKretin/deck-parse-bot/badge.svg?t=iUM0Et)](https://coveralls.io/github/AlphaKretin/deck-parse-bot)
+
+A Discord bot to facilitate organising [Challonge](https://challonge.com/) tournaments and verify submitted decks.
+
+Supports YGOPro deck files (.ydk) and `ydke://` URLs from [Project Ignis: EDOPro](https://github.com/edo9300/edopro).
+
+## Development
+Emcee is written in TypeScript and uses Eris to talk to Discord and MongoDB for persistence.
+It targets Node.js 12+ and can be run with or without Docker.
+
+1. Install Docker with Docker Compose or MongoDB.
+1. Start MongoDB. You can start up just the Mongo container with `docker-compose up -d mongo`.
+1. Create a `.env` file with the required environment variables defined in `/src/config/env.ts`.
+   - If Emcee is in Docker, `MONGODB_URL` is not required.
+   - If Emcee is outside Docker, use `MONGODB_URL=mongodb://localhost:27017/tournamentdb` or similar.
+1. Start Emcee.
+   - In Docker: `docker-compose up` and wait for the image to build.
+   - Outside Docker: `npm ci && npm build && node dist/index.js`.
+
+Please use Australian English spellings.
+
+## Licence
+Copyright © 2020  AlphaKretin, Kevin Lu. See COPYING for more details.
+
+```
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published
+by the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+```
