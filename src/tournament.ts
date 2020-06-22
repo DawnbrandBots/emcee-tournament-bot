@@ -14,7 +14,8 @@ import {
 	nextRound,
 	finishTournament,
 	addOrganiser,
-	removeOrganiser
+	removeOrganiser,
+	findTournament
 } from "./actions";
 import { bot } from "./bot";
 import { TournamentModel, TournamentDoc } from "./models";
@@ -52,12 +53,7 @@ export class Tournament {
 	}
 
 	private async getTournament(): Promise<TournamentDoc> {
-		const tournament = await TournamentModel.findById(this.id);
-		if (!tournament) {
-			// should be impossible, but checking anyway is better practice than supressing typescript
-			throw new Error(`Unknown tournament ${this.id}`);
-		}
-		return tournament;
+		return await findTournament(this.id);
 	}
 
 	public async getRole(channelId: string): Promise<string> {
