@@ -54,3 +54,9 @@ async function removeChannel(msg: Message, args: string[]): Promise<void> {
 	const channel = getChannel(msg, channelMention);
 	tournament.removeChannel(channel.id, msg.author.id, isPrivate.toLowerCase() === "private");
 }
+
+async function open(msg: Message, args: string[]): Promise<void> {
+	const [id] = args;
+	const tournament = await getTournamentInterface(id);
+	await tournament.openRegistration(msg.author.id);
+}
