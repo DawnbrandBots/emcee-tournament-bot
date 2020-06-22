@@ -4,7 +4,6 @@ import { findTournament, TournamentNotFoundError, UnauthorisedOrganiserError, ge
 import { bot } from "../bot";
 import { DeckNotFoundError } from "../discordDeck";
 import { TournamentDoc } from "../models";
-import { stat } from "fs";
 
 type UserError =
 	| MiscUserError
