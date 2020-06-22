@@ -14,17 +14,28 @@ import {
 	nextRound,
 	finishTournament,
 	addOrganiser,
-	removeOrganiser
+	removeOrganiser,
+	findTournament,
+	UnauthorisedOrganiserError
 } from "./actions";
 import { bot } from "./bot";
 import { TournamentModel, TournamentDoc } from "./models";
-import { DiscordDeck } from "./discordDeck";
+import { DiscordDeck, DeckNotFoundError } from "./discordDeck";
 
 const CHECK_EMOJI = "✅";
 
 const tournaments: {
 	[id: string]: Tournament;
 } = {};
+
+export class AssertTextChannelError extends Error {
+	channelId: string;
+
+	constructor(channelId: string) {
+		super(`Channel ${channelId} is not a valid text channel`);
+		this.channelId = channelId;
+	}
+}
 
 export class Tournament {
 	private id: string;
@@ -52,18 +63,19 @@ export class Tournament {
 	}
 
 	private async getTournament(): Promise<TournamentDoc> {
-		const tournament = await TournamentModel.findById(this.id);
-		if (!tournament) {
-			// should be impossible, but checking anyway is better practice than supressing typescript
-			throw new Error(`Unknown tournament ${this.id}`);
+		return await findTournament(this.id);
+	}
+
+	private async verifyOrganiser(organiser: string): Promise<void> {
+		if (!await isOrganising(organiser, this.id)) {
+			throw new UnauthorisedOrganiserError(organiser, this.id);
 		}
-		return tournament;
 	}
 
 	public async getRole(channelId: string): Promise<string> {
 		const channel = bot.getChannel(channelId);
 		if (!(channel instanceof GuildChannel)) {
-			throw new Error(`Channel ${channelId} is not a valid text channel`);
+			throw new AssertTextChannelError(channelId);
 		}
 		const guild = channel.guild;
 		if (guild.id in this.roles) {
@@ -87,12 +99,10 @@ export class Tournament {
 	}
 
 	public async addChannel(channelId: string, organiser: string, isPrivate = false): Promise<string> {
-		if (!isOrganising(organiser, this.id)) {
-			throw new Error(`Organiser ${organiser} not authorized for tournament ${this.id}`);
-		}
+		await this.verifyOrganiser(organiser);
 		const channel = bot.getChannel(channelId);
 		if (!(channel instanceof TextChannel)) {
-			throw new Error(`Channel ${channelId} is not a valid text channel`);
+			throw new AssertTextChannelError(channelId);
 		}
 		const tournament = await this.getTournament();
 		const mes = await channel.createMessage(
@@ -103,15 +113,13 @@ export class Tournament {
 	}
 
 	public async removeChannel(channelId: string, organiser: string, isPrivate = false): Promise<void> {
-		if (!isOrganising(organiser, this.id)) {
-			throw new Error(`Organiser ${organiser} not authorized for tournament ${this.id}`);
-		}
+		await this.verifyOrganiser(organiser);
 		const channel = bot.getChannel(channelId);
 		if (!(channel instanceof TextChannel)) {
-			throw new Error(`Channel ${channelId} is not a valid text channel`);
+			throw new AssertTextChannelError(channelId);
 		}
 		if (!(await removeAnnouncementChannel(channelId, this.id, organiser, isPrivate ? "private" : "public"))) {
-			throw new Error(`Channel ${channel.name}is not a registered announcement channel`);
+			throw new Error(`Channel ${channel.name} is not a registered announcement channel`);
 		}
 		const tournament = await this.getTournament();
 		await channel.createMessage(
@@ -122,7 +130,7 @@ export class Tournament {
 	private async openRegistrationInChannel(channelId: string, name?: string, desc?: string): Promise<string> {
 		const channel = bot.getChannel(channelId);
 		if (!(channel instanceof TextChannel)) {
-			throw new Error(`Channel ${channelId} is not a valid text channel`);
+			throw new AssertTextChannelError(channelId);
 		}
 		let message = "**New Tournament Open";
 		if (name) {
@@ -139,9 +147,7 @@ export class Tournament {
 	}
 
 	public async openRegistration(organiser: string): Promise<string[]> {
-		if (!isOrganising(organiser, this.id)) {
-			throw new Error(`Organiser ${organiser} not authorized for tournament ${this.id}`);
-		}
+		await this.verifyOrganiser(organiser);
 		const tournament = await this.getTournament();
 		const channels = tournament.publicChannels;
 		return await Promise.all(
@@ -170,7 +176,7 @@ export class Tournament {
 	private async startRound(channelId: string, url: string, round: number, name?: string): Promise<string> {
 		const channel = bot.getChannel(channelId);
 		if (!(channel instanceof GuildTextableChannel)) {
-			throw new Error(`Channel ${channelId} is not a valid text channel`);
+			throw new AssertTextChannelError(channelId);
 		}
 		const role = await this.getRole(channelId);
 		const message = `Round ${round} of ${
@@ -181,9 +187,7 @@ export class Tournament {
 	}
 
 	public async start(organiser: string): Promise<string[]> {
-		if (!isOrganising(organiser, this.id)) {
-			throw new Error(`Organiser ${organiser} not authorized for tournament ${this.id}`);
-		}
+		await this.verifyOrganiser(organiser);
 		const tournament = await this.getTournament();
 		if (tournament.confirmedParticipants.length < 2) {
 			throw new Error("Cannot start a tournament without at least 2 confirmed participants!");
@@ -205,9 +209,7 @@ export class Tournament {
 		loserScore: number,
 		organiser: string
 	): Promise<ChallongeMatch> {
-		if (!isOrganising(organiser, this.id)) {
-			throw new Error(`Organiser ${organiser} not authorized for tournament ${this.id}`);
-		}
+		await this.verifyOrganiser(organiser);
 		const doc = await this.getTournament();
 		const winner = doc.confirmedParticipants.find(p => p.discord === winnerId);
 		if (!winner) {
@@ -236,9 +238,7 @@ export class Tournament {
 	}
 
 	public async nextRound(organiser: string): Promise<void> {
-		if (!isOrganising(organiser, this.id)) {
-			throw new Error(`Organiser ${organiser} not authorized for tournament ${this.id}`);
-		}
+		await this.verifyOrganiser(organiser);
 		const matches = await challonge.indexMatches(this.id, "open");
 		await Promise.all(matches.map(m => this.tieMatch(m.match.id)));
 		const round = await nextRound(this.id, organiser);
@@ -254,7 +254,7 @@ export class Tournament {
 	private async sendConclusionMessage(channelId: string, url: string, name?: string): Promise<string> {
 		const channel = bot.getChannel(channelId);
 		if (!(channel instanceof GuildTextableChannel)) {
-			throw new Error(`Channel ${channelId} is not a valid text channel`);
+			throw new AssertTextChannelError(channelId);
 		}
 		const role = await this.getRole(channelId);
 		const message = `${
@@ -267,9 +267,7 @@ export class Tournament {
 	}
 
 	public async finishTournament(organiser: string): Promise<void> {
-		if (!isOrganising(organiser, this.id)) {
-			throw new Error(`Organiser ${organiser} not authorized for tournament ${this.id}`);
-		}
+		await this.verifyOrganiser(organiser);
 		const tournament = await this.getTournament();
 		const channels = tournament.publicChannels;
 		await Promise.all(channels.map(c => this.sendConclusionMessage(c, this.id, tournament.name)));
@@ -278,16 +276,12 @@ export class Tournament {
 	}
 
 	public async addOrganiser(organiser: string, newOrganiser: string): Promise<boolean> {
-		if (!isOrganising(organiser, this.id)) {
-			throw new Error(`Organiser ${organiser} not authorized for tournament ${this.id}`);
-		}
+		await this.verifyOrganiser(organiser);
 		return await addOrganiser(newOrganiser, this.id);
 	}
 
 	public async removeOrganiser(organiser: string, toRemove: string): Promise<boolean> {
-		if (!isOrganising(organiser, this.id)) {
-			throw new Error(`Organiser ${organiser} not authorized for tournament ${this.id}`);
-		}
+		await this.verifyOrganiser(organiser);
 		if (organiser === toRemove) {
 			throw new Error("You cannot remove yourself from organising a tournament!");
 		}
@@ -303,7 +297,7 @@ bot.on("messageReactionAdd", async (msg, emoji, userID) => {
 	// register pending participant
 	if (emoji.name === CHECK_EMOJI && (await addPendingParticipant(msg.id, msg.channel.id, userID))) {
 		const chan = await bot.getDMChannel(userID);
-		const tournament = await findTournamentByRegisterMessage(msg.channel.id, msg.id);
+		const tournament = await findTournamentByRegisterMessage(msg.id, msg.channel.id);
 		if (!tournament) {
 			// impossible because of addPendingParticipant except in the case of a race condition
 			throw new Error(`User ${userID} added to non-existent tournament!`);
@@ -319,7 +313,7 @@ bot.on("messageReactionRemove", async (msg, emoji, userID) => {
 	// remove pending participant
 	if (emoji.name === CHECK_EMOJI && (await removePendingParticipant(msg.id, msg.channel.id, userID))) {
 		const chan = await bot.getDMChannel(userID);
-		const tournament = await findTournamentByRegisterMessage(msg.channel.id, msg.id);
+		const tournament = await findTournamentByRegisterMessage(msg.id, msg.channel.id);
 		if (!tournament) {
 			// impossible because of removePendingParticipant except in the case of a race condition
 			throw new Error(`User ${userID} removed from non-existent tournament!`);
@@ -331,7 +325,7 @@ bot.on("messageReactionRemove", async (msg, emoji, userID) => {
 async function grantTournamentRole(channelId: string, user: string, tournamentId: string): Promise<boolean> {
 	const channel = bot.getChannel(channelId);
 	if (!(channel instanceof GuildChannel)) {
-		throw new Error(`Channel ${channelId} is not a valid text channel`);
+		throw new AssertTextChannelError(channelId);
 	}
 	const member = channel.guild.members.get(user);
 	if (!member) {
@@ -351,7 +345,7 @@ async function sendTournamentRegistration(
 ): Promise<string> {
 	const channel = bot.getChannel(channelId);
 	if (!(channel instanceof GuildTextableChannel)) {
-		throw new Error(`Channel ${channelId} is not a valid text channel`);
+		throw new AssertTextChannelError(channelId);
 	}
 	const msg = await channel.createMessage(
 		`<@${user}> has signed up${name ? ` for ${name}` : ""} with the following deck.`
@@ -371,17 +365,16 @@ export async function confirmDeck(msg: Message): Promise<void> {
 				await DiscordDeck.sendProfile(msg);
 			} catch (e) {
 				// ignore "no deck" message
-				if (e.message !== "Must provide either attached `.ydk` file or valid `ydke://` URL!") {
+				if (!(e instanceof DeckNotFoundError)) {
 					throw e;
 				}
 			}
 			return;
 		}
 		if (docs.length > 1) {
+			const tournaments = docs.map(t => t.name || t.challongeId).join("\n");
 			await msg.channel.createMessage(
-				`You are registering in multiple tournaments. Please register in one at a time by unchecking the reaction on all others.\n${docs
-					.map(t => t.name || t.challongeId)
-					.join("\n")}`
+				`You are registering in multiple tournaments. Please register in one at a time by unchecking the reaction on all others.\n${tournaments}`
 			);
 			return;
 		}
@@ -419,7 +412,7 @@ export async function confirmDeck(msg: Message): Promise<void> {
 				doc.privateChannels.map(c => sendTournamentRegistration(c, msg.author.id, deck, doc.name))
 			);
 		} catch (e) {
-			if (e.message === "Must provide either attached `.ydk` file or valid `ydke://` URL!") {
+			if (e instanceof DeckNotFoundError) {
 				await msg.channel.createMessage(e.message);
 			} else {
 				throw e;

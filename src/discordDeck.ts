@@ -3,6 +3,10 @@ import { Message, MessageContent, MessageFile } from "eris";
 import fetch from "node-fetch";
 import { extractURLs } from "ydke";
 
+export class DeckNotFoundError extends Error {
+	message = "Must provide either attached `.ydk` file or valid `ydke://` URL!";
+}
+
 export class DiscordDeck extends Deck {
 	private static async messageToYdk(msg: Message): Promise<string> {
 		const attach = msg.attachments[0];
@@ -18,7 +22,7 @@ export class DiscordDeck extends Deck {
 		}
 		const matches = extractURLs(msg.content);
 		if (matches.length === 0) {
-			throw new Error("Must provide either attached `.ydk` file or valid `ydke://` URL!");
+			throw new DeckNotFoundError();
 		}
 		const ydke = matches[0];
 		return this.constructFromUrl(ydke);

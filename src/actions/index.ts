@@ -21,14 +21,39 @@ export async function initTournament(
 	await tournament.save();
 }
 
-// Internal helper
-async function getAuthorizedTournament(challongeId: TournamentID, organiser: DiscordID): Promise<TournamentDoc> {
+export class TournamentNotFoundError extends Error {
+	challongeId: TournamentID;
+
+	constructor(challongeId: TournamentID) {
+		super(`Unknown tournament ${challongeId}`);
+		this.challongeId = challongeId;
+	}
+}
+
+export async function findTournament(challongeId: TournamentID): Promise<TournamentDoc> {
 	const tournament = await TournamentModel.findOne({ challongeId });
 	if (!tournament) {
-		throw new Error(`Unknown tournament ${challongeId}`);
+		throw new TournamentNotFoundError(challongeId);
 	}
+	return tournament;
+}
+
+export class UnauthorisedOrganiserError extends Error {
+	organiser: DiscordID;
+	challongeId: TournamentID;
+
+	constructor(organiser: DiscordID, challongeId: TournamentID) {
+		super(`Organiser ${organiser} not authorised for tournament ${challongeId}`);
+		this.organiser = organiser
+		this.challongeId = challongeId;
+	}
+}
+
+// Internal helper
+async function getAuthorizedTournament(challongeId: TournamentID, organiser: DiscordID): Promise<TournamentDoc> {
+	const tournament = await findTournament(challongeId);
 	if (!tournament.organisers.includes(organiser)) {
-		throw new Error(`Organiser ${organiser} not authorized for tournament ${challongeId}`);
+		throw new UnauthorisedOrganiserError(organiser, challongeId);
 	}
 	return tournament;
 }
@@ -64,18 +89,12 @@ export async function removeAnnouncementChannel(
 
 // Check if a Discord user can perform a Discord action related to a tournament.
 export async function isOrganising(organiser: DiscordID, challongeId: TournamentID): Promise<boolean> {
-	const tournament = await TournamentModel.findOne({ challongeId });
-	if (!tournament) {
-		throw new Error(`Unknown tournament ${challongeId}`);
-	}
+	const tournament = await findTournament(challongeId);
 	return tournament.organisers.includes(organiser);
 }
 
 export async function addOrganiser(organiser: DiscordID, challongeId: TournamentID): Promise<boolean> {
-	const tournament = await TournamentModel.findOne({ challongeId });
-	if (!tournament) {
-		throw new Error(`Unknown tournament ${challongeId}`);
-	}
+	const tournament = await findTournament(challongeId);
 	if (tournament.organisers.includes(organiser)) {
 		return false;
 	}
@@ -85,10 +104,7 @@ export async function addOrganiser(organiser: DiscordID, challongeId: Tournament
 }
 
 export async function removeOrganiser(organiser: DiscordID, challongeId: TournamentID): Promise<boolean> {
-	const tournament = await TournamentModel.findOne({ challongeId });
-	if (!tournament) {
-		throw new Error(`Unknown tournament ${challongeId}`);
-	}
+	const tournament = await findTournament(challongeId);
 	if (tournament.organisers.length < 2 || !tournament.organisers.includes(organiser)) {
 		return false;
 	}
@@ -100,38 +116,32 @@ export async function removeOrganiser(organiser: DiscordID, challongeId: Tournam
 }
 
 export async function findTournamentByRegisterMessage(
-	channelId: DiscordID,
-	messageId: DiscordID
+	message: DiscordID,
+	channel: DiscordID
 ): Promise<TournamentDoc | null> {
 	return await TournamentModel.findOne({
-		registerMessages: {
-			channel: channelId,
-			message: messageId
-		}
+		registerMessages: { channel, message }
 	});
 }
 
 // Invoke after a registration message has been sent to an announcement channel.
 export async function addRegisterMessage(
-	messageId: DiscordID,
-	channelId: DiscordID,
+	message: DiscordID,
+	channel: DiscordID,
 	challongeId: TournamentID
 ): Promise<void> {
-	const tournament = await TournamentModel.findOne({ challongeId });
-	if (!tournament) {
-		throw new Error(`Unknown tournament ${challongeId}`);
-	}
-	tournament.registerMessages.push({ message: messageId, channel: channelId });
+	const tournament = await findTournament(challongeId);
+	tournament.registerMessages.push({ message, channel });
 	await tournament.save();
 }
 
 // Invoke after a registration message gets deleted.
-export async function removeRegisterMessage(messageId: DiscordID, channelId: DiscordID): Promise<boolean> {
-	const tournament = await TournamentModel.findOne({ registerMessages: { message: messageId, channel: channelId } });
+export async function removeRegisterMessage(message: DiscordID, channel: DiscordID): Promise<boolean> {
+	const tournament = await findTournamentByRegisterMessage(message, channel);
 	if (!tournament) {
 		return false;
 	}
-	const i = tournament.registerMessages.indexOf({ message: messageId, channel: channelId });
+	const i = tournament.registerMessages.indexOf({ message, channel });
 	// i < 0 is impossible by precondition
 	tournament.registerMessages.splice(i, 1); // consider $pullAll
 	await tournament.save();
@@ -140,11 +150,11 @@ export async function removeRegisterMessage(messageId: DiscordID, channelId: Dis
 
 // Invoke after a user requests to join a tournament and the appropriate response is delivered.
 export async function addPendingParticipant(
-	messageId: DiscordID,
-	channelId: DiscordID,
+	message: DiscordID,
+	channel: DiscordID,
 	user: DiscordID
 ): Promise<boolean> {
-	const tournament = await TournamentModel.findOne({ registerMessages: { message: messageId, channel: channelId } });
+	const tournament = await findTournamentByRegisterMessage(message, channel);
 	if (!tournament) {
 		return false;
 	}
@@ -157,12 +167,12 @@ export async function addPendingParticipant(
 
 // Invoke after a user requests to leave a tournament they haven't been confirmed for.
 export async function removePendingParticipant(
-	messageId: DiscordID,
-	channelId: DiscordID,
+	message: DiscordID,
+	channel: DiscordID,
 	user: DiscordID
 ): Promise<boolean> {
 	const tournament = await TournamentModel.findOne({
-		registerMessages: { message: messageId, channel: channelId },
+		registerMessages: { message, channel },
 		pendingParticipants: user
 	});
 	if (!tournament) {
