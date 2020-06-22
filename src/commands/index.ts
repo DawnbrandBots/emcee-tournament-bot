@@ -145,3 +145,25 @@ async function cancelTournament(msg: Message, args: string[]): Promise<void> {
 	await tournament.finishTournament(msg.author.id, true);
 	await msg.channel.createMessage(`${doc.name} has successfully been cancelled.`);
 }
+
+async function addOrganiser(msg: Message, args: string[]): Promise<void> {
+	const [id] = args;
+	const [tournament, doc] = await getTournamentInterface(id);
+	const organiser = getMentionedUserId(msg);
+	if (await tournament.addOrganiser(msg.author.id, organiser)) {
+		await msg.channel.createMessage(`<@${organiser}> successfully added as an organiser for ${doc.name}.`);
+	} else {
+		await msg.channel.createMessage(`<@${organiser}> is already an organiser for ${doc.name}.`);
+	}
+}
+
+async function removeOrganiser(msg: Message, args: string[]): Promise<void> {
+	const [id] = args;
+	const [tournament, doc] = await getTournamentInterface(id);
+	const organiser = getMentionedUserId(msg);
+	if (await tournament.addOrganiser(msg.author.id, organiser)) {
+		await msg.channel.createMessage(`<@${organiser}> successfully added as an organiser for ${doc.name}.`);
+	} else {
+		await msg.channel.createMessage(`<@${organiser}> is already an organiser for ${doc.name}.`);
+	}
+}
