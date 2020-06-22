@@ -34,6 +34,12 @@ export const TournamentSchema = new Schema({
 	organizers: { type: [String], required: true },
 	owningDiscordServer: { type: String, required: true },
 	discordChannels: { type: [String], required: true },
+	registerMessages: [
+		{
+			channel: { type: String, required: true },
+			message: { type: String, required: true },
+		}
+	],
 	status: {
 		type: String,
 		enum: ["preparing", "in progress", "complete"],
