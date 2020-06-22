@@ -68,6 +68,34 @@ export async function isOrganizing(organizer: DiscordID, tournamentId: Tournamen
 	return tournament.organizers.includes(organizer);
 }
 
+export async function addOrganizer(organizer: DiscordID, tournamentId: TournamentID): Promise<boolean> {
+	const tournament = await TournamentModel.findById(tournamentId);
+	if (!tournament) {
+		throw new Error(`Unknown tournament ${tournamentId}`);
+	}
+	if (tournament.organizers.includes(organizer)) {
+		return false;
+	}
+	tournament.organizers.push(organizer);
+	await tournament.save();
+	return true;
+}
+
+export async function removeOrganizer(organizer: DiscordID, tournamentId: TournamentID): Promise<boolean> {
+	const tournament = await TournamentModel.findById(tournamentId);
+	if (!tournament) {
+		throw new Error(`Unknown tournament ${tournamentId}`);
+	}
+	if (tournament.organizers.length < 2 || !tournament.organizers.includes(organizer)) {
+		return false;
+	}
+	const i = tournament.organizers.indexOf(organizer);
+	// i < 0 is impossible by precondition
+	tournament.organizers.splice(i, 1);
+	await tournament.save();
+	return true;
+}
+
 export async function findTournamentByRegisterMessage(
 	channelId: DiscordID,
 	messageId: DiscordID

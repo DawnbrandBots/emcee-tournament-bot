@@ -12,7 +12,9 @@ import {
 	removePendingParticipant,
 	addPendingParticipant,
 	nextRound,
-	finishTournament
+	finishTournament,
+	addOrganizer,
+	removeOrganizer
 } from "./actions";
 import { bot } from "./bot";
 import { TournamentModel, TournamentDoc } from "./models";
@@ -270,6 +272,23 @@ export class Tournament {
 		await Promise.all(channels.map(c => this.sendConclusionMessage(c, this.id, tournament.name)));
 		await finishTournament(this.id, organiser);
 		delete tournaments[this.id];
+	}
+
+	public async addOrganiser(organiser: string, newOrganiser: string): Promise<boolean> {
+		if (!isOrganizing(organiser, this.id)) {
+			throw new Error(`Organizer ${organiser} not authorized for tournament ${this.id}`);
+		}
+		return await addOrganizer(newOrganiser, this.id);
+	}
+
+	public async removeOrganiser(organiser: string, toRemove: string): Promise<boolean> {
+		if (!isOrganizing(organiser, this.id)) {
+			throw new Error(`Organizer ${organiser} not authorized for tournament ${this.id}`);
+		}
+		if (organiser === toRemove) {
+			throw new Error("You cannot remove yourself from organising a tournament!");
+		}
+		return await removeOrganizer(toRemove, this.id);
 	}
 }
 
