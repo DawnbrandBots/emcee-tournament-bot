@@ -80,7 +80,7 @@ export class Tournament {
 		return role.id;
 	}
 
-	public async addChannel(channelId: string, organiser: string): Promise<string> {
+	public async addChannel(channelId: string, organiser: string, isPrivate = false): Promise<string> {
 		if (!isOrganizing(organiser, this.id)) {
 			throw new Error(`Organizer ${organiser} not authorized for tournament ${this.id}`);
 		}
@@ -92,11 +92,11 @@ export class Tournament {
 		const mes = await channel.createMessage(
 			"This channel now displaying announcements for " + (tournament.name || this.id)
 		);
-		await addAnnouncementChannel(channelId, this.id, organiser);
+		await addAnnouncementChannel(channelId, this.id, organiser, isPrivate ? "private" : "public");
 		return mes.id;
 	}
 
-	public async removeChannel(channelId: string, organiser: string): Promise<void> {
+	public async removeChannel(channelId: string, organiser: string, isPrivate = false): Promise<void> {
 		if (!isOrganizing(organiser, this.id)) {
 			throw new Error(`Organizer ${organiser} not authorized for tournament ${this.id}`);
 		}
@@ -104,7 +104,7 @@ export class Tournament {
 		if (!(channel instanceof TextChannel)) {
 			throw new Error("Channel " + channelId + " is not a valid text channel");
 		}
-		if (!(await removeAnnouncementChannel(channelId, this.id, organiser))) {
+		if (!(await removeAnnouncementChannel(channelId, this.id, organiser, isPrivate ? "private" : "public"))) {
 			throw new Error("Channel " + channel.name + "is not a registered announcement channel");
 		}
 		const tournament = await this.getTournament();
@@ -352,6 +352,23 @@ async function grantTournamentRole(channelId: string, user: string, tournamentId
 	return true;
 }
 
+async function sendTournamentRegistration(
+	channelId: string,
+	user: string,
+	deck: DiscordDeck,
+	name?: string
+): Promise<string> {
+	const channel = bot.getChannel(channelId);
+	if (!(channel instanceof GuildTextableChannel)) {
+		throw new Error("Channel " + channelId + " is not a valid text channel");
+	}
+	const msg = await channel.createMessage(
+		"<@" + user + "> has signed up" + (name ? " for " + name : "") + " with the following deck."
+	);
+	await deck.sendProfile(msg);
+	return msg.id;
+}
+
 bot.on("messageCreate", async msg => {
 	if (msg.author.bot) {
 		return;
@@ -411,7 +428,9 @@ bot.on("messageCreate", async msg => {
 					" with the following deck."
 			);
 			await deck.sendProfile(msg);
-			// TODO: send deck to TO channels
+			await Promise.all(
+				doc.privateChannels.map(c => sendTournamentRegistration(c, msg.author.id, deck, doc.name))
+			);
 		} catch (e) {
 			if (e.message === "Must provide either attached `.ydk` file or valid `ydke://` URL!") {
 				await msg.channel.createMessage(e.message);
