@@ -69,15 +69,21 @@ export class Tournament {
 		if (guild.id in this.roles) {
 			return this.roles[guild.id];
 		}
-		const role = await guild.createRole(
+		const name = "MC-Tournament-" + this.id;
+		const role = guild.roles.find(r => r.name === name);
+		if (role) {
+			this.roles[guild.id] = role.id;
+			return role.id;
+		}
+		const newRole = await guild.createRole(
 			{
-				name: "MC-Tournament-" + this.id,
+				name: name,
 				color: 0xe67e22
 			},
 			"Auto-created by Emcee bot."
 		);
-		this.roles[guild.id] = role.id;
-		return role.id;
+		this.roles[guild.id] = newRole.id;
+		return newRole.id;
 	}
 
 	public async addChannel(channelId: string, organiser: string, isPrivate = false): Promise<string> {
