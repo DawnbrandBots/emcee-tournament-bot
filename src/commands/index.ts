@@ -8,6 +8,33 @@ export async function parseCommand(msg: Message): Promise<void> {
 	throw new Error("Not yet implemented!");
 }
 
+async function getTournamentInterface(id: string): Promise<Tournament> {
+	const doc = await findTournament(id);
+	const tournament = getTournament(doc.challongeId);
+	if (!tournament) {
+		throw new TournamentNotFoundError(doc.challongeId);
+	}
+	return tournament;
+}
+
+function getChannel(msg: Message, mention?: string): GuildTextableChannel {
+	if (mention) {
+		const channelRegex = /<#(\d+?)>/g;
+		const channelMatch = channelRegex.exec(mention);
+		if (channelMatch !== null) {
+			const channelCandidate = bot.getChannel(channelMatch[1]);
+			if (channelCandidate && channelCandidate instanceof GuildTextableChannel) {
+				return channelCandidate;
+			}
+		}
+	}
+
+	if (!(msg.channel instanceof GuildTextableChannel)) {
+		throw new AssertTextChannelError(msg.channel.id);
+	}
+	return msg.channel;
+}
+
 async function createTournament(msg: Message, args: string[]): Promise<void> {
 	const [name, desc] = args;
 	await Tournament.init(name, desc, msg);
@@ -15,55 +42,15 @@ async function createTournament(msg: Message, args: string[]): Promise<void> {
 }
 
 async function addChannel(msg: Message, args: string[]): Promise<void> {
-	const [name, isPrivate, channelMention] = args;
-	const doc = await findTournament(name);
-	const tournament = getTournament(doc.challongeId);
-	if (!tournament) {
-		throw new TournamentNotFoundError(doc.challongeId);
-	}
-	let channel: GuildTextableChannel | undefined;
-	if (channelMention) {
-		const channelRegex = /<#(\d+?)>/g;
-		const channelMatch = channelRegex.exec(channelMention);
-		if (channelMatch !== null) {
-			const channelCandidate = bot.getChannel(channelMatch[1]);
-			if (channelCandidate && channelCandidate instanceof GuildTextableChannel) {
-				channel = channelCandidate;
-			}
-		}
-	}
-	if (!channel) {
-		if (!(msg.channel instanceof GuildTextableChannel)) {
-			throw new AssertTextChannelError(msg.channel.id);
-		}
-		channel = msg.channel;
-	}
+	const [id, isPrivate, channelMention] = args;
+	const tournament = await getTournamentInterface(id);
+	const channel = getChannel(msg, channelMention);
 	tournament.addChannel(channel.id, msg.author.id, isPrivate.toLowerCase() === "private");
 }
 
 async function removeChannel(msg: Message, args: string[]): Promise<void> {
-	const [name, isPrivate, channelMention] = args;
-	const doc = await findTournament(name);
-	const tournament = getTournament(doc.challongeId);
-	if (!tournament) {
-		throw new TournamentNotFoundError(doc.challongeId);
-	}
-	let channel: GuildTextableChannel | undefined;
-	if (channelMention) {
-		const channelRegex = /<#(\d+?)>/g;
-		const channelMatch = channelRegex.exec(channelMention);
-		if (channelMatch !== null) {
-			const channelCandidate = bot.getChannel(channelMatch[1]);
-			if (channelCandidate && channelCandidate instanceof GuildTextableChannel) {
-				channel = channelCandidate;
-			}
-		}
-	}
-	if (!channel) {
-		if (!(msg.channel instanceof GuildTextableChannel)) {
-			throw new AssertTextChannelError(msg.channel.id);
-		}
-		channel = msg.channel;
-	}
+	const [id, isPrivate, channelMention] = args;
+	const tournament = await getTournamentInterface(id);
+	const channel = getChannel(msg, channelMention);
 	tournament.removeChannel(channel.id, msg.author.id, isPrivate.toLowerCase() === "private");
 }
