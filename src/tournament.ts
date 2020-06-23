@@ -348,6 +348,17 @@ bot.on("messageReactionAdd", async (msg, emoji, userID) => {
 	}
 });
 
+async function handleDMFailure(channelId: string, userId: string): Promise<string> {
+	const channel = bot.getChannel(channelId);
+	if (!(channel instanceof TextChannel)) {
+		throw new AssertTextChannelError(channelId);
+	}
+	const msg = await channel.createMessage(
+		`User <@${userId}> is trying to register for the tournament, but does not accept DMs from me! Please ask them to change their settings to allow this.`
+	);
+	return msg.id;
+}
+
 bot.on("messageReactionRemove", async (msg, emoji, userID) => {
 	// remove pending participant
 	if (emoji.name === CHECK_EMOJI && (await removePendingParticipant(msg.id, msg.channel.id, userID))) {
@@ -357,7 +368,16 @@ bot.on("messageReactionRemove", async (msg, emoji, userID) => {
 			// impossible because of removePendingParticipant except in the case of a race condition
 			throw new MiscInternalError(`User ${userID} removed from non-existent tournament!`);
 		}
-		await chan.createMessage(`You have successfully dropped from ${tournament.name}.`);
+		try {
+			await chan.createMessage(`You have successfully dropped from ${tournament.name}.`);
+		} catch (e) {
+			// DiscordRESTError - User blocking DMs
+			if (e.code === 50007) {
+				await Promise.all(tournament.privateChannels.map(c => handleDMFailure(c, userID)));
+				return;
+			}
+			throw e;
+		}
 	}
 });
 
