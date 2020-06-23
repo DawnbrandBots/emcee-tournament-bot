@@ -15,7 +15,7 @@ export class DiscordDeck extends Deck {
 		return deck;
 	}
 
-	static async constructFromMessage(msg: Message): Promise<Deck> {
+	public static async constructFromMessage(msg: Message): Promise<DiscordDeck> {
 		if (msg.attachments.length > 0 && msg.attachments[0].filename.endsWith(".ydk")) {
 			const ydk = await this.messageToYdk(msg);
 			return await this.constructFromYdk(ydk);

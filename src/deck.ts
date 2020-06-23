@@ -30,22 +30,22 @@ export class Deck {
 		this.ydk = ydk;
 	}
 
-	public static async constructFromYdk(ydk: string): Promise<Deck> {
-		const record = Deck.ydkToRecord(ydk);
-		const url = Deck.recordToUrl(record);
-		return new Deck(record, url, ydk);
+	public static async constructFromYdk<T extends typeof Deck>(this: T, ydk: string): Promise<InstanceType<T>> {
+		const record = this.ydkToRecord(ydk);
+		const url = this.recordToUrl(record);
+		return new this(record, url, ydk) as InstanceType<T>;
 	}
 
-	public static constructFromUrl(url: string): Deck {
-		const record = Deck.urlToRecord(url);
-		const ydk = Deck.recordToYdk(record);
-		return new Deck(record, url, ydk);
+	public static constructFromUrl<T extends typeof Deck>(this: T, url: string): InstanceType<T> {
+		const record = this.urlToRecord(url);
+		const ydk = this.recordToYdk(record);
+		return new this(record, url, ydk) as InstanceType<T>;
 	}
 
-	public static constructFromRecord(record: TypedDeck): Deck {
-		const ydk = Deck.recordToYdk(record);
-		const url = Deck.recordToUrl(record);
-		return new Deck(record, url, ydk);
+	public static constructFromRecord<T extends typeof Deck>(this: T, record: TypedDeck): InstanceType<T> {
+		const ydk = this.recordToYdk(record);
+		const url = this.recordToUrl(record);
+		return new this(record, url, ydk) as InstanceType<T>;
 	}
 
 	private static urlToRecord(url: string): TypedDeck {
