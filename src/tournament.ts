@@ -443,7 +443,7 @@ export async function confirmDeck(msg: Message): Promise<void> {
 		// length === 1
 		const doc = docs[0];
 		try {
-			const deck = (await DiscordDeck.constructFromMessage(msg)) as DiscordDeck;
+			const deck = await DiscordDeck.constructFromMessage(msg);
 			const result = await deck.validate();
 			if (result.length > 0) {
 				await msg.channel.createMessage(

@@ -59,13 +59,13 @@ export async function getPlayerDeck(msg: Message, args: string[]): Promise<void>
 	const user = getMentionedUserId(msg);
 	const player = await getPlayerFromDiscord(doc.challongeId, user);
 	if (!player) {
-		throw new MiscUserError(`Could not find a player in tournament ${doc.name} for discord user <@${user}>`);
+		throw new MiscUserError(`Could not find a player in tournament ${doc.name} for Discord user <@${user}>`);
 	}
 	const record: TypedDeck = {
 		main: Uint32Array.from(player.deck.main),
 		extra: Uint32Array.from(player.deck.extra),
 		side: Uint32Array.from(player.deck.side)
 	};
-	const deck = DiscordDeck.constructFromRecord(record) as DiscordDeck;
+	const deck = DiscordDeck.constructFromRecord(record);
 	await deck.sendProfile(msg);
 }

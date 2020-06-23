@@ -153,7 +153,7 @@ export class DiscordDeck extends Deck {
 	}
 
 	public static async sendProfile(msg: Message): Promise<Message> {
-		const deck = (await DiscordDeck.constructFromMessage(msg)) as DiscordDeck;
+		const deck = await DiscordDeck.constructFromMessage(msg);
 		return await deck.sendProfile(msg);
 	}
 }
