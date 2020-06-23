@@ -1,7 +1,7 @@
 import { Message } from "eris";
 import { getPlayerFromId } from "../actions";
 import { getTournamentInterface, getMentionedUserId } from "./utils";
-import { UserError } from "./errors";
+import { UserError } from "../errors";
 async function getPlayerDiscord(tournamentId: string, playerId: number): Promise<string | undefined> {
 	const player = await getPlayerFromId(tournamentId, playerId);
 	return player?.discord;

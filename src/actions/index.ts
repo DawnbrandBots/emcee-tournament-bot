@@ -1,5 +1,5 @@
 import { TournamentModel, TournamentDoc } from "../models";
-import { TournamentNotFoundError, UnauthorisedOrganiserError } from "../commands/errors";
+import { TournamentNotFoundError, UnauthorisedOrganiserError } from "../errors";
 
 type DiscordID = string;
 type TournamentID = string; // from Challonge

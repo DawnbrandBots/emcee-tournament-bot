@@ -1,7 +1,7 @@
 import { Message, TextChannel } from "eris";
 import { getTournamentInterface } from "./utils";
 import { bot } from "../bot";
-import { AssertTextChannelError } from "./errors";
+import { AssertTextChannelError } from "../errors";
 
 function getChannel(msg: Message, mention?: string): TextChannel {
 	if (mention) {

@@ -32,7 +32,7 @@ import {
 	AssertTextChannelError,
 	UserError,
 	MiscInternalError
-} from "./commands/errors";
+} from "./errors";
 
 const CHECK_EMOJI = "✅";
 

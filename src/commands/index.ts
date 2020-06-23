@@ -6,7 +6,7 @@ import { open, start, cancelTournament } from "./basic";
 import { addOrganiser, removeOrganiser } from "./organiser";
 import { nextRound } from "./round";
 import { submitScore } from "./score";
-import { UserError } from "./errors";
+import { UserError } from "../errors";
 
 const commands: { [command: string]: (msg: Message, args: string[]) => Promise<void> } = {
 	create: createTournament,

@@ -2,7 +2,7 @@ import { findTournament, isOrganising } from "../actions";
 import { getTournament, Tournament } from "../tournament";
 import { TournamentDoc } from "../models";
 import { Message } from "eris";
-import { TournamentNotFoundError, UnauthorisedOrganiserError, UserError } from "./errors";
+import { TournamentNotFoundError, UnauthorisedOrganiserError, UserError } from "../errors";
 
 export async function getTournamentInterface(id: string, organiser: string): Promise<[Tournament, TournamentDoc]> {
 	const doc = await findTournament(id);

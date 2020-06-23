@@ -1,6 +1,6 @@
 import { challongeUsername, challongeToken } from "./config/env";
 import fetch, { Response } from "node-fetch";
-import { ChallongeAPIError } from "./commands/errors";
+import { ChallongeAPIError } from "./errors";
 
 type TournamentType = "single elimination" | "double elimination" | "round robin" | "swiss";
 type RankedBy = "match wins" | "game wins" | "points scored" | "points difference" | "custom";

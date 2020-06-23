@@ -5,7 +5,7 @@ import { getOngoingTournaments, getPlayerFromDiscord } from "../actions";
 import { TypedDeck } from "ydke";
 import { DiscordDeck } from "../discordDeck";
 import { bot } from "../bot";
-import { UserError } from "./errors";
+import { UserError } from "../errors";
 
 export async function createTournament(msg: Message, args: string[]): Promise<void> {
 	const [name, desc] = args;
