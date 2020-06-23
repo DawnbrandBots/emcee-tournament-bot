@@ -333,6 +333,9 @@ bot.on("messageDelete", msg => {
 });
 
 bot.on("messageReactionAdd", async (msg, emoji, userId) => {
+	if (userId === bot.user.id) {
+		return;
+	}
 	// register pending participant
 	if (emoji.name === CHECK_EMOJI && (await addPendingParticipant(msg.id, msg.channel.id, userId))) {
 		const chan = await bot.getDMChannel(userId);
@@ -360,6 +363,9 @@ async function handleDMFailure(channelId: string, userId: string): Promise<strin
 }
 
 bot.on("messageReactionRemove", async (msg, emoji, userId) => {
+	if (userId === bot.user.id) {
+		return;
+	}
 	// remove pending participant
 	// TODO: Drop corresponding name from Challonge
 	if (emoji.name === CHECK_EMOJI && (await removePendingParticipant(msg.id, msg.channel.id, userId))) {
