@@ -297,6 +297,7 @@ export class Tournament {
 		const msg = await channel.createMessage(message);
 		const roleMembers = channel.guild.members.filter(m => m.roles.includes(role));
 		await Promise.all(roleMembers.map(m => m.removeRole(role, "Tournament concluded")));
+		await msg.channel.guild.deleteRole(role);
 		return msg.id;
 	}
 
