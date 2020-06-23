@@ -3,7 +3,7 @@ import { getTournamentInterface, getMentionedUserId } from "./utils";
 
 export async function addOrganiser(msg: Message, args: string[]): Promise<void> {
 	const [id] = args;
-	const [tournament, doc] = await getTournamentInterface(id);
+	const [tournament, doc] = await getTournamentInterface(id, msg.author.id);
 	const organiser = getMentionedUserId(msg);
 	if (await tournament.addOrganiser(msg.author.id, organiser)) {
 		await msg.channel.createMessage(`<@${organiser}> successfully added as an organiser for ${doc.name}.`);
@@ -14,7 +14,7 @@ export async function addOrganiser(msg: Message, args: string[]): Promise<void> 
 
 export async function removeOrganiser(msg: Message, args: string[]): Promise<void> {
 	const [id] = args;
-	const [tournament, doc] = await getTournamentInterface(id);
+	const [tournament, doc] = await getTournamentInterface(id, msg.author.id);
 	const organiser = getMentionedUserId(msg);
 	if (await tournament.addOrganiser(msg.author.id, organiser)) {
 		await msg.channel.createMessage(`<@${organiser}> successfully added as an organiser for ${doc.name}.`);

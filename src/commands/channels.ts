@@ -23,7 +23,7 @@ function getChannel(msg: Message, mention?: string): TextChannel {
 
 export async function addChannel(msg: Message, args: string[]): Promise<void> {
 	const [id, privString, channelMention] = args;
-	const [tournament, doc] = await getTournamentInterface(id);
+	const [tournament, doc] = await getTournamentInterface(id, msg.author.id);
 	const channel = getChannel(msg, channelMention);
 	const isPrivate = privString ? privString.toLowerCase() === "private" : false;
 	await tournament.addChannel(channel.id, msg.author.id, isPrivate);
@@ -35,7 +35,7 @@ export async function addChannel(msg: Message, args: string[]): Promise<void> {
 
 export async function removeChannel(msg: Message, args: string[]): Promise<void> {
 	const [id, privString, channelMention] = args;
-	const [tournament, doc] = await getTournamentInterface(id);
+	const [tournament, doc] = await getTournamentInterface(id, msg.author.id);
 	const channel = getChannel(msg, channelMention);
 	const isPrivate = privString ? privString.toLowerCase() === "private" : false;
 	await tournament.removeChannel(channel.id, msg.author.id, isPrivate);

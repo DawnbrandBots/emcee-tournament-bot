@@ -1,13 +1,16 @@
-import { findTournament, TournamentNotFoundError } from "../actions";
+import { findTournament, TournamentNotFoundError, isOrganising, UnauthorisedOrganiserError } from "../actions";
 import { getTournament, Tournament, MiscUserError } from "../tournament";
 import { TournamentDoc } from "../models";
 import { Message } from "eris";
 
-export async function getTournamentInterface(id: string): Promise<[Tournament, TournamentDoc]> {
+export async function getTournamentInterface(id: string, organiser: string): Promise<[Tournament, TournamentDoc]> {
 	const doc = await findTournament(id);
 	const tournament = getTournament(doc.challongeId);
 	if (!tournament) {
 		throw new TournamentNotFoundError(doc.challongeId);
+	}
+	if (!(await isOrganising(organiser, id))) {
+		throw new UnauthorisedOrganiserError(organiser, id);
 	}
 	return [tournament, doc];
 }

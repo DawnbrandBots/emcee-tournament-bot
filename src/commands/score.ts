@@ -9,7 +9,7 @@ async function getPlayerDiscord(tournamentId: string, playerId: number): Promise
 
 export async function submitScore(msg: Message, args: string[]): Promise<void> {
 	const [id, score] = args;
-	const [tournament, doc] = await getTournamentInterface(id);
+	const [tournament, doc] = await getTournamentInterface(id, msg.author.id);
 	const winner = getMentionedUserId(msg);
 	const scoreRegex = /(\d)-(\d)/;
 	const scoreMatch = scoreRegex.exec(score);
