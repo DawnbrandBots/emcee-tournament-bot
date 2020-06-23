@@ -20,7 +20,8 @@ import {
 	setTournamentName,
 	setTournamentDescription,
 	getOngoingTournaments,
-	addRegisterMessage
+	addRegisterMessage,
+	getPlayerFromDiscord
 } from "./actions";
 import { bot } from "./bot";
 import { TournamentModel, TournamentDoc } from "./models";
@@ -376,7 +377,15 @@ bot.on("messageReactionRemove", async (msg, emoji, userId) => {
 			// impossible because of removePendingParticipant except in the case of a race condition
 			throw new MiscInternalError(`User ${userId} removed from non-existent tournament!`);
 		}
+		const user = await getPlayerFromDiscord(tournament.challongeId, userId);
+		if (!user) {
+			// impossible because of removePendingParticipant except in the case of a race condition
+			throw new MiscInternalError(
+				`Non-existing user ${userId} removed from tournament ${tournament.challongeId}!`
+			);
+		}
 		try {
+			await challonge.removeParticipant(tournament.challongeId, user.challongeId);
 			await chan.createMessage(`You have successfully dropped from ${tournament.name}.`);
 		} catch (e) {
 			// DiscordRESTError - User blocking DMs

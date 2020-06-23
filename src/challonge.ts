@@ -258,6 +258,13 @@ class Challonge {
 		return (await this.validateResponse(response)) as AddParticipantReponse;
 	}
 
+	public async removeParticipant(tournament: string, participant: number): Promise<void> {
+		const response = await fetch(`${this.baseUrl}tournaments/${tournament}/participants/${participant}.json`, {
+			method: "DELETE"
+		});
+		await this.validateResponse(response);
+	}
+
 	public async indexMatches(
 		tournament: string,
 		state?: ChallongeMatchState,
@@ -267,10 +274,10 @@ class Challonge {
 		if (state) {
 			url += `?state=${state}`;
 			if (participantId) {
-				url += `&participant_id=${participantId.toString()}`;
+				url += `&participant_id=${participantId}`;
 			}
 		} else if (participantId) {
-			url += `?participant_id=${participantId.toString()}`;
+			url += `?participant_id=${participantId}`;
 		}
 		const response = await fetch(url);
 		return (await this.validateResponse(response)) as IndexMatchResponse;
