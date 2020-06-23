@@ -16,7 +16,6 @@ import {
 	addOrganiser,
 	removeOrganiser,
 	findTournament,
-	UnauthorisedOrganiserError,
 	setTournamentName,
 	setTournamentDescription,
 	getOngoingTournaments,
@@ -25,8 +24,15 @@ import {
 } from "./actions";
 import { bot } from "./bot";
 import { TournamentModel, TournamentDoc } from "./models";
-import { DiscordDeck, DeckNotFoundError } from "./discordDeck";
+import { DiscordDeck } from "./discordDeck";
 import { defaultOrganisers, defaultPublicChannels, defaultPrivateChannels } from "./config/config.json";
+import {
+	UnauthorisedOrganiserError,
+	DeckNotFoundError,
+	AssertTextChannelError,
+	UserError,
+	MiscInternalError
+} from "./commands/errors";
 
 const CHECK_EMOJI = "✅";
 
@@ -38,18 +44,6 @@ export function getTournament(id: string): Tournament | undefined {
 	return tournaments[id];
 }
 
-export class AssertTextChannelError extends Error {
-	channelId: string;
-
-	constructor(channelId: string) {
-		super(`Channel ${channelId} is not a valid text channel`);
-		this.channelId = channelId;
-	}
-}
-
-export class MiscUserError extends Error {}
-export class MiscInternalError extends Error {}
-
 export class Tournament {
 	readonly id: string;
 	private roles: { [guild: string]: string } = {};
@@ -59,7 +53,7 @@ export class Tournament {
 
 	public static async init(name: string, description: string, msg: Message): Promise<Tournament> {
 		if (!(msg.channel instanceof GuildChannel)) {
-			throw new MiscUserError("Tournaments cannot be constructed in Direct Messages!");
+			throw new UserError("Tournaments cannot be constructed in Direct Messages!");
 		}
 
 		// generate a URL based on the name, with added numbers to prevent conflicts
@@ -156,7 +150,7 @@ export class Tournament {
 			throw new AssertTextChannelError(channelId);
 		}
 		if (!(await removeAnnouncementChannel(channelId, this.id, organiser, isPrivate ? "private" : "public"))) {
-			throw new MiscUserError(`Channel ${channel.name} is not a registered announcement channel`);
+			throw new UserError(`Channel ${channel.name} is not a registered announcement channel`);
 		}
 		const tournament = await this.getTournament();
 		await channel.createMessage(`This channel no longer displaying announcements for ${tournament.name}`);
@@ -166,7 +160,7 @@ export class Tournament {
 		await this.verifyOrganiser(organiser);
 		const tournament = await this.getTournament();
 		if (!(tournament.status === "preparing")) {
-			throw new MiscUserError(`It's too late to update the information for ${tournament.name}.`);
+			throw new UserError(`It's too late to update the information for ${tournament.name}.`);
 		}
 		await challonge.updateTournament(this.id, {
 			name,
@@ -228,7 +222,7 @@ export class Tournament {
 		await this.verifyOrganiser(organiser);
 		const tournament = await this.getTournament();
 		if (tournament.confirmedParticipants.length < 2) {
-			throw new MiscUserError("Cannot start a tournament without at least 2 confirmed participants!");
+			throw new UserError("Cannot start a tournament without at least 2 confirmed participants!");
 		}
 		await challonge.startTournament(this.id, {});
 		const tournData = await challonge.showTournament(this.id);
@@ -251,11 +245,11 @@ export class Tournament {
 		const doc = await this.getTournament();
 		const winner = doc.confirmedParticipants.find(p => p.discord === winnerId);
 		if (!winner) {
-			throw new MiscUserError(`Could not find a participant for <@${winnerId}>!`);
+			throw new UserError(`Could not find a participant for <@${winnerId}>!`);
 		}
 		const matches = await challonge.indexMatches(this.id, "open", winner.challongeId);
 		if (matches.length < 1) {
-			throw new MiscUserError(`Could not find an unfinished match for <@${winnerId}>!`);
+			throw new UserError(`Could not find an unfinished match for <@${winnerId}>!`);
 		}
 		const match = matches[0]; // if there's more than one something's gone very wack
 		return await challonge.updateMatch(this.id, match.match.id.toString(), {
@@ -324,7 +318,7 @@ export class Tournament {
 	public async removeOrganiser(organiser: string, toRemove: string): Promise<boolean> {
 		await this.verifyOrganiser(organiser);
 		if (organiser === toRemove) {
-			throw new MiscUserError("You cannot remove yourself from organising a tournament!");
+			throw new UserError("You cannot remove yourself from organising a tournament!");
 		}
 		return await removeOrganiser(toRemove, this.id);
 	}

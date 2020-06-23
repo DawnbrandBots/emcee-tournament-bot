@@ -3,11 +3,7 @@ import { Message, MessageContent, MessageFile, TextChannel } from "eris";
 import fetch from "node-fetch";
 import { extractURLs } from "ydke";
 import { bot } from "./bot";
-import { AssertTextChannelError } from "./tournament";
-
-export class DeckNotFoundError extends Error {
-	message = "Must provide either attached `.ydk` file or valid `ydke://` URL!";
-}
+import { DeckNotFoundError, AssertTextChannelError } from "./commands/errors";
 
 export class DiscordDeck extends Deck {
 	private static async messageToYdk(msg: Message): Promise<string> {

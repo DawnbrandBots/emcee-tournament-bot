@@ -1,4 +1,5 @@
 import { TournamentModel, TournamentDoc } from "../models";
+import { TournamentNotFoundError, UnauthorisedOrganiserError } from "../commands/errors";
 
 type DiscordID = string;
 type TournamentID = string; // from Challonge
@@ -21,32 +22,12 @@ export async function initTournament(
 	await tournament.save();
 }
 
-export class TournamentNotFoundError extends Error {
-	challongeId: TournamentID;
-
-	constructor(challongeId: TournamentID) {
-		super(`Unknown tournament ${challongeId}`);
-		this.challongeId = challongeId;
-	}
-}
-
 export async function findTournament(challongeId: TournamentID): Promise<TournamentDoc> {
 	const tournament = await TournamentModel.findOne({ challongeId });
 	if (!tournament) {
 		throw new TournamentNotFoundError(challongeId);
 	}
 	return tournament;
-}
-
-export class UnauthorisedOrganiserError extends Error {
-	organiser: DiscordID;
-	challongeId: TournamentID;
-
-	constructor(organiser: DiscordID, challongeId: TournamentID) {
-		super(`Organiser ${organiser} not authorised for tournament ${challongeId}`);
-		this.organiser = organiser;
-		this.challongeId = challongeId;
-	}
 }
 
 // Internal helper

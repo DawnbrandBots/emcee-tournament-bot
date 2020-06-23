@@ -1,15 +1,16 @@
 import { Message } from "eris";
-import { MiscUserError, Tournament } from "../tournament";
+import { Tournament } from "../tournament";
 import { getTournamentInterface, getMentionedUserId } from "./utils";
 import { getOngoingTournaments, getPlayerFromDiscord } from "../actions";
 import { TypedDeck } from "ydke";
 import { DiscordDeck } from "../discordDeck";
 import { bot } from "../bot";
+import { UserError } from "./errors";
 
 export async function createTournament(msg: Message, args: string[]): Promise<void> {
 	const [name, desc] = args;
 	if (name.length === 0 || desc.length === 0) {
-		throw new MiscUserError("You must provide a valid tournament name and description!");
+		throw new UserError("You must provide a valid tournament name and description!");
 	}
 	const tournament = await Tournament.init(name, desc, msg);
 	const [, doc] = await getTournamentInterface(tournament.id, msg.author.id);
@@ -24,7 +25,7 @@ export async function updateTournament(msg: Message, args: string[]): Promise<vo
 	const oldName = doc.name;
 	const oldDesc = doc.description;
 	if (name.length === 0 || desc.length === 0) {
-		throw new MiscUserError("You must provide a valid tournament name and description!");
+		throw new UserError("You must provide a valid tournament name and description!");
 	}
 	const [newName, newDesc] = await tournament.updateTournament(name, desc, msg.author.id);
 	await msg.channel.createMessage(
@@ -60,7 +61,7 @@ export async function getPlayerDeck(msg: Message, args: string[]): Promise<void>
 	const user = getMentionedUserId(msg);
 	const player = await getPlayerFromDiscord(doc.challongeId, user);
 	if (!player) {
-		throw new MiscUserError(`Could not find a player in tournament ${doc.name} for Discord user <@${user}>`);
+		throw new UserError(`Could not find a player in tournament ${doc.name} for Discord user <@${user}>`);
 	}
 	const record: TypedDeck = {
 		main: Uint32Array.from(player.deck.main),

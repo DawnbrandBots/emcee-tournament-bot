@@ -1,7 +1,7 @@
-import { MiscUserError } from "../tournament";
 import { Message } from "eris";
 import { getPlayerFromId } from "../actions";
 import { getTournamentInterface, getMentionedUserId } from "./utils";
+import { UserError } from "./errors";
 async function getPlayerDiscord(tournamentId: string, playerId: number): Promise<string | undefined> {
 	const player = await getPlayerFromId(tournamentId, playerId);
 	return player?.discord;
@@ -16,7 +16,7 @@ export async function submitScore(msg: Message, args: string[]): Promise<void> {
 	const winnerScore = parseInt(scoreMatch ? scoreMatch[1] : "");
 	const loserScore = parseInt(scoreMatch ? scoreMatch[2] : "");
 	if (!scoreMatch || isNaN(winnerScore) || isNaN(loserScore)) {
-		throw new MiscUserError("You must report the score in the format `#-#`, with the winner first, e.g. `2-1`!");
+		throw new UserError("You must report the score in the format `#-#`, with the winner first, e.g. `2-1`!");
 	}
 	const result = await tournament.submitScore(winner, winnerScore, loserScore, msg.author.id);
 	const loser =
