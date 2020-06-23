@@ -240,7 +240,7 @@ class Challonge {
 		await this.validateResponse(response);
 	}
 
-	public async finalizeTournament(tournament: string, settings: StartTournamentSettings): Promise<void> {
+	public async finaliseTournament(tournament: string, settings: StartTournamentSettings): Promise<void> {
 		const response = await fetch(`${this.baseUrl}tournaments/${tournament}/finalize.json`, {
 			method: "POST",
 			body: JSON.stringify(settings),

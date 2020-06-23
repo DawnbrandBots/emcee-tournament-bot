@@ -310,6 +310,7 @@ export class Tournament {
 		const tournament = await this.getTournament();
 		const channels = tournament.publicChannels;
 		await Promise.all(channels.map(c => this.sendConclusionMessage(c, this.id, tournament.name, cancel)));
+		await challonge.finaliseTournament(this.id, {});
 		await finishTournament(this.id, organiser);
 		delete tournaments[this.id];
 	}
