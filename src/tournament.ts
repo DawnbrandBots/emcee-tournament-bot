@@ -332,14 +332,14 @@ bot.on("messageDelete", msg => {
 	removeRegisterMessage(msg.id, msg.channel.id).catch(console.error);
 });
 
-bot.on("messageReactionAdd", async (msg, emoji, userID) => {
+bot.on("messageReactionAdd", async (msg, emoji, userId) => {
 	// register pending participant
-	if (emoji.name === CHECK_EMOJI && (await addPendingParticipant(msg.id, msg.channel.id, userID))) {
-		const chan = await bot.getDMChannel(userID);
+	if (emoji.name === CHECK_EMOJI && (await addPendingParticipant(msg.id, msg.channel.id, userId))) {
+		const chan = await bot.getDMChannel(userId);
 		const tournament = await findTournamentByRegisterMessage(msg.id, msg.channel.id);
 		if (!tournament) {
 			// impossible because of addPendingParticipant except in the case of a race condition
-			throw new MiscInternalError(`User ${userID} added to non-existent tournament!`);
+			throw new MiscInternalError(`User ${userId} added to non-existent tournament!`);
 		}
 		await chan.createMessage(
 			`You have successfully registered for ${tournament.name}.
@@ -359,21 +359,21 @@ async function handleDMFailure(channelId: string, userId: string): Promise<strin
 	return msg.id;
 }
 
-bot.on("messageReactionRemove", async (msg, emoji, userID) => {
+bot.on("messageReactionRemove", async (msg, emoji, userId) => {
 	// remove pending participant
-	if (emoji.name === CHECK_EMOJI && (await removePendingParticipant(msg.id, msg.channel.id, userID))) {
-		const chan = await bot.getDMChannel(userID);
+	if (emoji.name === CHECK_EMOJI && (await removePendingParticipant(msg.id, msg.channel.id, userId))) {
+		const chan = await bot.getDMChannel(userId);
 		const tournament = await findTournamentByRegisterMessage(msg.id, msg.channel.id);
 		if (!tournament) {
 			// impossible because of removePendingParticipant except in the case of a race condition
-			throw new MiscInternalError(`User ${userID} removed from non-existent tournament!`);
+			throw new MiscInternalError(`User ${userId} removed from non-existent tournament!`);
 		}
 		try {
 			await chan.createMessage(`You have successfully dropped from ${tournament.name}.`);
 		} catch (e) {
 			// DiscordRESTError - User blocking DMs
 			if (e.code === 50007) {
-				await Promise.all(tournament.privateChannels.map(c => handleDMFailure(c, userID)));
+				await Promise.all(tournament.privateChannels.map(c => handleDMFailure(c, userId)));
 				return;
 			}
 			throw e;
@@ -472,7 +472,8 @@ export async function confirmDeck(msg: Message): Promise<void> {
 			if (e instanceof DeckNotFoundError) {
 				await msg.channel.createMessage(e.message);
 			} else {
-				throw e;
+				// nowhere to throw
+				console.error(e);
 			}
 		}
 	}
