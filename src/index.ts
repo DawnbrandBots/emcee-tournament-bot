@@ -10,8 +10,12 @@ bot.on("messageCreate", async msg => {
 	if (msg.author.bot) {
 		return;
 	}
-	await confirmDeck(msg);
-	await parseCommand(msg);
+	try {
+		await confirmDeck(msg);
+		await parseCommand(msg);
+	} catch (e) {
+		console.error(e);
+	}
 });
 
 bot.connect().catch(console.error);

@@ -342,8 +342,8 @@ bot.on("messageReactionAdd", async (msg, emoji, userId) => {
 			throw new MiscInternalError(`User ${userId} added to non-existent tournament!`);
 		}
 		await chan.createMessage(
-			`You have successfully registered for ${tournament.name}.
-			Please submit a deck to complete your registration, by uploading a YDK file or sending a message with a YDKE URL.`
+			`You have successfully registered for ${tournament.name}. ` +
+				"Please submit a deck to complete your registration, by uploading a YDK file or sending a message with a YDKE URL."
 		);
 	}
 });
@@ -361,6 +361,7 @@ async function handleDMFailure(channelId: string, userId: string): Promise<strin
 
 bot.on("messageReactionRemove", async (msg, emoji, userId) => {
 	// remove pending participant
+	// TODO: Drop corresponding name from Challonge
 	if (emoji.name === CHECK_EMOJI && (await removePendingParticipant(msg.id, msg.channel.id, userId))) {
 		const chan = await bot.getDMChannel(userId);
 		const tournament = await findTournamentByRegisterMessage(msg.id, msg.channel.id);
@@ -391,8 +392,12 @@ async function grantTournamentRole(channelId: string, user: string, tournamentId
 		return false;
 	}
 	const tournament = tournaments[tournamentId];
-	const role = await tournament.getRole(channelId);
-	await member.addRole(role, "Tournament registration");
+	try {
+		const role = await tournament.getRole(channelId);
+		await member.addRole(role, "Tournament registration");
+	} catch (e) {
+		console.error(e);
+	}
 	return true;
 }
 
