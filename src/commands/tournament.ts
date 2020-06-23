@@ -1,6 +1,9 @@
 import { Message } from "eris";
 import { MiscUserError, Tournament } from "../tournament";
-import { getTournamentInterface } from "./utils";
+import { getTournamentInterface, getMentionedUserId } from "./utils";
+import { getOngoingTournaments, getPlayerFromDiscord } from "../actions";
+import { TypedDeck } from "ydke";
+import { DiscordDeck } from "../discordDeck";
 
 export async function createTournament(msg: Message, args: string[]): Promise<void> {
 	const [name, desc] = args;
@@ -26,4 +29,43 @@ export async function updateTournament(msg: Message, args: string[]): Promise<vo
 	await msg.channel.createMessage(
 		`Tournament ${oldName} successfully renamed to ${newName}!\nPrevious description:\n${oldDesc}\nNew description:\n${newDesc}`
 	);
+}
+
+export async function listTournaments(msg: Message): Promise<void> {
+	const tournaments = await getOngoingTournaments();
+	await msg.channel.createMessage(
+		tournaments
+			.map(
+				t =>
+					`ID: \`${t.challongeId}\`|Name: \`${t.name}\`|Status: \`${t.status}\`|Players: ${t.confirmedParticipants.length}`
+			)
+			.join("\n")
+	);
+}
+
+export async function listPlayers(msg: Message, args: string[]): Promise<void> {
+	const [id] = args;
+	const [, doc] = await getTournamentInterface(id, msg.author.id);
+	if (doc.confirmedParticipants.length === 0) {
+		await msg.channel.createMessage("That tournament has no confirmed participants yet!");
+		return;
+	}
+	await msg.channel.createMessage(doc.confirmedParticipants.map(p => `<@${p.discord}>`).join(", "));
+}
+
+export async function getPlayerDeck(msg: Message, args: string[]): Promise<void> {
+	const [id] = args;
+	const [, doc] = await getTournamentInterface(id, msg.author.id);
+	const user = getMentionedUserId(msg);
+	const player = await getPlayerFromDiscord(doc.challongeId, user);
+	if (!player) {
+		throw new MiscUserError(`Could not find a player in tournament ${doc.name} for discord user <@${user}>`);
+	}
+	const record: TypedDeck = {
+		main: Uint32Array.from(player.deck.main),
+		extra: Uint32Array.from(player.deck.extra),
+		side: Uint32Array.from(player.deck.side)
+	};
+	const deck = DiscordDeck.constructFromRecord(record) as DiscordDeck;
+	await deck.sendProfile(msg);
 }

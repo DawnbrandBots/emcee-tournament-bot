@@ -277,9 +277,17 @@ interface MongoPlayer {
 	};
 }
 
-export async function getPlayerFromId(challongeId: string, playerId: number): Promise<MongoPlayer | undefined> {
+export async function getPlayerFromId(challongeId: TournamentID, playerId: number): Promise<MongoPlayer | undefined> {
 	const tournament = await findTournament(challongeId);
 	return tournament.confirmedParticipants.find(p => p.challongeId === playerId);
+}
+
+export async function getPlayerFromDiscord(
+	challongeId: TournamentID,
+	discordId: DiscordID
+): Promise<MongoPlayer | undefined> {
+	const tournament = await findTournament(challongeId);
+	return tournament.confirmedParticipants.find(p => p.discord === discordId);
 }
 
 // Get persisted tournaments that are not finished, for restoration upon launch
