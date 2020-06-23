@@ -4,6 +4,7 @@ import { getTournamentInterface, getMentionedUserId } from "./utils";
 import { getOngoingTournaments, getPlayerFromDiscord } from "../actions";
 import { TypedDeck } from "ydke";
 import { DiscordDeck } from "../discordDeck";
+import { bot } from "../bot";
 
 export async function createTournament(msg: Message, args: string[]): Promise<void> {
 	const [name, desc] = args;
@@ -67,5 +68,9 @@ export async function getPlayerDeck(msg: Message, args: string[]): Promise<void>
 		side: Uint32Array.from(player.deck.side)
 	};
 	const deck = DiscordDeck.constructFromRecord(record);
-	await deck.sendProfile(msg);
+	const discordUser = bot.users.get(user);
+	await deck.sendProfile(
+		msg.channel.id,
+		discordUser ? `${discordUser.username}#${discordUser.discriminator}ydk` : user
+	);
 }

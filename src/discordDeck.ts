@@ -1,7 +1,9 @@
 import { Deck } from "./deck";
-import { Message, MessageContent, MessageFile } from "eris";
+import { Message, MessageContent, MessageFile, TextChannel } from "eris";
 import fetch from "node-fetch";
 import { extractURLs } from "ydke";
+import { bot } from "./bot";
+import { AssertTextChannelError } from "./tournament";
 
 export class DeckNotFoundError extends Error {
 	message = "Must provide either attached `.ydk` file or valid `ydke://` URL!";
@@ -48,7 +50,11 @@ export class DiscordDeck extends Deck {
 		return outStrings;
 	}
 
-	public async sendProfile(msg: Message): Promise<Message> {
+	public async sendProfile(channelId: string, filename: string): Promise<Message> {
+		const channel = bot.getChannel(channelId);
+		if (!(channel instanceof TextChannel)) {
+			throw new AssertTextChannelError(channelId);
+		}
 		const profile = await this.getProfile();
 		const title = "Contents of your deck:\n";
 		const mainCount =
@@ -147,13 +153,19 @@ export class DiscordDeck extends Deck {
 		}
 		const file: MessageFile = {
 			file: profile.ydk,
-			name: `${msg.author.username + msg.author.discriminator}.ydk`
+			name: filename
 		};
-		return await msg.channel.createMessage(out, file);
+		return await channel.createMessage(out, file);
 	}
 
-	public static async sendProfile(msg: Message): Promise<Message> {
+	public static async sendProfile(msg: Message, channel?: string, filename?: string): Promise<Message> {
 		const deck = await DiscordDeck.constructFromMessage(msg);
-		return await deck.sendProfile(msg);
+		if (!channel) {
+			channel = msg.channel.id;
+		}
+		if (!filename) {
+			filename = `${msg.author.username}#${msg.author.discriminator}.ydk`;
+		}
+		return await deck.sendProfile(channel, filename);
 	}
 }

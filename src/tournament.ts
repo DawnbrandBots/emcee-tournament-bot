@@ -409,7 +409,7 @@ async function grantTournamentRole(channelId: string, user: string, tournamentId
 
 async function sendTournamentRegistration(
 	channelId: string,
-	user: string,
+	userId: string,
 	deck: DiscordDeck,
 	name: string
 ): Promise<string> {
@@ -417,8 +417,9 @@ async function sendTournamentRegistration(
 	if (!(channel instanceof TextChannel)) {
 		throw new AssertTextChannelError(channelId);
 	}
-	const msg = await channel.createMessage(`<@${user}> has signed up for ${name} with the following deck.`);
-	await deck.sendProfile(msg);
+	const msg = await channel.createMessage(`<@${userId}> has signed up for ${name} with the following deck.`);
+	const user = bot.users.get(userId);
+	await deck.sendProfile(channel.id, user ? `${user.username}#${user.discriminator}ydk` : userId);
 	return msg.id;
 }
 
@@ -455,7 +456,7 @@ export async function confirmDeck(msg: Message): Promise<void> {
 				await msg.channel.createMessage(
 					"Your deck is not legal, so you have not been registered. Please fix the issues listed below and try submitting again."
 				);
-				await deck.sendProfile(msg);
+				await deck.sendProfile(msg.channel.id, `${msg.author.username}#${msg.author.discriminator}.ydk`);
 				return;
 			}
 			const challongeUser = await challonge.addParticipant(doc.challongeId, {
@@ -475,7 +476,7 @@ export async function confirmDeck(msg: Message): Promise<void> {
 			await msg.channel.createMessage(
 				`Congratulations! You have been registered in ${doc.name} with the following deck.`
 			);
-			await deck.sendProfile(msg);
+			await deck.sendProfile(msg.channel.id, `${msg.author.username}#${msg.author.discriminator}.ydk`);
 			await Promise.all(
 				doc.privateChannels.map(c => sendTournamentRegistration(c, msg.author.id, deck, doc.name))
 			);
