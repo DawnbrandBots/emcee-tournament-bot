@@ -367,6 +367,17 @@ bot.on("messageDelete", msg => {
 	removeRegisterMessage(msg.id, msg.channel.id).catch(console.error);
 });
 
+async function handleDMFailure(channelId: string, userId: string): Promise<string> {
+	const channel = bot.getChannel(channelId);
+	if (!(channel instanceof TextChannel)) {
+		throw new AssertTextChannelError(channelId);
+	}
+	const msg = await channel.createMessage(
+		`User <@${userId}> is trying to register for the tournament, but does not accept DMs from me! Please ask them to change their settings to allow this.`
+	);
+	return msg.id;
+}
+
 bot.on("messageReactionAdd", async (msg, emoji, userId) => {
 	if (userId === bot.user.id) {
 		return;
@@ -379,30 +390,27 @@ bot.on("messageReactionAdd", async (msg, emoji, userId) => {
 			// impossible because of addPendingParticipant except in the case of a race condition
 			throw new MiscInternalError(`User ${userId} added to non-existent tournament!`);
 		}
-		await chan.createMessage(
-			`You have successfully registered for ${tournament.name}. ` +
-				"Please submit a deck to complete your registration, by uploading a YDK file or sending a message with a YDKE URL."
-		);
+		try {
+			await chan.createMessage(
+				`You have successfully registered for ${tournament.name}. ` +
+					"Please submit a deck to complete your registration, by uploading a YDK file or sending a message with a YDKE URL."
+			);
+		} catch (e) {
+			// DiscordRESTError - User blocking DMs
+			if (e.code === 50007) {
+				await Promise.all(tournament.privateChannels.map(c => handleDMFailure(c, userId)));
+				return;
+			}
+			throw e;
+		}
 	}
 });
-
-async function handleDMFailure(channelId: string, userId: string): Promise<string> {
-	const channel = bot.getChannel(channelId);
-	if (!(channel instanceof TextChannel)) {
-		throw new AssertTextChannelError(channelId);
-	}
-	const msg = await channel.createMessage(
-		`User <@${userId}> is trying to register for the tournament, but does not accept DMs from me! Please ask them to change their settings to allow this.`
-	);
-	return msg.id;
-}
 
 bot.on("messageReactionRemove", async (msg, emoji, userId) => {
 	if (userId === bot.user.id) {
 		return;
 	}
 	// remove pending participant
-	// TODO: Drop corresponding name from Challonge
 	if (emoji.name === CHECK_EMOJI && (await removePendingParticipant(msg.id, msg.channel.id, userId))) {
 		const chan = await bot.getDMChannel(userId);
 		const tournament = await findTournamentByRegisterMessage(msg.id, msg.channel.id);
