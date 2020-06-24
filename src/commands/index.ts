@@ -3,7 +3,7 @@ import { prefix } from "../config/config.json";
 import { createTournament, updateTournament, listTournaments, listPlayers, getPlayerDeck } from "./tournament";
 import { addChannel, removeChannel } from "./channels";
 import { open, start, cancelTournament, help } from "./basic";
-import { addOrganiser, removeOrganiser } from "./organiser";
+import { addHost, removeHost } from "./host";
 import { nextRound } from "./round";
 import { submitScore } from "./score";
 import { UserError } from "../errors";
@@ -17,10 +17,10 @@ const commands: { [command: string]: (msg: Message, args: string[]) => Promise<v
 	open: open,
 	start: start,
 	cancel: cancelTournament,
-	addorganiser: addOrganiser,
-	removeorganiser: removeOrganiser,
-	addorganizer: addOrganiser, // US alias
-	removeorganizer: removeOrganiser,
+	addhost: addHost,
+	removehost: removeHost,
+	addorganizer: addHost, // US alias
+	removeorganizer: removeHost,
 	round: nextRound,
 	score: submitScore,
 	list: listTournaments,

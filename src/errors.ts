@@ -11,13 +11,13 @@ export class TournamentNotFoundError extends UserError {
 	}
 }
 
-export class UnauthorisedOrganiserError extends UserError {
-	organiser: string;
+export class UnauthorisedHostError extends UserError {
+	host: string;
 	challongeId: string;
 
-	constructor(organiser: string, challongeId: string) {
-		super(`Organiser ${organiser} not authorised for tournament ${challongeId}`);
-		this.organiser = organiser;
+	constructor(host: string, challongeId: string) {
+		super(`Host ${host} not authorised for tournament ${challongeId}`);
+		this.host = host;
 		this.challongeId = challongeId;
 	}
 }

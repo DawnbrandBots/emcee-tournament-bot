@@ -1,6 +1,6 @@
 {
 	"prefix": "mc!",
-	"defaultOrganisers": [],
+	"defaultHosts": [],
 	"defaultPublicChannels": [],
 	"defaultPrivateChannels": []
 }
