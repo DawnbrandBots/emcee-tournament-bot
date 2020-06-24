@@ -2,7 +2,7 @@ import { Message } from "eris";
 import { prefix } from "../config/config.json";
 import { createTournament, updateTournament, listTournaments, listPlayers, getPlayerDeck } from "./tournament";
 import { addChannel, removeChannel } from "./channels";
-import { open, start, cancelTournament } from "./basic";
+import { open, start, cancelTournament, help } from "./basic";
 import { addOrganiser, removeOrganiser } from "./organiser";
 import { nextRound } from "./round";
 import { submitScore } from "./score";
@@ -25,7 +25,8 @@ const commands: { [command: string]: (msg: Message, args: string[]) => Promise<v
 	score: submitScore,
 	list: listTournaments,
 	players: listPlayers,
-	deck: getPlayerDeck
+	deck: getPlayerDeck,
+	help: help
 };
 
 export async function parseCommand(msg: Message): Promise<void> {

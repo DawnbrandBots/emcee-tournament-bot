@@ -1,4 +1,5 @@
 # [Project Ignis](https://github.com/ProjectIgnis): Emcee
+
 ![Build](https://github.com/AlphaKretin/deck-parse-bot/workflows/Build/badge.svg)&nbsp;
 [![Coverage Status](https://coveralls.io/repos/github/AlphaKretin/deck-parse-bot/badge.svg?t=iUM0Et)](https://coveralls.io/github/AlphaKretin/deck-parse-bot)
 
@@ -6,23 +7,29 @@ A Discord bot to facilitate organising [Challonge](https://challonge.com/) tourn
 
 Supports YGOPro deck files (.ydk) and `ydke://` URLs from [Project Ignis: EDOPro](https://github.com/edo9300/edopro).
 
+## Usage
+
+This README file details the source code of this bot. For information on how to use the bot from the perspective of a Discord user, see this repository's [wiki](https://github.com/AlphaKretin/deck-parse-bot/wiki).
+
 ## Development
+
 Emcee is written in TypeScript and uses Eris to talk to Discord and MongoDB for persistence.
 It targets Node.js 12+ and can be run with or without Docker.
 
 1. Install Docker with Docker Compose or MongoDB.
 1. Start MongoDB. You can start up just the Mongo container with `docker-compose up -d mongo`.
 1. Create a `.env` file with the required environment variables defined in `/src/config/env.ts`.
-   - If Emcee is in Docker, `MONGODB_URL` is not required.
-   - If Emcee is outside Docker, use `MONGODB_URL=mongodb://localhost:27017/tournamentdb` or similar.
+    - If Emcee is in Docker, `MONGODB_URL` is not required.
+    - If Emcee is outside Docker, use `MONGODB_URL=mongodb://localhost:27017/tournamentdb` or similar.
 1. Start Emcee.
-   - In Docker: `docker-compose up` and wait for the image to build.
-   - Outside Docker: `npm ci && npm build && node dist/index.js`.
+    - In Docker: `docker-compose up` and wait for the image to build.
+    - Outside Docker: `npm ci && npm build && node dist/index.js`.
 
 Please use Australian English spellings.
 
 ## Licence
-Copyright © 2020  AlphaKretin, Kevin Lu. See COPYING for more details.
+
+Copyright © 2020 AlphaKretin, Kevin Lu. See COPYING for more details.
 
 ```
 This program is free software: you can redistribute it and/or modify

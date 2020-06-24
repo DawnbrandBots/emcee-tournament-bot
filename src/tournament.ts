@@ -20,7 +20,8 @@ import {
 	setTournamentDescription,
 	getOngoingTournaments,
 	addRegisterMessage,
-	getPlayerFromDiscord
+	getPlayerFromDiscord,
+	getPlayerFromId
 } from "./actions";
 import { bot } from "./bot";
 import { TournamentModel, TournamentDoc } from "./models";
@@ -235,13 +236,46 @@ export class Tournament {
 		await removeRegisterMessage(ids.message, ids.channel);
 	}
 
-	private async startRound(channelId: string, url: string, round: number, name: string): Promise<string> {
+	private async checkBye(): Promise<string | undefined> {
+		// odd number of participants means a bye
+		const tournament = await this.getTournament();
+		if (tournament.confirmedParticipants.length % 2 === 1) {
+			const matches = await challonge.indexMatches(this.id, "open");
+			const players = tournament.confirmedParticipants.map(p => p.challongeId);
+			for (const match of matches) {
+				const i = players.indexOf(match.match.player1_id);
+				if (i > -1) {
+					players.splice(i);
+				}
+				const j = players.indexOf(match.match.player2_id);
+				if (j > -1) {
+					players.splice(j);
+				}
+			}
+			if (players.length === 1) {
+				const user = await getPlayerFromId(this.id, players[0]);
+				return user?.discord;
+			}
+		}
+		return;
+	}
+
+	private async startRound(
+		channelId: string,
+		url: string,
+		round: number,
+		name: string,
+		bye?: string
+	): Promise<string> {
 		const channel = bot.getChannel(channelId);
 		if (!(channel instanceof TextChannel)) {
 			throw new AssertTextChannelError(channelId);
 		}
 		const role = await this.getRole(channelId);
-		const message = `Round ${round} of ${name} has begun! <@&${role}>\nPairings: https://challonge.com/${url}`;
+		let message = `Round ${round} of ${name} has begun! <@&${role}>\nPairings: https://challonge.com/${url}`;
+		if (bye) {
+			message += `\n<@${bye}> has the bye for this round.`;
+		}
 		const msg = await channel.createMessage(message);
 		return msg.id;
 	}
@@ -259,8 +293,11 @@ export class Tournament {
 		const messages = tournament.registerMessages;
 		await Promise.all(messages.map(this.deleteRegisterMessage));
 		const channels = tournament.publicChannels;
-		const announcements = await Promise.all(channels.map(c => this.startRound(c, this.id, 1, tournament.name)));
-		logger.log({
+		const bye = await this.checkBye();
+		const announcements = await Promise.all(
+			channels.map(c => this.startRound(c, this.id, 1, tournament.name, bye))
+		);
+    logger.log({
 			level: "verbose",
 			message: `Tournament ${this.id} commenced by ${organiser}.`
 		});
@@ -318,8 +355,9 @@ export class Tournament {
 		}
 		const tournament = await this.getTournament();
 		const channels = tournament.publicChannels;
-		await Promise.all(channels.map(c => this.startRound(c, this.id, round, tournament.name)));
-		logger.log({
+		const bye = await this.checkBye();
+		await Promise.all(channels.map(c => this.startRound(c, this.id, round, tournament.name, bye)));
+    logger.log({
 			level: "verbose",
 			message: `Tournament ${this.id} moved to round ${round} by ${organiser}.`
 		});
@@ -402,6 +440,17 @@ bot.on("messageDelete", msg => {
 		});
 });
 
+async function handleDMFailure(channelId: string, userId: string): Promise<string> {
+	const channel = bot.getChannel(channelId);
+	if (!(channel instanceof TextChannel)) {
+		throw new AssertTextChannelError(channelId);
+	}
+	const msg = await channel.createMessage(
+		`User <@${userId}> is trying to register for the tournament, but does not accept DMs from me! Please ask them to change their settings to allow this.`
+	);
+	return msg.id;
+}
+
 bot.on("messageReactionAdd", async (msg, emoji, userId) => {
 	if (userId === bot.user.id) {
 		return;
@@ -414,34 +463,34 @@ bot.on("messageReactionAdd", async (msg, emoji, userId) => {
 			// impossible because of addPendingParticipant except in the case of a race condition
 			throw new MiscInternalError(`User ${userId} added to non-existent tournament!`);
 		}
-		await chan.createMessage(
-			`You have successfully registered for ${tournament.name}. ` +
-				"Please submit a deck to complete your registration, by uploading a YDK file or sending a message with a YDKE URL."
-		);
-		logger.log({
-			level: "verbose",
-			message: `User ${userId} registered for tournament ${tournament.challongeId}.`
-		});
+		try {
+			await chan.createMessage(
+				`You have successfully registered for ${tournament.name}. ` +
+					"Please submit a deck to complete your registration, by uploading a YDK file or sending a message with a YDKE URL."
+			);
+      logger.log({
+		  	level: "verbose",
+	  		message: `User ${userId} registered for tournament ${tournament.challongeId}.`
+  		});
+		} catch (e) {
+			// DiscordRESTError - User blocking DMs
+			if (e.code === 50007) {
+				await Promise.all(tournament.privateChannels.map(c => handleDMFailure(c, userId)));
+				return;
+			}
+			logger.log({
+				level: "error",
+				message: e.message
+			});
+		}
 	}
 });
-
-async function handleDMFailure(channelId: string, userId: string): Promise<string> {
-	const channel = bot.getChannel(channelId);
-	if (!(channel instanceof TextChannel)) {
-		throw new AssertTextChannelError(channelId);
-	}
-	const msg = await channel.createMessage(
-		`User <@${userId}> is trying to register for the tournament, but does not accept DMs from me! Please ask them to change their settings to allow this.`
-	);
-	return msg.id;
-}
 
 bot.on("messageReactionRemove", async (msg, emoji, userId) => {
 	if (userId === bot.user.id) {
 		return;
 	}
 	// remove pending participant
-	// TODO: Drop corresponding name from Challonge
 	if (emoji.name === CHECK_EMOJI && (await removePendingParticipant(msg.id, msg.channel.id, userId))) {
 		const chan = await bot.getDMChannel(userId);
 		const tournament = await findTournamentByRegisterMessage(msg.id, msg.channel.id);
