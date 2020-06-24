@@ -33,6 +33,7 @@ import {
 	UserError,
 	MiscInternalError
 } from "./errors";
+import { logger } from "./logger";
 
 const CHECK_EMOJI = "✅";
 
@@ -90,6 +91,11 @@ export class Tournament {
 			await Promise.all(defaultPrivateChannels.map(c => tourn.addChannel(c, msg.author.id, true)));
 		}
 
+		logger.log({
+			level: "verbose",
+			message: `New tournament created ${tourn.id} by ${msg.author.id}.`
+		});
+
 		return tourn;
 	}
 
@@ -140,6 +146,12 @@ export class Tournament {
 			`This channel now displaying announcements for ${tournament.name} (${this.id})`
 		);
 		await addAnnouncementChannel(channelId, this.id, organiser, isPrivate ? "private" : "public");
+		logger.log({
+			level: "verbose",
+			message: `Channel ${channelId} added to tournament ${this.id} with level ${
+				isPrivate ? "private" : "public"
+			} by ${organiser}.`
+		});
 		return mes.id;
 	}
 
@@ -154,6 +166,12 @@ export class Tournament {
 		}
 		const tournament = await this.getTournament();
 		await channel.createMessage(`This channel no longer displaying announcements for ${tournament.name}`);
+		logger.log({
+			level: "verbose",
+			message: `Channel ${channelId} removed from tournament ${this.id} with level ${
+				isPrivate ? "private" : "public"
+			} by ${organiser}.`
+		});
 	}
 
 	public async updateTournament(name: string, desc: string, organiser: string): Promise<[string, string]> {
@@ -167,7 +185,12 @@ export class Tournament {
 			description: desc
 		});
 		const newName = await setTournamentName(this.id, name);
-		return [newName, await setTournamentDescription(this.id, desc)];
+		const newDesc = await await setTournamentDescription(this.id, desc);
+		logger.log({
+			level: "verbose",
+			message: `Tournament ${this.id} updated with name ${newName} and description ${newDesc} by ${organiser}.`
+		});
+		return [newName, newDesc];
 	}
 
 	private async openRegistrationInChannel(channelId: string, name: string, desc: string): Promise<string> {
@@ -187,9 +210,14 @@ export class Tournament {
 		await this.verifyOrganiser(organiser);
 		const tournament = await this.getTournament();
 		const channels = tournament.publicChannels;
-		return await Promise.all(
+		const messages = await Promise.all(
 			channels.map(c => this.openRegistrationInChannel(c, tournament.name, tournament.description))
 		);
+		logger.log({
+			level: "verbose",
+			message: `Tournament ${this.id} opened for registration by ${organiser}.`
+		});
+		return messages;
 	}
 
 	private async warnClosedParticipant(participant: string, name: string): Promise<string> {
@@ -232,6 +260,10 @@ export class Tournament {
 		await Promise.all(messages.map(this.deleteRegisterMessage));
 		const channels = tournament.publicChannels;
 		const announcements = await Promise.all(channels.map(c => this.startRound(c, this.id, 1, tournament.name)));
+		logger.log({
+			level: "verbose",
+			message: `Tournament ${this.id} commenced by ${organiser}.`
+		});
 		return announcements;
 	}
 
@@ -252,12 +284,17 @@ export class Tournament {
 			throw new UserError(`Could not find an unfinished match for <@${winnerId}>!`);
 		}
 		const match = matches[0]; // if there's more than one something's gone very wack
-		return await challonge.updateMatch(this.id, match.match.id.toString(), {
+		const result = await challonge.updateMatch(this.id, match.match.id.toString(), {
 			// eslint-disable-next-line @typescript-eslint/camelcase
 			winner_id: winner.challongeId,
 			// eslint-disable-next-line @typescript-eslint/camelcase
 			scores_csv: `${winnerScore}-${loserScore}`
 		});
+		logger.log({
+			level: "verbose",
+			message: `Score submitted for tournament ${this.id} by ${organiser}. ${winnerId} won ${winnerScore}-${loserScore}.`
+		});
+		return result;
 	}
 
 	private async tieMatch(matchId: number): Promise<ChallongeMatch> {
@@ -282,6 +319,10 @@ export class Tournament {
 		const tournament = await this.getTournament();
 		const channels = tournament.publicChannels;
 		await Promise.all(channels.map(c => this.startRound(c, this.id, round, tournament.name)));
+		logger.log({
+			level: "verbose",
+			message: `Tournament ${this.id} moved to round ${round} by ${organiser}.`
+		});
 		return round;
 	}
 
@@ -309,11 +350,22 @@ export class Tournament {
 		await challonge.finaliseTournament(this.id, {});
 		await finishTournament(this.id, organiser);
 		delete tournaments[this.id];
+		logger.log({
+			level: "verbose",
+			message: `Tournament ${this.id} finished by ${organiser}.`
+		});
 	}
 
 	public async addOrganiser(organiser: string, newOrganiser: string): Promise<boolean> {
 		await this.verifyOrganiser(organiser);
-		return await addOrganiser(newOrganiser, this.id);
+		const result = await addOrganiser(newOrganiser, this.id);
+		if (result) {
+			logger.log({
+				level: "verbose",
+				message: `Tournament ${this.id} added new organiser ${newOrganiser} by ${organiser}.`
+			});
+		}
+		return result;
 	}
 
 	public async removeOrganiser(organiser: string, toRemove: string): Promise<boolean> {
@@ -321,12 +373,28 @@ export class Tournament {
 		if (organiser === toRemove) {
 			throw new UserError("You cannot remove yourself from organising a tournament!");
 		}
-		return await removeOrganiser(toRemove, this.id);
+		const result = await removeOrganiser(toRemove, this.id);
+		if (result) {
+			logger.log({
+				level: "verbose",
+				message: `Tournament ${this.id} removed organiser ${toRemove} by ${organiser}.`
+			});
+		}
+		return result;
 	}
 }
 
 bot.on("messageDelete", msg => {
-	removeRegisterMessage(msg.id, msg.channel.id).catch(console.error);
+	removeRegisterMessage(msg.id, msg.channel.id)
+		.then(result => {
+			if (result) {
+				logger.log({
+					level: "verbose",
+					message: `Registration message ${msg.id} in ${msg.channel.id} deleted.`
+				});
+			}
+		})
+		.catch(console.error);
 });
 
 bot.on("messageReactionAdd", async (msg, emoji, userId) => {
@@ -345,6 +413,10 @@ bot.on("messageReactionAdd", async (msg, emoji, userId) => {
 			`You have successfully registered for ${tournament.name}. ` +
 				"Please submit a deck to complete your registration, by uploading a YDK file or sending a message with a YDKE URL."
 		);
+		logger.log({
+			level: "verbose",
+			message: `User ${userId} registered for tournament ${tournament.challongeId}.`
+		});
 	}
 });
 
@@ -382,6 +454,10 @@ bot.on("messageReactionRemove", async (msg, emoji, userId) => {
 		try {
 			await challonge.removeParticipant(tournament.challongeId, user.challongeId);
 			await chan.createMessage(`You have successfully dropped from ${tournament.name}.`);
+			logger.log({
+				level: "verbose",
+				message: `User ${userId} dropped from tournament ${tournament.challongeId}.`
+			});
 		} catch (e) {
 			// DiscordRESTError - User blocking DMs
 			if (e.code === 50007) {
@@ -485,6 +561,10 @@ export async function confirmDeck(msg: Message): Promise<void> {
 			await Promise.all(
 				doc.privateChannels.map(c => sendTournamentRegistration(c, msg.author.id, deck, doc.name))
 			);
+			logger.log({
+				level: "verbose",
+				message: `User ${msg.author.id} confirmed deck for tournament ${doc.challongeId}.`
+			});
 		} catch (e) {
 			if (e instanceof DeckNotFoundError) {
 				await msg.channel.createMessage(e.message);
