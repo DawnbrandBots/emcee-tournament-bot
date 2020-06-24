@@ -394,7 +394,12 @@ bot.on("messageDelete", msg => {
 				});
 			}
 		})
-		.catch(console.error);
+		.catch(e => {
+			logger.log({
+				level: "error",
+				message: e.message
+			});
+		});
 });
 
 bot.on("messageReactionAdd", async (msg, emoji, userId) => {
@@ -442,14 +447,26 @@ bot.on("messageReactionRemove", async (msg, emoji, userId) => {
 		const tournament = await findTournamentByRegisterMessage(msg.id, msg.channel.id);
 		if (!tournament) {
 			// impossible because of removePendingParticipant except in the case of a race condition
-			throw new MiscInternalError(`User ${userId} removed from non-existent tournament!`);
+			// nowhere to throw
+			const e = new MiscInternalError(`User ${userId} removed from non-existent tournament!`);
+			logger.log({
+				level: "error",
+				message: e.message
+			});
+			return;
 		}
 		const user = await getPlayerFromDiscord(tournament.challongeId, userId);
 		if (!user) {
 			// impossible because of removePendingParticipant except in the case of a race condition
-			throw new MiscInternalError(
+			// nowhere to throw
+			const e = new MiscInternalError(
 				`Non-existing user ${userId} removed from tournament ${tournament.challongeId}!`
 			);
+			logger.log({
+				level: "error",
+				message: e.message
+			});
+			return;
 		}
 		try {
 			await challonge.removeParticipant(tournament.challongeId, user.challongeId);
@@ -464,7 +481,11 @@ bot.on("messageReactionRemove", async (msg, emoji, userId) => {
 				await Promise.all(tournament.privateChannels.map(c => handleDMFailure(c, userId)));
 				return;
 			}
-			throw e;
+			// nowhere to throw
+			logger.log({
+				level: "error",
+				message: e.message
+			});
 		}
 	}
 });
@@ -483,7 +504,10 @@ async function grantTournamentRole(channelId: string, user: string, tournamentId
 		const role = await tournament.getRole(channelId);
 		await member.addRole(role, "Tournament registration");
 	} catch (e) {
-		console.error(e);
+		logger.log({
+			level: "error",
+			message: e.message
+		});
 	}
 	return true;
 }
@@ -570,7 +594,10 @@ export async function confirmDeck(msg: Message): Promise<void> {
 				await msg.channel.createMessage(e.message);
 			} else {
 				// nowhere to throw
-				console.error(e);
+				logger.log({
+					level: "error",
+					message: e.message
+				});
 			}
 		}
 	}
@@ -580,5 +607,8 @@ getOngoingTournaments().then(ts => {
 	for (const t of ts) {
 		tournaments[t.challongeId] = new Tournament(t.challongeId);
 	}
-	console.log("Loaded persistent tournaments!");
+	logger.log({
+		level: "info",
+		message: "Loaded persistent tournaments!"
+	});
 });
