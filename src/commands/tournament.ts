@@ -8,7 +8,7 @@ import { bot, getTORoleFromMessage } from "../bot";
 import { UserError } from "../errors";
 
 export async function createTournament(msg: Message, args: string[]): Promise<void> {
-	const role = getTORoleFromMessage(msg);
+	const role = await getTORoleFromMessage(msg);
 	if (!(msg.member && msg.member.roles.includes(role))) {
 		throw new UserError("You must have the MC-TO role to create a tournament in this server!");
 	}
