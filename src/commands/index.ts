@@ -19,8 +19,6 @@ const commands: { [command: string]: (msg: Message, args: string[]) => Promise<v
 	cancel: cancelTournament,
 	addhost: addHost,
 	removehost: removeHost,
-	addorganizer: addHost, // US alias
-	removeorganizer: removeHost,
 	round: nextRound,
 	score: submitScore,
 	list: listTournaments,
