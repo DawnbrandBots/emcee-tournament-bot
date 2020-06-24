@@ -20,7 +20,8 @@ import {
 	setTournamentDescription,
 	getOngoingTournaments,
 	addRegisterMessage,
-	getPlayerFromDiscord
+	getPlayerFromDiscord,
+	getPlayerFromId
 } from "./actions";
 import { bot } from "./bot";
 import { TournamentModel, TournamentDoc } from "./models";
@@ -207,13 +208,46 @@ export class Tournament {
 		await removeRegisterMessage(ids.message, ids.channel);
 	}
 
-	private async startRound(channelId: string, url: string, round: number, name: string): Promise<string> {
+	private async checkBye(): Promise<string | undefined> {
+		// odd number of participants means a bye
+		const tournament = await this.getTournament();
+		if (tournament.confirmedParticipants.length % 2 === 1) {
+			const matches = await challonge.indexMatches(this.id, "open");
+			const players = tournament.confirmedParticipants.map(p => p.challongeId);
+			for (const match of matches) {
+				const i = players.indexOf(match.match.player1_id);
+				if (i > -1) {
+					players.splice(i);
+				}
+				const j = players.indexOf(match.match.player2_id);
+				if (j > -1) {
+					players.splice(j);
+				}
+			}
+			if (players.length === 1) {
+				const user = await getPlayerFromId(this.id, players[0]);
+				return user?.discord;
+			}
+		}
+		return;
+	}
+
+	private async startRound(
+		channelId: string,
+		url: string,
+		round: number,
+		name: string,
+		bye?: string
+	): Promise<string> {
 		const channel = bot.getChannel(channelId);
 		if (!(channel instanceof TextChannel)) {
 			throw new AssertTextChannelError(channelId);
 		}
 		const role = await this.getRole(channelId);
-		const message = `Round ${round} of ${name} has begun! <@&${role}>\nPairings: https://challonge.com/${url}`;
+		let message = `Round ${round} of ${name} has begun! <@&${role}>\nPairings: https://challonge.com/${url}`;
+		if (bye) {
+			message += `\n<@${bye}> has the bye for this round.`;
+		}
 		const msg = await channel.createMessage(message);
 		return msg.id;
 	}
@@ -231,7 +265,10 @@ export class Tournament {
 		const messages = tournament.registerMessages;
 		await Promise.all(messages.map(this.deleteRegisterMessage));
 		const channels = tournament.publicChannels;
-		const announcements = await Promise.all(channels.map(c => this.startRound(c, this.id, 1, tournament.name)));
+		const bye = await this.checkBye();
+		const announcements = await Promise.all(
+			channels.map(c => this.startRound(c, this.id, 1, tournament.name, bye))
+		);
 		return announcements;
 	}
 
@@ -281,7 +318,8 @@ export class Tournament {
 		}
 		const tournament = await this.getTournament();
 		const channels = tournament.publicChannels;
-		await Promise.all(channels.map(c => this.startRound(c, this.id, round, tournament.name)));
+		const bye = await this.checkBye();
+		await Promise.all(channels.map(c => this.startRound(c, this.id, round, tournament.name, bye)));
 		return round;
 	}
 
