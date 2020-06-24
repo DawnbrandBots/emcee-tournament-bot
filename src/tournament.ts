@@ -21,7 +21,8 @@ import {
 	getOngoingTournaments,
 	addRegisterMessage,
 	getPlayerFromDiscord,
-	getPlayerFromId
+	getPlayerFromId,
+	removeConfirmedPariticipant
 } from "./actions";
 import { bot } from "./bot";
 import { TournamentModel, TournamentDoc } from "./models";
@@ -485,12 +486,21 @@ bot.on("messageReactionAdd", async (msg, emoji, userId) => {
 	}
 });
 
+async function reportDrop(channelId: string, userId: string, tournament: string): Promise<string> {
+	const channel = bot.getChannel(channelId);
+	if (!(channel instanceof TextChannel)) {
+		throw new AssertTextChannelError(channelId);
+	}
+	const msg = await channel.createMessage(`User <@${userId}> has dropped from ${tournament}`);
+	return msg.id;
+}
+
 bot.on("messageReactionRemove", async (msg, emoji, userId) => {
-	if (userId === bot.user.id) {
+	if (userId === bot.user.id || emoji.name !== CHECK_EMOJI) {
 		return;
 	}
 	// remove pending participant
-	if (emoji.name === CHECK_EMOJI && (await removePendingParticipant(msg.id, msg.channel.id, userId))) {
+	if (await removePendingParticipant(msg.id, msg.channel.id, userId)) {
 		const chan = await bot.getDMChannel(userId);
 		const tournament = await findTournamentByRegisterMessage(msg.id, msg.channel.id);
 		if (!tournament) {
@@ -511,8 +521,35 @@ bot.on("messageReactionRemove", async (msg, emoji, userId) => {
 			return;
 		}
 		try {
+			await chan.createMessage(`You have successfully dropped from ${tournament.name}.`);
+		} catch (e) {
+			// DiscordRESTError - User blocking DMs
+			if (e.code === 50007) {
+				await Promise.all(tournament.privateChannels.map(c => handleDMFailure(c, userId)));
+				return;
+			}
+			throw e;
+		}
+	}
+	// drop confirmed participant
+	if (await removeConfirmedPariticipant(msg.id, msg.channel.id, userId)) {
+		const chan = await bot.getDMChannel(userId);
+		const tournament = await findTournamentByRegisterMessage(msg.id, msg.channel.id);
+		if (!tournament) {
+			// impossible because of removeConfirmedgParticipant except in the case of a race condition
+			throw new MiscInternalError(`User ${userId} removed from non-existent tournament!`);
+		}
+		const user = await getPlayerFromDiscord(tournament.challongeId, userId);
+		if (!user) {
+			// impossible because of removeConfirmedgParticipant except in the case of a race condition
+			throw new MiscInternalError(
+				`Non-existing user ${userId} removed from tournament ${tournament.challongeId}!`
+			);
+		}
+		try {
 			await challonge.removeParticipant(tournament.challongeId, user.challongeId);
 			await chan.createMessage(`You have successfully dropped from ${tournament.name}.`);
+			await Promise.all(tournament.privateChannels.map(c => reportDrop(c, userId, tournament.name)));
 			logger.log({
 				level: "verbose",
 				message: `User ${userId} dropped from tournament ${tournament.challongeId}.`
