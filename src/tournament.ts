@@ -436,13 +436,13 @@ bot.on("messageDelete", msg => {
 		});
 });
 
-async function handleDMFailure(channelId: string, userId: string): Promise<string> {
+async function handleDMFailure(channelId: string, userId: string, tournament: string): Promise<string> {
 	const channel = bot.getChannel(channelId);
 	if (!(channel instanceof TextChannel)) {
 		throw new AssertTextChannelError(channelId);
 	}
 	const msg = await channel.createMessage(
-		`User <@${userId}> is trying to register for the tournament, but does not accept DMs from me! Please ask them to change their settings to allow this.`
+		`User <@${userId}> is trying to register for ${tournament}, but does not accept DMs from me! Please ask them to change their settings to allow this.`
 	);
 	return msg.id;
 }
@@ -475,7 +475,7 @@ bot.on("messageReactionAdd", async (msg, emoji, userId) => {
 		} catch (e) {
 			// DiscordRESTError - User blocking DMs
 			if (e.code === 50007) {
-				await Promise.all(tournament.privateChannels.map(c => handleDMFailure(c, userId)));
+				await Promise.all(tournament.privateChannels.map(c => handleDMFailure(c, userId, tournament.name)));
 				return;
 			}
 			logger.log({
@@ -525,7 +525,7 @@ bot.on("messageReactionRemove", async (msg, emoji, userId) => {
 		} catch (e) {
 			// DiscordRESTError - User blocking DMs
 			if (e.code === 50007) {
-				await Promise.all(tournament.privateChannels.map(c => handleDMFailure(c, userId)));
+				await Promise.all(tournament.privateChannels.map(c => handleDMFailure(c, userId, tournament.name)));
 				return;
 			}
 			throw e;
@@ -557,7 +557,7 @@ bot.on("messageReactionRemove", async (msg, emoji, userId) => {
 		} catch (e) {
 			// DiscordRESTError - User blocking DMs
 			if (e.code === 50007) {
-				await Promise.all(tournament.privateChannels.map(c => handleDMFailure(c, userId)));
+				await Promise.all(tournament.privateChannels.map(c => handleDMFailure(c, userId, tournament.name)));
 				return;
 			}
 			// nowhere to throw
