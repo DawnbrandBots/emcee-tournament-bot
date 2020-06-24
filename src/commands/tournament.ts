@@ -4,14 +4,12 @@ import { getTournamentInterface, getMentionedUserId } from "./utils";
 import { getOngoingTournaments, getPlayerFromDiscord } from "../actions";
 import { TypedDeck } from "ydke";
 import { DiscordDeck } from "../discordDeck";
-import { bot, getTORoleFromMessage } from "../bot";
+import { bot } from "../bot";
 import { UserError } from "../errors";
+import { validateTORole } from ".";
 
 export async function createTournament(msg: Message, args: string[]): Promise<void> {
-	const role = await getTORoleFromMessage(msg);
-	if (!(msg.member && msg.member.roles.includes(role))) {
-		throw new UserError("You must have the MC-TO role to create a tournament in this server!");
-	}
+	await validateTORole(msg);
 	const [name, desc] = args;
 	if (name.length === 0 || desc.length === 0) {
 		throw new UserError("You must provide a valid tournament name and description!");
@@ -22,7 +20,6 @@ export async function createTournament(msg: Message, args: string[]): Promise<vo
 		`Tournament ${name} created! You can find it at https://challonge.com/${doc.challongeId}. For future commands, refer to this tournament by the id \`${doc.challongeId}\``
 	);
 }
-
 export async function updateTournament(msg: Message, args: string[]): Promise<void> {
 	const [id, name, desc] = args;
 	const [tournament, doc] = await getTournamentInterface(id, msg.author.id);
@@ -38,6 +35,7 @@ export async function updateTournament(msg: Message, args: string[]): Promise<vo
 }
 
 export async function listTournaments(msg: Message): Promise<void> {
+	await validateTORole(msg);
 	const tournaments = await getOngoingTournaments();
 	await msg.channel.createMessage(
 		tournaments
