@@ -297,7 +297,7 @@ export class Tournament {
 		const announcements = await Promise.all(
 			channels.map(c => this.startRound(c, this.id, 1, tournament.name, bye))
 		);
-    logger.log({
+		logger.log({
 			level: "verbose",
 			message: `Tournament ${this.id} commenced by ${organiser}.`
 		});
@@ -357,7 +357,7 @@ export class Tournament {
 		const channels = tournament.publicChannels;
 		const bye = await this.checkBye();
 		await Promise.all(channels.map(c => this.startRound(c, this.id, round, tournament.name, bye)));
-    logger.log({
+		logger.log({
 			level: "verbose",
 			message: `Tournament ${this.id} moved to round ${round} by ${organiser}.`
 		});
@@ -468,10 +468,10 @@ bot.on("messageReactionAdd", async (msg, emoji, userId) => {
 				`You have successfully registered for ${tournament.name}. ` +
 					"Please submit a deck to complete your registration, by uploading a YDK file or sending a message with a YDKE URL."
 			);
-      logger.log({
-		  	level: "verbose",
-	  		message: `User ${userId} registered for tournament ${tournament.challongeId}.`
-  		});
+			logger.log({
+				level: "verbose",
+				message: `User ${userId} registered for tournament ${tournament.challongeId}.`
+			});
 		} catch (e) {
 			// DiscordRESTError - User blocking DMs
 			if (e.code === 50007) {
