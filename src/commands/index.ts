@@ -7,6 +7,7 @@ import { addOrganiser, removeOrganiser } from "./organiser";
 import { nextRound } from "./round";
 import { submitScore } from "./score";
 import { UserError } from "../errors";
+import { logger } from "../logger";
 
 const commands: { [command: string]: (msg: Message, args: string[]) => Promise<void> } = {
 	create: createTournament,
@@ -48,7 +49,10 @@ export async function parseCommand(msg: Message): Promise<void> {
 			}
 
 			// internal error
-			console.error(e);
+			logger.log({
+				level: "error",
+				message: e.message
+			});
 		}
 	}
 }
