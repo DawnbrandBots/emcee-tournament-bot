@@ -8,6 +8,7 @@ import { nextRound } from "./round";
 import { submitScore } from "./score";
 import { UserError } from "../errors";
 import { getTORoleFromMessage } from "../bot";
+import { toRole } from "../config/config.json";
 import logger from "../logger";
 
 const commands: { [command: string]: (msg: Message, args: string[]) => Promise<void> } = {
@@ -60,6 +61,6 @@ export async function parseCommand(msg: Message): Promise<void> {
 export async function validateTORole(msg: Message): Promise<void> {
 	const role = await getTORoleFromMessage(msg);
 	if (!(msg.member && msg.member.roles.includes(role))) {
-		throw new UserError("You must have the MC-TO role to create a tournament in this server!");
+		throw new UserError(`You must have the ${toRole} role to create a tournament in this server!`);
 	}
 }
