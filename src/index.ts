@@ -19,7 +19,7 @@ bot.on("messageCreate", async msg => {
 		await parseCommand(msg);
 	} catch (e) {
 		logger.log({
-			level: "info",
+			level: "error",
 			message: e.message
 		});
 	}
