@@ -24,7 +24,7 @@ export async function getTORole(guildId: string): Promise<string> {
 	const newRole = await guild.createRole(
 		{
 			name: name,
-			color: 0xe67e22
+			color: 0x3498db
 		},
 		"Auto-created by Emcee bot."
 	);
