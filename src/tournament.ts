@@ -537,14 +537,20 @@ bot.on("messageReactionRemove", async (msg, emoji, userId) => {
 		const tournament = await findTournamentByRegisterMessage(msg.id, msg.channel.id);
 		if (!tournament) {
 			// impossible because of removeConfirmedgParticipant except in the case of a race condition
-			throw new MiscInternalError(`User ${userId} removed from non-existent tournament!`);
+			logger.log({
+				level: "error",
+				message: `User ${userId} removed from non-existent tournament!`
+			});
+			return;
 		}
 		const user = await getPlayerFromDiscord(tournament.challongeId, userId);
 		if (!user) {
 			// impossible because of removeConfirmedgParticipant except in the case of a race condition
-			throw new MiscInternalError(
-				`Non-existing user ${userId} removed from tournament ${tournament.challongeId}!`
-			);
+			logger.log({
+				level: "error",
+				message: `User ${userId} removed from non-existent tournament!`
+			});
+			return;
 		}
 		try {
 			await challonge.removeParticipant(tournament.challongeId, user.challongeId);
