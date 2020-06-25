@@ -1,6 +1,7 @@
 import { Client, Message, GuildChannel } from "eris";
 import { discordToken } from "./config/env";
 import { MiscInternalError, AssertTextChannelError } from "./errors";
+import logger from "./logger";
 
 export const bot = new Client(discordToken);
 
@@ -48,9 +49,15 @@ bot.on("guildCreate", guild => {
 		})
 		.then(role => {
 			toRoles[guild.id] = role.id;
-			// TODO: Log role creation once merged
+			logger.log({
+				level: "verbose",
+				message: `New TO role ${role.id} created in ${guild.id}.`
+			});
 		})
 		.catch(e => {
-			console.error(e); // TODO: Log with winston once merged
+			logger.log({
+				level: "error",
+				message: e.message
+			});
 		});
 });
