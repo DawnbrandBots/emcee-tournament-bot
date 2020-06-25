@@ -19,7 +19,7 @@ export async function getTournamentInterface(id: string, host: string): Promise<
 export function getMentionedUserId(msg: Message): string {
 	const user = msg.mentions[0];
 	if (!user) {
-		throw new UserError("You must @mention the winner of the match you are reporting for!");
+		throw new UserError("You must @mention a valid user!");
 	}
 	return user.id;
 }
