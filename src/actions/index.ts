@@ -164,6 +164,27 @@ export async function removePendingParticipant(
 	return true;
 }
 
+// Invoke after a user requests to leave a tournament they have been confirmed for
+export async function removeConfirmedParticipant(
+	message: DiscordID,
+	channel: DiscordID,
+	user: DiscordID
+): Promise<boolean> {
+	const tournament = await TournamentModel.findOne({
+		"registerMessages.channel": channel,
+		"registerMessages.message": message,
+		"confirmedParticipants.discord": user
+	});
+	if (!tournament) {
+		return false;
+	}
+	const i = tournament.confirmedParticipants.findIndex(p => p.discord === user);
+	// i < 0 is impossible by precondition
+	tournament.confirmedParticipants.splice(i, 1); // consider $pullAll
+	await tournament.save();
+	return true;
+}
+
 // Remove all pending participants and start the tournament
 export async function startTournament(challongeId: TournamentID, host: DiscordID, rounds: number): Promise<string[]> {
 	const tournament = await getAuthorizedTournament(challongeId, host);
