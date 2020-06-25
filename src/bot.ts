@@ -47,10 +47,13 @@ export async function getTORoleFromMessage(msg: Message): Promise<string> {
 
 bot.on("guildCreate", guild => {
 	guild
-		.createRole({
-			name: "MC-TO",
-			color: 0x3498db
-		})
+		.createRole(
+			{
+				name: "MC-TO",
+				color: 0x3498db
+			},
+			"Auto-created by Emcee bot."
+		)
 		.then(role => {
 			toRoles[guild.id] = role.id;
 			logger.log({
