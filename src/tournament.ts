@@ -127,6 +127,10 @@ export class Tournament {
 			},
 			"Auto-created by Emcee bot."
 		);
+		logger.log({
+			level: "verbose",
+			message: `New participant role ${newRole.id} created in ${guild.id}.`
+		});
 		this.roles[guild.id] = newRole.id;
 		return newRole.id;
 	}
