@@ -16,9 +16,9 @@ export async function removeHost(msg: Message, args: string[]): Promise<void> {
 	const [id] = args;
 	const [tournament, doc] = await getTournamentInterface(id, msg.author.id);
 	const host = getMentionedUserId(msg);
-	if (await tournament.addHost(msg.author.id, host)) {
-		await msg.channel.createMessage(`<@${host}> successfully added as a host for ${doc.name}.`);
+	if (await tournament.removeHost(msg.author.id, host)) {
+		await msg.channel.createMessage(`<@${host}> successfully removed as a host for ${doc.name}.`);
 	} else {
-		await msg.channel.createMessage(`<@${host}> is already a host for ${doc.name}.`);
+		await msg.channel.createMessage(`<@${host}> is not a host for ${doc.name}.`);
 	}
 }
