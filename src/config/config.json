@@ -1,5 +1,6 @@
 {
 	"prefix": "mc!",
+	"toRole": "MC-TO",
 	"defaultHosts": [],
 	"defaultPublicChannels": [],
 	"defaultPrivateChannels": []
