@@ -37,6 +37,10 @@ export async function updateTournament(msg: Message, args: string[]): Promise<vo
 export async function listTournaments(msg: Message): Promise<void> {
 	await validateTORole(msg);
 	const tournaments = await getOngoingTournaments();
+	if (tournaments.length === 0) {
+		await msg.channel.createMessage("There are no active tournaments!");
+		return;
+	}
 	await msg.channel.createMessage(
 		tournaments
 			.map(
