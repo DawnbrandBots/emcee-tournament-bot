@@ -1,9 +1,13 @@
 import { bot } from "./bot";
 import { confirmDeck } from "./tournament";
 import { parseCommand } from "./commands";
+import logger from "./logger";
 
 bot.on("ready", () => {
-	console.log("Logged in as %s - %s", bot.user.username, bot.user.id);
+	logger.log({
+		level: "info",
+		message: `Logged in as ${bot.user.username} - ${bot.user.id}`
+	});
 });
 
 bot.on("messageCreate", async msg => {
@@ -14,8 +18,16 @@ bot.on("messageCreate", async msg => {
 		await confirmDeck(msg);
 		await parseCommand(msg);
 	} catch (e) {
-		console.error(e);
+		logger.log({
+			level: "info",
+			message: e.message
+		});
 	}
 });
 
-bot.connect().catch(console.error);
+bot.connect().catch(e => {
+	logger.log({
+		level: "error",
+		message: e.message
+	});
+});
