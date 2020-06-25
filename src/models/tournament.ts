@@ -6,7 +6,7 @@ export interface TournamentDoc extends Document {
 	name: string;
 	description: string;
 	challongeId: string;
-	organisers: DiscordID[];
+	hosts: DiscordID[];
 	owningDiscordServer: DiscordID;
 	publicChannels: DiscordID[];
 	privateChannels: DiscordID[];
@@ -34,7 +34,7 @@ export const TournamentSchema = new Schema({
 	name: { type: String, required: true },
 	description: { type: String, required: true },
 	challongeId: { type: String, required: true, unique: true },
-	organisers: { type: [String], required: true },
+	hosts: { type: [String], required: true },
 	owningDiscordServer: { type: String, required: true },
 	publicChannels: { type: [String], required: true },
 	privateChannels: { type: [String], required: true },

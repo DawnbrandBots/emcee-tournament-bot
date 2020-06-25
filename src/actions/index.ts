@@ -1,12 +1,12 @@
 import { TournamentModel, TournamentDoc } from "../models";
-import { TournamentNotFoundError, UnauthorisedOrganiserError } from "../errors";
+import { TournamentNotFoundError, UnauthorisedHostError } from "../errors";
 
 type DiscordID = string;
 type TournamentID = string; // from Challonge
 
-// Invoke after an organiser requests a tournament and it is created on Challonge
+// Invoke after a host requests a tournament and it is created on Challonge
 export async function initTournament(
-	organiser: DiscordID,
+	host: DiscordID,
 	server: DiscordID,
 	challongeId: TournamentID,
 	name: string,
@@ -16,7 +16,7 @@ export async function initTournament(
 		name,
 		description,
 		challongeId,
-		organisers: [organiser],
+		hosts: [host],
 		owningDiscordServer: server
 	});
 	await tournament.save();
@@ -31,10 +31,10 @@ export async function findTournament(challongeId: TournamentID): Promise<Tournam
 }
 
 // Internal helper
-async function getAuthorizedTournament(challongeId: TournamentID, organiser: DiscordID): Promise<TournamentDoc> {
+async function getAuthorizedTournament(challongeId: TournamentID, host: DiscordID): Promise<TournamentDoc> {
 	const tournament = await findTournament(challongeId);
-	if (!tournament.organisers.includes(organiser)) {
-		throw new UnauthorisedOrganiserError(organiser, challongeId);
+	if (!tournament.hosts.includes(host)) {
+		throw new UnauthorisedHostError(host, challongeId);
 	}
 	return tournament;
 }
@@ -42,10 +42,10 @@ async function getAuthorizedTournament(challongeId: TournamentID, organiser: Dis
 export async function addAnnouncementChannel(
 	channel: DiscordID,
 	challongeId: TournamentID,
-	organiser: DiscordID,
+	host: DiscordID,
 	kind: "public" | "private" = "public"
 ): Promise<void> {
-	const tournament = await getAuthorizedTournament(challongeId, organiser);
+	const tournament = await getAuthorizedTournament(challongeId, host);
 	const channels = kind === "public" ? tournament.publicChannels : tournament.privateChannels;
 	channels.push(channel);
 	await tournament.save();
@@ -54,10 +54,10 @@ export async function addAnnouncementChannel(
 export async function removeAnnouncementChannel(
 	channel: DiscordID,
 	challongeId: TournamentID,
-	organiser: DiscordID,
+	host: DiscordID,
 	kind: "public" | "private" = "public"
 ): Promise<boolean> {
-	const tournament = await getAuthorizedTournament(challongeId, organiser);
+	const tournament = await getAuthorizedTournament(challongeId, host);
 	const channels = kind === "public" ? tournament.publicChannels : tournament.privateChannels;
 	const i = channels.indexOf(channel);
 	if (i < 0) {
@@ -69,29 +69,29 @@ export async function removeAnnouncementChannel(
 }
 
 // Check if a Discord user can perform a Discord action related to a tournament.
-export async function isOrganising(organiser: DiscordID, challongeId: TournamentID): Promise<boolean> {
+export async function isOrganising(host: DiscordID, challongeId: TournamentID): Promise<boolean> {
 	const tournament = await findTournament(challongeId);
-	return tournament.organisers.includes(organiser);
+	return tournament.hosts.includes(host);
 }
 
-export async function addOrganiser(organiser: DiscordID, challongeId: TournamentID): Promise<boolean> {
+export async function addHost(host: DiscordID, challongeId: TournamentID): Promise<boolean> {
 	const tournament = await findTournament(challongeId);
-	if (tournament.organisers.includes(organiser)) {
+	if (tournament.hosts.includes(host)) {
 		return false;
 	}
-	tournament.organisers.push(organiser);
+	tournament.hosts.push(host);
 	await tournament.save();
 	return true;
 }
 
-export async function removeOrganiser(organiser: DiscordID, challongeId: TournamentID): Promise<boolean> {
+export async function removeHost(host: DiscordID, challongeId: TournamentID): Promise<boolean> {
 	const tournament = await findTournament(challongeId);
-	if (tournament.organisers.length < 2 || !tournament.organisers.includes(organiser)) {
+	if (tournament.hosts.length < 2 || !tournament.hosts.includes(host)) {
 		return false;
 	}
-	const i = tournament.organisers.indexOf(organiser);
+	const i = tournament.hosts.indexOf(host);
 	// i < 0 is impossible by precondition
-	tournament.organisers.splice(i, 1);
+	tournament.hosts.splice(i, 1);
 	await tournament.save();
 	return true;
 }
@@ -165,12 +165,8 @@ export async function removePendingParticipant(
 }
 
 // Remove all pending participants and start the tournament
-export async function startTournament(
-	challongeId: TournamentID,
-	organiser: DiscordID,
-	rounds: number
-): Promise<string[]> {
-	const tournament = await getAuthorizedTournament(challongeId, organiser);
+export async function startTournament(challongeId: TournamentID, host: DiscordID, rounds: number): Promise<string[]> {
+	const tournament = await getAuthorizedTournament(challongeId, host);
 	const removedIDs = tournament.pendingParticipants.slice(); // clone values
 	tournament.pendingParticipants = [];
 	tournament.status = "in progress";
@@ -181,8 +177,8 @@ export async function startTournament(
 }
 
 // Progresses tournament to the next round or returns -1 if it was already the final round
-export async function nextRound(challongeId: TournamentID, organiser: DiscordID): Promise<number> {
-	const tournament = await getAuthorizedTournament(challongeId, organiser);
+export async function nextRound(challongeId: TournamentID, host: DiscordID): Promise<number> {
+	const tournament = await getAuthorizedTournament(challongeId, host);
 	if (tournament.status !== "in progress") {
 		throw new Error(`Tournament ${challongeId} is not in progress.`);
 	}
@@ -195,8 +191,8 @@ export async function nextRound(challongeId: TournamentID, organiser: DiscordID)
 }
 
 // Sets tournament status to completed
-export async function finishTournament(challongeId: TournamentID, organiser: DiscordID): Promise<void> {
-	const tournament = await getAuthorizedTournament(challongeId, organiser);
+export async function finishTournament(challongeId: TournamentID, host: DiscordID): Promise<void> {
+	const tournament = await getAuthorizedTournament(challongeId, host);
 	tournament.status = "complete";
 	await tournament.save();
 }

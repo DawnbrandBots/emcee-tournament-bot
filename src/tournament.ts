@@ -13,8 +13,8 @@ import {
 	addPendingParticipant,
 	nextRound,
 	finishTournament,
-	addOrganiser,
-	removeOrganiser,
+	addHost,
+	removeHost,
 	findTournament,
 	setTournamentName,
 	setTournamentDescription,
@@ -26,8 +26,8 @@ import {
 import { bot } from "./bot";
 import { TournamentModel, TournamentDoc } from "./models";
 import { DiscordDeck } from "./discordDeck";
-import { defaultOrganisers, defaultPublicChannels, defaultPrivateChannels } from "./config/config.json";
-import { UnauthorisedOrganiserError, DeckNotFoundError, AssertTextChannelError, UserError } from "./errors";
+import { defaultHosts, defaultPublicChannels, defaultPrivateChannels } from "./config/config.json";
+import { UnauthorisedHostError, DeckNotFoundError, AssertTextChannelError, UserError } from "./errors";
 import logger from "./logger";
 
 const CHECK_EMOJI = "✅";
@@ -74,8 +74,8 @@ export class Tournament {
 		const tourn = new Tournament(tournament.tournament.url);
 		tournaments[tourn.id] = tourn;
 
-		if (defaultOrganisers && defaultOrganisers.length > 0) {
-			await Promise.all(defaultOrganisers.map(o => tourn.addOrganiser(msg.author.id, o)));
+		if (defaultHosts && defaultHosts.length > 0) {
+			await Promise.all(defaultHosts.map(o => tourn.addHost(msg.author.id, o)));
 		}
 
 		if (defaultPublicChannels && defaultPublicChannels.length > 0) {
@@ -98,9 +98,9 @@ export class Tournament {
 		return await findTournament(this.id);
 	}
 
-	private async verifyOrganiser(organiser: string): Promise<void> {
-		if (!(await isOrganising(organiser, this.id))) {
-			throw new UnauthorisedOrganiserError(organiser, this.id);
+	private async verifyHost(host: string): Promise<void> {
+		if (!(await isOrganising(host, this.id))) {
+			throw new UnauthorisedHostError(host, this.id);
 		}
 	}
 
@@ -130,8 +130,8 @@ export class Tournament {
 		return newRole.id;
 	}
 
-	public async addChannel(channelId: string, organiser: string, isPrivate = false): Promise<string> {
-		await this.verifyOrganiser(organiser);
+	public async addChannel(channelId: string, host: string, isPrivate = false): Promise<string> {
+		await this.verifyHost(host);
 		const channel = bot.getChannel(channelId);
 		if (!(channel instanceof TextChannel)) {
 			throw new AssertTextChannelError(channelId);
@@ -140,23 +140,24 @@ export class Tournament {
 		const mes = await channel.createMessage(
 			`This channel now displaying announcements for ${tournament.name} (${this.id})`
 		);
-		await addAnnouncementChannel(channelId, this.id, organiser, isPrivate ? "private" : "public");
+		await addAnnouncementChannel(channelId, this.id, host, isPrivate ? "private" : "public");
 		logger.log({
 			level: "verbose",
 			message: `Channel ${channelId} added to tournament ${this.id} with level ${
 				isPrivate ? "private" : "public"
-			} by ${organiser}.`
+			} by ${host}.`
 		});
+
 		return mes.id;
 	}
 
-	public async removeChannel(channelId: string, organiser: string, isPrivate = false): Promise<void> {
-		await this.verifyOrganiser(organiser);
+	public async removeChannel(channelId: string, host: string, isPrivate = false): Promise<void> {
+		await this.verifyHost(host);
 		const channel = bot.getChannel(channelId);
 		if (!(channel instanceof TextChannel)) {
 			throw new AssertTextChannelError(channelId);
 		}
-		if (!(await removeAnnouncementChannel(channelId, this.id, organiser, isPrivate ? "private" : "public"))) {
+		if (!(await removeAnnouncementChannel(channelId, this.id, host, isPrivate ? "private" : "public"))) {
 			throw new UserError(`Channel ${channel.name} is not a registered announcement channel`);
 		}
 		const tournament = await this.getTournament();
@@ -165,12 +166,12 @@ export class Tournament {
 			level: "verbose",
 			message: `Channel ${channelId} removed from tournament ${this.id} with level ${
 				isPrivate ? "private" : "public"
-			} by ${organiser}.`
+			} by ${host}.`
 		});
 	}
 
-	public async updateTournament(name: string, desc: string, organiser: string): Promise<[string, string]> {
-		await this.verifyOrganiser(organiser);
+	public async updateTournament(name: string, desc: string, host: string): Promise<[string, string]> {
+		await this.verifyHost(host);
 		const tournament = await this.getTournament();
 		if (!(tournament.status === "preparing")) {
 			throw new UserError(`It's too late to update the information for ${tournament.name}.`);
@@ -183,7 +184,7 @@ export class Tournament {
 		const newDesc = await await setTournamentDescription(this.id, desc);
 		logger.log({
 			level: "verbose",
-			message: `Tournament ${this.id} updated with name ${newName} and description ${newDesc} by ${organiser}.`
+			message: `Tournament ${this.id} updated with name ${newName} and description ${newDesc} by ${host}.`
 		});
 		return [newName, newDesc];
 	}
@@ -201,8 +202,8 @@ export class Tournament {
 		return msg.id;
 	}
 
-	public async openRegistration(organiser: string): Promise<string[]> {
-		await this.verifyOrganiser(organiser);
+	public async openRegistration(host: string): Promise<string[]> {
+		await this.verifyHost(host);
 		const tournament = await this.getTournament();
 		const channels = tournament.publicChannels;
 		const messages = await Promise.all(
@@ -210,7 +211,7 @@ export class Tournament {
 		);
 		logger.log({
 			level: "verbose",
-			message: `Tournament ${this.id} opened for registration by ${organiser}.`
+			message: `Tournament ${this.id} opened for registration by ${host}.`
 		});
 		return messages;
 	}
@@ -219,7 +220,7 @@ export class Tournament {
 		const channel = await bot.getDMChannel(participant);
 		const msg = await channel.createMessage(
 			`Sorry, the ${name} tournament you registered for has started, and you had not submitted a valid decklist, so you have been dropped.
-			If you think this is a mistake, contact the tournament organiser.`
+			If you think this is a mistake, contact the tournament host.`
 		);
 		return msg.id;
 	}
@@ -274,15 +275,15 @@ export class Tournament {
 		return msg.id;
 	}
 
-	public async start(organiser: string): Promise<string[]> {
-		await this.verifyOrganiser(organiser);
+	public async start(host: string): Promise<string[]> {
+		await this.verifyHost(host);
 		const tournament = await this.getTournament();
 		if (tournament.confirmedParticipants.length < 2) {
 			throw new UserError("Cannot start a tournament without at least 2 confirmed participants!");
 		}
 		await challonge.startTournament(this.id, {});
 		const tournData = await challonge.showTournament(this.id);
-		const removedIDs = await startTournament(this.id, organiser, tournData.tournament.swiss_rounds);
+		const removedIDs = await startTournament(this.id, host, tournData.tournament.swiss_rounds);
 		await Promise.all(removedIDs.map(i => this.warnClosedParticipant(i, tournament.name)));
 		const messages = tournament.registerMessages;
 		await Promise.all(messages.map(this.deleteRegisterMessage));
@@ -293,7 +294,7 @@ export class Tournament {
 		);
 		logger.log({
 			level: "verbose",
-			message: `Tournament ${this.id} commenced by ${organiser}.`
+			message: `Tournament ${this.id} commenced by ${host}.`
 		});
 		return announcements;
 	}
@@ -302,9 +303,9 @@ export class Tournament {
 		winnerId: string,
 		winnerScore: number,
 		loserScore: number,
-		organiser: string
+		host: string
 	): Promise<ChallongeMatch> {
-		await this.verifyOrganiser(organiser);
+		await this.verifyHost(host);
 		const doc = await this.getTournament();
 		const winner = doc.confirmedParticipants.find(p => p.discord === winnerId);
 		if (!winner) {
@@ -323,7 +324,7 @@ export class Tournament {
 		});
 		logger.log({
 			level: "verbose",
-			message: `Score submitted for tournament ${this.id} by ${organiser}. ${winnerId} won ${winnerScore}-${loserScore}.`
+			message: `Score submitted for tournament ${this.id} by ${host}. ${winnerId} won ${winnerScore}-${loserScore}.`
 		});
 		return result;
 	}
@@ -337,14 +338,14 @@ export class Tournament {
 		});
 	}
 
-	public async nextRound(organiser: string): Promise<number> {
-		await this.verifyOrganiser(organiser);
+	public async nextRound(host: string): Promise<number> {
+		await this.verifyHost(host);
 		const matches = await challonge.indexMatches(this.id, "open");
 		await Promise.all(matches.map(m => this.tieMatch(m.match.id)));
-		const round = await nextRound(this.id, organiser);
+		const round = await nextRound(this.id, host);
 		// if was last round
 		if (round === -1) {
-			await this.finishTournament(organiser);
+			await this.finishTournament(host);
 			return -1;
 		}
 		const tournament = await this.getTournament();
@@ -353,7 +354,7 @@ export class Tournament {
 		await Promise.all(channels.map(c => this.startRound(c, this.id, round, tournament.name, bye)));
 		logger.log({
 			level: "verbose",
-			message: `Tournament ${this.id} moved to round ${round} by ${organiser}.`
+			message: `Tournament ${this.id} moved to round ${round} by ${host}.`
 		});
 		return round;
 	}
@@ -374,42 +375,42 @@ export class Tournament {
 		return msg.id;
 	}
 
-	public async finishTournament(organiser: string, cancel = false): Promise<void> {
-		await this.verifyOrganiser(organiser);
+	public async finishTournament(host: string, cancel = false): Promise<void> {
+		await this.verifyHost(host);
 		const tournament = await this.getTournament();
 		const channels = tournament.publicChannels;
 		await Promise.all(channels.map(c => this.sendConclusionMessage(c, this.id, tournament.name, cancel)));
 		await challonge.finaliseTournament(this.id, {});
-		await finishTournament(this.id, organiser);
+		await finishTournament(this.id, host);
 		delete tournaments[this.id];
 		logger.log({
 			level: "verbose",
-			message: `Tournament ${this.id} finished by ${organiser}.`
+			message: `Tournament ${this.id} finished by ${host}.`
 		});
 	}
 
-	public async addOrganiser(organiser: string, newOrganiser: string): Promise<boolean> {
-		await this.verifyOrganiser(organiser);
-		const result = await addOrganiser(newOrganiser, this.id);
+	public async addHost(host: string, newHost: string): Promise<boolean> {
+		await this.verifyHost(host);
+		const result = await addHost(newHost, this.id);
 		if (result) {
 			logger.log({
 				level: "verbose",
-				message: `Tournament ${this.id} added new organiser ${newOrganiser} by ${organiser}.`
+				message: `Tournament ${this.id} added new host ${newHost} by ${host}.`
 			});
 		}
 		return result;
 	}
 
-	public async removeOrganiser(organiser: string, toRemove: string): Promise<boolean> {
-		await this.verifyOrganiser(organiser);
-		if (organiser === toRemove) {
+	public async removeHost(host: string, toRemove: string): Promise<boolean> {
+		await this.verifyHost(host);
+		if (host === toRemove) {
 			throw new UserError("You cannot remove yourself from organising a tournament!");
 		}
-		const result = await removeOrganiser(toRemove, this.id);
+		const result = await removeHost(toRemove, this.id);
 		if (result) {
 			logger.log({
 				level: "verbose",
-				message: `Tournament ${this.id} removed organiser ${toRemove} by ${organiser}.`
+				message: `Tournament ${this.id} removed host ${toRemove} by ${host}.`
 			});
 		}
 		return result;
