@@ -27,12 +27,8 @@ import { bot } from "./bot";
 import { TournamentModel, TournamentDoc } from "./models";
 import { DiscordDeck } from "./discordDeck";
 import { defaultHosts, defaultPublicChannels, defaultPrivateChannels } from "./config/config.json";
-import {
-	UnauthorisedHostError,
-	DeckNotFoundError,
-	AssertTextChannelError,
-	UserError,
-} from "./errors";
+import { UnauthorisedHostError, DeckNotFoundError, AssertTextChannelError, UserError } from "./errors";
+import logger from "./logger";
 
 const CHECK_EMOJI = "✅";
 
@@ -149,9 +145,9 @@ export class Tournament {
 			level: "verbose",
 			message: `Channel ${channelId} added to tournament ${this.id} with level ${
 				isPrivate ? "private" : "public"
-			} by ${organiser}.`
+			} by ${host}.`
 		});
-		
+
 		return mes.id;
 	}
 
@@ -170,7 +166,7 @@ export class Tournament {
 			level: "verbose",
 			message: `Channel ${channelId} removed from tournament ${this.id} with level ${
 				isPrivate ? "private" : "public"
-			} by ${organiser}.`
+			} by ${host}.`
 		});
 	}
 
@@ -188,7 +184,7 @@ export class Tournament {
 		const newDesc = await await setTournamentDescription(this.id, desc);
 		logger.log({
 			level: "verbose",
-			message: `Tournament ${this.id} updated with name ${newName} and description ${newDesc} by ${organiser}.`
+			message: `Tournament ${this.id} updated with name ${newName} and description ${newDesc} by ${host}.`
 		});
 		return [newName, newDesc];
 	}
@@ -215,7 +211,7 @@ export class Tournament {
 		);
 		logger.log({
 			level: "verbose",
-			message: `Tournament ${this.id} opened for registration by ${organiser}.`
+			message: `Tournament ${this.id} opened for registration by ${host}.`
 		});
 		return messages;
 	}
@@ -298,7 +294,7 @@ export class Tournament {
 		);
 		logger.log({
 			level: "verbose",
-			message: `Tournament ${this.id} commenced by ${organiser}.`
+			message: `Tournament ${this.id} commenced by ${host}.`
 		});
 		return announcements;
 	}
@@ -328,7 +324,7 @@ export class Tournament {
 		});
 		logger.log({
 			level: "verbose",
-			message: `Score submitted for tournament ${this.id} by ${organiser}. ${winnerId} won ${winnerScore}-${loserScore}.`
+			message: `Score submitted for tournament ${this.id} by ${host}. ${winnerId} won ${winnerScore}-${loserScore}.`
 		});
 		return result;
 	}
@@ -358,7 +354,7 @@ export class Tournament {
 		await Promise.all(channels.map(c => this.startRound(c, this.id, round, tournament.name, bye)));
 		logger.log({
 			level: "verbose",
-			message: `Tournament ${this.id} moved to round ${round} by ${organiser}.`
+			message: `Tournament ${this.id} moved to round ${round} by ${host}.`
 		});
 		return round;
 	}
@@ -389,20 +385,20 @@ export class Tournament {
 		delete tournaments[this.id];
 		logger.log({
 			level: "verbose",
-			message: `Tournament ${this.id} finished by ${organiser}.`
+			message: `Tournament ${this.id} finished by ${host}.`
 		});
 	}
 
 	public async addHost(host: string, newHost: string): Promise<boolean> {
 		await this.verifyHost(host);
 		const result = await addHost(newHost, this.id);
-        if (result) {
+		if (result) {
 			logger.log({
 				level: "verbose",
-				message: `Tournament ${this.id} added new host ${bewHost} by ${host}.`
+				message: `Tournament ${this.id} added new host ${newHost} by ${host}.`
 			});
 		}
-        return result;
+		return result;
 	}
 
 	public async removeHost(host: string, toRemove: string): Promise<boolean> {
