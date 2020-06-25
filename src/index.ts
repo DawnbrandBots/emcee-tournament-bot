@@ -20,7 +20,8 @@ bot.on("messageCreate", async msg => {
 	} catch (e) {
 		logger.log({
 			level: "error",
-			message: e.message
+			message: e.message,
+			meta: [e.stack]
 		});
 	}
 });
@@ -28,6 +29,7 @@ bot.on("messageCreate", async msg => {
 bot.connect().catch(e => {
 	logger.log({
 		level: "error",
-		message: e.message
+		message: e.message,
+		meta: [e.stack]
 	});
 });

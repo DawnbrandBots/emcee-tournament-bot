@@ -28,7 +28,13 @@ import { bot } from "./bot";
 import { TournamentModel, TournamentDoc } from "./models";
 import { DiscordDeck } from "./discordDeck";
 import { defaultHosts, defaultPublicChannels, defaultPrivateChannels } from "./config/config.json";
-import { UnauthorisedHostError, DeckNotFoundError, AssertTextChannelError, UserError } from "./errors";
+import {
+	UnauthorisedHostError,
+	DeckNotFoundError,
+	AssertTextChannelError,
+	UserError,
+	MiscInternalError
+} from "./errors";
 import logger from "./logger";
 
 const CHECK_EMOJI = "✅";
@@ -435,7 +441,8 @@ bot.on("messageDelete", msg => {
 		.catch(e => {
 			logger.log({
 				level: "error",
-				message: e.message
+				message: e.message,
+				meta: [e.stack]
 			});
 		});
 });
@@ -461,9 +468,11 @@ bot.on("messageReactionAdd", async (msg, emoji, userId) => {
 		const tournament = await findTournamentByRegisterMessage(msg.id, msg.channel.id);
 		if (!tournament) {
 			// impossible because of addPendingParticipant except in the case of a race condition
+			const e = new MiscInternalError(`User ${userId} added to non-existent tournament!`);
 			logger.log({
 				level: "error",
-				message: `User ${userId} added to non-existent tournament!`
+				message: e.message,
+				meta: [e.stack]
 			});
 			return;
 		}
@@ -484,7 +493,8 @@ bot.on("messageReactionAdd", async (msg, emoji, userId) => {
 			}
 			logger.log({
 				level: "error",
-				message: e.message
+				message: e.message,
+				meta: [e.stack]
 			});
 		}
 	}
@@ -509,18 +519,24 @@ bot.on("messageReactionRemove", async (msg, emoji, userId) => {
 		const tournament = await findTournamentByRegisterMessage(msg.id, msg.channel.id);
 		if (!tournament) {
 			// impossible because of removePendingParticipant except in the case of a race condition
+			const e = new MiscInternalError(`User ${userId} removed from non-existent tournament!`);
 			logger.log({
 				level: "error",
-				message: `User ${userId} removed from non-existent tournament!`
+				message: e.message,
+				meta: [e.stack]
 			});
 			return;
 		}
 		const user = await getPlayerFromDiscord(tournament.challongeId, userId);
 		if (!user) {
 			// impossible because of removePendingParticipant except in the case of a race condition
+			const e = new MiscInternalError(
+				`Non-existing user ${userId} removed from tournament ${tournament.challongeId}!`
+			);
 			logger.log({
 				level: "error",
-				message: `Non-existing user ${userId} removed from tournament ${tournament.challongeId}!`
+				message: e.message,
+				meta: [e.stack]
 			});
 			return;
 		}
@@ -541,18 +557,22 @@ bot.on("messageReactionRemove", async (msg, emoji, userId) => {
 		const tournament = await findTournamentByRegisterMessage(msg.id, msg.channel.id);
 		if (!tournament) {
 			// impossible because of removeConfirmedParticipant except in the case of a race condition
+			const e = new MiscInternalError(`User ${userId} removed from non-existent tournament!`);
 			logger.log({
 				level: "error",
-				message: `User ${userId} removed from non-existent tournament!`
+				message: e.message,
+				meta: [e.stack]
 			});
 			return;
 		}
 		const user = await getPlayerFromDiscord(tournament.challongeId, userId);
 		if (!user) {
 			// impossible because of removeConfirmedParticipant except in the case of a race condition
+			const e = new MiscInternalError(`User ${userId} removed from non-existent tournament!`);
 			logger.log({
 				level: "error",
-				message: `User ${userId} removed from non-existent tournament!`
+				message: e.message,
+				meta: [e.stack]
 			});
 			return;
 		}
@@ -573,7 +593,8 @@ bot.on("messageReactionRemove", async (msg, emoji, userId) => {
 			// nowhere to throw
 			logger.log({
 				level: "error",
-				message: e.message
+				message: e.message,
+				meta: [e.stack]
 			});
 		}
 	}
@@ -595,7 +616,8 @@ async function grantTournamentRole(channelId: string, user: string, tournamentId
 	} catch (e) {
 		logger.log({
 			level: "error",
-			message: e.message
+			message: e.message,
+			meta: [e.stack]
 		});
 	}
 	return true;
@@ -685,7 +707,8 @@ export async function confirmDeck(msg: Message): Promise<void> {
 				// nowhere to throw
 				logger.log({
 					level: "error",
-					message: e.message
+					message: e.message,
+					meta: [e.stack]
 				});
 			}
 		}

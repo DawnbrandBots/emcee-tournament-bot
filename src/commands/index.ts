@@ -52,7 +52,8 @@ export async function parseCommand(msg: Message): Promise<void> {
 			// internal error
 			logger.log({
 				level: "error",
-				message: e.message
+				message: e.message,
+				meta: [e.stack]
 			});
 		}
 	}

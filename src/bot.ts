@@ -54,7 +54,8 @@ bot.on("guildCreate", guild => {
 	createTORole(guild).catch(e => {
 		logger.log({
 			level: "error",
-			message: e.message
+			message: e.message,
+			meta: [e.stack]
 		});
 	});
 });

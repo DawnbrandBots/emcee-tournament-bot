@@ -12,7 +12,8 @@ connect(mongoDbUrl, { useCreateIndex: true, useNewUrlParser: true, useUnifiedTop
 	.catch(e => {
 		logger.log({
 			level: "error",
-			message: e.message
+			message: e.message,
+			meta: [e.stack]
 		});
 	});
 
