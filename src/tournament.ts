@@ -34,7 +34,7 @@ import {
 	UserError,
 	MiscInternalError
 } from "./errors";
-import { logger } from "./logger";
+import logger from "./logger";
 
 const CHECK_EMOJI = "✅";
 

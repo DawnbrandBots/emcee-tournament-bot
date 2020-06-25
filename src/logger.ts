@@ -1,6 +1,6 @@
 import { createLogger, format, transports } from "winston";
 
-export const logger = createLogger({
+const logger = createLogger({
 	level: "info",
 	format: format.json({
 		space: 4
@@ -13,3 +13,5 @@ export const logger = createLogger({
 		new transports.File({ filename: "verbose.log" })
 	]
 });
+
+export default logger;
