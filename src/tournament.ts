@@ -27,13 +27,7 @@ import { bot } from "./bot";
 import { TournamentModel, TournamentDoc } from "./models";
 import { DiscordDeck } from "./discordDeck";
 import { defaultOrganisers, defaultPublicChannels, defaultPrivateChannels } from "./config/config.json";
-import {
-	UnauthorisedOrganiserError,
-	DeckNotFoundError,
-	AssertTextChannelError,
-	UserError,
-	MiscInternalError
-} from "./errors";
+import { UnauthorisedOrganiserError, DeckNotFoundError, AssertTextChannelError, UserError } from "./errors";
 import logger from "./logger";
 
 const CHECK_EMOJI = "✅";
@@ -461,7 +455,11 @@ bot.on("messageReactionAdd", async (msg, emoji, userId) => {
 		const tournament = await findTournamentByRegisterMessage(msg.id, msg.channel.id);
 		if (!tournament) {
 			// impossible because of addPendingParticipant except in the case of a race condition
-			throw new MiscInternalError(`User ${userId} added to non-existent tournament!`);
+			logger.log({
+				level: "error",
+				message: `User ${userId} added to non-existent tournament!`
+			});
+			return;
 		}
 		try {
 			await chan.createMessage(
@@ -496,24 +494,18 @@ bot.on("messageReactionRemove", async (msg, emoji, userId) => {
 		const tournament = await findTournamentByRegisterMessage(msg.id, msg.channel.id);
 		if (!tournament) {
 			// impossible because of removePendingParticipant except in the case of a race condition
-			// nowhere to throw
-			const e = new MiscInternalError(`User ${userId} removed from non-existent tournament!`);
 			logger.log({
 				level: "error",
-				message: e.message
+				message: `User ${userId} removed from non-existent tournament!`
 			});
 			return;
 		}
 		const user = await getPlayerFromDiscord(tournament.challongeId, userId);
 		if (!user) {
 			// impossible because of removePendingParticipant except in the case of a race condition
-			// nowhere to throw
-			const e = new MiscInternalError(
-				`Non-existing user ${userId} removed from tournament ${tournament.challongeId}!`
-			);
 			logger.log({
 				level: "error",
-				message: e.message
+				message: `Non-existing user ${userId} removed from tournament ${tournament.challongeId}!`
 			});
 			return;
 		}
