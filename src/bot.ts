@@ -29,6 +29,10 @@ export async function getTORole(guildId: string): Promise<string> {
 		"Auto-created by Emcee bot."
 	);
 	toRoles[guild.id] = newRole.id;
+	logger.log({
+		level: "verbose",
+		message: `TO role ${newRole.id} re-created in ${guild.id}.`
+	});
 	return newRole.id;
 }
 
