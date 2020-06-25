@@ -7,10 +7,10 @@ const logger = createLogger({
 	}),
 	defaultMeta: { service: "user-service" },
 	transports: [
-		new transports.File({ filename: "error.log", level: "error" }),
+		new transports.File({ filename: "logs/error.log", level: "error" }),
 		new transports.Console({ level: "error", format: format.errors() }),
 		new transports.Console({ level: "info", format: format.simple() }),
-		new transports.File({ filename: "verbose.log" })
+		new transports.File({ filename: "logs/verbose.log" })
 	]
 });
 
