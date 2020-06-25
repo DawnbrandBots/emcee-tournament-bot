@@ -16,7 +16,7 @@ export class UnauthorisedHostError extends UserError {
 	challongeId: string;
 
 	constructor(host: string, challongeId: string) {
-		super(`Host ${host} not authorised for tournament ${challongeId}`);
+		super(`User ${host} not authorised for tournament ${challongeId}`);
 		this.host = host;
 		this.challongeId = challongeId;
 	}
