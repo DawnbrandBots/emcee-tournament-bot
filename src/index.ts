@@ -1,7 +1,7 @@
 import { bot } from "./bot";
 import { confirmDeck } from "./tournament";
 import { parseCommand } from "./commands";
-import { logger } from "./logger";
+import logger from "./logger";
 
 bot.on("ready", () => {
 	logger.log({

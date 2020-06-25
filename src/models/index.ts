@@ -1,6 +1,6 @@
 import { connect, connection } from "mongoose";
 import { mongoDbUrl } from "../config/env";
-import { logger } from "../logger";
+import logger from "../logger";
 
 connect(mongoDbUrl, { useCreateIndex: true, useNewUrlParser: true, useUnifiedTopology: true })
 	.then(() =>
