@@ -22,7 +22,7 @@ import {
 	addRegisterMessage,
 	getPlayerFromDiscord,
 	getPlayerFromId,
-	removeConfirmedPariticipant
+	removeConfirmedParticipant
 } from "./actions";
 import { bot } from "./bot";
 import { TournamentModel, TournamentDoc } from "./models";
@@ -532,11 +532,11 @@ bot.on("messageReactionRemove", async (msg, emoji, userId) => {
 		}
 	}
 	// drop confirmed participant
-	if (await removeConfirmedPariticipant(msg.id, msg.channel.id, userId)) {
+	if (await removeConfirmedParticipant(msg.id, msg.channel.id, userId)) {
 		const chan = await bot.getDMChannel(userId);
 		const tournament = await findTournamentByRegisterMessage(msg.id, msg.channel.id);
 		if (!tournament) {
-			// impossible because of removeConfirmedgParticipant except in the case of a race condition
+			// impossible because of removeConfirmedParticipant except in the case of a race condition
 			logger.log({
 				level: "error",
 				message: `User ${userId} removed from non-existent tournament!`
@@ -545,7 +545,7 @@ bot.on("messageReactionRemove", async (msg, emoji, userId) => {
 		}
 		const user = await getPlayerFromDiscord(tournament.challongeId, userId);
 		if (!user) {
-			// impossible because of removeConfirmedgParticipant except in the case of a race condition
+			// impossible because of removeConfirmedParticipant except in the case of a race condition
 			logger.log({
 				level: "error",
 				message: `User ${userId} removed from non-existent tournament!`

@@ -165,7 +165,7 @@ export async function removePendingParticipant(
 }
 
 // Invoke after a user requests to leave a tournament they have been confirmed for
-export async function removeConfirmedPariticipant(
+export async function removeConfirmedParticipant(
 	message: DiscordID,
 	channel: DiscordID,
 	user: DiscordID
