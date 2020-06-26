@@ -48,13 +48,8 @@ export async function parseCommand(msg: Message): Promise<void> {
 				await msg.channel.createMessage(e.message);
 				return;
 			}
-
 			// internal error
-			logger.log({
-				level: "error",
-				message: e.message,
-				meta: [e.stack]
-			});
+			logger.error(e);
 		}
 	}
 }

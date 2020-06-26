@@ -1,14 +1,36 @@
 import { createLogger, format, transports } from "winston";
 
+const consoleFormat = format.printf(info => {
+	if (info.stack) {
+		return `${info.timestamp} ${info.level}: ${info.message}\n${info.stack}`;
+	} else {
+		return `${info.timestamp} ${info.level}: ${info.message}`;
+	}
+});
+
 const logger = createLogger({
-	level: "info",
-	format: format.combine(format.json(), format.timestamp()),
-	defaultMeta: { service: "user-service" },
+	level: "verbose",
+	format: format.combine(
+		format.errors({ stack: true }),
+		format.timestamp()
+	),
 	transports: [
-		new transports.File({ filename: "logs/error.log", level: "error" }),
-		new transports.Console({ level: "error", format: format.combine(format.errors(), format.timestamp()) }),
-		new transports.Console({ level: "info", format: format.combine(format.simple(), format.timestamp()) }),
-		new transports.File({ filename: "logs/verbose.log" })
+		new transports.Console({
+			level: "info",
+			format: format.combine(
+				format.colorize(),
+				consoleFormat
+			),
+		}),
+		new transports.File({
+			filename: "logs/error.log",
+			level: "error",
+			format: format.json(),
+		}),
+		new transports.File({
+			filename: "logs/verbose.log",
+			format: format.json(),
+		}),
 	]
 });
 

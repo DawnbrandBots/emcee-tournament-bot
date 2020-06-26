@@ -17,10 +17,7 @@ async function createTORole(guild: Guild): Promise<Role> {
 		"Auto-created by Emcee bot."
 	);
 	toRoles[guild.id] = newRole.id;
-	logger.log({
-		level: "verbose",
-		message: `TO role ${newRole.id} re-created in ${guild.id}.`
-	});
+	logger.verbose(`TO role ${newRole.id} re-created in ${guild.id}.`);
 	return newRole;
 }
 
@@ -51,11 +48,5 @@ export async function getTORoleFromMessage(msg: Message): Promise<string> {
 }
 
 bot.on("guildCreate", guild => {
-	createTORole(guild).catch(e => {
-		logger.log({
-			level: "error",
-			message: e.message,
-			meta: [e.stack]
-		});
-	});
+	createTORole(guild).catch(logger.error);
 });
