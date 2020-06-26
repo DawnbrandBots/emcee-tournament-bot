@@ -3,19 +3,8 @@ import { mongoDbUrl } from "../config/env";
 import logger from "../logger";
 
 connect(mongoDbUrl, { useCreateIndex: true, useNewUrlParser: true, useUnifiedTopology: true })
-	.then(() =>
-		logger.log({
-			level: "info",
-			message: `Connected to MongoDB at${process.env.MONGODB_URL}`
-		})
-	)
-	.catch(e => {
-		logger.log({
-			level: "error",
-			message: e.message,
-			meta: [e.stack]
-		});
-	});
+	.then(() => logger.info(`Connected to MongoDB at ${process.env.MONGODB_URL}`))
+	.catch(logger.error);
 
 process.on("SIGINT", () => {
 	connection.close();

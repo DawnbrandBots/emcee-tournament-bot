@@ -53,7 +53,7 @@ export async function parseCommand(msg: Message): Promise<void> {
 			logger.log({
 				level: "error",
 				message: e.message,
-				meta: [e.stack]
+				stack: e.stack
 			});
 		}
 	}
