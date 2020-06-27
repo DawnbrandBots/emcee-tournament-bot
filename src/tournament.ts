@@ -146,9 +146,11 @@ export class Tournament {
 			`This channel now displaying announcements for ${tournament.name} (${this.id})`
 		);
 		await addAnnouncementChannel(channelId, this.id, host, isPrivate ? "private" : "public");
-		logger.verbose(`Channel ${channelId} added to tournament ${this.id} with level ${
-			isPrivate ? "private" : "public"
-		} by ${host}.`);
+		logger.verbose(
+			`Channel ${channelId} added to tournament ${this.id} with level ${
+				isPrivate ? "private" : "public"
+			} by ${host}.`
+		);
 
 		return mes.id;
 	}
@@ -164,9 +166,11 @@ export class Tournament {
 		}
 		const tournament = await this.getTournament();
 		await channel.createMessage(`This channel no longer displaying announcements for ${tournament.name}`);
-		logger.verbose(`Channel ${channelId} removed from tournament ${this.id} with level ${
-			isPrivate ? "private" : "public"
-		} by ${host}.`);
+		logger.verbose(
+			`Channel ${channelId} removed from tournament ${this.id} with level ${
+				isPrivate ? "private" : "public"
+			} by ${host}.`
+		);
 	}
 
 	public async updateTournament(name: string, desc: string, host: string): Promise<[string, string]> {
@@ -202,6 +206,11 @@ export class Tournament {
 		await this.verifyHost(host);
 		const tournament = await this.getTournament();
 		const channels = tournament.publicChannels;
+		if (channels.length < 1) {
+			throw new UserError(
+				"You must register at least one public announcement channel before opening a tournament for registration!"
+			);
+		}
 		const messages = await Promise.all(
 			channels.map(c => this.openRegistrationInChannel(c, tournament.name, tournament.description))
 		);
@@ -312,7 +321,9 @@ export class Tournament {
 			// eslint-disable-next-line @typescript-eslint/camelcase
 			scores_csv: `${winnerScore}-${loserScore}`
 		});
-		logger.verbose(`Score submitted for tournament ${this.id} by ${host}. ${winnerId} won ${winnerScore}-${loserScore}.`);
+		logger.verbose(
+			`Score submitted for tournament ${this.id} by ${host}. ${winnerId} won ${winnerScore}-${loserScore}.`
+		);
 		return result;
 	}
 
@@ -468,9 +479,9 @@ bot.on("messageReactionRemove", async (msg, emoji, userId) => {
 		const user = await getPlayerFromDiscord(tournament.challongeId, userId);
 		if (!user) {
 			// impossible because of removePendingParticipant except in the case of a race condition
-			logger.error(new MiscInternalError(
-				`Non-existing user ${userId} removed from tournament ${tournament.challongeId}!`
-			));
+			logger.error(
+				new MiscInternalError(`Non-existing user ${userId} removed from tournament ${tournament.challongeId}!`)
+			);
 			return;
 		}
 		try {
