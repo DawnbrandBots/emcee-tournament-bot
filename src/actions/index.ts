@@ -306,3 +306,35 @@ export async function getPlayerFromDiscord(
 export async function getOngoingTournaments(): Promise<TournamentDoc[]> {
 	return await TournamentModel.find({ $or: [{ status: "in progress" }, { status: "preparing" }] });
 }
+
+export interface SyncDoc {
+	confirmedParticipants: number[];
+	name: string;
+	description: string;
+	totalRounds: number;
+}
+
+// Update information to reflect the state in the challonge API
+export async function synchronise(challongeId: TournamentID, newDoc: SyncDoc): Promise<void> {
+	const tournament = await findTournament(challongeId);
+	// insert new players
+	for (const newPlayer of newDoc.confirmedParticipants) {
+		const player = tournament.confirmedParticipants.find(p => p.challongeId === newPlayer);
+		// if a player already exist, challonge doesn't have any info that should have changed
+		if (!player) {
+			tournament.confirmedParticipants.push({
+				challongeId: newPlayer,
+				discord: "DUMMY",
+				deck: {
+					main: [],
+					side: [],
+					extra: []
+				}
+			});
+		}
+	}
+	tournament.name = newDoc.name;
+	tournament.description = newDoc.description;
+	tournament.totalRounds = newDoc.totalRounds;
+	await tournament.save();
+}

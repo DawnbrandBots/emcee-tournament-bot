@@ -22,7 +22,9 @@ import {
 	addRegisterMessage,
 	getPlayerFromId,
 	removeConfirmedParticipant,
-	dropConfirmedParticipant
+	dropConfirmedParticipant,
+	SyncDoc,
+	synchronise
 } from "./actions";
 import { bot } from "./bot";
 import { TournamentModel, TournamentDoc } from "./models";
@@ -422,6 +424,25 @@ export class Tournament {
 			return true;
 		}
 		return false;
+	}
+
+	public async synchronise(host: string): Promise<void> {
+		await this.verifyHost(host);
+		const doc = await this.getTournament();
+		const newDoc: SyncDoc = {
+			confirmedParticipants: doc.confirmedParticipants.map(p => p.challongeId),
+			name: doc.name,
+			description: doc.description,
+			totalRounds: doc.totalRounds
+		};
+		const challongeData = (await challonge.showTournament(this.id, true)).tournament;
+		newDoc.name = challongeData.name;
+		newDoc.description = challongeData.description;
+		newDoc.totalRounds = challongeData.swiss_rounds;
+		if (challongeData.participants) {
+			newDoc.confirmedParticipants = challongeData.participants.map(p => p.participant.id);
+		}
+		await synchronise(this.id, newDoc);
 	}
 }
 

@@ -88,3 +88,10 @@ export async function dropPlayer(msg: Message, args: string[]): Promise<void> {
 		await msg.channel.createMessage(`<@${discord}> successfully dropped from tournament ${id}.`);
 	}
 }
+
+export async function sync(msg: Message, args: string[]): Promise<void> {
+	const [id] = args;
+	const [tourn] = await getTournamentInterface(id, msg.author.id);
+	await tourn.synchronise(msg.author.id);
+	await msg.channel.createMessage(`Tournament ${id} data successfully updated to reflect Challonge remote.`);
+}
