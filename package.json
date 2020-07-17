@@ -1,7 +1,8 @@
 {
-	"name": "deck-parse-bot",
-	"version": "1.0.0",
-	"description": "",
+	"name": "emcee-tournament-bot",
+	"version": "0.1.0",
+	"description": "A Discord bot to facilitate organising Challonge tournaments and verify submitted decks.",
+	"private": true,
 	"main": "dist/index.js",
 	"scripts": {
 		"test": "nyc mocha dist/test/test.js --timeout 20000",
