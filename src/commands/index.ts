@@ -1,6 +1,13 @@
 import { Message } from "eris";
 import { prefix } from "../config/config.json";
-import { createTournament, updateTournament, listTournaments, listPlayers, getPlayerDeck } from "./tournament";
+import {
+	createTournament,
+	updateTournament,
+	listTournaments,
+	listPlayers,
+	getPlayerDeck,
+	dropPlayer
+} from "./tournament";
 import { addChannel, removeChannel } from "./channels";
 import { open, start, cancelTournament, help } from "./basic";
 import { addHost, removeHost } from "./host";
@@ -26,6 +33,7 @@ const commands: { [command: string]: (msg: Message, args: string[]) => Promise<v
 	list: listTournaments,
 	players: listPlayers,
 	deck: getPlayerDeck,
+	drop: dropPlayer,
 	help: help
 };
 
