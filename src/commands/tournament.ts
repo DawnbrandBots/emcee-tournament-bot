@@ -77,7 +77,7 @@ export async function getPlayerDeck(msg: Message, args: string[]): Promise<void>
 	const deck = DiscordDeck.constructFromRecord(record);
 	const discordUser = bot.users.get(user);
 	await deck.sendProfile(
-		msg.channel.id,
+		msg.channel,
 		discordUser ? `${discordUser.username}#${discordUser.discriminator}ydk` : user
 	);
 }
