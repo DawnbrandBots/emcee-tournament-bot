@@ -6,6 +6,7 @@ services:
       - "27017:27017"
     volumes:
       - tournamentdb:/data/db
+    restart: unless-stopped
   bot:
     build: .
     environment:
@@ -14,6 +15,10 @@ services:
       MONGODB_URL: mongodb://mongo:27017/tournamentdb
       CHALLONGE_USERNAME: ${CHALLONGE_USERNAME}
       CHALLONGE_TOKEN: ${CHALLONGE_TOKEN}
+    volumes:
+      - ./dbs:/app/dbs
+      - ./logs:/app/logs
+    restart: unless-stopped
 
 volumes:
   tournamentdb:
