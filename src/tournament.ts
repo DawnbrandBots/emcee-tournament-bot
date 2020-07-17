@@ -20,7 +20,6 @@ import {
 	setTournamentDescription,
 	getOngoingTournaments,
 	addRegisterMessage,
-	getPlayerFromDiscord,
 	getPlayerFromId,
 	removeConfirmedParticipant
 } from "./actions";
@@ -476,14 +475,6 @@ bot.on("messageReactionRemove", async (msg, emoji, userId) => {
 			logger.error(new MiscInternalError(`User ${userId} removed from non-existent tournament!`));
 			return;
 		}
-		const user = await getPlayerFromDiscord(tournament.challongeId, userId);
-		if (!user) {
-			// impossible because of removePendingParticipant except in the case of a race condition
-			logger.error(
-				new MiscInternalError(`Non-existing user ${userId} removed from tournament ${tournament.challongeId}!`)
-			);
-			return;
-		}
 		try {
 			await chan.createMessage(`You have successfully dropped from ${tournament.name}.`);
 		} catch (e) {
@@ -496,16 +487,11 @@ bot.on("messageReactionRemove", async (msg, emoji, userId) => {
 		}
 	}
 	// drop confirmed participant
-	if (await removeConfirmedParticipant(msg.id, msg.channel.id, userId)) {
+	const user = await removeConfirmedParticipant(msg.id, msg.channel.id, userId);
+	if (user) {
 		const chan = await bot.getDMChannel(userId);
 		const tournament = await findTournamentByRegisterMessage(msg.id, msg.channel.id);
 		if (!tournament) {
-			// impossible because of removeConfirmedParticipant except in the case of a race condition
-			logger.error(new MiscInternalError(`User ${userId} removed from non-existent tournament!`));
-			return;
-		}
-		const user = await getPlayerFromDiscord(tournament.challongeId, userId);
-		if (!user) {
 			// impossible because of removeConfirmedParticipant except in the case of a race condition
 			logger.error(new MiscInternalError(`User ${userId} removed from non-existent tournament!`));
 			return;
@@ -558,7 +544,7 @@ async function sendTournamentRegistration(
 	}
 	const msg = await channel.createMessage(`<@${userId}> has signed up for ${name} with the following deck.`);
 	const user = bot.users.get(userId);
-	await deck.sendProfile(channel.id, user ? `${user.username}#${user.discriminator}ydk` : userId);
+	await deck.sendProfile(channel, user ? `${user.username}#${user.discriminator}ydk` : userId);
 	return msg.id;
 }
 
@@ -570,7 +556,7 @@ export async function confirmDeck(msg: Message): Promise<void> {
 		});
 		if (docs.length === 0) {
 			try {
-				await DiscordDeck.sendProfile(msg);
+				await DiscordDeck.sendProfile(msg, msg.channel);
 			} catch (e) {
 				// ignore "no deck" message
 				if (!(e instanceof DeckNotFoundError)) {
@@ -595,7 +581,7 @@ export async function confirmDeck(msg: Message): Promise<void> {
 				await msg.channel.createMessage(
 					"Your deck is not legal, so you have not been registered. Please fix the issues listed below and try submitting again."
 				);
-				await deck.sendProfile(msg.channel.id, `${msg.author.username}#${msg.author.discriminator}.ydk`);
+				await deck.sendProfile(msg.channel, `${msg.author.username}#${msg.author.discriminator}.ydk`);
 				return;
 			}
 			const challongeUser = await challonge.addParticipant(doc.challongeId, {
@@ -615,7 +601,7 @@ export async function confirmDeck(msg: Message): Promise<void> {
 			await msg.channel.createMessage(
 				`Congratulations! You have been registered in ${doc.name} with the following deck.`
 			);
-			await deck.sendProfile(msg.channel.id, `${msg.author.username}#${msg.author.discriminator}.ydk`);
+			await deck.sendProfile(msg.channel, `${msg.author.username}#${msg.author.discriminator}.ydk`);
 			await Promise.all(
 				doc.privateChannels.map(c => sendTournamentRegistration(c, msg.author.id, deck, doc.name))
 			);

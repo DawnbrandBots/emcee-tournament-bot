@@ -149,19 +149,13 @@ export async function removePendingParticipant(
 	channel: DiscordID,
 	user: DiscordID
 ): Promise<boolean> {
-	const tournament = await TournamentModel.findOne({
+	return !!await TournamentModel.findOneAndUpdate({
 		"registerMessages.channel": channel,
 		"registerMessages.message": message,
 		pendingParticipants: user
+	}, {
+		$pull: { pendingParticipants: user }
 	});
-	if (!tournament) {
-		return false;
-	}
-	const i = tournament.pendingParticipants.indexOf(user);
-	// i < 0 is impossible by precondition
-	tournament.pendingParticipants.splice(i, 1); // consider $pullAll
-	await tournament.save();
-	return true;
 }
 
 // Invoke after a user requests to leave a tournament they have been confirmed for
@@ -169,20 +163,16 @@ export async function removeConfirmedParticipant(
 	message: DiscordID,
 	channel: DiscordID,
 	user: DiscordID
-): Promise<boolean> {
-	const tournament = await TournamentModel.findOne({
-		"registerMessages.channel": channel,
-		"registerMessages.message": message,
-		"confirmedParticipants.discord": user
-	});
-	if (!tournament) {
-		return false;
-	}
-	const i = tournament.confirmedParticipants.findIndex(p => p.discord === user);
-	// i < 0 is impossible by precondition
-	tournament.confirmedParticipants.splice(i, 1); // consider $pullAll
-	await tournament.save();
-	return true;
+): Promise<MongoPlayer | undefined> {
+	return (
+		await TournamentModel.findOneAndUpdate({
+			"registerMessages.channel": channel,
+			"registerMessages.message": message,
+			"confirmedParticipants.discord": user
+		}, {
+			$pull: { confirmedParticipants: { discord: user } }
+		})
+	)?.confirmedParticipants.find(p => p.discord === user);
 }
 
 // Remove all pending participants and start the tournament
