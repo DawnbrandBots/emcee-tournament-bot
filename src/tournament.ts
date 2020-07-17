@@ -58,6 +58,13 @@ async function reportDrop(channelId: string, userId: string, tournament: string)
 	return msg.id;
 }
 
+export function mention(discordId: string): string {
+	if (discordId === "DUMMY") {
+		return "a dummy user";
+	}
+	return `<@${discordId}>`;
+}
+
 export class Tournament {
 	readonly id: string;
 	private roles: { [guild: string]: string } = {};
@@ -282,7 +289,7 @@ export class Tournament {
 		const role = await this.getRole(channelId);
 		let message = `Round ${round} of ${name} has begun! <@&${role}>\nPairings: https://challonge.com/${url}`;
 		if (bye) {
-			message += `\n<@${bye}> has the bye for this round.`;
+			message += `\n${mention(bye)} has the bye for this round.`;
 		}
 		const msg = await channel.createMessage(message);
 		return msg.id;
