@@ -58,7 +58,7 @@ export async function listPlayers(msg: Message, args: string[]): Promise<void> {
 		await msg.channel.createMessage("That tournament has no confirmed participants yet!");
 		return;
 	}
-	await msg.channel.createMessage(doc.confirmedParticipants.map(p => mention(p)).join(", "));
+	await msg.channel.createMessage(doc.confirmedParticipants.map(p => mention(p.discord)).join(", "));
 }
 
 export async function getPlayerDeck(msg: Message, args: string[]): Promise<void> {
