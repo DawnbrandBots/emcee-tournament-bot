@@ -6,7 +6,8 @@ import {
 	listTournaments,
 	listPlayers,
 	getPlayerDeck,
-	dropPlayer
+	dropPlayer,
+	sync
 } from "./tournament";
 import { addChannel, removeChannel } from "./channels";
 import { open, start, cancelTournament, help } from "./basic";
@@ -34,6 +35,7 @@ const commands: { [command: string]: (msg: Message, args: string[]) => Promise<v
 	players: listPlayers,
 	deck: getPlayerDeck,
 	drop: dropPlayer,
+	sync: sync,
 	help: help
 };
 
