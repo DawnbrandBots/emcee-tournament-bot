@@ -2,6 +2,7 @@ import { Message } from "eris";
 import { getPlayerFromId } from "../actions";
 import { getTournamentInterface, getMentionedUserId } from "./utils";
 import { UserError } from "../errors";
+import { mention } from "../tournament";
 async function getPlayerDiscord(tournamentId: string, playerId: number): Promise<string | undefined> {
 	const player = await getPlayerFromId(tournamentId, playerId);
 	return player?.discord;
@@ -23,7 +24,7 @@ export async function submitScore(msg: Message, args: string[]): Promise<void> {
 		result.match.winner_id === result.match.player1_id
 			? await getPlayerDiscord(id, result.match.player2_id)
 			: await getPlayerDiscord(id, result.match.player1_id);
-	const loserString = loser ? ` over <@${loser}>` : "";
+	const loserString = loser ? ` over ${mention(loser)}` : "";
 	await msg.channel.createMessage(
 		`Score successfully submitted for ${doc.name}. <@${winner}> won ${scoreMatch[0]}${loserString}.`
 	);

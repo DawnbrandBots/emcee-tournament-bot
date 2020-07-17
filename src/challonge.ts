@@ -37,7 +37,7 @@ interface ChallongeTournamentSettings {
 	grand_finals_modifier?: null | "single match" | "skip";
 }
 
-interface CreateTournamentResponse {
+interface ChallongeTournament {
 	tournament: {
 		accept_attachments: boolean;
 		allow_participant_match_reporting: boolean;
@@ -102,6 +102,8 @@ interface CreateTournamentResponse {
 		participants_swappable: boolean;
 		team_convertable: boolean;
 		group_stages_were_started: boolean;
+		participants?: ChallongeParticipant[];
+		matches?: ChallongeMatch[];
 	};
 }
 
@@ -118,7 +120,7 @@ interface AddParticipantSettings {
 	misc?: string;
 }
 
-interface AddParticipantReponse {
+interface ChallongeParticipant {
 	participant: {
 		active: boolean;
 		checked_in_at: null | Date;
@@ -207,13 +209,13 @@ class Challonge {
 		return body;
 	}
 
-	public async createTournament(settings: ChallongeTournamentSettings): Promise<CreateTournamentResponse> {
+	public async createTournament(settings: ChallongeTournamentSettings): Promise<ChallongeTournament> {
 		const response = await fetch(`${this.baseUrl}tournaments.json`, {
 			method: "POST",
 			body: JSON.stringify({ tournament: settings }),
 			headers: { "Content-Type": "application/json" }
 		});
-		return (await this.validateResponse(response)) as CreateTournamentResponse;
+		return (await this.validateResponse(response)) as ChallongeTournament;
 	}
 
 	public async updateTournament(tournament: string, settings: ChallongeTournamentSettings): Promise<void> {
@@ -225,9 +227,17 @@ class Challonge {
 		await this.validateResponse(response);
 	}
 
-	public async showTournament(tournament: string): Promise<CreateTournamentResponse> {
-		const response = await fetch(`${this.baseUrl}tournaments/${tournament}.json`);
-		return (await this.validateResponse(response)) as CreateTournamentResponse;
+	public async showTournament(
+		tournament: string,
+		includeParticipants = false,
+		includeMatches = false
+	): Promise<ChallongeTournament> {
+		const response = await fetch(
+			`${this.baseUrl}tournaments/${tournament}.json?include_participants=${Number(
+				includeParticipants
+			)}&include_matches=${Number(includeMatches)}`
+		);
+		return (await this.validateResponse(response)) as ChallongeTournament;
 	}
 
 	public async startTournament(tournament: string, settings: StartTournamentSettings): Promise<void> {
@@ -248,13 +258,13 @@ class Challonge {
 		await this.validateResponse(response);
 	}
 
-	public async addParticipant(tournament: string, settings: AddParticipantSettings): Promise<AddParticipantReponse> {
+	public async addParticipant(tournament: string, settings: AddParticipantSettings): Promise<ChallongeParticipant> {
 		const response = await fetch(`${this.baseUrl}tournaments/${tournament}/participants.json`, {
 			method: "POST",
 			body: JSON.stringify({ participant: settings }),
 			headers: { "Content-Type": "application/json" }
 		});
-		return (await this.validateResponse(response)) as AddParticipantReponse;
+		return (await this.validateResponse(response)) as ChallongeParticipant;
 	}
 
 	public async removeParticipant(tournament: string, participant: number): Promise<void> {

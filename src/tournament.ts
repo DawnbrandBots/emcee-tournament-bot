@@ -22,7 +22,9 @@ import {
 	addRegisterMessage,
 	getPlayerFromId,
 	removeConfirmedParticipant,
-	dropConfirmedParticipant
+	dropConfirmedParticipant,
+	SyncDoc,
+	synchronise
 } from "./actions";
 import { bot } from "./bot";
 import { TournamentModel, TournamentDoc } from "./models";
@@ -54,6 +56,13 @@ async function reportDrop(channelId: string, userId: string, tournament: string)
 	}
 	const msg = await channel.createMessage(`User <@${userId}> has dropped from ${tournament}`);
 	return msg.id;
+}
+
+export function mention(discordId: string): string {
+	if (discordId === "DUMMY") {
+		return "a dummy user";
+	}
+	return `<@${discordId}>`;
 }
 
 export class Tournament {
@@ -280,7 +289,7 @@ export class Tournament {
 		const role = await this.getRole(channelId);
 		let message = `Round ${round} of ${name} has begun! <@&${role}>\nPairings: https://challonge.com/${url}`;
 		if (bye) {
-			message += `\n<@${bye}> has the bye for this round.`;
+			message += `\n${mention(bye)} has the bye for this round.`;
 		}
 		const msg = await channel.createMessage(message);
 		return msg.id;
@@ -422,6 +431,25 @@ export class Tournament {
 			return true;
 		}
 		return false;
+	}
+
+	public async synchronise(host: string): Promise<void> {
+		await this.verifyHost(host);
+		const doc = await this.getTournament();
+		const newDoc: SyncDoc = {
+			confirmedParticipants: doc.confirmedParticipants.map(p => p.challongeId),
+			name: doc.name,
+			description: doc.description,
+			totalRounds: doc.totalRounds
+		};
+		const challongeData = (await challonge.showTournament(this.id, true)).tournament;
+		newDoc.name = challongeData.name;
+		newDoc.description = challongeData.description;
+		newDoc.totalRounds = challongeData.swiss_rounds;
+		if (challongeData.participants) {
+			newDoc.confirmedParticipants = challongeData.participants.map(p => p.participant.id);
+		}
+		await synchronise(this.id, newDoc);
 	}
 }
 

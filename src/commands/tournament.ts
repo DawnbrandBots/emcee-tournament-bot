@@ -1,5 +1,5 @@
 import { Message } from "eris";
-import { Tournament } from "../tournament";
+import { Tournament, mention } from "../tournament";
 import { getTournamentInterface, getMentionedUserId } from "./utils";
 import { getOngoingTournaments, getPlayerFromDiscord } from "../actions";
 import { TypedDeck } from "ydke";
@@ -58,7 +58,7 @@ export async function listPlayers(msg: Message, args: string[]): Promise<void> {
 		await msg.channel.createMessage("That tournament has no confirmed participants yet!");
 		return;
 	}
-	await msg.channel.createMessage(doc.confirmedParticipants.map(p => `<@${p.discord}>`).join(", "));
+	await msg.channel.createMessage(doc.confirmedParticipants.map(p => mention(p.discord)).join(", "));
 }
 
 export async function getPlayerDeck(msg: Message, args: string[]): Promise<void> {
@@ -87,4 +87,11 @@ export async function dropPlayer(msg: Message, args: string[]): Promise<void> {
 	if (result) {
 		await msg.channel.createMessage(`<@${discord}> successfully dropped from tournament ${id}.`);
 	}
+}
+
+export async function sync(msg: Message, args: string[]): Promise<void> {
+	const [id] = args;
+	const [tourn] = await getTournamentInterface(id, msg.author.id);
+	await tourn.synchronise(msg.author.id);
+	await msg.channel.createMessage(`Tournament ${id} data successfully updated to reflect Challonge remote.`);
 }
