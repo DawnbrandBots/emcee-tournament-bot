@@ -76,8 +76,15 @@ export async function getPlayerDeck(msg: Message, args: string[]): Promise<void>
 	};
 	const deck = DiscordDeck.constructFromRecord(record);
 	const discordUser = bot.users.get(user);
-	await deck.sendProfile(
-		msg.channel,
-		discordUser ? `${discordUser.username}#${discordUser.discriminator}ydk` : user
-	);
+	await deck.sendProfile(msg.channel, discordUser ? `${discordUser.username}#${discordUser.discriminator}ydk` : user);
+}
+
+export async function dropPlayer(msg: Message, args: string[]): Promise<void> {
+	const [id] = args;
+	const [tourn] = await getTournamentInterface(id, msg.author.id);
+	const discord = getMentionedUserId(msg);
+	const result = await tourn.dropPlayer(msg.author.id, discord);
+	if (result) {
+		await msg.channel.createMessage(`<@${discord}> successfully dropped from tournament ${id}.`);
+	}
 }

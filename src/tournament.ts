@@ -21,7 +21,8 @@ import {
 	getOngoingTournaments,
 	addRegisterMessage,
 	getPlayerFromId,
-	removeConfirmedParticipant
+	removeConfirmedParticipant,
+	dropConfirmedParticipant
 } from "./actions";
 import { bot } from "./bot";
 import { TournamentModel, TournamentDoc } from "./models";
@@ -44,6 +45,15 @@ const tournaments: {
 
 export function getTournament(id: string): Tournament | undefined {
 	return tournaments[id];
+}
+
+async function reportDrop(channelId: string, userId: string, tournament: string): Promise<string> {
+	const channel = bot.getChannel(channelId);
+	if (!(channel instanceof TextChannel)) {
+		throw new AssertTextChannelError(channelId);
+	}
+	const msg = await channel.createMessage(`User <@${userId}> has dropped from ${tournament}`);
+	return msg.id;
 }
 
 export class Tournament {
@@ -400,6 +410,19 @@ export class Tournament {
 		}
 		return result;
 	}
+
+	public async dropPlayer(host: string, discord: string): Promise<boolean> {
+		await this.verifyHost(host);
+		const user = await dropConfirmedParticipant(this.id, discord);
+		if (user) {
+			await challonge.removeParticipant(this.id, user.challongeId);
+			const doc = await this.getTournament();
+			await Promise.all(doc.privateChannels.map(c => reportDrop(c, discord, doc.name)));
+			logger.verbose(`User ${discord} dropped from tournament ${this.id} by host ${host}.`);
+			return true;
+		}
+		return false;
+	}
 }
 
 bot.on("messageDelete", msg => {
@@ -452,15 +475,6 @@ bot.on("messageReactionAdd", async (msg, emoji, userId) => {
 		}
 	}
 });
-
-async function reportDrop(channelId: string, userId: string, tournament: string): Promise<string> {
-	const channel = bot.getChannel(channelId);
-	if (!(channel instanceof TextChannel)) {
-		throw new AssertTextChannelError(channelId);
-	}
-	const msg = await channel.createMessage(`User <@${userId}> has dropped from ${tournament}`);
-	return msg.id;
-}
 
 bot.on("messageReactionRemove", async (msg, emoji, userId) => {
 	if (userId === bot.user.id || emoji.name !== CHECK_EMOJI) {

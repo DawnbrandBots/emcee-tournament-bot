@@ -149,13 +149,16 @@ export async function removePendingParticipant(
 	channel: DiscordID,
 	user: DiscordID
 ): Promise<boolean> {
-	return !!await TournamentModel.findOneAndUpdate({
-		"registerMessages.channel": channel,
-		"registerMessages.message": message,
-		pendingParticipants: user
-	}, {
-		$pull: { pendingParticipants: user }
-	});
+	return !!(await TournamentModel.findOneAndUpdate(
+		{
+			"registerMessages.channel": channel,
+			"registerMessages.message": message,
+			pendingParticipants: user
+		},
+		{
+			$pull: { pendingParticipants: user }
+		}
+	));
 }
 
 // Invoke after a user requests to leave a tournament they have been confirmed for
@@ -165,13 +168,34 @@ export async function removeConfirmedParticipant(
 	user: DiscordID
 ): Promise<MongoPlayer | undefined> {
 	return (
-		await TournamentModel.findOneAndUpdate({
-			"registerMessages.channel": channel,
-			"registerMessages.message": message,
-			"confirmedParticipants.discord": user
-		}, {
-			$pull: { confirmedParticipants: { discord: user } }
-		})
+		await TournamentModel.findOneAndUpdate(
+			{
+				"registerMessages.channel": channel,
+				"registerMessages.message": message,
+				"confirmedParticipants.discord": user
+			},
+			{
+				$pull: { confirmedParticipants: { discord: user } }
+			}
+		)
+	)?.confirmedParticipants.find(p => p.discord === user);
+}
+
+// Invoke after a host removes a player from a tournament they have been confirmed for
+export async function dropConfirmedParticipant(
+	challongeId: TournamentID,
+	user: DiscordID
+): Promise<MongoPlayer | undefined> {
+	return (
+		await TournamentModel.findOneAndUpdate(
+			{
+				challongeId: challongeId,
+				"confirmedParticipants.discord": user
+			},
+			{
+				$pull: { confirmedParticipants: { discord: user } }
+			}
+		)
 	)?.confirmedParticipants.find(p => p.discord === user);
 }
 
