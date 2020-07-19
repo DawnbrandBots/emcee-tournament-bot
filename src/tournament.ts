@@ -238,11 +238,19 @@ export class Tournament {
 
 	private async warnClosedParticipant(participant: string, name: string): Promise<string> {
 		const channel = await bot.getDMChannel(participant);
-		const msg = await channel.createMessage(
-			`Sorry, the ${name} tournament you registered for has started, and you had not submitted a valid decklist, so you have been dropped.
-			If you think this is a mistake, contact the tournament host.`
-		);
-		return msg.id;
+		try {
+			const msg = await channel.createMessage(
+				`Sorry, the ${name} tournament you registered for has started, and you had not submitted a valid decklist, so you have been dropped.
+				If you think this is a mistake, contact the tournament host.`
+			);
+			return msg.id;
+		} catch (e) {
+			// Ignore DiscordRESTError - User blocking DMs
+			if (e.code !== 50007) {
+				throw e;
+			}
+			return "";
+		}
 	}
 
 	private async deleteRegisterMessage(ids: { channel: string; message: string }): Promise<void> {
