@@ -201,12 +201,12 @@ class Challonge {
 		this.baseUrl = `https://${user}:${token}@api.challonge.com/v1/`;
 	}
 
-	private async validateResponse(response: Response): Promise<unknown> {
+	private async validateResponse<T>(response: Response): Promise<T> {
 		const body = await response.json();
 		if (body.errors) {
 			throw new ChallongeAPIError(body.errors[0]);
 		}
-		return body;
+		return body as T; // Response structure checking possible with io-ts or ajv
 	}
 
 	public async createTournament(settings: ChallongeTournamentSettings): Promise<ChallongeTournament> {
@@ -215,7 +215,7 @@ class Challonge {
 			body: JSON.stringify({ tournament: settings }),
 			headers: { "Content-Type": "application/json" }
 		});
-		return (await this.validateResponse(response)) as ChallongeTournament;
+		return await this.validateResponse<ChallongeTournament>(response);
 	}
 
 	public async updateTournament(tournament: string, settings: ChallongeTournamentSettings): Promise<void> {
@@ -237,7 +237,7 @@ class Challonge {
 				includeParticipants
 			)}&include_matches=${Number(includeMatches)}`
 		);
-		return (await this.validateResponse(response)) as ChallongeTournament;
+		return await this.validateResponse<ChallongeTournament>(response);
 	}
 
 	public async startTournament(tournament: string, settings: StartTournamentSettings): Promise<void> {
@@ -264,7 +264,7 @@ class Challonge {
 			body: JSON.stringify({ participant: settings }),
 			headers: { "Content-Type": "application/json" }
 		});
-		return (await this.validateResponse(response)) as ChallongeParticipant;
+		return await this.validateResponse<ChallongeParticipant>(response);
 	}
 
 	public async removeParticipant(tournament: string, participant: number): Promise<void> {
@@ -289,7 +289,7 @@ class Challonge {
 			url += `?participant_id=${participantId}`;
 		}
 		const response = await fetch(url);
-		return (await this.validateResponse(response)) as IndexMatchResponse;
+		return await this.validateResponse<IndexMatchResponse>(response);
 	}
 
 	public async updateMatch(
@@ -302,7 +302,7 @@ class Challonge {
 			body: JSON.stringify({ match: settings }),
 			headers: { "Content-Type": "application/json" }
 		});
-		return (await this.validateResponse(response)) as ChallongeMatch;
+		return await this.validateResponse<ChallongeMatch>(response);
 	}
 }
 
