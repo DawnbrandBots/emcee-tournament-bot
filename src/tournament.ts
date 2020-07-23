@@ -108,10 +108,6 @@ export class Tournament {
 		return tourn;
 	}
 
-	private async getTournament(): Promise<TournamentDoc> {
-		return await findTournament(this.id);
-	}
-
 	private async verifyHost(host: string): Promise<void> {
 		if (!(await isOrganising(host, this.id))) {
 			throw new UnauthorisedHostError(host, this.id);
@@ -151,9 +147,8 @@ export class Tournament {
 		if (!(channel instanceof TextChannel)) {
 			throw new AssertTextChannelError(channelId);
 		}
-		const tournament = await this.getTournament();
 		const mes = await channel.createMessage(
-			`This channel now displaying announcements for ${tournament.name} (${this.id})`
+			`This channel now displaying announcements for ${this.doc.name} (${this.id})`
 		);
 		await addAnnouncementChannel(channelId, this.id, host, isPrivate ? "private" : "public");
 		logger.verbose(
@@ -174,8 +169,7 @@ export class Tournament {
 		if (!(await removeAnnouncementChannel(channelId, this.id, host, isPrivate ? "private" : "public"))) {
 			throw new UserError(`Channel ${channel.name} is not a registered announcement channel`);
 		}
-		const tournament = await this.getTournament();
-		await channel.createMessage(`This channel no longer displaying announcements for ${tournament.name}`);
+		await channel.createMessage(`This channel no longer displaying announcements for ${this.doc.name}`);
 		logger.verbose(
 			`Channel ${channelId} removed from tournament ${this.id} with level ${
 				isPrivate ? "private" : "public"
@@ -185,9 +179,8 @@ export class Tournament {
 
 	public async updateTournament(name: string, desc: string, host: string): Promise<[string, string]> {
 		await this.verifyHost(host);
-		const tournament = await this.getTournament();
-		if (!(tournament.status === "preparing")) {
-			throw new UserError(`It's too late to update the information for ${tournament.name}.`);
+		if (!(this.doc.status === "preparing")) {
+			throw new UserError(`It's too late to update the information for ${this.doc.name}.`);
 		}
 		await challonge.updateTournament(this.id, {
 			name,
@@ -214,15 +207,14 @@ export class Tournament {
 
 	public async openRegistration(host: string): Promise<string[]> {
 		await this.verifyHost(host);
-		const tournament = await this.getTournament();
-		const channels = tournament.publicChannels;
+		const channels = this.doc.publicChannels;
 		if (channels.length < 1) {
 			throw new UserError(
 				"You must register at least one public announcement channel before opening a tournament for registration!"
 			);
 		}
 		const messages = await Promise.all(
-			channels.map(c => this.openRegistrationInChannel(c, tournament.name, tournament.description))
+			channels.map(c => this.openRegistrationInChannel(c, this.doc.name, this.doc.description))
 		);
 		logger.verbose(`Tournament ${this.id} opened for registration by ${host}.`);
 		return messages;
@@ -253,10 +245,9 @@ export class Tournament {
 
 	private async checkBye(): Promise<string | undefined> {
 		// odd number of participants means a bye
-		const tournament = await this.getTournament();
-		if (tournament.confirmedParticipants.length % 2 === 1) {
+		if (this.doc.confirmedParticipants.length % 2 === 1) {
 			const matches = await challonge.indexMatches(this.id, "open");
-			const players = tournament.confirmedParticipants.map(p => p.challongeId);
+			const players = this.doc.confirmedParticipants.map(p => p.challongeId);
 			for (const match of matches) {
 				const i = players.indexOf(match.match.player1_id);
 				if (i > -1) {
@@ -297,20 +288,19 @@ export class Tournament {
 
 	public async start(host: string): Promise<string[]> {
 		await this.verifyHost(host);
-		const tournament = await this.getTournament();
-		if (tournament.confirmedParticipants.length < 2) {
+		if (this.doc.confirmedParticipants.length < 2) {
 			throw new UserError("Cannot start a tournament without at least 2 confirmed participants!");
 		}
 		await challonge.startTournament(this.id, {});
 		const tournData = await challonge.showTournament(this.id);
 		const removedIDs = await startTournament(this.id, host, tournData.tournament.swiss_rounds);
-		await Promise.all(removedIDs.map(i => this.warnClosedParticipant(i, tournament.name)));
-		const messages = tournament.registerMessages;
+		await Promise.all(removedIDs.map(i => this.warnClosedParticipant(i, this.doc.name)));
+		const messages = this.doc.registerMessages;
 		await Promise.all(messages.map(this.deleteRegisterMessage));
-		const channels = tournament.publicChannels;
+		const channels = this.doc.publicChannels;
 		const bye = await this.checkBye();
 		const announcements = await Promise.all(
-			channels.map(c => this.startRound(c, this.id, 1, tournament.name, bye))
+			channels.map(c => this.startRound(c, this.id, 1, this.doc.name, bye))
 		);
 		logger.verbose(`Tournament ${this.id} commenced by ${host}.`);
 		return announcements;
@@ -323,8 +313,7 @@ export class Tournament {
 		host: string
 	): Promise<ChallongeMatch> {
 		await this.verifyHost(host);
-		const doc = await this.getTournament();
-		const winner = doc.confirmedParticipants.find(p => p.discord === winnerId);
+		const winner = this.doc.confirmedParticipants.find(p => p.discord === winnerId);
 		if (!winner) {
 			throw new UserError(`Could not find a participant for <@${winnerId}>!`);
 		}
@@ -364,10 +353,9 @@ export class Tournament {
 			await this.finishTournament(host);
 			return -1;
 		}
-		const tournament = await this.getTournament();
-		const channels = tournament.publicChannels;
+		const channels = this.doc.publicChannels;
 		const bye = await this.checkBye();
-		await Promise.all(channels.map(c => this.startRound(c, this.id, round, tournament.name, bye)));
+		await Promise.all(channels.map(c => this.startRound(c, this.id, round, this.doc.name, bye)));
 		logger.verbose(`Tournament ${this.id} moved to round ${round} by ${host}.`);
 		return round;
 	}
@@ -390,9 +378,8 @@ export class Tournament {
 
 	public async finishTournament(host: string, cancel = false): Promise<void> {
 		await this.verifyHost(host);
-		const tournament = await this.getTournament();
-		const channels = tournament.publicChannels;
-		await Promise.all(channels.map(c => this.sendConclusionMessage(c, this.id, tournament.name, cancel)));
+		const channels = this.doc.publicChannels;
+		await Promise.all(channels.map(c => this.sendConclusionMessage(c, this.id, this.doc.name, cancel)));
 		await challonge.finaliseTournament(this.id, {});
 		await finishTournament(this.id, host);
 		logger.verbose(`Tournament ${this.id} finished by ${host}.`);
@@ -424,8 +411,7 @@ export class Tournament {
 		const user = await dropConfirmedParticipant(this.id, discord);
 		if (user) {
 			await challonge.removeParticipant(this.id, user.challongeId);
-			const doc = await this.getTournament();
-			await Promise.all(doc.privateChannels.map(c => reportDrop(c, discord, doc.name)));
+			await Promise.all(this.doc.privateChannels.map(c => reportDrop(c, discord, this.doc.name)));
 			logger.verbose(`User ${discord} dropped from tournament ${this.id} by host ${host}.`);
 			return true;
 		}
@@ -434,12 +420,11 @@ export class Tournament {
 
 	public async synchronise(host: string): Promise<void> {
 		await this.verifyHost(host);
-		const doc = await this.getTournament();
 		const newDoc: SyncDoc = {
-			confirmedParticipants: doc.confirmedParticipants.map(p => p.challongeId),
-			name: doc.name,
-			description: doc.description,
-			totalRounds: doc.totalRounds
+			confirmedParticipants: this.doc.confirmedParticipants.map(p => p.challongeId),
+			name: this.doc.name,
+			description: this.doc.description,
+			totalRounds: this.doc.totalRounds
 		};
 		const challongeData = (await challonge.showTournament(this.id, true)).tournament;
 		newDoc.name = challongeData.name;
