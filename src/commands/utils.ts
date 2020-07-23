@@ -1,15 +1,10 @@
-import { findTournament, isOrganising } from "../actions";
+import { getAuthorizedTournament } from "../actions";
 import { Tournament } from "../tournament";
-import { TournamentDoc } from "../models";
 import { Message } from "eris";
-import { UnauthorisedHostError, UserError } from "../errors";
+import { UserError } from "../errors";
 
-export async function getTournamentInterface(id: string, host: string): Promise<[Tournament, TournamentDoc]> {
-	const doc = await findTournament(id);
-	if (!(await isOrganising(host, id))) {
-		throw new UnauthorisedHostError(host, id);
-	}
-	return [new Tournament(doc), doc];
+export async function getTournamentInterface(id: string, host: string): Promise<Tournament> {
+	return new Tournament(await getAuthorizedTournament(id, host));
 }
 
 export function getMentionedUserId(msg: Message): string {

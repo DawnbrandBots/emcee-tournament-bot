@@ -10,7 +10,7 @@ async function getPlayerDiscord(tournamentId: string, playerId: number): Promise
 
 export async function submitScore(msg: Message, args: string[]): Promise<void> {
 	const [id, score] = args;
-	const [tournament, doc] = await getTournamentInterface(id, msg.author.id);
+	const tournament = await getTournamentInterface(id, msg.author.id);
 	const winner = getMentionedUserId(msg);
 	const scoreRegex = /(\d)-(\d)/;
 	const scoreMatch = scoreRegex.exec(score);
@@ -26,6 +26,6 @@ export async function submitScore(msg: Message, args: string[]): Promise<void> {
 			: await getPlayerDiscord(id, result.match.player1_id);
 	const loserString = loser ? ` over ${mention(loser)}` : "";
 	await msg.channel.createMessage(
-		`Score successfully submitted for ${doc.name}. <@${winner}> won ${scoreMatch[0]}${loserString}.`
+		`Score successfully submitted for ${tournament.doc.name}. <@${winner}> won ${scoreMatch[0]}${loserString}.`
 	);
 }

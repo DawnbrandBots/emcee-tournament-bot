@@ -31,8 +31,7 @@ export async function findTournament(challongeId: TournamentID): Promise<Tournam
 	return tournament;
 }
 
-// Internal helper
-async function getAuthorizedTournament(challongeId: TournamentID, host: DiscordID): Promise<TournamentDoc> {
+export async function getAuthorizedTournament(challongeId: TournamentID, host: DiscordID): Promise<TournamentDoc> {
 	const tournament = await findTournament(challongeId);
 	if (!tournament.hosts.includes(host)) {
 		throw new UnauthorisedHostError(host, challongeId);

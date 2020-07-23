@@ -15,16 +15,16 @@ export async function createTournament(msg: Message, args: string[]): Promise<vo
 		throw new UserError("You must provide a valid tournament name and description!");
 	}
 	const tournament = await Tournament.init(name, desc, msg);
-	const [, doc] = await getTournamentInterface(tournament.id, msg.author.id);
+	const { doc } = await getTournamentInterface(tournament.id, msg.author.id);
 	await msg.channel.createMessage(
 		`Tournament ${name} created! You can find it at https://challonge.com/${doc.challongeId}. For future commands, refer to this tournament by the id \`${doc.challongeId}\``
 	);
 }
 export async function updateTournament(msg: Message, args: string[]): Promise<void> {
 	const [id, name, desc] = args;
-	const [tournament, doc] = await getTournamentInterface(id, msg.author.id);
-	const oldName = doc.name;
-	const oldDesc = doc.description;
+	const tournament = await getTournamentInterface(id, msg.author.id);
+	const oldName = tournament.doc.name;
+	const oldDesc = tournament.doc.description;
 	if (name.length === 0 || desc.length === 0) {
 		throw new UserError("You must provide a valid tournament name and description!");
 	}
@@ -53,7 +53,7 @@ export async function listTournaments(msg: Message): Promise<void> {
 
 export async function listPlayers(msg: Message, args: string[]): Promise<void> {
 	const [id] = args;
-	const [, doc] = await getTournamentInterface(id, msg.author.id);
+	const { doc }= await getTournamentInterface(id, msg.author.id);
 	if (doc.confirmedParticipants.length === 0) {
 		await msg.channel.createMessage("That tournament has no confirmed participants yet!");
 		return;
@@ -63,7 +63,7 @@ export async function listPlayers(msg: Message, args: string[]): Promise<void> {
 
 export async function getPlayerDeck(msg: Message, args: string[]): Promise<void> {
 	const [id] = args;
-	const [, doc] = await getTournamentInterface(id, msg.author.id);
+	const { doc } = await getTournamentInterface(id, msg.author.id);
 	const user = getMentionedUserId(msg);
 	const player = await getPlayerFromDiscord(doc.challongeId, user);
 	if (!player) {
@@ -81,7 +81,7 @@ export async function getPlayerDeck(msg: Message, args: string[]): Promise<void>
 
 export async function dropPlayer(msg: Message, args: string[]): Promise<void> {
 	const [id] = args;
-	const [tourn] = await getTournamentInterface(id, msg.author.id);
+	const tourn = await getTournamentInterface(id, msg.author.id);
 	const discord = getMentionedUserId(msg);
 	const result = await tourn.dropPlayer(msg.author.id, discord);
 	if (result) {
@@ -91,7 +91,7 @@ export async function dropPlayer(msg: Message, args: string[]): Promise<void> {
 
 export async function sync(msg: Message, args: string[]): Promise<void> {
 	const [id] = args;
-	const [tourn] = await getTournamentInterface(id, msg.author.id);
+	const tourn = await getTournamentInterface(id, msg.author.id);
 	await tourn.synchronise(msg.author.id);
 	await msg.channel.createMessage(`Tournament ${id} data successfully updated to reflect Challonge remote.`);
 }
