@@ -11,7 +11,7 @@ export async function initTournament(
 	challongeId: TournamentID,
 	name: string,
 	description: string
-): Promise<void> {
+): Promise<TournamentDoc> {
 	const tournament = new TournamentModel({
 		name,
 		description,
@@ -20,6 +20,7 @@ export async function initTournament(
 		owningDiscordServer: server
 	});
 	await tournament.save();
+	return tournament;
 }
 
 export async function findTournament(challongeId: TournamentID): Promise<TournamentDoc> {

@@ -18,7 +18,6 @@ import {
 	findTournament,
 	setTournamentName,
 	setTournamentDescription,
-	getOngoingTournaments,
 	addRegisterMessage,
 	getPlayerFromId,
 	removeConfirmedParticipant,
@@ -41,14 +40,6 @@ import logger from "./logger";
 
 const CHECK_EMOJI = "✅";
 
-const tournaments: {
-	[id: string]: Tournament;
-} = {};
-
-export function getTournament(id: string): Tournament | undefined {
-	return tournaments[id];
-}
-
 async function reportDrop(channelId: string, userId: string, tournament: string): Promise<string> {
 	const channel = bot.getChannel(channelId);
 	if (!(channel instanceof TextChannel)) {
@@ -66,10 +57,12 @@ export function mention(discordId: string): string {
 }
 
 export class Tournament {
+	doc: TournamentDoc;
 	readonly id: string;
 	private roles: { [guild: string]: string } = {};
-	constructor(id: string) {
-		this.id = id;
+	constructor(doc: TournamentDoc) {
+		this.doc = doc;
+		this.id = doc.challongeId;
 	}
 
 	public static async init(name: string, description: string, msg: Message): Promise<Tournament> {
@@ -94,10 +87,9 @@ export class Tournament {
 			url: candidateUrl
 		});
 
-		await initTournament(msg.author.id, msg.channel.guild.id, tournament.tournament.url, name, description);
-
-		const tourn = new Tournament(tournament.tournament.url);
-		tournaments[tourn.id] = tourn;
+		const tourn = new Tournament(
+			await initTournament(msg.author.id, msg.channel.guild.id, tournament.tournament.url, name, description)
+		);
 
 		if (defaultHosts && defaultHosts.length > 0) {
 			await Promise.all(defaultHosts.map(o => tourn.addHost(msg.author.id, o)));
@@ -403,7 +395,6 @@ export class Tournament {
 		await Promise.all(channels.map(c => this.sendConclusionMessage(c, this.id, tournament.name, cancel)));
 		await challonge.finaliseTournament(this.id, {});
 		await finishTournament(this.id, host);
-		delete tournaments[this.id];
 		logger.verbose(`Tournament ${this.id} finished by ${host}.`);
 	}
 
@@ -572,7 +563,7 @@ async function grantTournamentRole(channelId: string, user: string, tournamentId
 	if (!member) {
 		return false;
 	}
-	const tournament = tournaments[tournamentId];
+	const tournament = new Tournament(await findTournament(tournamentId));
 	try {
 		const role = await tournament.getRole(channelId);
 		await member.addRole(role, "Tournament registration");
@@ -666,10 +657,3 @@ export async function confirmDeck(msg: Message): Promise<void> {
 		}
 	}
 }
-
-getOngoingTournaments().then(ts => {
-	for (const t of ts) {
-		tournaments[t.challongeId] = new Tournament(t.challongeId);
-	}
-	logger.info("Loaded persistent tournaments!");
-});
