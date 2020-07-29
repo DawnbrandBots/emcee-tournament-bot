@@ -1,4 +1,3 @@
-import { challonge, ChallongeMatch } from "./challonge";
 import { GuildChannel, Message, TextChannel, PrivateChannel } from "eris";
 import {
 	initTournament,
@@ -27,6 +26,8 @@ import {
 } from "./actions";
 import { bot } from "./bot";
 import { TournamentModel, TournamentDoc } from "./models";
+import { challongeUsername, challongeToken } from "./config/env";
+import { ChallongeV1Fetch, ChallongeMatch } from "./challonge";
 import { DiscordDeck } from "./discordDeck";
 import { defaultHosts, defaultPublicChannels, defaultPrivateChannels } from "./config/config.json";
 import {
@@ -39,6 +40,8 @@ import {
 import logger from "./logger";
 
 const CHECK_EMOJI = "✅";
+
+const challonge = new ChallongeV1Fetch(challongeUsername, challongeToken);
 
 async function reportDrop(channelId: string, userId: string, tournament: string): Promise<string> {
 	const channel = bot.getChannel(channelId);

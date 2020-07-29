@@ -1,4 +1,3 @@
-import { challongeUsername, challongeToken } from "./config/env";
 import fetch, { Response } from "node-fetch";
 import { ChallongeAPIError } from "./errors";
 
@@ -195,7 +194,31 @@ interface UpdateMatchSettings {
 	player2_votes?: number;
 }
 
-class Challonge {
+export interface Challonge {
+	createTournament(settings: ChallongeTournamentSettings): Promise<ChallongeTournament>;
+	updateTournament(tournament: string, settings: ChallongeTournamentSettings): Promise<void>;
+	showTournament(
+		tournament: string,
+		includeParticipants?: boolean,
+		includeMatches?: boolean
+	): Promise<ChallongeTournament>;
+	startTournament(tournament: string, settings: StartTournamentSettings): Promise<void>;
+	finaliseTournament(tournament: string, settings: StartTournamentSettings): Promise<void>;
+	addParticipant(tournament: string, settings: AddParticipantSettings): Promise<ChallongeParticipant>;
+	removeParticipant(tournament: string, participant: number): Promise<void>;
+	indexMatches(
+		tournament: string,
+		state?: ChallongeMatchState,
+		participantId?: number
+	): Promise<IndexMatchResponse>;
+	updateMatch(
+		tournament: string,
+		match: string,
+		settings: UpdateMatchSettings
+	): Promise<ChallongeMatch>;
+}
+
+export class ChallongeV1Fetch implements Challonge {
 	private baseUrl: string;
 	constructor(user: string, token: string) {
 		this.baseUrl = `https://${user}:${token}@api.challonge.com/v1/`;
@@ -305,5 +328,3 @@ class Challonge {
 		return await this.validateResponse<ChallongeMatch>(response);
 	}
 }
-
-export const challonge = new Challonge(challongeUsername, challongeToken);
