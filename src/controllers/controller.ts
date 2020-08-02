@@ -13,6 +13,7 @@ export default abstract class Controller {
 export interface DiscordUserSubset {
 	id: string;
 	mention: string;
+	username: string;
 	discriminator: string;
 }
 

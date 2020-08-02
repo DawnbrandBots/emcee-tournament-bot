@@ -25,11 +25,15 @@ export default class EmceeListener {
 		if (message.author.bot) {
 			return;
 		}
+		// Message<T>::channel has type T but the type system fails to infer this
 		if (message.channel instanceof TextChannel) {
-			// Message<T>::channel has type T
 			await this.dispatcher.dispatch(message as Message<TextChannel>);
 		} else if (message.channel instanceof PrivateChannel) {
-			// TODO: confirm deck stuff plus optional help
+			await this.dispatcher.participantController.confirmPending(
+				this.dispatcher.getChannel,
+				message as Message<PrivateChannel>
+			);
+			// Add help message here?
 		}
 	}
 
