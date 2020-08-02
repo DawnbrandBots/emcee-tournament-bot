@@ -1,19 +1,19 @@
-import Controller, { SendMessageFunction } from "./controller";
+import Controller, { DiscordWrapper, SendMessageFunction } from "./controller";
 import { Message } from "eris";
 
 export default class ParticipantController extends Controller {
-	async list(sendMessage: SendMessageFunction, challongeId: string): Promise<void> {
+	async list(discord: DiscordWrapper, args: string[]): Promise<void> {
+		// challongeId
 		return;
 	}
 
-	async addPending(
-		sendMessage: SendMessageFunction,
-		challongeId: string,
-		discordId: string
-	): Promise<void> {
+	// Can also be invoked by "messageReactionAdd"
+	async addPending(discord: DiscordWrapper, args: string[]): Promise<void> {
+		// challongeId, user Discord ID
 		return;
 	}
 
+	// TBD
 	async confirmPending(
 		sendMessage: SendMessageFunction,
 		message: Message // TODO: remove direct Eris dependency after DiscordDeck refactor
@@ -21,19 +21,14 @@ export default class ParticipantController extends Controller {
 		return;
 	}
 
-	async getDeck(
-		sendMessage: SendMessageFunction,
-		challongeId: string,
-		discordId: string
-	): Promise<void> {
+	async getDeck(discord: DiscordWrapper, args: string[]): Promise<void> {
+		// challongeId, user Discord ID
 		return;
 	}
 
-	async drop(
-		sendMessage: SendMessageFunction,
-		challongeId: string,
-		discordId: string
-	): Promise<void> {
+	// Can be invoked by a force drop command and "messageReactionRemove"
+	async drop(discord: DiscordWrapper, args: string[]): Promise<void> {
+		// challongeId, user Discord ID
 		return;
 	}
 }

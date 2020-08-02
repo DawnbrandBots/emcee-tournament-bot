@@ -1,50 +1,34 @@
-import Controller, { SendMessageFunction } from "./controller";
+import Controller, { DiscordWrapper } from "./controller";
 
 export default class PermissionController extends Controller {
-	async addPublicChannel(
-		sendMessage: SendMessageFunction,
-		challongeId: string,
-		channelId: string
-	): Promise<void> {
+	async addPublicChannel(discord: DiscordWrapper, args: string[]): Promise<void> {
+		// challonge ID, channel ID (optional, use current if not provided)
+		// avoid multiple addition
 		return;
 	}
 
-	async removePublicChannel(
-		sendMessage: SendMessageFunction,
-		challongeId: string,
-		channelId: string
-	): Promise<void> {
+	async removePublicChannel(discord: DiscordWrapper, args: string[]): Promise<void> {
+		// challonge ID, channel ID (optional, use current if not provided)
 		return;
 	}
-	async addPrivateChannel(
-		sendMessage: SendMessageFunction,
-		challongeId: string,
-		channelId: string
-	): Promise<void> {
+	async addPrivateChannel(discord: DiscordWrapper, args: string[]): Promise<void> {
+		// challonge ID, channel ID (optional, use current if not provided)
+		// avoid multiple addition
 		return;
 	}
 
-	async removePrivateChannel(
-		sendMessage: SendMessageFunction,
-		challongeId: string,
-		channelId: string
-	): Promise<void> {
+	async removePrivateChannel(discord: DiscordWrapper, args: string[]): Promise<void> {
+		// challonge ID, channel ID (optional, use current if not provided)
 		return;
 	}
 
-	async addTournamentHost(
-		sendMessage: SendMessageFunction,
-		challongeId: string,
-		host: string
-	): Promise<void> {
+	async addTournamentHost(discord: DiscordWrapper, args: string[]): Promise<void> {
+		// challonge ID, new host Discord ID
 		return;
 	}
 
-	async removeTournamentHost(
-		sendMessage: SendMessageFunction,
-		challongeId: string,
-		host: string
-	): Promise<void> {
+	async removeTournamentHost(discord: DiscordWrapper, args: string[]): Promise<void> {
+		// challonge ID, new host Discord ID
 		return;
 	}
 }

@@ -1,17 +1,13 @@
-import Controller, { SendMessageFunction } from "./controller";
+import Controller, { DiscordWrapper } from "./controller";
 
 export default class RoundController extends Controller {
-	async next(sendMessage: SendMessageFunction, challongeId: string): Promise<void> {
+	async next(discord: DiscordWrapper, args: string[]): Promise<void> {
+		// challongeId
 		return;
 	}
 
-	async score(
-		sendMessage: SendMessageFunction,
-		challongeId: string,
-		winner: string,
-		winnerScore: number,
-		loserScore: number
-	): Promise<void> {
+	async score(discord: DiscordWrapper, args: string[]): Promise<void> {
+		// challongeId, winner, score string to two numbers
 		return;
 	}
 }

@@ -1,21 +1,22 @@
 import logger from "../logger";
-import Controller, { SendMessageFunction } from "./controller";
+import Controller, { DiscordWrapper } from "./controller";
 import { getOngoingTournaments, findTournamentOptional, initTournament } from "../actions";
 import { UserError } from "../errors";
 
 export default class TournamentController extends Controller {
-	async help(sendMessage: SendMessageFunction): Promise<void> {
+	async help({ sendMessage }: DiscordWrapper): Promise<void> {
 		await sendMessage(
 			"Emcee's documentation can be found at https://github.com/AlphaKretin/emcee-tournament-bot/wiki."
 		);
 	}
 
-	async list(sendMessage: SendMessageFunction): Promise<void> {
+	async list(discord: DiscordWrapper): Promise<void> {
+		await discord.assertUserPrivileged();
 		const tournaments = await getOngoingTournaments();
 		if (tournaments.length === 0) {
-			await sendMessage("There are no active tournaments!");
+			await discord.sendMessage("There are no active tournaments!");
 		} else {
-			await sendMessage(
+			await discord.sendMessage(
 				tournaments
 					.map(
 						t =>
@@ -26,16 +27,17 @@ export default class TournamentController extends Controller {
 		}
 	}
 
-	async create(
-		sendMessage: SendMessageFunction,
-		name: string,
-		description: string,
-		host: string,
-		server: string
-	): Promise<void> {
+	async create(discord: DiscordWrapper, args: string[]): Promise<void> {
+		await discord.assertUserPrivileged();
+		if (args.length < 2) {
+			throw new UserError("Must provide both <name> | <description> arguments!")
+		}
+		const [name, description] = args;
 		if (name.length === 0 || description.length === 0) {
 			throw new UserError("You must provide a valid tournament name and description!");
 		}
+		const host = discord.currentUser().id;
+		const server = discord.currentServerId();
 
 		// generate a URL based on the name, with added numbers to prevent conflicts
 		// eslint-disable-next-line prefer-template
@@ -55,37 +57,47 @@ export default class TournamentController extends Controller {
 
 		const tournament = await initTournament(host, server, url, name, description);
 		logger.verbose(`New tournament "${url}" (${tournament.id}) created by ${host} from ${server}.`);
-		await sendMessage(
+		await discord.sendMessage(
 			`Tournament ${name} created! You can find it at https://challonge.com/${url}. For future commands, refer to this tournament by the id \`${url}\``
 		);
 	}
 
-	async update(
-		sendMessage: SendMessageFunction,
-		challongeId: string,
-		name: string,
-		description: string
-	): Promise<void> {
+	async update(discord: DiscordWrapper, args: string[]): Promise<void> {
+		await discord.assertUserPrivileged();
+		// Parameters: challongeId, new name, new description
+		// Check if host is organiser for tournament
 		return;
 	}
 
-	async challongeSync(sendMessage: SendMessageFunction, challongeId: string): Promise<void> {
+	private async assertChallongeArgument(discord: DiscordWrapper, args: string[]): Promise<string> {
+		await discord.assertUserPrivileged();
+		if (args.length < 1) {
+			throw new UserError("Must provide tournament identifier!");
+		}
+		return args[0];
+	}
+
+	async challongeSync(discord: DiscordWrapper, args: string[]): Promise<void> {
+		const challongeId = await this.assertChallongeArgument(discord, args);
 		return;
 	}
 
-	async open(sendMessage: SendMessageFunction, challongeId: string): Promise<void> {
+	async open(discord: DiscordWrapper, args: string[]): Promise<void> {
+		const challongeId = await this.assertChallongeArgument(discord, args);
 		return;
 	}
 
-	async start(sendMessage: SendMessageFunction, challongeId: string): Promise<void> {
+	async start(discord: DiscordWrapper, args: string[]): Promise<void> {
+		const challongeId = await this.assertChallongeArgument(discord, args);
 		return;
 	}
 
-	async cancel(sendMessage: SendMessageFunction, challongeId: string): Promise<void> {
+	async cancel(discord: DiscordWrapper, args: string[]): Promise<void> {
+		const challongeId = await this.assertChallongeArgument(discord, args);
 		return;
 	}
 
-	async delete(sendMessage: SendMessageFunction, challongeId: string): Promise<void> {
+	async delete(discord: DiscordWrapper, args: string[]): Promise<void> {
 		return;
 	}
 }
