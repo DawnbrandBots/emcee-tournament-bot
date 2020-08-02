@@ -1,4 +1,4 @@
-import Controller, { DiscordWrapper, SendMessageFunction } from "./controller";
+import Controller, { DiscordWrapper } from "./controller";
 import { Message } from "eris";
 
 export default class ParticipantController extends Controller {
@@ -15,7 +15,6 @@ export default class ParticipantController extends Controller {
 
 	// TBD
 	async confirmPending(
-		sendMessage: SendMessageFunction,
 		message: Message // TODO: remove direct Eris dependency after DiscordDeck refactor
 	): Promise<void> {
 		return;
