@@ -1,7 +1,7 @@
-import logger from "../logger";
 import Controller, { DiscordWrapper } from "./controller";
-import { getOngoingTournaments, findTournamentOptional, initTournament } from "../actions";
+import logger from "../logger";
 import { UserError } from "../errors";
+import { getOngoingTournaments, findTournamentOptional, initTournament, removeRegisterMessage } from "../actions";
 
 export default class TournamentController extends Controller {
 	async help({ sendMessage }: DiscordWrapper): Promise<void> {
@@ -99,5 +99,13 @@ export default class TournamentController extends Controller {
 
 	async delete(discord: DiscordWrapper, args: string[]): Promise<void> {
 		return;
+	}
+
+	async removeAnnouncement(messageId: string, channelId: string): Promise<void> {
+		// TODO: deal with pending participants accordingly
+		// depending on how many register messages remain
+		if (await removeRegisterMessage(messageId, channelId)) {
+			logger.verbose(`Registration message ${messageId} in ${channelId} deleted.`);
+		}
 	}
 }

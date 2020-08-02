@@ -19,9 +19,15 @@ export interface DiscordUserSubset {
 // Passed to controller actions like a Request object in Web MVC frameworks
 // If Eris.Message proves to be very mockable and easy to test,
 // this indirection may be unnecessary
-export interface DiscordWrapper {
-	sendMessage(message: string): Promise<void>;
+export interface DiscordSender {
+	sendMessage(message: string): Promise<void>; // may throw
+	sendDirectMessage(userId: string, message: string): Promise<void>; // may throw
+	sendChannelMessage(channelId: string, message: string): Promise<void>; // may not throw
+	currentMessageId(): string;
 	currentChannelId(): string;
+}
+
+export interface DiscordWrapper extends DiscordSender {
 	isTextChannel(id: string): boolean;
 	currentServerId(): string;
 	currentUser(): DiscordUserSubset;

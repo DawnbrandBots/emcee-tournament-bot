@@ -1,6 +1,6 @@
 import { Guild, Message, PossiblyUncachedMessage, Emoji, Client, TextChannel, PrivateChannel } from "eris";
 import logger from "../logger";
-import CommandDispatcher from "./dispatch";
+import CommandDispatcher, { ErisDiscordSender } from "./dispatch";
 
 export default class EmceeListener {
 	protected botClient: Client; // possibly drop in favour of just the needed components
@@ -33,10 +33,16 @@ export default class EmceeListener {
 		}
 	}
 
-	messageDelete(message: PossiblyUncachedMessage): void {
-		// TODO: new controller action to remove register message,
-		// and possibly deal with pending participants accordingly
-		// depending on how many register messages are left?
+	async messageDelete(message: PossiblyUncachedMessage): Promise<void> {
+		try {
+			await this.dispatcher.tournamentController.removeAnnouncement(
+				message.id,
+				message.channel.id
+			);
+		} catch (e) {
+			logger.error(e.message);
+		}
+
 	}
 
 	async messageReactionAdd(
@@ -47,12 +53,18 @@ export default class EmceeListener {
 		if (userId === this.botClient.user.id || emoji.name != this.checkEmoji) {
 			return;
 		}
-		// arguments: messageId
-		// channelId
-		// userId
-		// DM channel
-		// output error channel for hosts (subclass ErisDiscordWrapper)
-		// this.dispatcher.participantController.addPending
+		try {
+			await this.dispatcher.participantController.addPending(
+				new ErisDiscordSender(
+					message,
+					this.dispatcher.getChannel,
+					this.dispatcher.getDMChannel
+				),
+				userId
+			);
+		} catch(e) {
+			logger.error(e);
+		}
 	}
 
 	async messageReactionRemove(
@@ -63,11 +75,17 @@ export default class EmceeListener {
 		if (userId === this.botClient.user.id || emoji.name != this.checkEmoji) {
 			return;
 		}
-		// arguments: messageId
-		// channelId
-		// userId
-		// DM channel
-		// output error channel for hosts (subclass ErisDiscordWrapper)
-		// this.dispatcher.participantController.drop
+		try {
+			await this.dispatcher.participantController.drop(
+				new ErisDiscordSender(
+					message,
+					this.dispatcher.getChannel,
+					this.dispatcher.getDMChannel
+				),
+				userId
+			);
+		} catch (e) {
+			logger.error(e);
+		}
 	}
 }

@@ -1,38 +1,81 @@
-import { Message, TextChannel, Client } from "eris";
+import { Message, TextChannel, Client, PossiblyUncachedMessage } from "eris";
 import logger from "../logger";
-import { ControllerAction, DiscordWrapper, DiscordUserSubset } from "../controllers/controller";
+import { UserError, MiscInternalError } from "../errors";
+import RoleProvider from "./role";
+import { ControllerAction, DiscordWrapper, DiscordUserSubset, DiscordSender } from "../controllers/controller";
 import ParticipantController from "../controllers/participant";
 import PermissionController from "../controllers/permission";
 import RoundController from "../controllers/round";
 import TournamentController from "../controllers/tournament";
-import { UserError, MiscInternalError } from "../errors";
-import RoleProvider from "./role";
 
 export type GetChannelDelegate = Client["getChannel"];
+export type GetDMChannelDelegate = Client["getDMChannel"];
 
 // Passed to each controller action to decouple them from Eris
-export class ErisDiscordWrapper implements DiscordWrapper {
-	protected message: Message<TextChannel>;
-	protected roleProvider: RoleProvider;
-	protected getChannel: GetChannelDelegate;
+export class ErisDiscordSender implements DiscordSender {
+	protected readonly message: PossiblyUncachedMessage;
+	protected readonly getChannel: GetChannelDelegate;
+	protected readonly getDMChannel: GetDMChannelDelegate;
 
 	constructor(
-		message: Message<TextChannel>,
-		roleProvider: RoleProvider,
-		getChannel: GetChannelDelegate
+		message: PossiblyUncachedMessage,
+		getChannel: GetChannelDelegate,
+		getDMChannel: GetDMChannelDelegate
 	) {
 		this.message = message;
-		this.roleProvider = roleProvider;
 		this.getChannel = getChannel;
+		this.getDMChannel = getDMChannel;
 	}
 
 	async sendMessage(message: string): Promise<void> {
-		// TODO: common handling for various Discord API exceptions
-		await this.message.channel.createMessage(message);
+		await this.sendChannelMessage(this.message.channel.id, message);
+	}
+
+	async sendDirectMessage(userId: string, message: string): Promise<void> {
+		const dm = await this.getDMChannel(userId);
+		await dm.createMessage(message);
+	}
+
+	async sendChannelMessage(channelId: string, message: string): Promise<void> {
+		try {
+			const channel = this.getChannel(channelId);
+			if (!(channel instanceof TextChannel)) {
+				throw new MiscInternalError(`Channel ${channelId} is not a TextChannel`);
+			}
+			await channel.createMessage(message);
+		} catch (e) {
+			logger.error(e.message);
+		}
+	}
+
+	currentMessageId(): string {
+		return this.message.id;
 	}
 
 	currentChannelId(): string {
 		return this.message.channel.id;
+	}
+}
+
+export class ErisDiscordWrapper extends ErisDiscordSender implements DiscordWrapper {
+	protected message: Message<TextChannel>; // intentional masking since they are the same
+	protected roleProvider: RoleProvider;
+
+	constructor(
+		message: Message<TextChannel>,
+		roleProvider: RoleProvider,
+		getChannel: GetChannelDelegate,
+		getDMChannel: GetDMChannelDelegate
+	) {
+		super(message, getChannel, getDMChannel);
+		this.message = message;
+		this.roleProvider = roleProvider;
+	}
+
+	// @Override
+	async sendMessage(message: string): Promise<void> {
+		// TODO: common handling for various Discord API exceptions
+		await this.message.channel.createMessage(message);
 	}
 
 	isTextChannel(id: string): boolean {
@@ -72,7 +115,8 @@ export type Command = { name: string, args: string[] };
 
 export default class CommandDispatcher {
 	protected readonly prefix: string;
-	protected readonly getChannel: GetChannelDelegate;
+	readonly getChannel: GetChannelDelegate;
+	readonly getDMChannel: GetDMChannelDelegate;
 	roleProvider: RoleProvider;
 	participantController: ParticipantController;
 	permissionController: PermissionController;
@@ -81,10 +125,12 @@ export default class CommandDispatcher {
 	protected readonly actions: { [command: string]: ControllerAction };
 
 	// Java-esque boilerplate may be a problem but this is to follow
-	// the dependency inversion principle
+	// the dependency inversion principle. If Eris.Client is easily mockable
+	// and testable then the delegates are not necessary.
 	constructor(
 		prefix: string,
 		getChannel: GetChannelDelegate,
+		getDMChannel: GetDMChannelDelegate,
 		roleProvider: RoleProvider,
 		participantController: ParticipantController,
 		permissionController: PermissionController,
@@ -93,6 +139,7 @@ export default class CommandDispatcher {
 	) {
 		this.prefix = prefix;
 		this.getChannel = getChannel;
+		this.getDMChannel = getDMChannel;
 		this.roleProvider = roleProvider;
 		this.participantController = participantController;
 		this.permissionController = permissionController;
@@ -122,7 +169,7 @@ export default class CommandDispatcher {
 			score: roundController.score.bind(roundController),
 			players: participantController.list.bind(participantController),
 			deck: participantController.getDeck.bind(participantController),
-			drop: participantController.drop.bind(participantController),
+			// drop: participantController.drop.bind(participantController),
 		};
 	}
 
@@ -154,7 +201,12 @@ export default class CommandDispatcher {
 			return;
 		}
 		if (command.name in this.actions) {
-			const discord = new ErisDiscordWrapper(message, this.roleProvider, this.getChannel);
+			const discord = new ErisDiscordWrapper(
+				message,
+				this.roleProvider,
+				this.getChannel,
+				this.getDMChannel
+			);
 			try {
 				await this.actions[command.name](discord, command.args);
 			} catch(commandError) {

@@ -23,6 +23,10 @@ export async function initTournament(
 	return tournament;
 }
 
+export async function findTournamentOptional(challongeId: TournamentID): Promise<TournamentDoc | null> {
+	return await TournamentModel.findOne({ challongeId });
+}
+
 export async function findTournament(challongeId: TournamentID): Promise<TournamentDoc> {
 	const tournament = await TournamentModel.findOne({ challongeId });
 	if (!tournament) {
