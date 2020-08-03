@@ -2,7 +2,14 @@ import Controller, { DiscordWrapper, DiscordSender, DiscordUserSubset } from "./
 import { Message, PrivateChannel, TextChannel } from "eris";
 import logger from "../logger";
 import { MiscInternalError, DeckNotFoundError, AssertTextChannelError } from "../errors";
-import { addPendingParticipant, findTournamentByRegisterMessage, removePendingParticipant, removeConfirmedParticipant, confirmParticipant } from "../actions";
+import {
+	addPendingParticipant,
+	findTournamentByRegisterMessage,
+	removePendingParticipant,
+	removeConfirmedParticipant,
+	confirmParticipant,
+	getAuthorizedTournament
+} from "../actions";
 import { TournamentModel } from "../models";
 import { DiscordDeck } from "../discordDeck";
 import { GetChannelDelegate } from "../discord/dispatch";
@@ -10,17 +17,18 @@ import { GetChannelDelegate } from "../discord/dispatch";
 export default class ParticipantController extends Controller {
 	async list(discord: DiscordWrapper, args: string[]): Promise<void> {
 		// challongeId
-		return;
+		this.assertArgCount(args, 1, "challongeId");
+		const [challongeId] = args;
+		const tournament = await getAuthorizedTournament(challongeId, discord.currentUser().id);
+		if (tournament.confirmedParticipants.length === 0) {
+			await discord.sendMessage("That tournament has no confirmed participants yet!");
+			return;
+		}
+		await discord.sendMessage(tournament.confirmedParticipants.map(p => this.mention(p.discord)).join(", "));
 	}
 
-	protected async sendChannels(
-		discord: DiscordSender,
-		channels: string[],
-		message: string
-	): Promise<void> {
-		await Promise.all(
-			channels.map(channelId => discord.sendChannelMessage(channelId, message))
-		);
+	protected async sendChannels(discord: DiscordSender, channels: string[], message: string): Promise<void> {
+		await Promise.all(channels.map(channelId => discord.sendChannelMessage(channelId, message)));
 	}
 
 	async addPending(discord: DiscordSender, userId: string): Promise<void> {
@@ -31,17 +39,18 @@ export default class ParticipantController extends Controller {
 			const tournament = await findTournamentByRegisterMessage(messageId, channelId);
 			if (!tournament) {
 				// impossible because of addPendingParticipant except in the case of a race condition
-				throw new MiscInternalError(`User ${userId} added to non-existent tournament!`)
+				throw new MiscInternalError(`User ${userId} added to non-existent tournament!`);
 			}
 			logger.verbose(`User ${userId} registered for tournament ${tournament.challongeId}.`);
 			try {
 				await discord.sendDirectMessage(
 					userId,
 					`You have successfully registered for **${tournament.name}**. ` +
-					"Please submit a deck to complete your registration, by uploading a YDK file or sending a message with a YDKE URL."
+						"Please submit a deck to complete your registration, by uploading a YDK file or sending a message with a YDKE URL."
 				);
 			} catch (e) {
-				if (e.code === 50007) { // DiscordRESTError - User blocking DMs
+				if (e.code === 50007) {
+					// DiscordRESTError - User blocking DMs
 					this.sendChannels(
 						discord,
 						tournament.privateChannels,
@@ -70,7 +79,8 @@ export default class ParticipantController extends Controller {
 			try {
 				await discord.sendDirectMessage(userId, `You have dropped from **${tournament.name}**.`);
 			} catch (e) {
-				if (e.code !== 50007) { // DiscordRESTError - User blocking DMs
+				if (e.code !== 50007) {
+					// DiscordRESTError - User blocking DMs
 					throw e;
 				} // No need to notify about blocked DMs if dropping
 			}
@@ -90,11 +100,12 @@ export default class ParticipantController extends Controller {
 				discord,
 				tournament.privateChannels,
 				`User <@${userId}> has dropped from **${tournament.name}**`
-			)
+			);
 			try {
 				await discord.sendDirectMessage(userId, `You have dropped from **${tournament.name}**.`);
 			} catch (e) {
-				if (e.code !== 50007) { // DiscordRESTError - User blocking DMs
+				if (e.code !== 50007) {
+					// DiscordRESTError - User blocking DMs
 					throw e;
 				} // No need to notify about blocked DMs if dropping
 			}
@@ -107,24 +118,19 @@ export default class ParticipantController extends Controller {
 		channelId: string,
 		tournament: string,
 		user: DiscordUserSubset,
-		deck: DiscordDeck,
+		deck: DiscordDeck
 	): Promise<void> {
 		const channel = getChannel(channelId);
 		if (!(channel instanceof TextChannel)) {
 			throw new AssertTextChannelError(channelId);
 		}
-		await channel.createMessage(
-			`${user.mention} has signed up for **${tournament}** with the following deck.`
-		);
+		await channel.createMessage(`${user.mention} has signed up for **${tournament}** with the following deck.`);
 		await deck.sendProfile(channel, `${user.username}#${user.discriminator}.ydk`);
 	}
 
 	// TODO: remove direct Eris dependency after DiscordDeck refactor
 	// Ported from old
-	async confirmPending(
-		getChannel: GetChannelDelegate,
-		msg: Message<PrivateChannel>
-	): Promise<void> {
+	async confirmPending(getChannel: GetChannelDelegate, msg: Message<PrivateChannel>): Promise<void> {
 		// confirm participant
 		const docs = await TournamentModel.find({
 			pendingParticipants: msg.author.id
@@ -179,7 +185,8 @@ export default class ParticipantController extends Controller {
 			await deck.sendProfile(msg.channel, `${msg.author.username}#${msg.author.discriminator}.ydk`);
 			await Promise.all(
 				doc.privateChannels.map(id =>
-					ParticipantController.sendRegistration(getChannel, id, doc.name, msg.author, deck))
+					ParticipantController.sendRegistration(getChannel, id, doc.name, msg.author, deck)
+				)
 			);
 			logger.verbose(`User ${msg.author.id} confirmed deck for tournament ${doc.challongeId}.`);
 		} catch (e) {
