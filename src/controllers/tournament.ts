@@ -167,8 +167,7 @@ export default class TournamentController extends Controller {
 			tournData.tournament.swiss_rounds
 		);
 		await Promise.all(removedIDs.map(i => this.warnClosedParticipant(discord, i, tournament.name)));
-		const messages = tournament.registerMessages;
-		// TODO: Delete registration messages
+		await Promise.all(tournament.registerMessages.map(m => this.removeAnnouncement(m.message, m.channel)));
 		// TODO: Start first round using RoundController#next
 		logger.verbose(`Tournament ${tournament.challongeId} commenced by ${discord.currentUser().id}.`);
 	}
