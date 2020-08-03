@@ -4,13 +4,10 @@ import { addAnnouncementChannel, removeAnnouncementChannel, addHost, removeHost 
 import logger from "../logger";
 
 export default class PermissionController extends Controller {
+	@Controller.Arguments("challongeId") // plus optional channelId
 	async addPublicChannel(discord: DiscordWrapper, args: string[]): Promise<void> {
-		// challonge ID, channel ID (optional, use current if not provided)
-		const tournament = await this.getTournament(discord, args);
-		let channelId = args[1];
-		if (channelId === undefined) {
-			channelId = discord.currentChannelId();
-		}
+		const tournament = await this.getTournament(discord, args[0]);
+		const channelId = args[1] || discord.currentChannelId();
 		// avoid multiple addition
 		if (tournament.publicChannels.includes(channelId)) {
 			throw new UserError(
@@ -28,13 +25,10 @@ export default class PermissionController extends Controller {
 		);
 	}
 
+	@Controller.Arguments("challongeId") // plus optional channelId
 	async removePublicChannel(discord: DiscordWrapper, args: string[]): Promise<void> {
-		// challonge ID, channel ID (optional, use current if not provided)
-		const tournament = await this.getTournament(discord, args);
-		let channelId = args[1];
-		if (channelId === undefined) {
-			channelId = discord.currentChannelId();
-		}
+		const tournament = await this.getTournament(discord, args[0]);
+		const channelId = args[1] || discord.currentChannelId();
 		if (!tournament.publicChannels.includes(channelId)) {
 			throw new UserError(
 				`Channel <#${channelId}> not registered as a public announcement channel for ${tournament.name}`
@@ -51,13 +45,10 @@ export default class PermissionController extends Controller {
 		);
 	}
 
+	@Controller.Arguments("challongeId") // plus optional channelId
 	async addPrivateChannel(discord: DiscordWrapper, args: string[]): Promise<void> {
-		// challonge ID, channel ID (optional, use current if not provided)
-		const tournament = await this.getTournament(discord, args);
-		let channelId = args[1];
-		if (channelId === undefined) {
-			channelId = discord.currentChannelId();
-		}
+		const tournament = await this.getTournament(discord, args[0]);
+		const channelId = args[1] || discord.currentChannelId();
 		// avoid multiple addition
 		if (tournament.privateChannels.includes(channelId)) {
 			throw new UserError(
@@ -75,13 +66,10 @@ export default class PermissionController extends Controller {
 		);
 	}
 
+	@Controller.Arguments("challongeId")
 	async removePrivateChannel(discord: DiscordWrapper, args: string[]): Promise<void> {
-		// challonge ID, channel ID (optional, use current if not provided)
-		const tournament = await this.getTournament(discord, args);
-		let channelId = args[1];
-		if (channelId === undefined) {
-			channelId = discord.currentChannelId();
-		}
+		const tournament = await this.getTournament(discord, args[0]);
+		const channelId = args[1] || discord.currentChannelId();
 		if (!tournament.privateChannels.includes(channelId)) {
 			throw new UserError(
 				`Channel <#${channelId}> not registered as a private announcement channel for ${tournament.name}`
@@ -98,9 +86,9 @@ export default class PermissionController extends Controller {
 		);
 	}
 
+	@Controller.Arguments("challongeId") // plus @mention-user
 	async addTournamentHost(discord: DiscordWrapper, args: string[]): Promise<void> {
-		// challonge ID, new host Discord ID
-		const tournament = await this.getTournament(discord, args);
+		const tournament = await this.getTournament(discord, args[0]);
 		const mentionedUser = discord.mentions()[0]?.id;
 		if (mentionedUser === undefined) {
 			throw new UserError("Must provide an @mention for the user you wish to make a host!");
@@ -120,9 +108,9 @@ export default class PermissionController extends Controller {
 		);
 	}
 
+	@Controller.Arguments("challongeId") // plus @mention-user
 	async removeTournamentHost(discord: DiscordWrapper, args: string[]): Promise<void> {
-		// challonge ID, new host Discord ID
-		const tournament = await this.getTournament(discord, args);
+		const tournament = await this.getTournament(discord, args[0]);
 		const mentionedUser = discord.mentions()[0]?.id;
 		if (mentionedUser === undefined) {
 			throw new UserError("Must provide an @mention for the user you wish to remove as host!");

@@ -15,9 +15,9 @@ import { GetChannelDelegate } from "../discord/dispatch";
 import RoleProvider from "../discord/role";
 
 export default class ParticipantController extends Controller {
+	@Controller.Arguments("challongeId")
 	async list(discord: DiscordWrapper, args: string[]): Promise<void> {
-		// challongeId
-		const tournament = await this.getTournament(discord, args);
+		const tournament = await this.getTournament(discord, args[0]);
 		if (tournament.confirmedParticipants.length === 0) {
 			await discord.sendMessage("That tournament has no confirmed participants yet!");
 			return;

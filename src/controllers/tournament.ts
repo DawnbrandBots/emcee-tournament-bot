@@ -11,8 +11,8 @@ import {
 } from "../actions";
 
 export default class TournamentController extends Controller {
-	async help({ sendMessage }: DiscordWrapper): Promise<void> {
-		await sendMessage(
+	async help(discord: DiscordWrapper): Promise<void> {
+		await discord.sendMessage(
 			"Emcee's documentation can be found at https://github.com/AlphaKretin/emcee-tournament-bot/wiki."
 		);
 	}
@@ -34,9 +34,9 @@ export default class TournamentController extends Controller {
 		}
 	}
 
+	@Controller.Arguments("name", "description")
 	async create(discord: DiscordWrapper, args: string[]): Promise<void> {
 		await discord.assertUserPrivileged();
-		this.assertArgCount(args, 2, "name", "description");
 		const [name, description] = args;
 		if (name.length === 0 || description.length === 0) {
 			throw new UserError("You must provide a valid tournament name and description!");
@@ -69,49 +69,54 @@ export default class TournamentController extends Controller {
 		);
 	}
 
+	@Controller.Arguments("challongeId", "name", "description")
 	async update(discord: DiscordWrapper, args: string[]): Promise<void> {
-		// Parameters: challongeId, new name, new description
-		this.assertArgCount(args, 3, "challongeId", "newName", "newDescription");
-		const [, newName, newDescription] = args;
-		const tournament = await this.getTournament(discord, args);
+		const [challongeId, name, description] = args;
+		const tournament = await this.getTournament(discord, challongeId);
 		await this.challonge.updateTournament(tournament.challongeId, {
-			name: newName,
-			description: newDescription
+			name,
+			description
 		});
 		const oldName = tournament.name;
-		await setTournamentName(tournament.id, newName);
-		await setTournamentDescription(tournament.id, newDescription);
+		await setTournamentName(tournament.id, name);
+		await setTournamentDescription(tournament.id, description);
 		await discord.sendMessage(
-			`Tournament ${oldName} successfully updated to ${newName} with the following description:\n${newDescription}`
+			`Tournament ${oldName} successfully updated to ${name} with the following description:\n${description}`
 		);
 		logger.verbose(
-			`Tournament ${tournament.id} name changed to ${newName} by ${discord.currentUser().username} (${
+			`Tournament ${tournament.id} name changed to ${name} by ${discord.currentUser().username} (${
 				discord.currentUser().id
-			}). Description changed to ${newDescription}`
+			}). Description changed to ${description}`
 		);
 	}
 
+	@Controller.Arguments("challongeId")
 	async challongeSync(discord: DiscordWrapper, args: string[]): Promise<void> {
-		const tournament = await this.getTournament(discord, args);
+		const tournament = await this.getTournament(discord, args[0]);
 		return;
 	}
 
+	@Controller.Arguments("challongeId")
 	async open(discord: DiscordWrapper, args: string[]): Promise<void> {
-		const tournament = await this.getTournament(discord, args);
+		const tournament = await this.getTournament(discord, args[0]);
 		return;
 	}
 
+	@Controller.Arguments("challongeId")
 	async start(discord: DiscordWrapper, args: string[]): Promise<void> {
-		const tournament = await this.getTournament(discord, args);
+		const tournament = await this.getTournament(discord, args[0]);
 		return;
 	}
 
+	@Controller.Arguments("challongeId")
 	async cancel(discord: DiscordWrapper, args: string[]): Promise<void> {
-		const tournament = await this.getTournament(discord, args);
+		const tournament = await this.getTournament(discord, args[0]);
 		return;
 	}
 
+	@Controller.Arguments("challongeId")
 	async delete(discord: DiscordWrapper, args: string[]): Promise<void> {
+		const tournament = await this.getTournament(discord, args[0]);
 		return;
 	}
 

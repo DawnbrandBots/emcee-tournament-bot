@@ -11,11 +11,25 @@ export default abstract class Controller {
 		this.challonge = challonge;
 	}
 
-	protected assertArgCount(args: string[], count: number, ...argNames: string[]): void {
-		if (args.length < count) {
-			throw new UserError(`"Must provide all arguments: ${argNames.map(n => `<${n}>`).join(" | ")}`);
-		}
-	}
+	// Method decorator factory. Do NOT change the call signatures because this works at runtime.
+	static Arguments = (...names: string[]) => (
+		// eslint-disable-next-line @typescript-eslint/ban-types
+		_target: Object,
+		_propertyKey: string,
+		descriptor: PropertyDescriptor
+	): PropertyDescriptor => {
+		const original = descriptor.value;
+		// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+		descriptor.value = function (discord: DiscordWrapper, args: string[]) {
+			if (args.length < names.length) {
+				throw new UserError(
+					`Must provide all arguments: ${names.map(n => `<${n}>`).join(" | ")}`
+				);
+			}
+			return original.call(this, discord, args);
+		};
+		return descriptor;
+	};
 
 	protected mention(discordId: string): string {
 		if (discordId === "DUMMY") {
@@ -25,9 +39,7 @@ export default abstract class Controller {
 	}
 
 	// TODO: Refactor alongside tournament actions
-	protected async getTournament(discord: DiscordWrapper, args: string[]): Promise<TournamentDoc> {
-		this.assertArgCount(args, 1, "challongeId");
-		const [challongeId] = args;
+	protected async getTournament(discord: DiscordWrapper, challongeId: string): Promise<TournamentDoc> {
 		const user = discord.currentUser().id;
 		return await getAuthorizedTournament(challongeId, user);
 	}
