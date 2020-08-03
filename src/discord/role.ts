@@ -1,4 +1,4 @@
-import { Guild } from "eris"
+import { Guild, User } from "eris"
 import logger from "../logger";
 
 export default class RoleProvider {
@@ -18,7 +18,7 @@ export default class RoleProvider {
 			color: this.color
 		}, "Auto-created by Emcee.");
 		this.roleCache[server.id] = role.id;
-		logger.verbose(`TO role ${role.id} created in ${server.name} (${server.id}).`);
+		logger.verbose(`Role ${this.name} (${role.id}) created in ${server.name} (${server.id}).`);
 		return role.id;
 	}
 
@@ -36,5 +36,16 @@ export default class RoleProvider {
 
 	async validate(server: Guild, roles: string[]): Promise<boolean> {
 		return roles.includes(await this.get(server));
+	}
+
+	// Returns false iff user not in server
+	async grant(server: Guild, user: User): Promise<boolean> {
+		const member = server.members.get(user.id);
+		if (!member) {
+			return false;
+		}
+		// TODO: error handling?
+		await member.addRole(await this.get(server), "Tournament registration");
+		return true;
 	}
 }

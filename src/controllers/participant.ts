@@ -1,5 +1,5 @@
 import Controller, { DiscordWrapper, DiscordSender, DiscordUserSubset } from "./controller";
-import { Message, PrivateChannel, TextChannel } from "eris";
+import { Message, PrivateChannel, TextChannel, GuildChannel, User, AnyChannel } from "eris";
 import logger from "../logger";
 import { MiscInternalError, DeckNotFoundError, AssertTextChannelError } from "../errors";
 import {
@@ -12,6 +12,7 @@ import {
 import { TournamentModel } from "../models";
 import { DiscordDeck } from "../discordDeck";
 import { GetChannelDelegate } from "../discord/dispatch";
+import RoleProvider from "../discord/role";
 
 export default class ParticipantController extends Controller {
 	async list(discord: DiscordWrapper, args: string[]): Promise<void> {
@@ -109,20 +110,31 @@ export default class ParticipantController extends Controller {
 		}
 	}
 
+	protected static async grantRole(
+		roleProvider: RoleProvider,
+		channel: AnyChannel,
+		user: User
+	): Promise<void> {
+		if (channel instanceof GuildChannel) {
+			await roleProvider.grant(channel.guild, user);
+		} else {
+			logger.error(`While trying to grant role "${roleProvider.name}", found invalid GuildChannel ${channel.id}`);
+		}
+	}
+
 	// Ported from old
 	protected static async sendRegistration(
-		getChannel: GetChannelDelegate,
-		channelId: string,
+		channel: AnyChannel,
 		tournament: string,
 		user: DiscordUserSubset,
 		deck: DiscordDeck
 	): Promise<void> {
-		const channel = getChannel(channelId);
-		if (!(channel instanceof TextChannel)) {
-			throw new AssertTextChannelError(channelId);
+		if (channel instanceof TextChannel) {
+			await channel.createMessage(`${user.mention} has signed up for **${tournament}** with the following deck.`);
+			await deck.sendProfile(channel, `${user.username}#${user.discriminator}.ydk`);
+		} else {
+			logger.error(`While sending registration for "${tournament}", found invalid GuildChannel ${channel.id}`);
 		}
-		await channel.createMessage(`${user.mention} has signed up for **${tournament}** with the following deck.`);
-		await deck.sendProfile(channel, `${user.username}#${user.discriminator}.ydk`);
 	}
 
 	// TODO: remove direct Eris dependency after DiscordDeck refactor
@@ -174,15 +186,15 @@ export default class ParticipantController extends Controller {
 				[...deck.record.extra],
 				[...deck.record.side]
 			);
-			// TODO: implement role granting in RoleProvider
-			// await Promise.all(doc.publicChannels.map(c => grantTournamentRole(c, msg.author.id, doc.challongeId)));
+			const roleProvider = new RoleProvider(`MC-Tournament-${doc.challongeId}`, 0xe67e22);
+			doc.publicChannels.map(id => ParticipantController.grantRole(roleProvider, getChannel(id), msg.author))
 			await msg.channel.createMessage(
 				`Congratulations! You have been registered in ${doc.name} with the following deck.`
 			);
 			await deck.sendProfile(msg.channel, `${msg.author.username}#${msg.author.discriminator}.ydk`);
 			await Promise.all(
 				doc.privateChannels.map(id =>
-					ParticipantController.sendRegistration(getChannel, id, doc.name, msg.author, deck)
+					ParticipantController.sendRegistration(getChannel(id), doc.name, msg.author, deck)
 				)
 			);
 			logger.verbose(`User ${msg.author.id} confirmed deck for tournament ${doc.challongeId}.`);
