@@ -7,8 +7,7 @@ import {
 	findTournamentByRegisterMessage,
 	removePendingParticipant,
 	removeConfirmedParticipant,
-	confirmParticipant,
-	getAuthorizedTournament
+	confirmParticipant
 } from "../actions";
 import { TournamentModel } from "../models";
 import { DiscordDeck } from "../discordDeck";
@@ -17,9 +16,7 @@ import { GetChannelDelegate } from "../discord/dispatch";
 export default class ParticipantController extends Controller {
 	async list(discord: DiscordWrapper, args: string[]): Promise<void> {
 		// challongeId
-		this.assertArgCount(args, 1, "challongeId");
-		const [challongeId] = args;
-		const tournament = await getAuthorizedTournament(challongeId, discord.currentUser().id);
+		const tournament = await this.getTournament(discord, args);
 		if (tournament.confirmedParticipants.length === 0) {
 			await discord.sendMessage("That tournament has no confirmed participants yet!");
 			return;

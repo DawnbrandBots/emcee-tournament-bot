@@ -1,5 +1,7 @@
 import { Challonge } from "../challonge";
 import { UserError } from "../errors";
+import { TournamentDoc } from "../models";
+import { getAuthorizedTournament } from "../actions";
 
 // Abstract superclass for a structured grouping of actions (business logic)
 export default abstract class Controller {
@@ -20,6 +22,14 @@ export default abstract class Controller {
 			return "a dummy user";
 		}
 		return `<@${discordId}>`;
+	}
+
+	// TODO: Refactor alongside tournament actions
+	protected async getTournament(discord: DiscordWrapper, args: string[]): Promise<TournamentDoc> {
+		this.assertArgCount(args, 1, "challongeId");
+		const [challongeId] = args;
+		const user = discord.currentUser().id;
+		return await getAuthorizedTournament(challongeId, user);
 	}
 }
 
