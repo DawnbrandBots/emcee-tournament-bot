@@ -42,7 +42,7 @@ export default class TournamentController extends Controller {
 			throw new UserError("You must provide a valid tournament name and description!");
 		}
 		const host = discord.currentUser().id;
-		const server = discord.currentServerId();
+		const server = discord.currentServer().id;
 
 		// generate a URL based on the name, with added numbers to prevent conflicts
 		// eslint-disable-next-line prefer-template

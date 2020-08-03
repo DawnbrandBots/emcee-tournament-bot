@@ -1,3 +1,4 @@
+import { Guild } from "eris";
 import { Challonge } from "../challonge";
 import { UserError } from "../errors";
 import { TournamentDoc } from "../models";
@@ -43,6 +44,10 @@ export default abstract class Controller {
 		const user = discord.currentUser().id;
 		return await getAuthorizedTournament(challongeId, user);
 	}
+
+	protected async sendChannels(discord: DiscordSender, channels: string[], message: string): Promise<void> {
+		await Promise.all(channels.map(channelId => discord.sendChannelMessage(channelId, message)));
+	}
 }
 
 // Subset of Eris.User that we may care about
@@ -66,7 +71,7 @@ export interface DiscordSender {
 
 export interface DiscordWrapper extends DiscordSender {
 	isTextChannel(id: string): boolean;
-	currentServerId(): string;
+	currentServer(): Guild;
 	currentUser(): DiscordUserSubset;
 	// Throw if missing role. This could be return-based and more fine-grained.
 	assertUserPrivileged(): Promise<void>;

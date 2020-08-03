@@ -25,10 +25,6 @@ export default class ParticipantController extends Controller {
 		await discord.sendMessage(tournament.confirmedParticipants.map(p => this.mention(p.discord)).join(", "));
 	}
 
-	protected async sendChannels(discord: DiscordSender, channels: string[], message: string): Promise<void> {
-		await Promise.all(channels.map(channelId => discord.sendChannelMessage(channelId, message)));
-	}
-
 	async addPending(discord: DiscordSender, userId: string): Promise<void> {
 		// Ported from old, lots of problems and assumptions
 		const messageId = discord.currentMessageId();
@@ -186,6 +182,7 @@ export default class ParticipantController extends Controller {
 				[...deck.record.extra],
 				[...deck.record.side]
 			);
+			// TODO: use factory
 			const roleProvider = new RoleProvider(`MC-Tournament-${doc.challongeId}`, 0xe67e22);
 			doc.publicChannels.map(id => ParticipantController.grantRole(roleProvider, getChannel(id), msg.author))
 			await msg.channel.createMessage(

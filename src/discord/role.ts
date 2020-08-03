@@ -22,7 +22,7 @@ export default class RoleProvider {
 		return role.id;
 	}
 
-	protected async get(server: Guild): Promise<string> {
+	async get(server: Guild): Promise<string> {
 		if (server.id in this.roleCache) {
 			return this.roleCache[server.id];
 		}

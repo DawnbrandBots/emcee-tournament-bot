@@ -1,4 +1,4 @@
-import { Message, TextChannel, Client, PossiblyUncachedMessage } from "eris";
+import { Message, TextChannel, Client, PossiblyUncachedMessage, Guild } from "eris";
 import logger from "../logger";
 import { UserError, MiscInternalError } from "../errors";
 import RoleProvider from "./role";
@@ -86,8 +86,8 @@ export class ErisDiscordWrapper extends ErisDiscordSender implements DiscordWrap
 		}
 	}
 
-	currentServerId(): string {
-		return this.message.guildID || "";
+	currentServer(): Guild {
+		return this.message.channel.guild;
 	}
 
 	currentUser(): DiscordUserSubset {
