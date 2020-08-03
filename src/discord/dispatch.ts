@@ -44,7 +44,7 @@ export class ErisDiscordSender implements DiscordSender {
 			}
 			await channel.createMessage(message);
 		} catch (e) {
-			logger.error(e.message);
+			logger.error(e);
 		}
 	}
 
@@ -216,11 +216,11 @@ export default class CommandDispatcher {
 					try {
 						await discord.sendMessage(commandError.message);
 					} catch(discordError) {
-						logger.error(discordError.message);
-						logger.error(commandError.message);
+						logger.error(discordError);
+						logger.error(commandError);
 					}
 				} else {
-					logger.error(commandError.message);
+					logger.error(commandError);
 				}
 			}
 		}

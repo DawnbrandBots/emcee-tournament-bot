@@ -44,7 +44,7 @@ export default class EmceeListener {
 				message.channel.id
 			);
 		} catch (e) {
-			logger.error(e.message);
+			logger.error(e);
 		}
 
 	}
