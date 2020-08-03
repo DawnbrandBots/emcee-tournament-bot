@@ -1,6 +1,7 @@
 import Controller, { DiscordWrapper } from "./controller";
 import { UserError } from "../errors";
 import { addAnnouncementChannel, removeAnnouncementChannel, addHost, removeHost } from "../actions";
+import logger from "../logger";
 
 export default class PermissionController extends Controller {
 	async addPublicChannel(discord: DiscordWrapper, args: string[]): Promise<void> {
@@ -20,6 +21,11 @@ export default class PermissionController extends Controller {
 		await discord.sendMessage(
 			`Channel <#${channelId}> successfully registered as a public announcement channel for ${tournament.name}`
 		);
+		logger.verbose(
+			`Tournament ${tournament.id} added public announcement channel ${channelId} by ${
+				discord.currentUser().username
+			} (${discord.currentUser().id}).`
+		);
 	}
 
 	async removePublicChannel(discord: DiscordWrapper, args: string[]): Promise<void> {
@@ -37,6 +43,11 @@ export default class PermissionController extends Controller {
 		await removeAnnouncementChannel(channelId, tournament.challongeId, discord.currentUser().id, "public");
 		await discord.sendMessage(
 			`Channel <#${channelId}> successfully removed as a public announcement channel for ${tournament.name}`
+		);
+		logger.verbose(
+			`Tournament ${tournament.id} removed public announcement channel ${channelId} by ${
+				discord.currentUser().username
+			} (${discord.currentUser().id}).`
 		);
 	}
 
@@ -57,6 +68,11 @@ export default class PermissionController extends Controller {
 		await discord.sendMessage(
 			`Channel <#${channelId}> successfully registered as a private announcement channel for ${tournament.name}`
 		);
+		logger.verbose(
+			`Tournament ${tournament.id} added private announcement channel ${channelId} by ${
+				discord.currentUser().username
+			} (${discord.currentUser().id}).`
+		);
 	}
 
 	async removePrivateChannel(discord: DiscordWrapper, args: string[]): Promise<void> {
@@ -75,6 +91,11 @@ export default class PermissionController extends Controller {
 		await discord.sendMessage(
 			`Channel <#${channelId}> successfully removed as a private announcement channel for ${tournament.name}`
 		);
+		logger.verbose(
+			`Tournament ${tournament.id} removed private announcement channel ${channelId} by ${
+				discord.currentUser().username
+			} (${discord.currentUser().id}).`
+		);
 	}
 
 	async addTournamentHost(discord: DiscordWrapper, args: string[]): Promise<void> {
@@ -92,6 +113,11 @@ export default class PermissionController extends Controller {
 		await discord.sendMessage(
 			`User ${this.mention(mentionedUser)} successfully added as a host for ${tournament.name}!`
 		);
+		logger.verbose(
+			`Tournament ${tournament.id} added host ${mentionedUser} by ${discord.currentUser().username} (${
+				discord.currentUser().id
+			}).`
+		);
 	}
 
 	async removeTournamentHost(discord: DiscordWrapper, args: string[]): Promise<void> {
@@ -108,6 +134,11 @@ export default class PermissionController extends Controller {
 		await removeHost(mentionedUser, tournament.challongeId);
 		await discord.sendMessage(
 			`User ${this.mention(mentionedUser)} successfully removed as a host for ${tournament.name}!`
+		);
+		logger.verbose(
+			`Tournament ${tournament.id} removed host ${mentionedUser} by ${discord.currentUser().username} (${
+				discord.currentUser().id
+			}).`
 		);
 	}
 }
