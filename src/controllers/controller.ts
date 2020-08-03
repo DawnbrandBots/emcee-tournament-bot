@@ -1,4 +1,5 @@
 import { Challonge } from "../challonge";
+import { UserError } from "../errors";
 
 // Abstract superclass for a structured grouping of actions (business logic)
 export default abstract class Controller {
@@ -6,6 +7,19 @@ export default abstract class Controller {
 
 	constructor(challonge: Challonge) {
 		this.challonge = challonge;
+	}
+
+	protected assertArgCount(args: string[], count: number, ...argNames: string[]): void {
+		if (args.length < count) {
+			throw new UserError(`"Must provide all arguments: ${argNames.map(n => `<${n}>`).join(" | ")}`);
+		}
+	}
+
+	protected mention(discordId: string): string {
+		if (discordId === "DUMMY") {
+			return "a dummy user";
+		}
+		return `<@${discordId}>`;
 	}
 }
 
@@ -40,5 +54,5 @@ export interface DiscordWrapper extends DiscordSender {
 // All actions meant to be called by the command dispatcher have this interface
 // and may throw exceptions (i.e. promise rejection)
 export interface ControllerAction {
-	(discord: DiscordWrapper, args: string[]): Promise<void>
+	(discord: DiscordWrapper, args: string[]): Promise<void>;
 }
