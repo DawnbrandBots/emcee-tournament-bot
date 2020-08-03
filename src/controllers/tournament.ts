@@ -10,7 +10,8 @@ import {
 	setTournamentDescription,
 	SyncDoc,
 	synchronise,
-	addRegisterMessage
+	addRegisterMessage,
+	startTournament
 } from "../actions";
 
 const checkEmoji = "✅"; // TODO: Synchronise with index.ts
@@ -144,10 +145,32 @@ export default class TournamentController extends Controller {
 		logger.verbose(`Tournament ${tournament.challongeId} opened for registration by ${discord.currentUser().id}.`);
 	}
 
+	private async warnClosedParticipant(discord: DiscordWrapper, participant: string, name: string): Promise<void> {
+		await discord.sendDirectMessage(
+			participant,
+			`Sorry, the ${name} tournament you registered for has started, and you had not submitted a valid decklist, so you have been dropped.
+				If you think this is a mistake, contact the tournament host.`
+		);
+	}
+
 	@Controller.Arguments("challongeId")
 	async start(discord: DiscordWrapper, args: string[]): Promise<void> {
 		const tournament = await this.getTournament(discord, args[0]);
-		return;
+		if (tournament.confirmedParticipants.length < 2) {
+			throw new UserError("Cannot start a tournament without at least 2 confirmed participants!");
+		}
+		await this.challonge.startTournament(tournament.challongeId, {});
+		const tournData = await this.challonge.showTournament(tournament.challongeId);
+		const removedIDs = await startTournament(
+			tournament.challongeId,
+			discord.currentUser().id,
+			tournData.tournament.swiss_rounds
+		);
+		await Promise.all(removedIDs.map(i => this.warnClosedParticipant(discord, i, tournament.name)));
+		const messages = tournament.registerMessages;
+		// TODO: Delete registration messages
+		// TODO: Start first round using RoundController#next
+		logger.verbose(`Tournament ${tournament.challongeId} commenced by ${discord.currentUser().id}.`);
 	}
 
 	@Controller.Arguments("challongeId")
