@@ -7,8 +7,13 @@ import {
 	initTournament,
 	removeRegisterMessage,
 	setTournamentName,
-	setTournamentDescription
+	setTournamentDescription,
+	SyncDoc,
+	synchronise,
+	addRegisterMessage
 } from "../actions";
+
+const checkEmoji = "✅"; // TODO: Synchronise with index.ts
 
 export default class TournamentController extends Controller {
 	async help(discord: DiscordWrapper): Promise<void> {
@@ -93,13 +98,50 @@ export default class TournamentController extends Controller {
 	@Controller.Arguments("challongeId")
 	async challongeSync(discord: DiscordWrapper, args: string[]): Promise<void> {
 		const tournament = await this.getTournament(discord, args[0]);
-		return;
+		const newDoc: SyncDoc = {
+			confirmedParticipants: tournament.confirmedParticipants.map(p => p.challongeId),
+			name: tournament.name,
+			description: tournament.description,
+			totalRounds: tournament.totalRounds
+		};
+		const challongeData = (await this.challonge.showTournament(tournament.challongeId, true)).tournament;
+		newDoc.name = challongeData.name;
+		newDoc.description = challongeData.description;
+		newDoc.totalRounds = challongeData.swiss_rounds;
+		if (challongeData.participants) {
+			newDoc.confirmedParticipants = challongeData.participants.map(p => p.participant.id);
+		}
+		await synchronise(tournament.challongeId, newDoc);
+		logger.verbose(`Tournament ${tournament.challongeId} synchronised to remote by ${discord.currentUser().id}`);
+	}
+
+	private async openRegistrationInChannel(
+		discord: DiscordWrapper,
+		channelId: string,
+		name: string,
+		desc: string
+	): Promise<void> {
+		await discord.sendChannelMessage(
+			channelId,
+			`**New Tournament Open: ${name}**\n${desc}\nClick the ${checkEmoji} below to sign up!`
+		);
+		// TODO: React with the check emoji
+		// TODO: Save the message ID to the database, currently requires the ID which the wrapper does not return
 	}
 
 	@Controller.Arguments("challongeId")
 	async open(discord: DiscordWrapper, args: string[]): Promise<void> {
 		const tournament = await this.getTournament(discord, args[0]);
-		return;
+		const channels = tournament.publicChannels;
+		if (channels.length < 1) {
+			throw new UserError(
+				"You must register at least one public announcement channel before opening a tournament for registration!"
+			);
+		}
+		await Promise.all(
+			channels.map(c => this.openRegistrationInChannel(discord, c, tournament.name, tournament.description))
+		);
+		logger.verbose(`Tournament ${tournament.challongeId} opened for registration by ${discord.currentUser().id}.`);
 	}
 
 	@Controller.Arguments("challongeId")
