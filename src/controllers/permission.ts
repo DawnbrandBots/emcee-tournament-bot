@@ -1,6 +1,6 @@
 import Controller, { DiscordWrapper } from "./controller";
 import { UserError } from "../errors";
-import { addAnnouncementChannel } from "../actions";
+import { addAnnouncementChannel, removeAnnouncementChannel } from "../actions";
 
 export default class PermissionController extends Controller {
 	async addPublicChannel(discord: DiscordWrapper, args: string[]): Promise<void> {
@@ -24,6 +24,20 @@ export default class PermissionController extends Controller {
 
 	async removePublicChannel(discord: DiscordWrapper, args: string[]): Promise<void> {
 		// challonge ID, channel ID (optional, use current if not provided)
+		const tournament = await this.getTournament(discord, args);
+		let channelId = args[1];
+		if (channelId === undefined) {
+			channelId = discord.currentChannelId();
+		}
+		if (!tournament.publicChannels.includes(channelId)) {
+			throw new UserError(
+				`Channel <#${channelId}> not registered as a public announcement channel for ${tournament.name}`
+			);
+		}
+		await removeAnnouncementChannel(channelId, tournament.challongeId, discord.currentUser().id, "public");
+		discord.sendMessage(
+			`Channel <#${channelId}> successfully removed as a public announcement channel for ${tournament.name}`
+		);
 		return;
 	}
 	async addPrivateChannel(discord: DiscordWrapper, args: string[]): Promise<void> {
