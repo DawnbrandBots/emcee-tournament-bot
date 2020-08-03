@@ -29,9 +29,7 @@ export default class TournamentController extends Controller {
 
 	async create(discord: DiscordWrapper, args: string[]): Promise<void> {
 		await discord.assertUserPrivileged();
-		if (args.length < 2) {
-			throw new UserError("Must provide both <name> | <description> arguments!")
-		}
+		this.assertArgCount(args, 2, "name", "description");
 		const [name, description] = args;
 		if (name.length === 0 || description.length === 0) {
 			throw new UserError("You must provide a valid tournament name and description!");
@@ -47,7 +45,9 @@ export default class TournamentController extends Controller {
 
 		// The API can still throw an error or return an unexpected response structure,
 		// which will cause an exception on the destructured assignment
-		const { tournament: { url } } = await this.challonge.createTournament({
+		const {
+			tournament: { url }
+		} = await this.challonge.createTournament({
 			name,
 			description,
 			// eslint-disable-next-line @typescript-eslint/camelcase
@@ -69,31 +69,23 @@ export default class TournamentController extends Controller {
 		return;
 	}
 
-	private async assertChallongeArgument(discord: DiscordWrapper, args: string[]): Promise<string> {
-		await discord.assertUserPrivileged();
-		if (args.length < 1) {
-			throw new UserError("Must provide tournament identifier!");
-		}
-		return args[0];
-	}
-
 	async challongeSync(discord: DiscordWrapper, args: string[]): Promise<void> {
-		const challongeId = await this.assertChallongeArgument(discord, args);
+		const tournament = await this.getTournament(discord, args);
 		return;
 	}
 
 	async open(discord: DiscordWrapper, args: string[]): Promise<void> {
-		const challongeId = await this.assertChallongeArgument(discord, args);
+		const tournament = await this.getTournament(discord, args);
 		return;
 	}
 
 	async start(discord: DiscordWrapper, args: string[]): Promise<void> {
-		const challongeId = await this.assertChallongeArgument(discord, args);
+		const tournament = await this.getTournament(discord, args);
 		return;
 	}
 
 	async cancel(discord: DiscordWrapper, args: string[]): Promise<void> {
-		const challongeId = await this.assertChallongeArgument(discord, args);
+		const tournament = await this.getTournament(discord, args);
 		return;
 	}
 
