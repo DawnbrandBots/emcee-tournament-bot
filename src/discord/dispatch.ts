@@ -27,24 +27,42 @@ export class ErisDiscordSender implements DiscordSender {
 		this.getDMChannel = getDMChannel;
 	}
 
-	async sendMessage(message: string): Promise<void> {
-		await this.sendChannelMessage(this.message.channel.id, message);
+	// nothrow
+	protected async addReaction(message: Message, reaction: string): Promise<void> {
+		try {
+			await message.addReaction(reaction);
+		} catch(e) {
+			logger.error(e);
+		}
 	}
 
-	async sendDirectMessage(userId: string, message: string): Promise<void> {
+	async sendMessage(content: string, reaction?: string): Promise<string> {
+		return await this.sendChannelMessage(this.message.channel.id, content, reaction);
+	}
+
+	async sendDirectMessage(userId: string, content: string, reaction?: string): Promise<string> {
 		const dm = await this.getDMChannel(userId);
-		await dm.createMessage(message);
+		const message = await dm.createMessage(content);
+		if (reaction) {
+			await this.addReaction(message, reaction);
+		}
+		return message.id;
 	}
 
-	async sendChannelMessage(channelId: string, message: string): Promise<void> {
+	async sendChannelMessage(channelId: string, content: string, reaction?: string): Promise<string> {
 		try {
 			const channel = this.getChannel(channelId);
 			if (!(channel instanceof TextChannel)) {
 				throw new MiscInternalError(`Channel ${channelId} is not a TextChannel`);
 			}
-			await channel.createMessage(message);
+			const message = await channel.createMessage(content);
+			if (reaction) {
+				await this.addReaction(message, reaction);
+			}
+			return message.id;
 		} catch (e) {
 			logger.error(e);
+			return "";
 		}
 	}
 
@@ -73,9 +91,13 @@ export class ErisDiscordWrapper extends ErisDiscordSender implements DiscordWrap
 	}
 
 	// @Override
-	async sendMessage(message: string): Promise<void> {
+	async sendMessage(content: string, reaction?: string): Promise<string> {
 		// TODO: common handling for various Discord API exceptions
-		await this.message.channel.createMessage(message);
+		const message = await this.message.channel.createMessage(content);
+		if (reaction) {
+			await this.addReaction(message, reaction);
+		}
+		return message.id;
 	}
 
 	isTextChannel(id: string): boolean {

@@ -22,7 +22,7 @@ const dispatcher = new CommandDispatcher(
 	new ParticipantController(challonge),
 	new PermissionController(challonge),
 	new RoundController(challonge),
-	new TournamentController(challonge)
+	new TournamentController(challonge, checkEmoji)
 );
 const listener = new EmceeListener(bot, dispatcher, checkEmoji);
 

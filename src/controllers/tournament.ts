@@ -13,10 +13,16 @@ import {
 	addRegisterMessage,
 	startTournament
 } from "../actions";
-
-const checkEmoji = "✅"; // TODO: Synchronise with index.ts
+import { Challonge } from "../challonge";
 
 export default class TournamentController extends Controller {
+	protected checkEmoji: string;
+
+	constructor(challonge: Challonge, checkEmoji: string) {
+		super(challonge);
+		this.checkEmoji = checkEmoji;
+	}
+
 	async help(discord: DiscordWrapper): Promise<void> {
 		await discord.sendMessage(
 			"Emcee's documentation can be found at https://github.com/AlphaKretin/emcee-tournament-bot/wiki."
@@ -119,20 +125,24 @@ export default class TournamentController extends Controller {
 	private async openRegistrationInChannel(
 		discord: DiscordWrapper,
 		channelId: string,
+		challongeId: string,
 		name: string,
 		desc: string
 	): Promise<void> {
-		await discord.sendChannelMessage(
+		const messageId = await discord.sendChannelMessage(
 			channelId,
-			`**New Tournament Open: ${name}**\n${desc}\nClick the ${checkEmoji} below to sign up!`
+			`**New Tournament Open: ${name}**\n${desc}\nClick the ${this.checkEmoji} below to sign up!`,
+			this.checkEmoji
 		);
-		// TODO: React with the check emoji
-		// TODO: Save the message ID to the database, currently requires the ID which the wrapper does not return
+		if (messageId !== "") {
+			await addRegisterMessage(messageId, channelId, challongeId);
+		}
 	}
 
 	@Controller.Arguments("challongeId")
 	async open(discord: DiscordWrapper, args: string[]): Promise<void> {
-		const tournament = await this.getTournament(discord, args[0]);
+		const [challongeId] = args;
+		const tournament = await this.getTournament(discord, challongeId);
 		const channels = tournament.publicChannels;
 		if (channels.length < 1) {
 			throw new UserError(
@@ -140,7 +150,8 @@ export default class TournamentController extends Controller {
 			);
 		}
 		await Promise.all(
-			channels.map(c => this.openRegistrationInChannel(discord, c, tournament.name, tournament.description))
+			channels.map(id => this.openRegistrationInChannel(
+				discord, id, challongeId, tournament.name, tournament.description))
 		);
 		logger.verbose(`Tournament ${tournament.challongeId} opened for registration by ${discord.currentUser().id}.`);
 	}

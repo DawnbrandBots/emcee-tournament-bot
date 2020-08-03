@@ -62,9 +62,9 @@ export interface DiscordUserSubset {
 // If Eris.Message proves to be very mockable and easy to test,
 // this indirection may be unnecessary
 export interface DiscordSender {
-	sendMessage(message: string): Promise<void>; // may throw
-	sendDirectMessage(userId: string, message: string): Promise<void>; // may throw
-	sendChannelMessage(channelId: string, message: string): Promise<void>; // may not throw
+	sendMessage(content: string, emoji?: string): Promise<string>; // may throw
+	sendDirectMessage(userId: string, content: string, emoji?: string): Promise<string>; // may throw
+	sendChannelMessage(channelId: string, content: string, emoji?: string): Promise<string>; // may not throw
 	currentMessageId(): string;
 	currentChannelId(): string;
 }
