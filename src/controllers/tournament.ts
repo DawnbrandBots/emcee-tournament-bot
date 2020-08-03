@@ -1,7 +1,14 @@
 import Controller, { DiscordWrapper } from "./controller";
 import logger from "../logger";
 import { UserError } from "../errors";
-import { getOngoingTournaments, findTournamentOptional, initTournament, removeRegisterMessage } from "../actions";
+import {
+	getOngoingTournaments,
+	findTournamentOptional,
+	initTournament,
+	removeRegisterMessage,
+	setTournamentName,
+	setTournamentDescription
+} from "../actions";
 
 export default class TournamentController extends Controller {
 	async help({ sendMessage }: DiscordWrapper): Promise<void> {
@@ -63,10 +70,25 @@ export default class TournamentController extends Controller {
 	}
 
 	async update(discord: DiscordWrapper, args: string[]): Promise<void> {
-		await discord.assertUserPrivileged();
 		// Parameters: challongeId, new name, new description
-		// Check if host is organiser for tournament
-		return;
+		this.assertArgCount(args, 3, "challongeId", "newName", "newDescription");
+		const [, newName, newDescription] = args;
+		const tournament = await this.getTournament(discord, args);
+		await this.challonge.updateTournament(tournament.challongeId, {
+			name: newName,
+			description: newDescription
+		});
+		const oldName = tournament.name;
+		await setTournamentName(tournament.id, newName);
+		await setTournamentDescription(tournament.id, newDescription);
+		await discord.sendMessage(
+			`Tournament ${oldName} successfully updated to ${newName} with the following description:\n${newDescription}`
+		);
+		logger.verbose(
+			`Tournament ${tournament.id} name changed to ${newName} by ${discord.currentUser().username} (${
+				discord.currentUser().id
+			}). Description changed to ${newDescription}`
+		);
 	}
 
 	async challongeSync(discord: DiscordWrapper, args: string[]): Promise<void> {
