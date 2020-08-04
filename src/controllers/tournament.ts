@@ -150,10 +150,31 @@ export default class TournamentController extends Controller {
 			);
 		}
 		await Promise.all(
-			channels.map(id => this.openRegistrationInChannel(
-				discord, id, challongeId, tournament.name, tournament.description))
+			channels.map(id =>
+				this.openRegistrationInChannel(discord, id, challongeId, tournament.name, tournament.description)
+			)
 		);
 		logger.verbose(`Tournament ${tournament.challongeId} opened for registration by ${discord.currentUser().id}.`);
+	}
+
+	@Controller.Arguments("challongeId")
+	async pause(discord: DiscordWrapper, args: string[]): Promise<void> {
+		const tournament = await this.getTournament(discord, args[0]);
+		await Promise.all(tournament.registerMessages.map(m => this.removeAnnouncement(m.message, m.channel)));
+		await Promise.all(
+			tournament.publicChannels.map(c =>
+				discord.sendChannelMessage(
+					c,
+					`Registration for ${tournament.name} has closed.\nPlease stand by for either registration to reopen or the tournament to begin.`
+				)
+			)
+		);
+		await discord.sendMessage(`Registration for ${tournament.name} successfully paused.`);
+		logger.verbose(
+			`Registration for ${tournament.challongeId} paused by ${discord.currentUser().username} (${
+				discord.currentUser().id
+			})`
+		);
 	}
 
 	private async warnClosedParticipant(discord: DiscordWrapper, participant: string, name: string): Promise<void> {
@@ -196,8 +217,11 @@ export default class TournamentController extends Controller {
 	}
 
 	async removeAnnouncement(messageId: string, channelId: string): Promise<void> {
+		// TODO: Delete the actual Discord Message
 		// TODO: deal with pending participants accordingly
 		// depending on how many register messages remain
+		// Luna note about above TODO: #start currently also does this
+		// we need to pick one spot and avoid redundancy
 		if (await removeRegisterMessage(messageId, channelId)) {
 			logger.verbose(`Registration message ${messageId} in ${channelId} deleted.`);
 		}

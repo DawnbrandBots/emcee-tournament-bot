@@ -17,11 +17,7 @@ export class ErisDiscordSender implements DiscordSender {
 	protected readonly getChannel: GetChannelDelegate;
 	protected readonly getDMChannel: GetDMChannelDelegate;
 
-	constructor(
-		message: PossiblyUncachedMessage,
-		getChannel: GetChannelDelegate,
-		getDMChannel: GetDMChannelDelegate
-	) {
+	constructor(message: PossiblyUncachedMessage, getChannel: GetChannelDelegate, getDMChannel: GetDMChannelDelegate) {
 		this.message = message;
 		this.getChannel = getChannel;
 		this.getDMChannel = getDMChannel;
@@ -31,7 +27,7 @@ export class ErisDiscordSender implements DiscordSender {
 	protected async addReaction(message: Message, reaction: string): Promise<void> {
 		try {
 			await message.addReaction(reaction);
-		} catch(e) {
+		} catch (e) {
 			logger.error(e);
 		}
 	}
@@ -103,7 +99,8 @@ export class ErisDiscordWrapper extends ErisDiscordSender implements DiscordWrap
 	isTextChannel(id: string): boolean {
 		try {
 			return this.getChannel(id) instanceof TextChannel;
-		} catch (e) { // Error: "Invalid channel ID: <id>"
+		} catch (e) {
+			// Error: "Invalid channel ID: <id>"
 			return false;
 		}
 	}
@@ -123,8 +120,10 @@ export class ErisDiscordWrapper extends ErisDiscordSender implements DiscordWrap
 				`No server member information for ${this.message.author.id} in server ${server.name} (${server.id})`
 			);
 		}
-		if (!await this.roleProvider.validate(server, this.message.member.roles)) {
-			throw new UserError(`You must have the ${this.roleProvider.name} role to create a tournament in this server!`);
+		if (!(await this.roleProvider.validate(server, this.message.member.roles))) {
+			throw new UserError(
+				`You must have the ${this.roleProvider.name} role to create a tournament in this server!`
+			);
 		}
 	}
 
@@ -133,7 +132,7 @@ export class ErisDiscordWrapper extends ErisDiscordSender implements DiscordWrap
 	}
 }
 
-export type Command = { name: string, args: string[] };
+export type Command = { name: string; args: string[] };
 
 export default class CommandDispatcher {
 	protected readonly prefix: string;
@@ -178,6 +177,7 @@ export default class CommandDispatcher {
 			update: tournamentController.update.bind(tournamentController),
 			sync: tournamentController.challongeSync.bind(tournamentController),
 			open: tournamentController.open.bind(tournamentController),
+			pause: tournamentController.pause.bind(tournamentController),
 			start: tournamentController.start.bind(tournamentController),
 			cancel: tournamentController.cancel.bind(tournamentController),
 			delete: tournamentController.delete.bind(tournamentController),
@@ -190,7 +190,7 @@ export default class CommandDispatcher {
 			round: roundController.next.bind(roundController),
 			score: roundController.score.bind(roundController),
 			players: participantController.list.bind(participantController),
-			deck: participantController.getDeck.bind(participantController),
+			deck: participantController.getDeck.bind(participantController)
 			// drop: participantController.drop.bind(participantController),
 		};
 	}
@@ -210,7 +210,10 @@ export default class CommandDispatcher {
 		}
 		return {
 			name: command.slice(this.prefix.length, firstSpace).toLowerCase(),
-			args: command.slice(firstSpace + 1).split("|").map(s => s.trim())
+			args: command
+				.slice(firstSpace + 1)
+				.split("|")
+				.map(s => s.trim())
 		};
 	}
 
@@ -223,21 +226,16 @@ export default class CommandDispatcher {
 			return;
 		}
 		if (command.name in this.actions) {
-			const discord = new ErisDiscordWrapper(
-				message,
-				this.roleProvider,
-				this.getChannel,
-				this.getDMChannel
-			);
+			const discord = new ErisDiscordWrapper(message, this.roleProvider, this.getChannel, this.getDMChannel);
 			try {
 				await this.actions[command.name](discord, command.args);
-			} catch(commandError) {
+			} catch (commandError) {
 				if (commandError instanceof UserError) {
 					// Instead of the nested try-catch that may be hard to follow,
 					// we could add a noThrow argument to sendMessage and log over there.
 					try {
 						await discord.sendMessage(commandError.message);
-					} catch(discordError) {
+					} catch (discordError) {
 						logger.error(discordError);
 						logger.error(commandError);
 					}
