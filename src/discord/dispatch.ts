@@ -10,17 +10,25 @@ import TournamentController from "../controllers/tournament";
 
 export type GetChannelDelegate = Client["getChannel"];
 export type GetDMChannelDelegate = Client["getDMChannel"];
+export type DeleteMessageDelegate = Client["deleteMessage"];
 
 // Passed to each controller action to decouple them from Eris
 export class ErisDiscordSender implements DiscordSender {
 	protected readonly message: PossiblyUncachedMessage;
 	protected readonly getChannel: GetChannelDelegate;
 	protected readonly getDMChannel: GetDMChannelDelegate;
+	protected readonly deleteMessage: DeleteMessageDelegate;
 
-	constructor(message: PossiblyUncachedMessage, getChannel: GetChannelDelegate, getDMChannel: GetDMChannelDelegate) {
+	constructor(
+		message: PossiblyUncachedMessage,
+		getChannel: GetChannelDelegate,
+		getDMChannel: GetDMChannelDelegate,
+		deleteMessage: DeleteMessageDelegate
+	) {
 		this.message = message;
 		this.getChannel = getChannel;
 		this.getDMChannel = getDMChannel;
+		this.deleteMessage = deleteMessage;
 	}
 
 	// nothrow
@@ -77,6 +85,10 @@ export class ErisDiscordSender implements DiscordSender {
 		}
 		return channel.guild;
 	}
+
+	async deleteChannelMessage(channelId: string, messageId: string): Promise<void> {
+		this.deleteMessage(channelId, messageId);
+	}
 }
 
 export class ErisDiscordWrapper extends ErisDiscordSender implements DiscordWrapper {
@@ -87,9 +99,10 @@ export class ErisDiscordWrapper extends ErisDiscordSender implements DiscordWrap
 		message: Message<TextChannel>,
 		roleProvider: RoleProvider,
 		getChannel: GetChannelDelegate,
-		getDMChannel: GetDMChannelDelegate
+		getDMChannel: GetDMChannelDelegate,
+		deleteMessage: DeleteMessageDelegate
 	) {
-		super(message, getChannel, getDMChannel);
+		super(message, getChannel, getDMChannel, deleteMessage);
 		this.message = message;
 		this.roleProvider = roleProvider;
 	}
@@ -146,6 +159,7 @@ export default class CommandDispatcher {
 	protected readonly prefix: string;
 	readonly getChannel: GetChannelDelegate;
 	readonly getDMChannel: GetDMChannelDelegate;
+	readonly deleteMessage: DeleteMessageDelegate;
 	roleProvider: RoleProvider;
 	participantController: ParticipantController;
 	permissionController: PermissionController;
@@ -160,6 +174,7 @@ export default class CommandDispatcher {
 		prefix: string,
 		getChannel: GetChannelDelegate,
 		getDMChannel: GetDMChannelDelegate,
+		deleteMessage: DeleteMessageDelegate,
 		roleProvider: RoleProvider,
 		participantController: ParticipantController,
 		permissionController: PermissionController,
@@ -169,6 +184,7 @@ export default class CommandDispatcher {
 		this.prefix = prefix;
 		this.getChannel = getChannel;
 		this.getDMChannel = getDMChannel;
+		this.deleteMessage = deleteMessage;
 		this.roleProvider = roleProvider;
 		this.participantController = participantController;
 		this.permissionController = permissionController;
@@ -186,7 +202,6 @@ export default class CommandDispatcher {
 			sync: tournamentController.challongeSync.bind(tournamentController),
 			open: tournamentController.open.bind(tournamentController),
 			pause: tournamentController.pause.bind(tournamentController),
-			start: tournamentController.start.bind(tournamentController),
 			cancel: tournamentController.cancel.bind(tournamentController),
 			delete: tournamentController.delete.bind(tournamentController),
 			addpublic: permissionController.addPublicChannel.bind(permissionController),
@@ -196,6 +211,7 @@ export default class CommandDispatcher {
 			addhost: permissionController.addTournamentHost.bind(permissionController),
 			removehost: permissionController.removeTournamentHost.bind(permissionController),
 			round: roundController.next.bind(roundController),
+			start: roundController.start.bind(tournamentController),
 			score: roundController.score.bind(roundController),
 			players: participantController.list.bind(participantController),
 			deck: participantController.getDeck.bind(participantController)
@@ -234,7 +250,13 @@ export default class CommandDispatcher {
 			return;
 		}
 		if (command.name in this.actions) {
-			const discord = new ErisDiscordWrapper(message, this.roleProvider, this.getChannel, this.getDMChannel);
+			const discord = new ErisDiscordWrapper(
+				message,
+				this.roleProvider,
+				this.getChannel,
+				this.getDMChannel,
+				this.deleteMessage
+			);
 			try {
 				await this.actions[command.name](discord, command.args);
 			} catch (commandError) {

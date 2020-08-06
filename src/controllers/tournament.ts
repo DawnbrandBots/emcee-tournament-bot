@@ -5,13 +5,11 @@ import {
 	getOngoingTournaments,
 	findTournamentOptional,
 	initTournament,
-	removeRegisterMessage,
 	setTournamentName,
 	setTournamentDescription,
 	SyncDoc,
 	synchronise,
-	addRegisterMessage,
-	startTournament
+	addRegisterMessage
 } from "../actions";
 import { Challonge } from "../challonge";
 
@@ -160,7 +158,7 @@ export default class TournamentController extends Controller {
 	@Controller.Arguments("challongeId")
 	async pause(discord: DiscordWrapper, args: string[]): Promise<void> {
 		const tournament = await this.getTournament(discord, args[0]);
-		await Promise.all(tournament.registerMessages.map(m => this.removeAnnouncement(m.message, m.channel)));
+		await Promise.all(tournament.registerMessages.map(m => this.removeAnnouncement(discord, m.channel, m.message)));
 		await Promise.all(
 			tournament.publicChannels.map(c =>
 				discord.sendChannelMessage(
@@ -177,33 +175,6 @@ export default class TournamentController extends Controller {
 		);
 	}
 
-	private async warnClosedParticipant(discord: DiscordWrapper, participant: string, name: string): Promise<void> {
-		await discord.sendDirectMessage(
-			participant,
-			`Sorry, the ${name} tournament you registered for has started, and you had not submitted a valid decklist, so you have been dropped.
-				If you think this is a mistake, contact the tournament host.`
-		);
-	}
-
-	@Controller.Arguments("challongeId")
-	async start(discord: DiscordWrapper, args: string[]): Promise<void> {
-		const tournament = await this.getTournament(discord, args[0]);
-		if (tournament.confirmedParticipants.length < 2) {
-			throw new UserError("Cannot start a tournament without at least 2 confirmed participants!");
-		}
-		await this.challonge.startTournament(tournament.challongeId, {});
-		const tournData = await this.challonge.showTournament(tournament.challongeId);
-		const removedIDs = await startTournament(
-			tournament.challongeId,
-			discord.currentUser().id,
-			tournData.tournament.swiss_rounds
-		);
-		await Promise.all(removedIDs.map(i => this.warnClosedParticipant(discord, i, tournament.name)));
-		await Promise.all(tournament.registerMessages.map(m => this.removeAnnouncement(m.message, m.channel)));
-		// TODO: Start first round using RoundController#next
-		logger.verbose(`Tournament ${tournament.challongeId} commenced by ${discord.currentUser().id}.`);
-	}
-
 	@Controller.Arguments("challongeId")
 	async cancel(discord: DiscordWrapper, args: string[]): Promise<void> {
 		const tournament = await this.getTournament(discord, args[0]);
@@ -214,16 +185,5 @@ export default class TournamentController extends Controller {
 	async delete(discord: DiscordWrapper, args: string[]): Promise<void> {
 		const tournament = await this.getTournament(discord, args[0]);
 		return;
-	}
-
-	async removeAnnouncement(messageId: string, channelId: string): Promise<void> {
-		// TODO: Delete the actual Discord Message
-		// TODO: deal with pending participants accordingly
-		// depending on how many register messages remain
-		// Luna note about above TODO: #start currently also does this
-		// we need to pick one spot and avoid redundancy
-		if (await removeRegisterMessage(messageId, channelId)) {
-			logger.verbose(`Registration message ${messageId} in ${channelId} deleted.`);
-		}
 	}
 }

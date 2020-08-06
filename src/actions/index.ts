@@ -122,7 +122,7 @@ export async function addRegisterMessage(
 }
 
 // Invoke after a registration message gets deleted.
-export async function removeRegisterMessage(message: DiscordID, channel: DiscordID): Promise<boolean> {
+export async function removeRegisterMessage(channel: DiscordID, message: DiscordID): Promise<boolean> {
 	const tournament = await findTournamentByRegisterMessage(message, channel);
 	if (!tournament) {
 		return false;

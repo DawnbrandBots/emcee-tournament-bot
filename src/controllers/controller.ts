@@ -2,8 +2,9 @@ import { Guild } from "eris";
 import { Challonge } from "../challonge";
 import { UserError } from "../errors";
 import { TournamentDoc } from "../models";
-import { getAuthorizedTournament } from "../actions";
+import { getAuthorizedTournament, removeRegisterMessage } from "../actions";
 import RoleProvider from "../discord/role";
+import logger from "../logger";
 
 // Abstract superclass for a structured grouping of actions (business logic)
 export default abstract class Controller {
@@ -24,9 +25,7 @@ export default abstract class Controller {
 		// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 		descriptor.value = function (discord: DiscordWrapper, args: string[]) {
 			if (args.length < names.length) {
-				throw new UserError(
-					`Must provide all arguments: ${names.map(n => `<${n}>`).join(" | ")}`
-				);
+				throw new UserError(`Must provide all arguments: ${names.map(n => `<${n}>`).join(" | ")}`);
 			}
 			return original.call(this, discord, args);
 		};
@@ -49,6 +48,13 @@ export default abstract class Controller {
 	protected async sendChannels(discord: DiscordSender, channels: string[], message: string): Promise<void> {
 		await Promise.all(channels.map(channelId => discord.sendChannelMessage(channelId, message)));
 	}
+
+	protected async removeAnnouncement(discord: DiscordWrapper, channelId: string, messageId: string): Promise<void> {
+		if (await removeRegisterMessage(channelId, messageId)) {
+			await discord.deleteChannelMessage(channelId, messageId);
+			logger.verbose(`Registration message ${messageId} in ${channelId} deleted.`);
+		}
+	}
 }
 
 // Subset of Eris.User that we may care about
@@ -69,6 +75,7 @@ export interface DiscordSender {
 	currentMessageId(): string;
 	currentChannelId(): string;
 	getServer(channelId: string): Guild;
+	deleteChannelMessage(channelId: string, messageId: string): Promise<void>;
 }
 
 export interface DiscordWrapper extends DiscordSender {

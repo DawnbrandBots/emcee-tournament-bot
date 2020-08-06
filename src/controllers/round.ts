@@ -3,7 +3,7 @@ import { UserError } from "../errors";
 import logger from "../logger";
 import { Challonge } from "../challonge";
 import RoleProvider from "../discord/role";
-import { nextRound } from "../actions";
+import { nextRound, startTournament } from "../actions";
 import { TournamentDoc } from "../models";
 
 export default class RoundController extends Controller {
@@ -87,6 +87,33 @@ export default class RoundController extends Controller {
 				discord.currentUser().id
 			}).`
 		);
+	}
+
+	@Controller.Arguments("challongeId")
+	async start(discord: DiscordWrapper, args: string[]): Promise<void> {
+		const tournament = await this.getTournament(discord, args[0]);
+		if (tournament.confirmedParticipants.length < 2) {
+			throw new UserError("Cannot start a tournament without at least 2 confirmed participants!");
+		}
+		await this.challonge.startTournament(tournament.challongeId, {});
+		const tournData = await this.challonge.showTournament(tournament.challongeId);
+		const removedIDs = await startTournament(
+			tournament.challongeId,
+			discord.currentUser().id,
+			tournData.tournament.swiss_rounds
+		);
+		await Promise.all(
+			removedIDs.map(i =>
+				discord.sendDirectMessage(
+					i,
+					`Sorry, the ${tournament.name} tournament you registered for has started, and you had not submitted a valid decklist, so you have been dropped.
+				If you think this is a mistake, contact the tournament host.`
+				)
+			)
+		);
+		await Promise.all(tournament.registerMessages.map(m => this.removeAnnouncement(discord, m.channel, m.message)));
+		await this.next(discord, args); // commence first round
+		logger.verbose(`Tournament ${tournament.challongeId} commenced by ${discord.currentUser().id}.`);
 	}
 
 	@Controller.Arguments("challongeId", "score") // plus @mention-user
