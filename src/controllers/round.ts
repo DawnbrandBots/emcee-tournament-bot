@@ -2,6 +2,9 @@ import Controller, { DiscordWrapper, RoleProviderFactory } from "./controller";
 import { UserError } from "../errors";
 import logger from "../logger";
 import { Challonge } from "../challonge";
+import RoleProvider from "../discord/role";
+import { nextRound } from "../actions";
+import { TournamentDoc } from "../models";
 
 export default class RoundController extends Controller {
 	protected getRoleProvider: RoleProviderFactory;
@@ -11,20 +14,79 @@ export default class RoundController extends Controller {
 		this.getRoleProvider = getRoleProvider;
 	}
 
+	private async startRound(
+		discord: DiscordWrapper,
+		roleProvider: RoleProvider,
+		channelId: string,
+		challongeId: string,
+		round: number,
+		name: string,
+		bye?: string
+	): Promise<void> {
+		const role = await roleProvider.get(discord.getServer(channelId));
+		let message = `Round ${round} of ${name} has begun! <@&${role}>\nPairings: https://challonge.com/${challongeId}`;
+		if (bye) {
+			message += `\n${this.mention(bye)} has the bye for this round.`;
+		}
+		await discord.sendChannelMessage(channelId, message);
+	}
+
+	private async checkBye(tournament: TournamentDoc): Promise<string | undefined> {
+		// odd number of participants means a bye
+		if (tournament.confirmedParticipants.length % 2 === 1) {
+			const matches = await this.challonge.indexMatches(tournament.challongeId, "open");
+			const players = tournament.confirmedParticipants.map(p => p.challongeId);
+			for (const match of matches) {
+				const i = players.indexOf(match.match.player1_id);
+				if (i > -1) {
+					players.splice(i);
+				}
+				const j = players.indexOf(match.match.player2_id);
+				if (j > -1) {
+					players.splice(j);
+				}
+			}
+			if (players.length === 1) {
+				const user = tournament.confirmedParticipants.find(p => p.challongeId === players[0]);
+				return user?.discord;
+			}
+		}
+		return;
+	}
+
 	@Controller.Arguments("challongeId")
 	async next(discord: DiscordWrapper, args: string[]): Promise<void> {
 		const [challongeId] = args[0];
 		const tournament = await this.getTournament(discord, challongeId);
-		const roleProvider = this.getRoleProvider(challongeId);
-		const round = 0;
+		const round = await nextRound(challongeId, discord.currentUser().id);
+		if (round === -1) {
+			throw new UserError(
+				`Tournament ${tournament.name} is in its final round! To finish the tournament, use the \`finish\` command instead.`
+			);
+		}
+		const openMatches = await this.challonge.indexMatches(challongeId, "open");
 		await Promise.all(
-			tournament.publicChannels.map(async id => {
-				const role = await roleProvider.get(discord.getServer(id));
-				await discord.sendChannelMessage(id, `Round ${round} of ${tournament.name} has begun! <@&${role}>\nPairings: https://challonge.com/${challongeId}`)
-			})
+			openMatches.map(m =>
+				this.challonge.updateMatch(challongeId, m.match.id.toString(), {
+					// eslint-disable-next-line @typescript-eslint/camelcase
+					winner_id: "tie",
+					// eslint-disable-next-line @typescript-eslint/camelcase
+					scores_csv: "0-0"
+				})
+			)
 		);
-		// TODO: implement
-		// logger.verbose(`Tournament ${this.id} moved to round ${round} by ${host}.`);
+		const bye = await this.checkBye(tournament);
+		const roleProvider = this.getRoleProvider(challongeId);
+		await Promise.all(
+			tournament.publicChannels.map(c =>
+				this.startRound(discord, roleProvider, c, challongeId, round, tournament.name, bye)
+			)
+		);
+		logger.verbose(
+			`Tournament ${challongeId} moved to round ${round} by ${discord.currentUser().username} (${
+				discord.currentUser().id
+			}).`
+		);
 	}
 
 	@Controller.Arguments("challongeId", "score") // plus @mention-user

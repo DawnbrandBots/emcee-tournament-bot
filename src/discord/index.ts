@@ -10,11 +10,13 @@ import ParticipantController from "../controllers/participant";
 import PermissionController from "../controllers/permission";
 import RoundController from "../controllers/round";
 import TournamentController from "../controllers/tournament";
+import { RoleProviderFactory } from "../controllers/controller";
 
 const checkEmoji = "✅";
 const bot = new Client(discordToken);
 const challonge = new ChallongeV1Fetch(challongeUsername, challongeToken);
-const tournamentRoleFactory = (challongeId: string) => new RoleProvider(`MC-Tournament-${challongeId}`, 0xe67e22);
+const tournamentRoleFactory: RoleProviderFactory = (challongeId: string) =>
+	new RoleProvider(`MC-Tournament-${challongeId}`, 0xe67e22);
 const dispatcher = new CommandDispatcher(
 	prefix,
 	bot.getChannel.bind(bot),
