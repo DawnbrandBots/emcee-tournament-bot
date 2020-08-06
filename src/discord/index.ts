@@ -14,14 +14,15 @@ import TournamentController from "../controllers/tournament";
 const checkEmoji = "✅";
 const bot = new Client(discordToken);
 const challonge = new ChallongeV1Fetch(challongeUsername, challongeToken);
+const tournamentRoleFactory = (challongeId: string) => new RoleProvider(`MC-Tournament-${challongeId}`, 0xe67e22);
 const dispatcher = new CommandDispatcher(
 	prefix,
 	bot.getChannel.bind(bot),
 	bot.getDMChannel.bind(bot),
 	new RoleProvider(toRole, 0x3498db),
-	new ParticipantController(challonge),
+	new ParticipantController(challonge, tournamentRoleFactory),
 	new PermissionController(challonge),
-	new RoundController(challonge),
+	new RoundController(challonge, tournamentRoleFactory),
 	new TournamentController(challonge, checkEmoji)
 );
 const listener = new EmceeListener(bot, dispatcher, checkEmoji);

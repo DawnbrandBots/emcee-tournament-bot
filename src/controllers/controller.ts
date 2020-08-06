@@ -3,6 +3,7 @@ import { Challonge } from "../challonge";
 import { UserError } from "../errors";
 import { TournamentDoc } from "../models";
 import { getAuthorizedTournament } from "../actions";
+import RoleProvider from "../discord/role";
 
 // Abstract superclass for a structured grouping of actions (business logic)
 export default abstract class Controller {
@@ -67,6 +68,7 @@ export interface DiscordSender {
 	sendChannelMessage(channelId: string, content: string, emoji?: string): Promise<string>; // may not throw
 	currentMessageId(): string;
 	currentChannelId(): string;
+	getServer(channelId: string): Guild;
 }
 
 export interface DiscordWrapper extends DiscordSender {
@@ -83,3 +85,5 @@ export interface DiscordWrapper extends DiscordSender {
 export interface ControllerAction {
 	(discord: DiscordWrapper, args: string[]): Promise<void>;
 }
+
+export type RoleProviderFactory = (challongeId: string) => RoleProvider;

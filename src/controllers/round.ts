@@ -1,18 +1,30 @@
-import Controller, { DiscordWrapper } from "./controller";
+import Controller, { DiscordWrapper, RoleProviderFactory } from "./controller";
 import { UserError } from "../errors";
-import RoleProvider from "../discord/role";
 import logger from "../logger";
+import { Challonge } from "../challonge";
 
 export default class RoundController extends Controller {
+	protected getRoleProvider: RoleProviderFactory;
+
+	constructor(challonge: Challonge, getRoleProvider: RoleProviderFactory) {
+		super(challonge);
+		this.getRoleProvider = getRoleProvider;
+	}
+
 	@Controller.Arguments("challongeId")
 	async next(discord: DiscordWrapper, args: string[]): Promise<void> {
 		const [challongeId] = args[0];
 		const tournament = await this.getTournament(discord, challongeId);
-		// TODO: use factory
-		const roleProvider = new RoleProvider(`MC-Tournament-${challongeId}`, 0xe67e22);
-		const role = await roleProvider.get(discord.currentServer());
-		await this.sendChannels(discord, tournament.publicChannels, `<@&${role}>`);
+		const roleProvider = this.getRoleProvider(challongeId);
+		const round = 0;
+		await Promise.all(
+			tournament.publicChannels.map(async id => {
+				const role = await roleProvider.get(discord.getServer(id));
+				await discord.sendChannelMessage(id, `Round ${round} of ${tournament.name} has begun! <@&${role}>\nPairings: https://challonge.com/${challongeId}`)
+			})
+		);
 		// TODO: implement
+		// logger.verbose(`Tournament ${this.id} moved to round ${round} by ${host}.`);
 	}
 
 	@Controller.Arguments("challongeId", "score") // plus @mention-user

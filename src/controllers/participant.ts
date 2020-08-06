@@ -1,4 +1,4 @@
-import Controller, { DiscordWrapper, DiscordSender, DiscordUserSubset } from "./controller";
+import Controller, { DiscordWrapper, DiscordSender, DiscordUserSubset, RoleProviderFactory } from "./controller";
 import { Message, PrivateChannel, TextChannel, GuildChannel, User, AnyChannel } from "eris";
 import logger from "../logger";
 import { MiscInternalError, DeckNotFoundError, AssertTextChannelError } from "../errors";
@@ -13,8 +13,16 @@ import { TournamentModel } from "../models";
 import { DiscordDeck } from "../discordDeck";
 import { GetChannelDelegate } from "../discord/dispatch";
 import RoleProvider from "../discord/role";
+import { Challonge } from "../challonge";
 
 export default class ParticipantController extends Controller {
+	protected getRoleProvider: RoleProviderFactory;
+
+	constructor(challonge: Challonge, getRoleProvider: RoleProviderFactory) {
+		super(challonge);
+		this.getRoleProvider = getRoleProvider;
+	}
+
 	@Controller.Arguments("challongeId")
 	async list(discord: DiscordWrapper, args: string[]): Promise<void> {
 		const tournament = await this.getTournament(discord, args[0]);
@@ -182,8 +190,7 @@ export default class ParticipantController extends Controller {
 				[...deck.record.extra],
 				[...deck.record.side]
 			);
-			// TODO: use factory
-			const roleProvider = new RoleProvider(`MC-Tournament-${doc.challongeId}`, 0xe67e22);
+			const roleProvider = this.getRoleProvider(doc.challongeId);
 			doc.publicChannels.map(id => ParticipantController.grantRole(roleProvider, getChannel(id), msg.author))
 			await msg.channel.createMessage(
 				`Congratulations! You have been registered in ${doc.name} with the following deck.`

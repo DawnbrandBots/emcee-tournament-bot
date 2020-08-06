@@ -1,4 +1,4 @@
-import { Message, TextChannel, Client, PossiblyUncachedMessage, Guild } from "eris";
+import { Message, TextChannel, Client, PossiblyUncachedMessage, Guild, GuildChannel } from "eris";
 import logger from "../logger";
 import { UserError, MiscInternalError } from "../errors";
 import RoleProvider from "./role";
@@ -68,6 +68,14 @@ export class ErisDiscordSender implements DiscordSender {
 
 	currentChannelId(): string {
 		return this.message.channel.id;
+	}
+
+	getServer(channelId: string): Guild {
+		const channel = this.getChannel(channelId);
+		if (!(channel instanceof GuildChannel)) {
+			throw new MiscInternalError(`Channel ${channelId} is not a GuildChannel`);
+		}
+		return channel.guild;
 	}
 }
 
