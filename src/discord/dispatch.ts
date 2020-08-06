@@ -202,6 +202,7 @@ export default class CommandDispatcher {
 			sync: tournamentController.challongeSync.bind(tournamentController),
 			open: tournamentController.open.bind(tournamentController),
 			pause: tournamentController.pause.bind(tournamentController),
+			finish: tournamentController.finish.bind(tournamentController),
 			cancel: tournamentController.cancel.bind(tournamentController),
 			delete: tournamentController.delete.bind(tournamentController),
 			addpublic: permissionController.addPublicChannel.bind(permissionController),

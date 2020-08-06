@@ -9,7 +9,8 @@ import {
 	setTournamentDescription,
 	SyncDoc,
 	synchronise,
-	addRegisterMessage
+	addRegisterMessage,
+	finishTournament
 } from "../actions";
 import { Challonge } from "../challonge";
 
@@ -172,6 +173,26 @@ export default class TournamentController extends Controller {
 			`Registration for ${tournament.challongeId} paused by ${discord.currentUser().username} (${
 				discord.currentUser().id
 			})`
+		);
+	}
+
+	@Controller.Arguments("challongeId")
+	async finish(discord: DiscordWrapper, args: string[]): Promise<void> {
+		const challongeId = args[0];
+		const tournament = await this.getTournament(discord, challongeId);
+		if (tournament.currentRound < tournament.totalRounds) {
+			throw new UserError(
+				`${tournament.name} must be in its final round to finish! It is currently in round ${tournament.currentRound}/${tournament.totalRounds}.`
+			);
+		}
+		const openMatches = await this.challonge.indexMatches(challongeId, "open");
+		if (openMatches.length > 0) {
+			throw new UserError(`${tournament.name} cannot be finished while it still has matches open!`);
+		}
+		await this.challonge.finaliseTournament(challongeId, {});
+		await finishTournament(challongeId, discord.currentUser().id);
+		logger.verbose(
+			`Tournament ${challongeId} finished by ${discord.currentUser().username} (${discord.currentUser().id})`
 		);
 	}
 

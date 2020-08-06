@@ -21,6 +21,7 @@ const dispatcher = new CommandDispatcher(
 	prefix,
 	bot.getChannel.bind(bot),
 	bot.getDMChannel.bind(bot),
+	bot.deleteMessage.bind(bot),
 	new RoleProvider(toRole, 0x3498db),
 	new ParticipantController(challonge, tournamentRoleFactory),
 	new PermissionController(challonge),
