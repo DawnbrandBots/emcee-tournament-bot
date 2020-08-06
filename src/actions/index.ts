@@ -342,3 +342,8 @@ export async function synchronise(challongeId: TournamentID, newDoc: SyncDoc): P
 	tournament.totalRounds = newDoc.totalRounds;
 	await tournament.save();
 }
+
+export async function deleteTournament(challongeId: TournamentID, host: DiscordID): Promise<void> {
+	const tournament = await getAuthorizedTournament(challongeId, host);
+	await tournament.deleteOne();
+}

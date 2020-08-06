@@ -206,16 +206,9 @@ export interface Challonge {
 	finaliseTournament(tournament: string, settings: StartTournamentSettings): Promise<void>;
 	addParticipant(tournament: string, settings: AddParticipantSettings): Promise<ChallongeParticipant>;
 	removeParticipant(tournament: string, participant: number): Promise<void>;
-	indexMatches(
-		tournament: string,
-		state?: ChallongeMatchState,
-		participantId?: number
-	): Promise<IndexMatchResponse>;
-	updateMatch(
-		tournament: string,
-		match: string,
-		settings: UpdateMatchSettings
-	): Promise<ChallongeMatch>;
+	indexMatches(tournament: string, state?: ChallongeMatchState, participantId?: number): Promise<IndexMatchResponse>;
+	updateMatch(tournament: string, match: string, settings: UpdateMatchSettings): Promise<ChallongeMatch>;
+	destroyTournament(tournament: string): Promise<void>;
 }
 
 export class ChallongeV1Fetch implements Challonge {
@@ -326,5 +319,11 @@ export class ChallongeV1Fetch implements Challonge {
 			headers: { "Content-Type": "application/json" }
 		});
 		return await this.validateResponse<ChallongeMatch>(response);
+	}
+
+	public async destroyTournament(tournament: string): Promise<void> {
+		await fetch(`${this.baseUrl}tournaments/${tournament}.json`, {
+			method: "DELETE"
+		});
 	}
 }

@@ -10,7 +10,8 @@ import {
 	SyncDoc,
 	synchronise,
 	addRegisterMessage,
-	finishTournament
+	finishTournament,
+	deleteTournament
 } from "../actions";
 import { Challonge } from "../challonge";
 import RoleProvider from "../discord/role";
@@ -242,7 +243,17 @@ export default class TournamentController extends Controller {
 
 	@Controller.Arguments("challongeId")
 	async delete(discord: DiscordWrapper, args: string[]): Promise<void> {
-		const tournament = await this.getTournament(discord, args[0]);
-		return;
+		const challongeId = args[0];
+		const tournament = await this.getTournament(discord, challongeId);
+		if (tournament.status !== "complete") {
+			throw new UserError("You cannot delete a tournament that is not closed.");
+		}
+		await this.challonge.destroyTournament(challongeId);
+		const name = tournament.name;
+		await deleteTournament(challongeId, discord.currentUser().id);
+		await discord.sendMessage(`Tournament ${name} deleted successfully!`);
+		logger.verbose(
+			`Tournament ${challongeId} deleted by ${discord.currentUser().username} (${discord.currentUser().id})`
+		);
 	}
 }
