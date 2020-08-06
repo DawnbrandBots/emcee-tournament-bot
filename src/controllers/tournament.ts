@@ -225,8 +225,19 @@ export default class TournamentController extends Controller {
 
 	@Controller.Arguments("challongeId")
 	async cancel(discord: DiscordWrapper, args: string[]): Promise<void> {
-		const tournament = await this.getTournament(discord, args[0]);
-		return;
+		const challongeId = args[0];
+		const tournament = await this.getTournament(discord, challongeId);
+		await finishTournament(challongeId, discord.currentUser().id);
+		const roleProvider = this.getRoleProvider(challongeId);
+		await Promise.all(
+			tournament.publicChannels.map(c =>
+				this.finishTournament(discord, roleProvider, c, challongeId, tournament.name, true)
+			)
+		);
+		await discord.sendMessage(`Tournament ${tournament.name} successfully cancelled.`);
+		logger.verbose(
+			`Tournament ${challongeId} cancelled by ${discord.currentUser().username} (${discord.currentUser().id})`
+		);
 	}
 
 	@Controller.Arguments("challongeId")
