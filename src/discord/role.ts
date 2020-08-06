@@ -1,9 +1,9 @@
-import { Guild, User } from "eris"
+import { Guild, User } from "eris";
 import logger from "../logger";
 
 export default class RoleProvider {
 	readonly name: string;
-	readonly color?: number;  // Using American spelling for Eris consistency
+	readonly color?: number; // Using American spelling for Eris consistency
 	protected roleCache: { [serverId: string]: string } = {};
 
 	constructor(name: string, color?: number) {
@@ -13,10 +13,13 @@ export default class RoleProvider {
 
 	async create(server: Guild): Promise<string> {
 		// TODO: error handling?
-		const role = await server.createRole({
-			name: this.name,
-			color: this.color
-		}, "Auto-created by Emcee.");
+		const role = await server.createRole(
+			{
+				name: this.name,
+				color: this.color
+			},
+			"Auto-created by Emcee."
+		);
 		this.roleCache[server.id] = role.id;
 		logger.verbose(`Role ${this.name} (${role.id}) created in ${server.name} (${server.id}).`);
 		return role.id;
@@ -29,7 +32,7 @@ export default class RoleProvider {
 		// Find already-created role and cache in memory
 		const existingRole = server.roles.find(role => role.name === this.name);
 		if (existingRole) {
-			return this.roleCache[server.id] = existingRole.id;
+			return (this.roleCache[server.id] = existingRole.id);
 		}
 		return await this.create(server);
 	}
@@ -47,5 +50,9 @@ export default class RoleProvider {
 		// TODO: error handling?
 		await member.addRole(await this.get(server), "Tournament registration");
 		return true;
+	}
+
+	async delete(server: Guild): Promise<void> {
+		await server.deleteRole(await this.get(server));
 	}
 }

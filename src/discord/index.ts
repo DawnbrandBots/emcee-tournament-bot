@@ -26,15 +26,15 @@ const dispatcher = new CommandDispatcher(
 	new ParticipantController(challonge, tournamentRoleFactory),
 	new PermissionController(challonge),
 	new RoundController(challonge, tournamentRoleFactory),
-	new TournamentController(challonge, checkEmoji)
+	new TournamentController(challonge, checkEmoji, tournamentRoleFactory)
 );
 const listener = new EmceeListener(bot, dispatcher, checkEmoji);
 
-bot.on("ready",                 listener.ready.bind(listener));
-bot.on("guildCreate",           listener.guildCreate.bind(listener));
-bot.on("messageCreate",         listener.messageCreate.bind(listener));
-bot.on("messageDelete",         listener.messageDelete.bind(listener));
-bot.on("messageReactionAdd",    listener.messageReactionAdd.bind(listener));
+bot.on("ready", listener.ready.bind(listener));
+bot.on("guildCreate", listener.guildCreate.bind(listener));
+bot.on("messageCreate", listener.messageCreate.bind(listener));
+bot.on("messageDelete", listener.messageDelete.bind(listener));
+bot.on("messageReactionAdd", listener.messageReactionAdd.bind(listener));
 bot.on("messageReactionRemove", listener.messageReactionRemove.bind(listener));
 
 bot.connect().catch(logger.error);

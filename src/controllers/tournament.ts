@@ -1,4 +1,4 @@
-import Controller, { DiscordWrapper } from "./controller";
+import Controller, { DiscordWrapper, RoleProviderFactory } from "./controller";
 import logger from "../logger";
 import { UserError } from "../errors";
 import {
@@ -13,13 +13,16 @@ import {
 	finishTournament
 } from "../actions";
 import { Challonge } from "../challonge";
+import RoleProvider from "../discord/role";
 
 export default class TournamentController extends Controller {
 	protected checkEmoji: string;
+	protected getRoleProvider: RoleProviderFactory;
 
-	constructor(challonge: Challonge, checkEmoji: string) {
+	constructor(challonge: Challonge, checkEmoji: string, getRoleProvider: RoleProviderFactory) {
 		super(challonge);
 		this.checkEmoji = checkEmoji;
+		this.getRoleProvider = getRoleProvider;
 	}
 
 	async help(discord: DiscordWrapper): Promise<void> {
@@ -176,6 +179,23 @@ export default class TournamentController extends Controller {
 		);
 	}
 
+	private async finishTournament(
+		discord: DiscordWrapper,
+		roleProvider: RoleProvider,
+		channelId: string,
+		challongeId: string,
+		name: string,
+		cancel = false
+	): Promise<void> {
+		const guild = discord.getServer(channelId);
+		const role = await roleProvider.get(guild);
+		const message = `${name} has ${
+			cancel ? "been cancelled." : "finished!"
+		} <@&${role}>\nFinal results: https://challonge.com/${challongeId}`;
+		await discord.sendChannelMessage(channelId, message);
+		await roleProvider.delete(guild);
+	}
+
 	@Controller.Arguments("challongeId")
 	async finish(discord: DiscordWrapper, args: string[]): Promise<void> {
 		const challongeId = args[0];
@@ -191,6 +211,13 @@ export default class TournamentController extends Controller {
 		}
 		await this.challonge.finaliseTournament(challongeId, {});
 		await finishTournament(challongeId, discord.currentUser().id);
+		const roleProvider = this.getRoleProvider(challongeId);
+		await Promise.all(
+			tournament.publicChannels.map(c =>
+				this.finishTournament(discord, roleProvider, c, challongeId, tournament.name)
+			)
+		);
+		await discord.sendMessage(`Tournament ${tournament.name} successfully finished!`);
 		logger.verbose(
 			`Tournament ${challongeId} finished by ${discord.currentUser().username} (${discord.currentUser().id})`
 		);
