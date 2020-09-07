@@ -40,6 +40,12 @@ export default class EmceeListener {
 	async messageDelete(message: PossiblyUncachedMessage): Promise<void> {
 		try {
 			await this.dispatcher.tournamentController.removeAnnouncement(
+				new ErisDiscordSender(
+					message,
+					this.dispatcher.getChannel,
+					this.dispatcher.getDMChannel,
+					this.dispatcher.deleteMessage
+				),
 				message.id,
 				message.channel.id
 			);
@@ -62,7 +68,8 @@ export default class EmceeListener {
 				new ErisDiscordSender(
 					message,
 					this.dispatcher.getChannel,
-					this.dispatcher.getDMChannel
+					this.dispatcher.getDMChannel,
+					this.dispatcher.deleteMessage
 				),
 				userId
 			);
@@ -84,7 +91,8 @@ export default class EmceeListener {
 				new ErisDiscordSender(
 					message,
 					this.dispatcher.getChannel,
-					this.dispatcher.getDMChannel
+					this.dispatcher.getDMChannel,
+					this.dispatcher.deleteMessage
 				),
 				userId
 			);

@@ -49,7 +49,7 @@ export default abstract class Controller {
 		await Promise.all(channels.map(channelId => discord.sendChannelMessage(channelId, message)));
 	}
 
-	protected async removeAnnouncement(discord: DiscordWrapper, channelId: string, messageId: string): Promise<void> {
+	async removeAnnouncement(discord: DiscordSender, channelId: string, messageId: string): Promise<void> {
 		if (await removeRegisterMessage(channelId, messageId)) {
 			await discord.deleteChannelMessage(channelId, messageId);
 			logger.verbose(`Registration message ${messageId} in ${channelId} deleted.`);
