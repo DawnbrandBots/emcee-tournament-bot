@@ -584,9 +584,12 @@ async function sendTournamentRegistration(
 	if (!(channel instanceof TextChannel)) {
 		throw new AssertTextChannelError(channelId);
 	}
-	const msg = await channel.createMessage(`<@${userId}> has signed up for ${name} with the following deck.`);
 	const user = bot.users.get(userId);
-	await deck.sendProfile(channel, user ? `${user.username}#${user.discriminator}ydk` : userId);
+	const usernameString = user ? `${user.username}#${user.discriminator}` : userId;
+	const msg = await channel.createMessage(
+		`<@${userId}> (${usernameString}) has signed up for ${name} with the following deck.`
+	);
+	await deck.sendProfile(channel, `${usernameString}.ydk`);
 	return msg.id;
 }
 
