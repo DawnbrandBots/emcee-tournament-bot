@@ -210,7 +210,7 @@ export class Deck {
 
 		const archetypes = [];
 		for (const set in archetypeCounts) {
-			if (archetypeCounts[set] > 9) {
+			if (archetypeCounts[set] > 4) {
 				archetypes.push(set);
 			}
 		}

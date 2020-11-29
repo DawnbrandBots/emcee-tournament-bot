@@ -94,6 +94,7 @@ export async function getDeckBreakdown(msg: Message, args: string[]): Promise<vo
 	const [id] = args;
 	const [, doc] = await getTournamentInterface(id, msg.author.id);
 	const counts: { [theme: string]: number } = {};
+	const reviews: string[] = [];
 	for (const player of doc.confirmedParticipants) {
 		const main = Uint32Array.from(player.deck.main);
 		const extra = Uint32Array.from(player.deck.extra);
@@ -104,7 +105,13 @@ export async function getDeckBreakdown(msg: Message, args: string[]): Promise<vo
 			side
 		});
 		const profile = await deck.getProfile();
-		const deckTheme = profile.archetypes.length > 0 ? profile.archetypes.join() : "Manual Review";
+		let deckTheme: string;
+		if (profile.archetypes.length > 0) {
+			deckTheme = profile.archetypes.join();
+		} else {
+			deckTheme = "Manual Review";
+			reviews.push(player.discord);
+		}
 		if (deckTheme in counts) {
 			counts[deckTheme]++;
 		} else {
@@ -115,6 +122,7 @@ export async function getDeckBreakdown(msg: Message, args: string[]): Promise<vo
 		.map(k => `${k}: ${counts[k]}`)
 		.join("\n");
 	await msg.channel.createMessage(`\`\`\`\n${out}\`\`\``);
+	await msg.channel.createMessage(`Users with decks needing manual review: ${reviews.join(", ")}`);
 }
 
 export async function sync(msg: Message, args: string[]): Promise<void> {
