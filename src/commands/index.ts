@@ -7,7 +7,8 @@ import {
 	listPlayers,
 	getPlayerDeck,
 	dropPlayer,
-	sync
+	sync,
+	getDeckBreakdown
 } from "./tournament";
 import { addChannel, removeChannel } from "./channels";
 import { open, start, cancelTournament, help } from "./basic";
@@ -36,7 +37,8 @@ const commands: { [command: string]: (msg: Message, args: string[]) => Promise<v
 	deck: getPlayerDeck,
 	drop: dropPlayer,
 	sync: sync,
-	help: help
+	help: help,
+	pie: getDeckBreakdown
 };
 
 export async function parseCommand(msg: Message): Promise<void> {

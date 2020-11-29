@@ -7,6 +7,7 @@ import { DiscordDeck } from "../discordDeck";
 import { bot } from "../bot";
 import { UserError } from "../errors";
 import { validateTORole } from ".";
+import { Deck } from "../deck";
 
 export async function createTournament(msg: Message, args: string[]): Promise<void> {
 	await validateTORole(msg);
@@ -87,6 +88,33 @@ export async function dropPlayer(msg: Message, args: string[]): Promise<void> {
 	if (result) {
 		await msg.channel.createMessage(`<@${discord}> successfully dropped from tournament ${id}.`);
 	}
+}
+
+export async function getDeckBreakdown(msg: Message, args: string[]): Promise<void> {
+	const [id] = args;
+	const [, doc] = await getTournamentInterface(id, msg.author.id);
+	const counts: { [theme: string]: number } = {};
+	for (const player of doc.confirmedParticipants) {
+		const main = Uint32Array.from(player.deck.main);
+		const extra = Uint32Array.from(player.deck.extra);
+		const side = Uint32Array.from(player.deck.side);
+		const deck = Deck.constructFromRecord({
+			main,
+			extra,
+			side
+		});
+		const profile = await deck.getProfile();
+		const deckTheme = profile.archetypes.length > 0 ? profile.archetypes.join() : "Manual Review";
+		if (deckTheme in counts) {
+			counts[deckTheme]++;
+		} else {
+			counts[deckTheme] = 1;
+		}
+	}
+	const out = Object.keys(counts)
+		.map(k => `${k}: ${counts[k]}`)
+		.join("\n");
+	await msg.channel.createMessage(`\`\`\`\n${out}\`\`\``);
 }
 
 export async function sync(msg: Message, args: string[]): Promise<void> {

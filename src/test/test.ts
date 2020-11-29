@@ -116,7 +116,7 @@ describe("Deck", function () {
 			"ydke://nzsnBKnyswWEuDgASCmYA0gpmANIKZgDLxkiBS8ZIgUvGSIFryPeAK8j3gCvI94AakgeAGpIHgBqSB4AakgeAB43ggEeN4IBHjeCAVl7YwRZe2MEuhxqBLocagS/idcCv4nXAr+J1wIiSJkAIkiZACJImQC2z/EEts/xBLbP8QRkmkAB+wR4AvsEeAL7BHgCnzsnBJ87JwSp8rMF!Xch8BMLDNgEuTncCLk53AhawzAWmzbsANskIAzbJCAP1PKkFa9TMBGvUzAR6cc4AwRpyBM3gIQCNJ5gD!!";
 		const deck = Deck.constructFromUrl(altUrl);
 		const profile = await deck.getProfile();
-		expect(profile.archetypes).to.deep.equal(["Dragma"]);
+		expect(profile.archetypes).to.deep.equal(["Dogmatika"]);
 	});
 	it("#validate (passing)", async function () {
 		const deck = Deck.constructFromUrl(url);
