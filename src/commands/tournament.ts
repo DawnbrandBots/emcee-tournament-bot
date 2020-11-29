@@ -122,7 +122,17 @@ export async function getDeckBreakdown(msg: Message, args: string[]): Promise<vo
 		.map(k => `${k}: ${counts[k]}`)
 		.join("\n");
 	await msg.channel.createMessage(`\`\`\`\n${out}\`\`\``);
-	await msg.channel.createMessage(`Users with decks needing manual review: ${reviews.join(", ")}`);
+	await msg.channel.createMessage(
+		`Users with decks needing manual review: ${reviews
+			.map(d => {
+				const user = bot.users.get(d);
+				if (!user) {
+					return d;
+				}
+				return `${user.username}#${user.discriminator}`;
+			})
+			.join(", ")}`
+	);
 }
 
 export async function sync(msg: Message, args: string[]): Promise<void> {
