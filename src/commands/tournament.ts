@@ -121,7 +121,7 @@ export async function getDeckBreakdown(msg: Message, args: string[]): Promise<vo
 	const out = Object.keys(counts)
 		.map(k => `${k}: ${counts[k]}`)
 		.join("\n");
-	await msg.channel.createMessage(`\`\`\`\n${out}\`\`\``);
+	const breakdown = Buffer.from(out, "utf-8");
 	await msg.channel.createMessage(
 		`Users with decks needing manual review: ${reviews
 			.map(d => {
@@ -131,7 +131,11 @@ export async function getDeckBreakdown(msg: Message, args: string[]): Promise<vo
 				}
 				return `${user.username}#${user.discriminator}`;
 			})
-			.join(", ")}`
+			.join(", ")}`,
+		{
+			file: breakdown,
+			name: "breakdown.txt"
+		}
 	);
 }
 
