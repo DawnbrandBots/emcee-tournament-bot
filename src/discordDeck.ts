@@ -93,39 +93,37 @@ export function prettyPrint(deck: Deck, filename: string): [DiscordMessageOut, D
 	}
 	sideHeader += `${sideHeaderParts.join(", ")})`;
 
-	const out: DiscordMessageOut = {
-		embed: { title, fields: [] }
-	};
-	if (out.embed && out.embed.fields) {
-		if (deck.mainSize > 0) {
-			const mainOuts = splitText(deck.mainText, 1024);
-			for (let i = 0; i < mainOuts.length; i++) {
-				out.embed.fields.push({ name: mainHeader + (i > 0 ? " (Continued)" : ""), value: mainOuts[i] });
-			}
-		}
-		if (deck.extraSize > 0) {
-			const extraOuts = splitText(deck.extraText, 1024);
-			for (let i = 0; i < extraOuts.length; i++) {
-				out.embed.fields.push({ name: extraHeader + (i > 0 ? " (Continued)" : ""), value: extraOuts[i] });
-			}
-		}
-		if (deck.sideSize > 0) {
-			const sideOuts = splitText(deck.sideText, 1024);
-			for (let i = 0; i < sideOuts.length; i++) {
-				out.embed.fields.push({ name: sideHeader + (i > 0 ? " (Continued)" : ""), value: sideOuts[i] });
-			}
-		}
-		if (deck.themes.length > 0) {
-			out.embed.fields.push({ name: "Archetypes", value: deck.themes.join(",") });
-		}
-		out.embed.fields.push({ name: "YDKE URL", value: deck.url });
-		if (deck.validationErrors.length > 0) {
-			out.embed.fields.push({ name: "Deck is illegal!", value: deck.validationErrors.join("\n") });
+	const embed: DiscordMessageOut = { title, fields: [] };
+
+	if (deck.mainSize > 0) {
+		const mainOuts = splitText(deck.mainText, 1024);
+		for (let i = 0; i < mainOuts.length; i++) {
+			embed.fields.push({ name: mainHeader + (i > 0 ? " (Continued)" : ""), value: mainOuts[i] });
 		}
 	}
+	if (deck.extraSize > 0) {
+		const extraOuts = splitText(deck.extraText, 1024);
+		for (let i = 0; i < extraOuts.length; i++) {
+			embed.fields.push({ name: extraHeader + (i > 0 ? " (Continued)" : ""), value: extraOuts[i] });
+		}
+	}
+	if (deck.sideSize > 0) {
+		const sideOuts = splitText(deck.sideText, 1024);
+		for (let i = 0; i < sideOuts.length; i++) {
+			embed.fields.push({ name: sideHeader + (i > 0 ? " (Continued)" : ""), value: sideOuts[i] });
+		}
+	}
+	if (deck.themes.length > 0) {
+		embed.fields.push({ name: "Archetypes", value: deck.themes.join(",") });
+	}
+	embed.fields.push({ name: "YDKE URL", value: deck.url });
+	if (deck.validationErrors.length > 0) {
+		embed.fields.push({ name: "Deck is illegal!", value: deck.validationErrors.join("\n") });
+	}
+
 	const file: DiscordAttachmentOut = {
 		contents: deck.ydk,
 		filename: filename
 	};
-	return [out, file];
+	return [embed, file];
 }

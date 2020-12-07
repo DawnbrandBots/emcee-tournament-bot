@@ -22,6 +22,14 @@ export class UnauthorisedHostError extends UserError {
 	}
 }
 
+export class UnauthorisedTOError extends UserError {
+	to: string;
+	constructor(to: string) {
+		super(`User ${to} not authorised to create tournaments in this server.`);
+		this.to = to;
+	}
+}
+
 export class DeckNotFoundError extends UserError {
 	message = "Must provide either attached `.ydk` file or valid `ydke://` URL!";
 }
