@@ -1,4 +1,4 @@
-import { expect } from "chai";
+/*import { expect } from "chai";
 import { describe } from "mocha";
 import { Deck, DeckProfile } from "../deck";
 import { TypedDeck } from "ydke";
@@ -147,4 +147,4 @@ describe("DiscordDeck", function () {
 		const deck = DiscordDeck.constructFromUrl(url);
 		expect(deck.sendProfile).to.be.instanceOf(Function);
 	});
-});
+});*/

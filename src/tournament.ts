@@ -28,7 +28,6 @@ import {
 } from "./actions";
 import { bot } from "./bot";
 import { TournamentModel, TournamentDoc } from "./models";
-import { DiscordDeck } from "./discordDeck";
 import { defaultHosts, defaultPublicChannels, defaultPrivateChannels } from "./config/config.json";
 import {
 	UnauthorisedHostError,
@@ -38,6 +37,8 @@ import {
 	MiscInternalError
 } from "./errors";
 import logger from "./logger";
+import { Deck } from "ydeck";
+import { prettyPrint } from "./discordDeck";
 
 const CHECK_EMOJI = "✅";
 
@@ -577,7 +578,7 @@ async function grantTournamentRole(channelId: string, user: string, tournamentId
 async function sendTournamentRegistration(
 	channelId: string,
 	userId: string,
-	deck: DiscordDeck,
+	deck: Deck,
 	name: string
 ): Promise<string> {
 	const channel = bot.getChannel(channelId);
@@ -586,7 +587,8 @@ async function sendTournamentRegistration(
 	}
 	const msg = await channel.createMessage(`<@${userId}> has signed up for ${name} with the following deck.`);
 	const user = bot.users.get(userId);
-	await deck.sendProfile(channel, user ? `${user.username}#${user.discriminator}ydk` : userId);
+	const [embed, file] = prettyPrint(deck, `${user ? `${user.username}#${user.discriminator}` : userId}.ydk`);
+	await channel.createMessage(embed, file);
 	return msg.id;
 }
 
