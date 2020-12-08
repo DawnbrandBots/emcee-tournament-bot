@@ -10,6 +10,7 @@ export interface DiscordMessageIn {
 	id: string;
 	content: string;
 	attachments: DiscordAttachmentIn[];
+	author: string;
 	reply: (msg: DiscordMessageOut) => Promise<void>;
 }
 

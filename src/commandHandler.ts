@@ -1,5 +1,6 @@
 import { discord } from "./discordEris";
 import { DiscordMessageIn } from "./discordGeneric";
+import { authenticateHost, createTournament, updateTournament } from "./tournamentManager";
 
 async function commandCreateTournament(msg: DiscordMessageIn, args: string[]): Promise<void> {
 	await discord.authenticateTO(msg);
@@ -11,3 +12,14 @@ async function commandCreateTournament(msg: DiscordMessageIn, args: string[]): P
 }
 
 discord.registerCommand("create", commandCreateTournament);
+
+async function commandUpdateTournament(msg: DiscordMessageIn, args: string[]): Promise<void> {
+	const [id, name, desc] = args;
+	await authenticateHost(id, msg.author);
+	await updateTournament(id, name, desc);
+	await msg.reply(`{
+		Tournament \`${id}\` updated! It now has the name ${name} and the given description.
+	}`);
+}
+
+discord.registerCommand("update", commandUpdateTournament);
