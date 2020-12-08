@@ -89,4 +89,8 @@ export class DiscordInterface {
 	public mentionChannel(channelId: string): string {
 		return `<#${channelId}>`;
 	}
+
+	public async sendMessage(msg: DiscordMessageOut, channel: string): Promise<void> {
+		await this.api.sendMessage(msg, channel);
+	}
 }

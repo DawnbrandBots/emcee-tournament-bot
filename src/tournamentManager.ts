@@ -16,3 +16,11 @@ export async function addAnnouncementChannel(
 ): Promise<void> {
 	throw new Error("Not implemented!");
 }
+
+export async function removeAnnouncementChannel(
+	tournamentId: string,
+	channel: string,
+	type: "public" | "private"
+): Promise<void> {
+	throw new Error("Not implemented!");
+}
