@@ -1,6 +1,12 @@
-import { data } from "./data";
-import { Card as DataCard } from "ygopro-data";
+import { YgoData, Card as DataCard } from "ygopro-data";
+import cardOpts from "./config/cardOpts.json";
+import dataOpts from "./config/dataOpts.json";
+import transOpts from "./config/transOpts.json";
+import { octokitToken } from "./config/env";
+
 import { Deck, Card, CardArray } from "ydeck";
+
+const data = new YgoData(cardOpts, transOpts, dataOpts, "./dbs", octokitToken);
 
 let cardArray: CardArray | undefined;
 
