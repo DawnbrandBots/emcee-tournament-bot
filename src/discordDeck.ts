@@ -61,8 +61,7 @@ function parseDeckError(err: DeckError): string {
 		}, is ${err.actual}!`;
 	}
 	// else type is limit
-	// TODO: Find async way to get name here. Expose it in YDeck?
-	return `Too many copies of card ${err.target}! Should be at most ${err.max}, is ${err.actual}!`;
+	return `Too many copies of card ${err.name} (${err.target})! Should be at most ${err.max}, is ${err.actual}!`;
 }
 
 export function prettyPrint(deck: Deck, filename: string): [DiscordMessageOut, DiscordAttachmentOut] {
