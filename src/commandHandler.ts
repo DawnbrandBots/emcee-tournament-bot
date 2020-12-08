@@ -1,3 +1,4 @@
+import { removeAnnouncementChannel } from "./actions";
 import { discord } from "./discordEris";
 import { DiscordMessageIn } from "./discordGeneric";
 import { addAnnouncementChannel, authenticateHost, createTournament, updateTournament } from "./tournamentManager";
@@ -36,7 +37,28 @@ async function commandAddChannel(msg: DiscordMessageIn, args: string[]): Promise
 		channel = msg.channel;
 	}
 	await addAnnouncementChannel(id, channel, type as "public" | "private");
-	await msg.reply(`${discord.mentionChannel(channel)} added as a ${type} announcement channel!`);
+	await discord.sendMessage(`This channel added as a ${type} announcement channel for Tournament ${id}!`, channel);
+	await msg.reply(`${discord.mentionChannel(channel)} added as a ${type} announcement channel for Tournament ${id}!`);
 }
 
 discord.registerCommand("addchannel", commandAddChannel);
+
+async function commandRemoveChannel(msg: DiscordMessageIn, args: string[]): Promise<void> {
+	const id = args[0];
+	let [, type, channel] = args;
+	await authenticateHost(id, msg.author);
+	if (!(type === "private")) {
+		type = "public";
+	}
+	// TODO: Parse actual channel mention. Just sketching out the structure for now.
+	if (!channel) {
+		channel = msg.channel;
+	}
+	await removeAnnouncementChannel(id, channel, type as "public" | "private");
+	await discord.sendMessage(`This channel removed as a ${type} announcement channel for Tournament ${id}!`, channel);
+	await msg.reply(
+		`${discord.mentionChannel(channel)} removed as a ${type} announcement channel for Tournament ${id}!`
+	);
+}
+
+discord.registerCommand("addchannel", commandRemoveChannel);
