@@ -3,6 +3,7 @@ import fetch from "node-fetch";
 import { DeckNotFoundError } from "./errors";
 import { DiscordAttachmentOut, DiscordMessageIn, DiscordMessageOut } from "./discordGeneric";
 import { Deck, UrlConstructionError } from "ydeck";
+import { DeckError } from "ydeck/dist/validation";
 
 async function extractYdk(msg: DiscordMessageIn): Promise<string> {
 	const attach = msg.attachments[0];
@@ -47,6 +48,21 @@ function splitText(outString: string, cap = 2000): string[] {
 	}
 	outStrings.push(outString);
 	return outStrings;
+}
+
+function capFirst(str: string): string {
+	return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+function parseDeckError(err: DeckError): string {
+	if (err.type === "size") {
+		return `${capFirst(err.target)} too ${err.min ? "small" : "large"}! Should be at ${
+			err.min ? `least ${err.min}` : `most ${err.max}`
+		}, is ${err.actual}!`;
+	}
+	// else type is limit
+	// TODO: Find async way to get name here. Expose it in YDeck?
+	return `Too many copies of card ${err.target}! Should be at most ${err.max}, is ${err.actual}!`;
 }
 
 export function prettyPrint(deck: Deck, filename: string): [DiscordMessageOut, DiscordAttachmentOut] {
@@ -118,7 +134,7 @@ export function prettyPrint(deck: Deck, filename: string): [DiscordMessageOut, D
 	}
 	embed.fields.push({ name: "YDKE URL", value: deck.url });
 	if (deck.validationErrors.length > 0) {
-		embed.fields.push({ name: "Deck is illegal!", value: deck.validationErrors.join("\n") });
+		embed.fields.push({ name: "Deck is illegal!", value: deck.validationErrors.map(parseDeckError).join("\n") });
 	}
 
 	const file: DiscordAttachmentOut = {
