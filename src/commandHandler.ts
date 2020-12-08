@@ -1,7 +1,14 @@
 import { removeAnnouncementChannel } from "./actions";
 import { discord } from "./discordEris";
 import { DiscordMessageIn } from "./discordGeneric";
-import { addAnnouncementChannel, authenticateHost, createTournament, updateTournament } from "./tournamentManager";
+import {
+	addAnnouncementChannel,
+	addHost,
+	authenticateHost,
+	createTournament,
+	removeHost,
+	updateTournament
+} from "./tournamentManager";
 
 async function commandCreateTournament(msg: DiscordMessageIn, args: string[]): Promise<void> {
 	await discord.authenticateTO(msg);
@@ -62,3 +69,23 @@ async function commandRemoveChannel(msg: DiscordMessageIn, args: string[]): Prom
 }
 
 discord.registerCommand("addchannel", commandRemoveChannel);
+
+async function commandAddHost(msg: DiscordMessageIn, args: string[]): Promise<void> {
+	const [id] = args;
+	await authenticateHost(id, msg.author);
+	const newHost = discord.getMentionedUser(msg);
+	await addHost(id, newHost);
+	await msg.reply(`${discord.mentionUser(newHost)} added as a host for Tournament ${id}!`);
+}
+
+discord.registerCommand("addhost", commandAddHost);
+
+async function commandRemoveHost(msg: DiscordMessageIn, args: string[]): Promise<void> {
+	const [id] = args;
+	await authenticateHost(id, msg.author);
+	const newHost = discord.getMentionedUser(msg);
+	await removeHost(id, newHost);
+	await msg.reply(`${discord.mentionUser(newHost)} removed as a host for Tournament ${id}!`);
+}
+
+discord.registerCommand("removehost", commandRemoveHost);

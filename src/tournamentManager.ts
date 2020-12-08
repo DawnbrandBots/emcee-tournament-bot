@@ -24,3 +24,11 @@ export async function removeAnnouncementChannel(
 ): Promise<void> {
 	throw new Error("Not implemented!");
 }
+
+export async function addHost(tournamentId: string, newHost: string): Promise<void> {
+	throw new Error("Not implemented!");
+}
+
+export async function removeHost(tournamentId: string, newHost: string): Promise<void> {
+	throw new Error("Not implemented!");
+}

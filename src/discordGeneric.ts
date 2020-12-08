@@ -40,6 +40,7 @@ export interface DiscordWrapper {
 	onMessage: (handler: DiscordMessageHandler) => void;
 	sendMessage(msg: DiscordMessageOut, channel: string): Promise<void>;
 	authenticateTO(msg: DiscordMessageIn): Promise<void>;
+	getMentionedUser(msg: DiscordMessageIn): string;
 }
 
 export class DiscordInterface {
@@ -90,7 +91,15 @@ export class DiscordInterface {
 		return `<#${channelId}>`;
 	}
 
+	public mentionUser(userId: string): string {
+		return `<@${userId}>`;
+	}
+
 	public async sendMessage(msg: DiscordMessageOut, channel: string): Promise<void> {
 		await this.api.sendMessage(msg, channel);
+	}
+
+	public getMentionedUser(msg: DiscordMessageIn): string {
+		return this.api.getMentionedUser(msg);
 	}
 }

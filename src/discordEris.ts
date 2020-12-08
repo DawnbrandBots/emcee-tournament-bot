@@ -89,11 +89,11 @@ export class DiscordWrapperEris implements DiscordWrapper {
 		return newRole.id;
 	}
 
-	onMessage(handler: DiscordMessageHandler): void {
+	public onMessage(handler: DiscordMessageHandler): void {
 		this.messageHandlers.push(handler);
 	}
 
-	async authenticateTO(m: DiscordMessageIn): Promise<void> {
+	public async authenticateTO(m: DiscordMessageIn): Promise<void> {
 		const msg = this.wrappedMessages[m.id];
 		if (!(msg.channel instanceof GuildChannel)) {
 			throw new UnauthorisedTOError(msg.author.id);
@@ -107,6 +107,11 @@ export class DiscordWrapperEris implements DiscordWrapper {
 		if (!member.roles.includes(role)) {
 			throw new UnauthorisedTOError(msg.author.id);
 		}
+	}
+
+	public getMentionedUser(m: DiscordMessageIn): string {
+		const msg = this.wrappedMessages[m.id];
+		return msg.mentions[0].id;
 	}
 }
 
