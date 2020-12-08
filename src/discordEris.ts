@@ -8,7 +8,7 @@ import {
 	DiscordMessageOut,
 	DiscordWrapper
 } from "./discordGeneric";
-import { MiscInternalError, UnauthorisedTOError } from "./errors";
+import { UnauthorisedTOError } from "./errors";
 import logger from "./logger";
 
 const toRoles: { [guild: string]: string } = {};
@@ -40,6 +40,8 @@ export class DiscordWrapperEris implements DiscordWrapper {
 			id: msg.id,
 			attachments: msg.attachments,
 			content: msg.content,
+			author: msg.author.id,
+			channel: msg.channel.id,
 			reply: async (out: DiscordMessageOut): Promise<void> => {
 				await msg.channel.createMessage(this.unwrapMessageOut(out));
 			}

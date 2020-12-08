@@ -1,6 +1,6 @@
 import { discord } from "./discordEris";
 import { DiscordMessageIn } from "./discordGeneric";
-import { authenticateHost, createTournament, updateTournament } from "./tournamentManager";
+import { addAnnouncementChannel, authenticateHost, createTournament, updateTournament } from "./tournamentManager";
 
 async function commandCreateTournament(msg: DiscordMessageIn, args: string[]): Promise<void> {
 	await discord.authenticateTO(msg);
@@ -23,3 +23,20 @@ async function commandUpdateTournament(msg: DiscordMessageIn, args: string[]): P
 }
 
 discord.registerCommand("update", commandUpdateTournament);
+
+async function commandAddChannel(msg: DiscordMessageIn, args: string[]): Promise<void> {
+	const id = args[0];
+	let [, type, channel] = args;
+	await authenticateHost(id, msg.author);
+	if (!(type === "private")) {
+		type = "public";
+	}
+	// TODO: Parse actual channel mention. Just sketching out the structure for now.
+	if (!channel) {
+		channel = msg.channel;
+	}
+	await addAnnouncementChannel(id, channel, type as "public" | "private");
+	await msg.reply(`${discord.mentionChannel(channel)} added as a ${type} announcement channel!`);
+}
+
+discord.registerCommand("addchannel", commandAddChannel);
