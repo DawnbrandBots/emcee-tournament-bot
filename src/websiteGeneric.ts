@@ -1,5 +1,3 @@
-import { stringify } from "querystring";
-
 export interface WebsiteWrapper {
 	createTournament(name: string, desc: string): WebsiteTournament;
 }
