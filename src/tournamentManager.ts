@@ -6,6 +6,13 @@ export async function authenticateHost(tournamentId: string, hostId: string): Pr
 export async function createTournament(name: string, desc: string): Promise<[string, string]> {
 	throw new Error("Not implemented!");
 }
-export async function updateTournament(id: string, name: string, desc: string): Promise<void> {
+export async function updateTournament(tournamentId: string, name: string, desc: string): Promise<void> {
+	throw new Error("Not implemented!");
+}
+export async function addAnnouncementChannel(
+	tournamentId: string,
+	channel: string,
+	type: "public" | "private"
+): Promise<void> {
 	throw new Error("Not implemented!");
 }

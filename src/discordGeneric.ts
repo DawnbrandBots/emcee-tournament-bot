@@ -11,6 +11,7 @@ export interface DiscordMessageIn {
 	content: string;
 	attachments: DiscordAttachmentIn[];
 	author: string;
+	channel: string;
 	reply: (msg: DiscordMessageOut) => Promise<void>;
 }
 
@@ -83,5 +84,9 @@ export class DiscordInterface {
 
 	public async authenticateTO(msg: DiscordMessageIn): Promise<void> {
 		return await this.api.authenticateTO(msg);
+	}
+
+	public mentionChannel(channelId: string): string {
+		return `<#${channelId}>`;
 	}
 }
