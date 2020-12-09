@@ -13,6 +13,27 @@ import logger from "./logger";
 
 const toRoles: { [guild: string]: string } = {};
 
+// from commands/channels.ts. should be used somewhere but unsure immediately how to adapt
+/*
+function getChannel(msg: Message, mention?: string): TextChannel {
+	if (mention) {
+		const channelRegex = /<#(\d+?)>/g;
+		const channelMatch = channelRegex.exec(mention);
+		if (channelMatch !== null) {
+			const channelCandidate = bot.getChannel(channelMatch[1]);
+			if (channelCandidate && channelCandidate instanceof TextChannel) {
+				return channelCandidate;
+			}
+		}
+	}
+
+	if (!(msg.channel instanceof TextChannel)) {
+		throw new AssertTextChannelError(msg.channel.id);
+	}
+	return msg.channel;
+}
+*/
+
 export class DiscordWrapperEris implements DiscordWrapper {
 	private messageHandlers: DiscordMessageHandler[];
 	private wrappedMessages: { [id: string]: Message };
