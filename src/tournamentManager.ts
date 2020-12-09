@@ -12,7 +12,9 @@ export async function authenticatePlayer(tournamentId: string, playerId: string)
 }
 
 export async function listTournaments(): Promise<string> {
-	throw new Error("Not yet implemented!");
+	const list = await dummyDb.listTournaments();
+	const text = list.map(t => `${t.name}\t${t.players.length} players`);
+	return text.join("\n");
 }
 
 export async function createTournament(name: string, desc: string): Promise<[string, string]> {

@@ -32,7 +32,7 @@ discord.onPing(commandHelp);
 async function commandListTournaments(msg: DiscordMessageIn): Promise<void> {
 	await discord.authenticateTO(msg);
 	const list = await listTournaments();
-	await msg.reply(list);
+	await msg.reply(`\`\`\`\n${list}\`\`\``);
 }
 
 discord.registerCommand("list", commandListTournaments);
