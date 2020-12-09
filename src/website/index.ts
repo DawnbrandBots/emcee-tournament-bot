@@ -1,6 +1,7 @@
 export interface WebsiteWrapper {
 	createTournament(name: string, desc: string): Promise<WebsiteTournament>;
 	updateTournament(tournamentId: string, name: string, desc: string): Promise<void>;
+	getTournament(tournamentId: string): Promise<WebsiteTournament>;
 }
 
 // interface structure WIP as fleshed out command-by-command
@@ -9,6 +10,7 @@ export interface WebsiteTournament {
 	name: string;
 	desc: string;
 	url: string;
+	players: number[];
 }
 
 export class WebsiteInterface {
@@ -23,5 +25,9 @@ export class WebsiteInterface {
 
 	public async updateTournament(tournamentId: string, name: string, desc: string): Promise<void> {
 		return await this.api.updateTournament(tournamentId, name, desc);
+	}
+
+	public async getTournament(tournamentId: string): Promise<WebsiteTournament> {
+		return await this.api.getTournament(tournamentId);
 	}
 }

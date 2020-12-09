@@ -1,4 +1,4 @@
-import { DatabaseInterface, DatabaseTournament, DatabaseWrapper, DatabasePlayer } from ".";
+import { DatabaseInterface, DatabaseTournament, DatabaseWrapper, DatabasePlayer, SynchroniseTournament } from ".";
 import { TournamentModel, TournamentDoc } from "./models";
 import { TournamentNotFoundError, UserError } from "../errors";
 
@@ -9,13 +9,6 @@ interface MongoPlayer {
 	challongeId: number;
 	discord: string;
 	deck?: string; // ydke url
-}
-
-export interface SyncDoc {
-	confirmedParticipants: number[];
-	name: string;
-	description: string;
-	totalRounds: number;
 }
 
 class DatabaseWrapperMongoose implements DatabaseWrapper {
@@ -330,10 +323,10 @@ class DatabaseWrapperMongoose implements DatabaseWrapper {
 	}
 
 	// Update information to reflect the state in the challonge API
-	public async synchronise(challongeId: TournamentID, newDoc: SyncDoc): Promise<void> {
+	public async synchronise(challongeId: TournamentID, newDoc: SynchroniseTournament): Promise<void> {
 		const tournament = await this.findTournament(challongeId);
 		// insert new players
-		for (const newPlayer of newDoc.confirmedParticipants) {
+		for (const newPlayer of newDoc.players) {
 			const player = tournament.confirmedParticipants.find(p => p.challongeId === newPlayer);
 			// if a player already exist, challonge doesn't have any info that should have changed
 			if (!player) {
@@ -345,7 +338,6 @@ class DatabaseWrapperMongoose implements DatabaseWrapper {
 		}
 		tournament.name = newDoc.name;
 		tournament.description = newDoc.description;
-		tournament.totalRounds = newDoc.totalRounds;
 		await tournament.save();
 	}
 }

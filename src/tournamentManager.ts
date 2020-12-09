@@ -101,7 +101,12 @@ export class TournamentManager {
 	}
 
 	public async syncTournament(tournamentId: string): Promise<void> {
-		throw new Error("Not implemented!");
+		const tournamentData = await this.website.getTournament(tournamentId);
+		await this.database.synchronise(tournamentId, {
+			name: tournamentData.name,
+			description: tournamentData.desc,
+			players: tournamentData.players
+		});
 	}
 }
 

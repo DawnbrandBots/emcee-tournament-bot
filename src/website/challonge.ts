@@ -216,7 +216,8 @@ class WebsiteWrapperChallonge implements WebsiteWrapper {
 			id: tournament.id.toString(),
 			name: tournament.name,
 			desc: tournament.description,
-			url: tournament.url
+			url: tournament.url,
+			players: tournament.participants ? tournament.participants.map(p => p.participant.id) : []
 		};
 	}
 
@@ -247,7 +248,7 @@ class WebsiteWrapperChallonge implements WebsiteWrapper {
 		await this.validateResponse(response);
 	}
 
-	public async showTournament(
+	private async showTournament(
 		tournament: string,
 		includeParticipants = false,
 		includeMatches = false
@@ -258,6 +259,10 @@ class WebsiteWrapperChallonge implements WebsiteWrapper {
 			)}&include_matches=${Number(includeMatches)}`
 		);
 		return (await this.validateResponse(response)) as ChallongeTournament;
+	}
+
+	public async getTournament(tournamentId: string): Promise<WebsiteTournament> {
+		return this.wrapTournament(await this.showTournament(tournamentId, true, true));
 	}
 
 	private async startTournament(tournament: string, settings: StartTournamentSettings): Promise<void> {
