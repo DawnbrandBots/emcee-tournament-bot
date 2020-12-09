@@ -1,6 +1,6 @@
 import { DatabaseInterface, DatabaseTournament, DatabaseWrapper, DatabasePlayer } from ".";
 import { TournamentModel, TournamentDoc } from "./models";
-import { TournamentNotFoundError, UnauthorisedHostError } from "../errors";
+import { TournamentNotFoundError } from "../errors";
 
 type DiscordID = string;
 type TournamentID = string; // from Challonge
@@ -86,22 +86,12 @@ class DatabaseWrapperMongoose implements DatabaseWrapper {
 		return tournament;
 	}
 
-	// Internal helper
-	private async getAuthorizedTournament(challongeId: TournamentID, host: DiscordID): Promise<TournamentDoc> {
-		const tournament = await this.findTournament(challongeId);
-		if (!tournament.hosts.includes(host)) {
-			throw new UnauthorisedHostError(host, challongeId);
-		}
-		return tournament;
-	}
-
 	public async addAnnouncementChannel(
 		channel: DiscordID,
 		challongeId: TournamentID,
-		host: DiscordID,
 		kind: "public" | "private" = "public"
 	): Promise<void> {
-		const tournament = await this.getAuthorizedTournament(challongeId, host);
+		const tournament = await this.findTournament(challongeId);
 		const channels = kind === "public" ? tournament.publicChannels : tournament.privateChannels;
 		channels.push(channel);
 		await tournament.save();
@@ -113,7 +103,7 @@ class DatabaseWrapperMongoose implements DatabaseWrapper {
 		host: DiscordID,
 		kind: "public" | "private" = "public"
 	): Promise<boolean> {
-		const tournament = await this.getAuthorizedTournament(challongeId, host);
+		const tournament = await this.findTournament(challongeId);
 		const channels = kind === "public" ? tournament.publicChannels : tournament.privateChannels;
 		const i = channels.indexOf(channel);
 		if (i < 0) {
@@ -249,7 +239,7 @@ class DatabaseWrapperMongoose implements DatabaseWrapper {
 
 	// Remove all pending participants and start the tournament
 	public async startTournament(challongeId: TournamentID, host: DiscordID, rounds: number): Promise<string[]> {
-		const tournament = await this.getAuthorizedTournament(challongeId, host);
+		const tournament = await this.findTournament(challongeId);
 		const removedIDs = tournament.pendingParticipants.slice(); // clone values
 		tournament.pendingParticipants = [];
 		tournament.status = "in progress";
@@ -260,8 +250,8 @@ class DatabaseWrapperMongoose implements DatabaseWrapper {
 	}
 
 	// Progresses tournament to the next round or returns -1 if it was already the final round
-	public async nextRound(challongeId: TournamentID, host: DiscordID): Promise<number> {
-		const tournament = await this.getAuthorizedTournament(challongeId, host);
+	public async nextRound(challongeId: TournamentID): Promise<number> {
+		const tournament = await this.findTournament(challongeId);
 		if (tournament.status !== "in progress") {
 			throw new Error(`Tournament ${challongeId} is not in progress.`);
 		}
@@ -274,8 +264,8 @@ class DatabaseWrapperMongoose implements DatabaseWrapper {
 	}
 
 	// Sets tournament status to completed
-	public async finishTournament(challongeId: TournamentID, host: DiscordID): Promise<void> {
-		const tournament = await this.getAuthorizedTournament(challongeId, host);
+	public async finishTournament(challongeId: TournamentID): Promise<void> {
+		const tournament = await this.findTournament(challongeId);
 		tournament.status = "complete";
 		await tournament.save();
 	}
