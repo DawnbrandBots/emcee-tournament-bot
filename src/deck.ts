@@ -49,7 +49,12 @@ async function getCardArray(): Promise<CardArray> {
 	return cardArray;
 }
 
+const deckCache: { [url: string]: Deck } = {};
+
 export async function getDeck(url: string, limiter?: string): Promise<Deck> {
-	const array = await getCardArray();
-	return new Deck(url, array, limiter);
+	if (!deckCache[url]) {
+		const array = await getCardArray();
+		deckCache[url] = new Deck(url, array, limiter);
+	}
+	return deckCache[url];
 }
