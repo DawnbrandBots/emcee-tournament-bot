@@ -1,5 +1,6 @@
 export interface WebsiteWrapper {
-	createTournament(name: string, desc: string): WebsiteTournament;
+	createTournament(name: string, desc: string): Promise<WebsiteTournament>;
+	updateTournament(tournamentId: string, name: string, desc: string): Promise<void>;
 }
 
 // interface structure WIP as fleshed out command-by-command
@@ -17,7 +18,11 @@ export class WebsiteInterface {
 	}
 
 	public async createTournament(name: string, desc: string): Promise<WebsiteTournament> {
-		return this.api.createTournament(name, desc);
+		return await this.api.createTournament(name, desc);
+	}
+
+	public async updateTournament(tournamentId: string, name: string, desc: string): Promise<void> {
+		return await this.api.updateTournament(tournamentId, name, desc);
 	}
 }
 
