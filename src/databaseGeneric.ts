@@ -4,6 +4,7 @@ import { WebsiteTournament } from "./websiteGeneric";
 export interface DatabaseWrapper {
 	createTournament(name: string, desc: string): Promise<DatabaseTournament>;
 	getTournament(tournamentId: string): Promise<DatabaseTournament>;
+	getActiveTournaments(): Promise<DatabaseTournament[]>;
 }
 
 interface DatabasePlayer {
@@ -15,8 +16,10 @@ export interface DatabaseTournament {
 	id: string;
 	name: string;
 	description: string;
+	status: "preparation" | "ongoing" | "finished";
+	players: string[]; // list of IDs, for more info use findPlayer();
 	findHost: (id: string) => Promise<boolean>;
-	findPlayer: (id: string) => Promise<?DatabasePlayer>;
+	findPlayer: (id: string) => Promise<DatabasePlayer | undefined>;
 }
 
 export class DatabaseInterface {
@@ -39,6 +42,10 @@ export class DatabaseInterface {
 		if (!player) {
 			throw new UnauthorisedPlayerError(playerId, tournamentId);
 		}
+	}
+
+	public async listTournaments(): Promise<DatabaseTournament[]> {
+		return await this.db.getActiveTournaments();
 	}
 
 	public async createTournament(web: WebsiteTournament): Promise<DatabaseTournament> {
