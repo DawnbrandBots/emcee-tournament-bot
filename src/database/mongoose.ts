@@ -18,7 +18,7 @@ export interface SyncDoc {
 	totalRounds: number;
 }
 
-class MongooseWrapper implements DatabaseWrapper {
+class DatabaseWrapperMongoose implements DatabaseWrapper {
 	private wrapTournament(tournament: TournamentDoc): DatabaseTournament {
 		return {
 			id: tournament.challongeId,
@@ -365,5 +365,5 @@ class MongooseWrapper implements DatabaseWrapper {
 	}
 }
 
-const mongoose = new MongooseWrapper();
+const mongoose = new DatabaseWrapperMongoose();
 export const database = new DatabaseInterface(mongoose);
