@@ -78,6 +78,7 @@ class CommandHandler {
 			channel = msg.channel;
 		}
 		await this.tournamentManager.addAnnouncementChannel(id, channel, type as "public" | "private");
+		this.logger.verbose(`Channel ${channel} added to tournament ${id} with level ${type} by ${msg.author}.`);
 		await this.discord.sendMessage(
 			`This channel added as a ${type} announcement channel for Tournament ${id}!`,
 			channel
@@ -99,6 +100,7 @@ class CommandHandler {
 			channel = msg.channel;
 		}
 		await tournamentManager.removeAnnouncementChannel(id, channel, type as "public" | "private");
+		this.logger.verbose(`Channel ${channel} removed from tournament ${id} with level ${type} by ${msg.author}.`);
 		await this.discord.sendMessage(
 			`This channel removed as a ${type} announcement channel for Tournament ${id}!`,
 			channel
@@ -113,6 +115,7 @@ class CommandHandler {
 		await this.tournamentManager.authenticateHost(id, msg.author);
 		const newHost = this.discord.getMentionedUser(msg);
 		await this.tournamentManager.addHost(id, newHost);
+		this.logger.verbose(`Tournament ${id} added new host ${newHost} by ${msg.author}.`);
 		await msg.reply(`${this.discord.mentionUser(newHost)} added as a host for Tournament ${id}!`);
 	}
 
@@ -121,6 +124,7 @@ class CommandHandler {
 		await this.tournamentManager.authenticateHost(id, msg.author);
 		const newHost = this.discord.getMentionedUser(msg);
 		await this.tournamentManager.removeHost(id, newHost);
+		this.logger.verbose(`Tournament ${id} removed host ${newHost} by ${msg.author}.`);
 		await msg.reply(`${this.discord.mentionUser(newHost)} removed as a host for Tournament ${id}!`);
 	}
 
