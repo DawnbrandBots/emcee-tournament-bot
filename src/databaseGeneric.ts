@@ -1,4 +1,4 @@
-import { UnauthorisedHostError, UnauthorisedPlayerError } from "./errors";
+import { UnauthorisedHostError, UnauthorisedPlayerError, UserError } from "./errors";
 import { WebsiteTournament } from "./websiteGeneric";
 
 export interface DatabaseWrapper {
@@ -16,11 +16,11 @@ export interface DatabaseTournament {
 	id: string;
 	name: string;
 	description: string;
-	status: "preparation" | "ongoing" | "finished";
+	status: "preparing" | "ongoing" | "finished";
 	players: string[]; // list of IDs, for more info use findPlayer();
 	findHost: (id: string) => Promise<boolean>;
 	findPlayer: (id: string) => Promise<DatabasePlayer | undefined>;
-	updateDetails(name: string, desc: string) => Promise<void>;
+	updateDetails: (name: string, desc: string) => Promise<void>;
 }
 
 export class DatabaseInterface {
@@ -55,8 +55,11 @@ export class DatabaseInterface {
 		return await this.db.createTournament(web.name, web.desc);
 	}
 
-	public async updateTournament(tournamentId: string, name: string, desc: string) {
+	public async updateTournament(tournamentId: string, name: string, desc: string): Promise<void> {
 		const tournament = await this.getTournament(tournamentId);
+		if (!(tournament.status === "preparing")) {
+			throw new UserError(`It's too late to update the information for ${tournament.name}.`);
+		}
 		await tournament.updateDetails(name, desc);
 	}
 

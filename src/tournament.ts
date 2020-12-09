@@ -73,16 +73,6 @@ export class Tournament {
 		this.id = id;
 	}
 
-	private async getTournament(): Promise<TournamentDoc> {
-		return await findTournament(this.id);
-	}
-
-	private async verifyHost(host: string): Promise<void> {
-		if (!(await isOrganising(host, this.id))) {
-			throw new UnauthorisedHostError(host, this.id);
-		}
-	}
-
 	public async getRole(channelId: string): Promise<string> {
 		const channel = bot.getChannel(channelId);
 		if (!(channel instanceof GuildChannel)) {
@@ -146,22 +136,6 @@ export class Tournament {
 				isPrivate ? "private" : "public"
 			} by ${host}.`
 		);
-	}
-
-	public async updateTournament(name: string, desc: string, host: string): Promise<[string, string]> {
-		await this.verifyHost(host);
-		const tournament = await this.getTournament();
-		if (!(tournament.status === "preparing")) {
-			throw new UserError(`It's too late to update the information for ${tournament.name}.`);
-		}
-		await challonge.updateTournament(this.id, {
-			name,
-			description: desc
-		});
-		const newName = await setTournamentName(this.id, name);
-		const newDesc = await await setTournamentDescription(this.id, desc);
-		logger.verbose(`Tournament ${this.id} updated with name ${newName} and description ${newDesc} by ${host}.`);
-		return [newName, newDesc];
 	}
 
 	private async openRegistrationInChannel(channelId: string, name: string, desc: string): Promise<string> {
