@@ -3,6 +3,7 @@ import { prettyPrint } from "./discordDeck";
 import { discord } from "./discordEris";
 import { DiscordMessageIn } from "./discordGeneric";
 import { UserError } from "./errors";
+import logger from "./logger";
 import {
 	addAnnouncementChannel,
 	addHost,
@@ -41,6 +42,7 @@ async function commandCreateTournament(msg: DiscordMessageIn, args: string[]): P
 	await discord.authenticateTO(msg);
 	const [name, desc] = args;
 	const [id, url] = await createTournament(name, desc);
+	logger.verbose(`New tournament created ${id} by ${msg.author}.`);
 	await msg.reply(
 		`Tournament ${name} created! You can find it at ${url}. For future commands, refer to this tournament by the id \`${id}\`.`
 	);
@@ -52,6 +54,7 @@ async function commandUpdateTournament(msg: DiscordMessageIn, args: string[]): P
 	const [id, name, desc] = args;
 	await authenticateHost(id, msg.author);
 	await updateTournament(id, name, desc);
+	logger.verbose(`Tournament ${id} updated with name ${name} and description ${desc} by ${msg.author}.`);
 	await msg.reply(`{
 		Tournament \`${id}\` updated! It now has the name ${name} and the given description.
 	}`);
