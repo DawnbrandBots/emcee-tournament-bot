@@ -1,7 +1,7 @@
 import { Logger } from "winston";
 import { prettyPrint } from "./discordDeck";
-import { discord } from "./discordEris";
-import { DiscordInterface, DiscordMessageIn } from "./discordGeneric";
+import { discord } from "./discord/eris";
+import { DiscordInterface, DiscordMessageIn } from "./discord";
 import { UserError } from "./errors";
 import logger from "./logger";
 import { tournamentManager, TournamentManager } from "./tournamentManager";

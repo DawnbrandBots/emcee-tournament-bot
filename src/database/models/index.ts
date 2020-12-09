@@ -1,13 +1,14 @@
 import { connect, connection } from "mongoose";
-import { mongoDbUrl } from "../config/env";
-import logger from "../logger";
+import { mongoDbUrl } from "../../config/env";
+import logger from "../../logger";
 
 connect(mongoDbUrl, {
 	useCreateIndex: true,
 	useNewUrlParser: true,
 	useUnifiedTopology: true,
 	useFindAndModify: false
-}).then(() => logger.info(`Connected to MongoDB at ${process.env.MONGODB_URL}`))
+})
+	.then(() => logger.info(`Connected to MongoDB at ${process.env.MONGODB_URL}`))
 	.catch(logger.error);
 
 process.on("SIGINT", () => {

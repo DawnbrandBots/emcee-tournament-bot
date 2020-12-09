@@ -1,10 +1,10 @@
 import { Deck } from "ydeck";
-import { DatabaseInterface } from "./databaseGeneric";
-import { database } from "./databaseMongoose";
-import { discord } from "./discordEris";
-import { DiscordInterface } from "./discordGeneric";
-import { website } from "./websiteChallonge";
-import { WebsiteInterface } from "./websiteGeneric";
+import { DatabaseInterface } from "./database";
+import { database } from "./database/mongoose";
+import { discord } from "./discord/eris";
+import { DiscordInterface } from "./discord";
+import { website } from "./website/challonge";
+import { WebsiteInterface } from "./website";
 
 export class TournamentManager {
 	private discord: DiscordInterface;
