@@ -56,11 +56,11 @@ export class TournamentManager {
 	}
 
 	public async addHost(tournamentId: string, newHost: string): Promise<void> {
-		throw new Error("Not implemented!");
+		await this.database.addHost(tournamentId, newHost);
 	}
 
 	public async removeHost(tournamentId: string, newHost: string): Promise<void> {
-		throw new Error("Not implemented!");
+		await this.database.removeHost(tournamentId, newHost);
 	}
 
 	public async openTournament(tournamentId: string): Promise<void> {
