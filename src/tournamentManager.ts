@@ -5,6 +5,8 @@ import { discord } from "./discord/eris";
 import { DiscordInterface } from "./discord";
 import { website } from "./website/challonge";
 import { WebsiteInterface } from "./website";
+import { UnauthorisedPlayerError } from "./errors";
+import { getDeck } from "./deck";
 
 export class TournamentManager {
 	private discord: DiscordInterface;
@@ -93,7 +95,12 @@ export class TournamentManager {
 	}
 
 	public async getPlayerDeck(tournamentId: string, playerId: string): Promise<Deck> {
-		throw new Error("Not implemented!");
+		const tourn = await database.getTournament(tournamentId);
+		const player = tourn.findPlayer(playerId);
+		if (!player) {
+			throw new UnauthorisedPlayerError(playerId, tournamentId);
+		}
+		return await getDeck(player.deck);
 	}
 
 	public async dropPlayer(tournamentId: string, playerId: string): Promise<void> {

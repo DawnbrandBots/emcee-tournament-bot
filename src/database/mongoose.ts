@@ -8,7 +8,7 @@ type TournamentID = string; // from Challonge
 interface MongoPlayer {
 	challongeId: number;
 	discord: string;
-	deck?: string; // ydke url
+	deck: string; // ydke url
 }
 
 class DatabaseWrapperMongoose implements DatabaseWrapper {
@@ -30,7 +30,7 @@ class DatabaseWrapperMongoose implements DatabaseWrapper {
 	}
 
 	private wrapPlayer(player: MongoPlayer): DatabasePlayer {
-		return { id: player.discord };
+		return { id: player.discord, deck: player.deck };
 	}
 
 	private findPlayer(tournament: TournamentDoc): (id: string) => DatabasePlayer | undefined {
@@ -303,12 +303,12 @@ class DatabaseWrapperMongoose implements DatabaseWrapper {
 		return old.description;
 	}
 
-	public async getPlayerFromId(challongeId: TournamentID, playerId: number): Promise<MongoPlayer | undefined> {
+	private async getPlayerFromId(challongeId: TournamentID, playerId: number): Promise<MongoPlayer | undefined> {
 		const tournament = await this.findTournament(challongeId);
 		return tournament.confirmedParticipants.find(p => p.challongeId === playerId);
 	}
 
-	public async getPlayerFromDiscord(
+	private async getPlayerFromDiscord(
 		challongeId: TournamentID,
 		discordId: DiscordID
 	): Promise<MongoPlayer | undefined> {
@@ -332,7 +332,8 @@ class DatabaseWrapperMongoose implements DatabaseWrapper {
 			if (!player) {
 				tournament.confirmedParticipants.push({
 					challongeId: newPlayer,
-					discord: "DUMMY"
+					discord: "DUMMY",
+					deck: "ydke://!!!" // blank deck
 				});
 			}
 		}
