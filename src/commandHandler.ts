@@ -12,7 +12,8 @@ import {
 	openTournament,
 	startTournament,
 	authenticatePlayer,
-	submitScore
+	submitScore,
+	nextRound
 } from "./tournamentManager";
 
 async function commandCreateTournament(msg: DiscordMessageIn, args: string[]): Promise<void> {
@@ -132,7 +133,16 @@ async function commandSubmitScore(msg: DiscordMessageIn, args: string[]): Promis
 		throw new UserError("Must provide score in format `#-#` e.g. `2-1`.");
 	}
 	await submitScore(id, msg.author, scoreNums[0], scoreNums[1]);
-	await msg.reply(`Tournament ${id} successfully canceled.`);
+	await msg.reply(
+		`Score of ${scoreNums[0]}-${scoreNums[1]} recorded for ${discord.mentionUser(msg.author)} in Tournament ${id}.`
+	);
 }
 
 discord.registerCommand("score", commandSubmitScore);
+
+async function commandNextRound(msg: DiscordMessageIn, args: string[]): Promise<void> {
+	const [id] = args;
+	await authenticateHost(id, msg.author);
+	const round = await nextRound(id);
+	await msg.reply(`Tournament ${id} successfully progressed to round ${round}.`);
+}
