@@ -25,7 +25,8 @@ export async function createTournament(name: string, desc: string): Promise<[str
 	return [web.id, web.url];
 }
 export async function updateTournament(tournamentId: string, name: string, desc: string): Promise<void> {
-	throw new Error("Not implemented!");
+	await dummyWebsite.updateTournament(tournamentId, name, desc);
+	await dummyDb.updateTournament(tournamentId, name, desc);
 }
 export async function addAnnouncementChannel(
 	tournamentId: string,

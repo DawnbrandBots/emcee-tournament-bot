@@ -20,6 +20,7 @@ export interface DatabaseTournament {
 	players: string[]; // list of IDs, for more info use findPlayer();
 	findHost: (id: string) => Promise<boolean>;
 	findPlayer: (id: string) => Promise<DatabasePlayer | undefined>;
+	updateDetails(name: string, desc: string) => Promise<void>;
 }
 
 export class DatabaseInterface {
@@ -52,6 +53,11 @@ export class DatabaseInterface {
 		// TODO: As DB design is fleshed out, decide exactly what properties we want to extract
 		// from the website interface
 		return await this.db.createTournament(web.name, web.desc);
+	}
+
+	public async updateTournament(tournamentId: string, name: string, desc: string) {
+		const tournament = await this.getTournament(tournamentId);
+		await tournament.updateDetails(name, desc);
 	}
 
 	public async getTournament(tournamentId: string): Promise<DatabaseTournament> {
