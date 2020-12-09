@@ -2,6 +2,7 @@ import { Client, Guild, GuildChannel, Message, MessageContent, Role, TextChannel
 import { discordToken } from "./config/env";
 import { prefix, toRole } from "./config/config.json";
 import {
+	DiscordAttachmentOut,
 	DiscordInterface,
 	DiscordMessageHandler,
 	DiscordMessageIn,
@@ -63,8 +64,16 @@ export class DiscordWrapperEris implements DiscordWrapper {
 			content: msg.content,
 			author: msg.author.id,
 			channel: msg.channel.id,
-			reply: async (out: DiscordMessageOut): Promise<void> => {
-				await msg.channel.createMessage(this.unwrapMessageOut(out));
+			reply: async (out: DiscordMessageOut, file?: DiscordAttachmentOut): Promise<void> => {
+				await msg.channel.createMessage(
+					this.unwrapMessageOut(out),
+					file
+						? {
+								file: file.contents,
+								name: file.filename
+						  }
+						: undefined
+				);
 			}
 		};
 	}

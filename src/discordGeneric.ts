@@ -12,7 +12,7 @@ export interface DiscordMessageIn {
 	attachments: DiscordAttachmentIn[];
 	author: string;
 	channel: string;
-	reply: (msg: DiscordMessageOut) => Promise<void>;
+	reply: (msg: DiscordMessageOut, file?: DiscordAttachmentOut) => Promise<void>;
 }
 
 export type DiscordMessageOut = string | DiscordEmbed;
