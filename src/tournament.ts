@@ -1,10 +1,6 @@
 import { challonge, ChallongeMatch } from "./challonge";
 import { GuildChannel, Message, TextChannel, PrivateChannel } from "eris";
 import {
-	initTournament,
-	isOrganising,
-	addAnnouncementChannel,
-	removeAnnouncementChannel,
 	startTournament,
 	removeRegisterMessage,
 	confirmParticipant,
@@ -13,29 +9,15 @@ import {
 	addPendingParticipant,
 	nextRound,
 	finishTournament,
-	addHost,
-	removeHost,
-	findTournament,
-	setTournamentName,
-	setTournamentDescription,
 	getOngoingTournaments,
 	addRegisterMessage,
 	getPlayerFromId,
 	removeConfirmedParticipant,
-	dropConfirmedParticipant,
-	SyncDoc,
-	synchronise
+	dropConfirmedParticipant
 } from "./actions";
 import { bot } from "./bot";
-import { TournamentModel, TournamentDoc } from "./models";
-import { defaultHosts, defaultPublicChannels, defaultPrivateChannels } from "./config/config.json";
-import {
-	UnauthorisedHostError,
-	DeckNotFoundError,
-	AssertTextChannelError,
-	UserError,
-	MiscInternalError
-} from "./errors";
+import { TournamentModel } from "./models";
+import { DeckNotFoundError, AssertTextChannelError, UserError, MiscInternalError } from "./errors";
 import logger from "./logger";
 import { Deck } from "ydeck";
 import { prettyPrint } from "./discordDeck";
