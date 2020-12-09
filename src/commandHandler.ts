@@ -14,7 +14,8 @@ import {
 	authenticatePlayer,
 	submitScore,
 	nextRound,
-	listTournaments
+	listTournaments,
+	listPlayers
 } from "./tournamentManager";
 
 async function commandListTournaments(msg: DiscordMessageIn): Promise<void> {
@@ -157,3 +158,10 @@ async function commandNextRound(msg: DiscordMessageIn, args: string[]): Promise<
 }
 
 discord.registerCommand("round", commandNextRound);
+
+async function commandListPlayers(msg: DiscordMessageIn, args: string[]): Promise<void> {
+	const [id] = args;
+	await authenticateHost(id, msg.author);
+	const list = await listPlayers(id);
+	await msg.reply(list);
+}

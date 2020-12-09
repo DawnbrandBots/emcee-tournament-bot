@@ -8,33 +8,6 @@ import { bot } from "../bot";
 import { UserError } from "../errors";
 import { validateTORole } from ".";
 
-export async function listTournaments(msg: Message): Promise<void> {
-	await validateTORole(msg);
-	const tournaments = await getOngoingTournaments();
-	if (tournaments.length === 0) {
-		await msg.channel.createMessage("There are no active tournaments!");
-		return;
-	}
-	await msg.channel.createMessage(
-		tournaments
-			.map(
-				t =>
-					`ID: \`${t.challongeId}\`|Name: \`${t.name}\`|Status: \`${t.status}\`|Players: ${t.confirmedParticipants.length}`
-			)
-			.join("\n")
-	);
-}
-
-export async function listPlayers(msg: Message, args: string[]): Promise<void> {
-	const [id] = args;
-	const [, doc] = await getTournamentInterface(id, msg.author.id);
-	if (doc.confirmedParticipants.length === 0) {
-		await msg.channel.createMessage("That tournament has no confirmed participants yet!");
-		return;
-	}
-	await msg.channel.createMessage(doc.confirmedParticipants.map(p => mention(p.discord)).join(", "));
-}
-
 export async function getPlayerDeck(msg: Message, args: string[]): Promise<void> {
 	const [id] = args;
 	const [, doc] = await getTournamentInterface(id, msg.author.id);
