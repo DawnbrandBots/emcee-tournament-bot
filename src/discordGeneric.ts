@@ -1,5 +1,5 @@
+import { Logger } from "winston";
 import { UserError } from "./errors";
-import logger from "./logger";
 
 export interface DiscordAttachmentIn {
 	filename: string;
@@ -48,10 +48,12 @@ export class DiscordInterface {
 	private commands: { [name: string]: DiscordCommand } = {};
 	private api: DiscordWrapper;
 	private prefix: string;
-	constructor(api: DiscordWrapper, prefix: string) {
+	private logger: Logger;
+	constructor(api: DiscordWrapper, prefix: string, logger: Logger) {
 		this.commands = {};
 		this.api = api;
 		this.prefix = prefix;
+		this.logger = logger;
 		this.api.onMessage(this.handleMessage);
 	}
 
@@ -75,7 +77,7 @@ export class DiscordInterface {
 					return;
 				}
 				// internal error
-				logger.error(e);
+				this.logger.error(e);
 			}
 		}
 	}

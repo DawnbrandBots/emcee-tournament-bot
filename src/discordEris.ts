@@ -11,6 +11,7 @@ import {
 } from "./discordGeneric";
 import { UnauthorisedTOError } from "./errors";
 import logger from "./logger";
+import { Logger } from "winston";
 
 const toRoles: { [guild: string]: string } = {};
 
@@ -40,12 +41,16 @@ export class DiscordWrapperEris implements DiscordWrapper {
 	private pingHandlers: DiscordMessageHandler[];
 	private wrappedMessages: { [id: string]: Message };
 	private bot: Client;
-	constructor() {
+	private logger: Logger;
+	constructor(logger: Logger) {
+		this.logger = logger;
 		this.messageHandlers = [];
 		this.pingHandlers = [];
 		this.wrappedMessages = {};
 		this.bot = new Client(discordToken);
+		this.bot.on("ready", () => this.logger.info(`Logged in as ${this.bot.user.username} - ${this.bot.user.id}`));
 		this.bot.on("messageCreate", this.handleMessage);
+		this.bot.connect().catch(this.logger.error);
 	}
 
 	async sendMessage(msg: DiscordMessageOut, channel: string): Promise<void> {
@@ -105,7 +110,7 @@ export class DiscordWrapperEris implements DiscordWrapper {
 			"Auto-created by Emcee bot."
 		);
 		toRoles[guild.id] = newRole.id;
-		logger.verbose(`TO role ${newRole.id} re-created in ${guild.id}.`);
+		this.logger.verbose(`TO role ${newRole.id} re-created in ${guild.id}.`);
 		return newRole;
 	}
 
@@ -152,5 +157,5 @@ export class DiscordWrapperEris implements DiscordWrapper {
 	}
 }
 
-const eris = new DiscordWrapperEris();
-export const discord = new DiscordInterface(eris, prefix);
+const eris = new DiscordWrapperEris(logger);
+export const discord = new DiscordInterface(eris, prefix, logger);
