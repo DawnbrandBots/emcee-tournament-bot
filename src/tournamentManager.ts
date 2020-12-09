@@ -1,8 +1,10 @@
 import { Deck } from "ydeck";
-import { DatabaseInterface, dummyDb } from "./databaseGeneric";
+import { DatabaseInterface } from "./databaseGeneric";
+import { database } from "./databaseMongoos";
 import { discord } from "./discordEris";
 import { DiscordInterface } from "./discordGeneric";
-import { dummyWebsite, WebsiteInterface } from "./websiteGeneric";
+import { website } from "./websiteChallonge";
+import { WebsiteInterface } from "./websiteGeneric";
 
 export class TournamentManager {
 	private discord: DiscordInterface;
@@ -103,4 +105,4 @@ export class TournamentManager {
 	}
 }
 
-export const tournamentManager = new TournamentManager(discord, dummyDb, dummyWebsite);
+export const tournamentManager = new TournamentManager(discord, database, website);

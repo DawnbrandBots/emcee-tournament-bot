@@ -25,6 +25,3 @@ export class WebsiteInterface {
 		return await this.api.updateTournament(tournamentId, name, desc);
 	}
 }
-
-// TODO: Rename to "website" when a wrapper is implemented
-export const dummyWebsite = new WebsiteInterface();

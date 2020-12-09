@@ -204,4 +204,4 @@ class CommandHandler {
 	}
 }
 
-const commandHandler = new CommandHandler(discord, tournamentManager, logger);
+new CommandHandler(discord, tournamentManager, logger);
