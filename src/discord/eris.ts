@@ -1,6 +1,6 @@
 import { Client, Guild, GuildChannel, Message, MessageContent, Role, TextChannel } from "eris";
-import { discordToken } from "./config/env";
-import { prefix, toRole } from "./config/config.json";
+import { discordToken } from "../config/env";
+import { prefix, toRole } from "../config/config.json";
 import {
 	DiscordAttachmentOut,
 	DiscordInterface,
@@ -8,9 +8,9 @@ import {
 	DiscordMessageIn,
 	DiscordMessageOut,
 	DiscordWrapper
-} from "./discordGeneric";
-import { AssertTextChannelError, UnauthorisedTOError } from "./errors";
-import logger from "./logger";
+} from ".";
+import { AssertTextChannelError, UnauthorisedTOError } from "../errors";
+import logger from "../logger";
 import { Logger } from "winston";
 
 const toRoles: { [guild: string]: string } = {};

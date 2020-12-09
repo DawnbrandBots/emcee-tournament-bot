@@ -1,5 +1,5 @@
 import { Logger } from "winston";
-import { UserError } from "./errors";
+import { UserError } from "../errors";
 
 export interface DiscordAttachmentIn {
 	filename: string;

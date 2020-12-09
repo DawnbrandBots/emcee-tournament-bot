@@ -1,6 +1,6 @@
-import { DatabaseInterface, DatabaseTournament, DatabaseWrapper, DatabasePlayer } from "./databaseGeneric";
+import { DatabaseInterface, DatabaseTournament, DatabaseWrapper, DatabasePlayer } from ".";
 import { TournamentModel, TournamentDoc } from "./models";
-import { TournamentNotFoundError, UnauthorisedHostError } from "./errors";
+import { TournamentNotFoundError, UnauthorisedHostError } from "../errors";
 
 type DiscordID = string;
 type TournamentID = string; // from Challonge
