@@ -1,8 +1,13 @@
-import { UnauthorisedHostError } from "./errors";
+import { UnauthorisedHostError, UnauthorisedPlayerError } from "./errors";
 
 export async function authenticateHost(tournamentId: string, hostId: string): Promise<void> {
 	throw new UnauthorisedHostError(hostId, tournamentId);
 }
+
+export async function authenticatePlayer(tournamentId: string, playerId: string): Promise<void> {
+	throw new UnauthorisedPlayerError(playerId, tournamentId);
+}
+
 export async function createTournament(name: string, desc: string): Promise<[string, string]> {
 	throw new Error("Not implemented!");
 }
@@ -42,5 +47,14 @@ export async function startTournament(tournamentId: string): Promise<void> {
 }
 
 export async function cancelTournament(tournamentId: string): Promise<void> {
+	throw new Error("Not implemented!");
+}
+
+export async function submitScore(
+	tournamentId: string,
+	playerId: string,
+	scorePlayer: number,
+	scoreOpp: number
+): Promise<void> {
 	throw new Error("Not implemented!");
 }

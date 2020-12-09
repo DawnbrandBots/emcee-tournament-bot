@@ -1,6 +1,7 @@
 import { removeAnnouncementChannel } from "./actions";
 import { discord } from "./discordEris";
 import { DiscordMessageIn } from "./discordGeneric";
+import { UserError } from "./errors";
 import {
 	addAnnouncementChannel,
 	addHost,
@@ -9,7 +10,9 @@ import {
 	removeHost,
 	updateTournament,
 	openTournament,
-	startTournament
+	startTournament,
+	authenticatePlayer,
+	submitScore
 } from "./tournamentManager";
 
 async function commandCreateTournament(msg: DiscordMessageIn, args: string[]): Promise<void> {
@@ -118,3 +121,18 @@ async function commandCancelTournament(msg: DiscordMessageIn, args: string[]): P
 }
 
 discord.registerCommand("cancel", commandCancelTournament);
+
+// TODO infer tournamentId from tournament player is in? gotta make player-facing features as simple as possible
+async function commandSubmitScore(msg: DiscordMessageIn, args: string[]): Promise<void> {
+	const [id, score] = args;
+	await authenticatePlayer(id, msg.author);
+	const scores = score.split("-");
+	const scoreNums = scores.map(s => parseInt(s, 10));
+	if (scoreNums.length < 2) {
+		throw new UserError("Must provide score in format `#-#` e.g. `2-1`.");
+	}
+	await submitScore(id, msg.author, scoreNums[0], scoreNums[1]);
+	await msg.reply(`Tournament ${id} successfully canceled.`);
+}
+
+discord.registerCommand("score", commandSubmitScore);
