@@ -84,8 +84,9 @@ export class DiscordInterface {
 		this.commands[name] = func;
 	}
 
-	public onPing(func: DiscordCommand): void {
+	public onPing(func: DiscordMessageHandler): void {
 		this.api.onPing(func);
+	}
 
 	public async authenticateTO(msg: DiscordMessageIn): Promise<void> {
 		return await this.api.authenticateTO(msg);

@@ -75,3 +75,11 @@ export async function listPlayers(tournamentId: string): Promise<string> {
 export async function getPlayerDeck(tournamentId: string, playerId: string): Promise<Deck> {
 	throw new Error("Not implemented!");
 }
+
+export async function dropPlayer(tournamentId: string, playerId: string): Promise<void> {
+	throw new Error("Not implemented!");
+}
+
+export async function syncTournament(tournamentId: string): Promise<void> {
+	throw new Error("Not implemented!");
+}
