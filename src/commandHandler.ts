@@ -67,13 +67,13 @@ class CommandHandler {
 	}
 
 	private async commandAddChannel(msg: DiscordMessageIn, args: string[]): Promise<void> {
-		const id = args[0];
-		let [, type, channel] = args;
+		const [id, baseType, channelMention] = args;
 		await this.tournamentManager.authenticateHost(id, msg.author);
+		let type = baseType.toLowerCase().trim();
 		if (!(type === "private")) {
 			type = "public";
 		}
-		// TODO: Parse actual channel mention. Just sketching out the structure for now.
+		let channel = this.discord.getChannel(channelMention);
 		if (!channel) {
 			channel = msg.channel;
 		}
@@ -88,13 +88,13 @@ class CommandHandler {
 	}
 
 	private async commandRemoveChannel(msg: DiscordMessageIn, args: string[]): Promise<void> {
-		const id = args[0];
-		let [, type, channel] = args;
+		const [id, baseType, channelMention] = args;
 		await this.tournamentManager.authenticateHost(id, msg.author);
+		let type = baseType.toLowerCase().trim();
 		if (!(type === "private")) {
 			type = "public";
 		}
-		// TODO: Parse actual channel mention. Just sketching out the structure for now.
+		let channel = this.discord.getChannel(channelMention);
 		if (!channel) {
 			channel = msg.channel;
 		}
@@ -181,8 +181,8 @@ class CommandHandler {
 		await this.tournamentManager.authenticateHost(id, msg.author);
 		const player = this.discord.getMentionedUser(msg);
 		const deck = await this.tournamentManager.getPlayerDeck(id, player);
-		// TODO: Use player structs or add a name getter to the interface so we can name this file better.
-		const [message, attachment] = prettyPrint(deck, `${player}.ydk`);
+		const name = this.discord.getUsername(player);
+		const [message, attachment] = prettyPrint(deck, `${name}.ydk`);
 		await msg.reply(message, attachment);
 	}
 
@@ -191,8 +191,8 @@ class CommandHandler {
 		await this.tournamentManager.authenticateHost(id, msg.author);
 		const player = this.discord.getMentionedUser(msg);
 		await this.tournamentManager.dropPlayer(id, player);
-		// TODO: Use player structs or add a name getter to the interface so we can reply better.
-		await msg.reply(`Player ${player} successfully dropped from Tournament ${id}.`);
+		const name = this.discord.getUsername(player);
+		await msg.reply(`Player ${name} successfully dropped from Tournament ${id}.`);
 	}
 
 	private async commandSyncTournament(msg: DiscordMessageIn, args: string[]): Promise<void> {
