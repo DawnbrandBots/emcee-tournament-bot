@@ -1,5 +1,4 @@
 import { Logger } from "winston";
-import { removeAnnouncementChannel } from "./actions";
 import { prettyPrint } from "./discordDeck";
 import { discord } from "./discordEris";
 import { DiscordInterface, DiscordMessageIn } from "./discordGeneric";
@@ -50,7 +49,7 @@ class CommandHandler {
 	private async commandCreateTournament(msg: DiscordMessageIn, args: string[]): Promise<void> {
 		await this.discord.authenticateTO(msg);
 		const [name, desc] = args;
-		const [id, url] = await this.tournamentManager.createTournament(name, desc);
+		const [id, url] = await this.tournamentManager.createTournament(msg.author, msg.server, name, desc);
 		this.logger.verbose(`New tournament created ${id} by ${msg.author}.`);
 		await msg.reply(
 			`Tournament ${name} created! You can find it at ${url}. For future commands, refer to this tournament by the id \`${id}\`.`
@@ -99,7 +98,7 @@ class CommandHandler {
 		if (!channel) {
 			channel = msg.channel;
 		}
-		await removeAnnouncementChannel(id, channel, type as "public" | "private");
+		await tournamentManager.removeAnnouncementChannel(id, channel, type as "public" | "private");
 		await this.discord.sendMessage(
 			`This channel removed as a ${type} announcement channel for Tournament ${id}!`,
 			channel

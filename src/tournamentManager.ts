@@ -29,9 +29,9 @@ export class TournamentManager {
 		return text.join("\n");
 	}
 
-	public async createTournament(name: string, desc: string): Promise<[string, string]> {
+	public async createTournament(host: string, server: string, name: string, desc: string): Promise<[string, string]> {
 		const web = await this.website.createTournament(name, desc);
-		await this.database.createTournament(web);
+		await this.database.createTournament(host, server, web);
 		return [web.id, web.url];
 	}
 	public async updateTournament(tournamentId: string, name: string, desc: string): Promise<void> {

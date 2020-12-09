@@ -12,6 +12,7 @@ export interface DiscordMessageIn {
 	attachments: DiscordAttachmentIn[];
 	author: string;
 	channel: string;
+	server: string;
 	reply: (msg: DiscordMessageOut, file?: DiscordAttachmentOut) => Promise<void>;
 }
 

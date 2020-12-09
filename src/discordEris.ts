@@ -9,7 +9,7 @@ import {
 	DiscordMessageOut,
 	DiscordWrapper
 } from "./discordGeneric";
-import { UnauthorisedTOError } from "./errors";
+import { AssertTextChannelError, UnauthorisedTOError } from "./errors";
 import logger from "./logger";
 import { Logger } from "winston";
 
@@ -65,12 +65,17 @@ export class DiscordWrapperEris implements DiscordWrapper {
 
 	private wrapMessageIn(msg: Message): DiscordMessageIn {
 		this.wrappedMessages[msg.id] = msg;
+		const channel = msg.channel;
+		if (!(channel instanceof GuildChannel)) {
+			throw new AssertTextChannelError(channel.id);
+		}
 		return {
 			id: msg.id,
 			attachments: msg.attachments,
 			content: msg.content,
 			author: msg.author.id,
-			channel: msg.channel.id,
+			channel: channel.id,
+			server: channel.guild.id,
 			reply: async (out: DiscordMessageOut, file?: DiscordAttachmentOut): Promise<void> => {
 				await msg.channel.createMessage(
 					this.unwrapMessageOut(out),
