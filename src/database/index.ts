@@ -15,6 +15,7 @@ export interface DatabaseWrapper {
 	removeAnnouncementChannel(tournamentId: string, channel: string, type: "public" | "private"): Promise<void>;
 	addHost(tournamentId: string, newHost: string): Promise<void>;
 	removeHost(tournamentId: string, newHost: string): Promise<void>;
+	synchronise(tournamentId: string, newData: SynchroniseTournament): Promise<void>;
 }
 
 export interface DatabasePlayer {
@@ -31,6 +32,12 @@ export interface DatabaseTournament {
 	findHost: (id: string) => boolean;
 	findPlayer: (id: string) => DatabasePlayer | undefined;
 	updateDetails: (name: string, desc: string) => Promise<void>;
+}
+
+export interface SynchroniseTournament {
+	name: string;
+	description: string;
+	players: number[];
 }
 
 export class DatabaseInterface {
@@ -82,7 +89,7 @@ export class DatabaseInterface {
 		channel: string,
 		type: "public" | "private"
 	): Promise<void> {
-		return this.db.addAnnouncementChannel(tournamentId, channel, type);
+		await this.db.addAnnouncementChannel(tournamentId, channel, type);
 	}
 
 	public async removeAnnouncementChannel(
@@ -90,14 +97,18 @@ export class DatabaseInterface {
 		channel: string,
 		type: "public" | "private"
 	): Promise<void> {
-		return await this.db.removeAnnouncementChannel(tournamentId, channel, type);
+		await this.db.removeAnnouncementChannel(tournamentId, channel, type);
 	}
 
 	public async addHost(tournamentId: string, newHost: string): Promise<void> {
-		return await this.db.addHost(tournamentId, newHost);
+		await this.db.addHost(tournamentId, newHost);
 	}
 
 	public async removeHost(tournamentId: string, newHost: string): Promise<void> {
-		return await this.db.removeHost(tournamentId, newHost);
+		await this.db.removeHost(tournamentId, newHost);
+	}
+
+	public async synchronise(tournamentId: string, data: SynchroniseTournament): Promise<void> {
+		await this.db.synchronise(tournamentId, data);
 	}
 }
