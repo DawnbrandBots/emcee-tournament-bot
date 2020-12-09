@@ -18,6 +18,8 @@ export interface DiscordMessageIn {
 
 export type DiscordMessageOut = string | DiscordEmbed;
 
+export type DiscordMessageSent = DiscordMessageIn; // same properties, different use
+
 export interface DiscordEmbed {
 	title: string;
 	fields: DiscordEmbedField[];
@@ -37,10 +39,19 @@ export type DiscordCommand = (message: DiscordMessageIn, params: string[]) => Pr
 
 export type DiscordMessageHandler = (msg: DiscordMessageIn) => Promise<void> | void;
 
+type DiscordReactionResponse = (msg: DiscordMessageIn, userId: string) => Promise<void> | void;
+
+export interface DiscordReactionHandler {
+	msg: string;
+	emoji: string;
+	response: DiscordReactionResponse;
+}
+
 export interface DiscordWrapper {
 	onMessage: (handler: DiscordMessageHandler) => void;
 	onPing: (hander: DiscordMessageHandler) => void;
-	sendMessage(msg: DiscordMessageOut, channel: string): Promise<void>;
+	onReaction: (handler: DiscordReactionHandler) => void;
+	sendMessage(msg: DiscordMessageOut, channel: string): Promise<DiscordMessageSent>;
 	authenticateTO(msg: DiscordMessageIn): Promise<void>;
 	getMentionedUser(msg: DiscordMessageIn): string;
 	getUsername(userId: string): string;
@@ -93,6 +104,16 @@ export class DiscordInterface {
 		this.api.onPing(func);
 	}
 
+	public async awaitReaction(
+		content: DiscordMessageOut,
+		channel: string,
+		emoji: string,
+		response: DiscordReactionResponse
+	): Promise<void> {
+		const msg = await this.sendMessage(content, channel);
+		this.api.onReaction({ msg: msg.id, emoji, response });
+	}
+
 	public async authenticateTO(msg: DiscordMessageIn): Promise<void> {
 		return await this.api.authenticateTO(msg);
 	}
@@ -105,8 +126,8 @@ export class DiscordInterface {
 		return `<@${userId}>`;
 	}
 
-	public async sendMessage(msg: DiscordMessageOut, channel: string): Promise<void> {
-		await this.api.sendMessage(msg, channel);
+	public async sendMessage(msg: DiscordMessageOut, channel: string): Promise<DiscordMessageSent> {
+		return await this.api.sendMessage(msg, channel);
 	}
 
 	public getMentionedUser(msg: DiscordMessageIn): string {
