@@ -58,3 +58,7 @@ export async function submitScore(
 ): Promise<void> {
 	throw new Error("Not implemented!");
 }
+
+export async function nextRound(tournamentId: string): Promise<number> {
+	throw new Error("Not implemented!");
+}
