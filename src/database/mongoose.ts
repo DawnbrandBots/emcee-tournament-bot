@@ -1,6 +1,6 @@
 import { DatabaseInterface, DatabaseTournament, DatabaseWrapper, DatabasePlayer } from ".";
 import { TournamentModel, TournamentDoc } from "./models";
-import { TournamentNotFoundError } from "../errors";
+import { TournamentNotFoundError, UserError } from "../errors";
 
 type DiscordID = string;
 type TournamentID = string; // from Challonge
@@ -100,24 +100,18 @@ class DatabaseWrapperMongoose implements DatabaseWrapper {
 	public async removeAnnouncementChannel(
 		channel: DiscordID,
 		challongeId: TournamentID,
-		host: DiscordID,
 		kind: "public" | "private" = "public"
-	): Promise<boolean> {
+	): Promise<void> {
 		const tournament = await this.findTournament(challongeId);
 		const channels = kind === "public" ? tournament.publicChannels : tournament.privateChannels;
 		const i = channels.indexOf(channel);
 		if (i < 0) {
-			return false;
+			throw new UserError(
+				`Channel ${channel} is not a ${kind} announcement channel for Tournament ${challongeId}!`
+			);
 		}
 		channels.splice(i, 1); // consider $pullAll
 		await tournament.save();
-		return true;
-	}
-
-	// Check if a Discord user can perform a Discord action related to a tournament.
-	public async isOrganising(host: DiscordID, challongeId: TournamentID): Promise<boolean> {
-		const tournament = await this.findTournament(challongeId);
-		return tournament.hosts.includes(host);
 	}
 
 	public async addHost(host: DiscordID, challongeId: TournamentID): Promise<boolean> {
@@ -238,7 +232,7 @@ class DatabaseWrapperMongoose implements DatabaseWrapper {
 	}
 
 	// Remove all pending participants and start the tournament
-	public async startTournament(challongeId: TournamentID, host: DiscordID, rounds: number): Promise<string[]> {
+	public async startTournament(challongeId: TournamentID, rounds: number): Promise<string[]> {
 		const tournament = await this.findTournament(challongeId);
 		const removedIDs = tournament.pendingParticipants.slice(); // clone values
 		tournament.pendingParticipants = [];

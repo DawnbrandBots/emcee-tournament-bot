@@ -12,6 +12,7 @@ export interface DatabaseWrapper {
 	getTournament(tournamentId: string): Promise<DatabaseTournament>;
 	getActiveTournaments(): Promise<DatabaseTournament[]>;
 	addAnnouncementChannel(tournamentId: string, channel: string, type: "public" | "private"): Promise<void>;
+	removeAnnouncementChannel(tournamentId: string, channel: string, type: "public" | "private"): Promise<void>;
 }
 
 export interface DatabasePlayer {
@@ -38,7 +39,7 @@ export class DatabaseInterface {
 
 	public async authenticateHost(tournamentId: string, hostId: string): Promise<void> {
 		const tournament = await this.getTournament(tournamentId);
-		const auth = await tournament.findHost(hostId);
+		const auth = tournament.findHost(hostId);
 		if (!auth) {
 			throw new UnauthorisedHostError(hostId, tournamentId);
 		}
@@ -80,5 +81,13 @@ export class DatabaseInterface {
 		type: "public" | "private"
 	): Promise<void> {
 		return this.db.addAnnouncementChannel(tournamentId, channel, type);
+	}
+
+	public async removeAnnouncementChannel(
+		tournamentId: string,
+		channel: string,
+		type: "public" | "private"
+	): Promise<void> {
+		return this.db.removeAnnouncementChannel(tournamentId, channel, type);
 	}
 }
