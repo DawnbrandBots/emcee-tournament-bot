@@ -196,7 +196,7 @@ interface AddParticipantSettings {
 	misc?: string;
 }
 
-class ChallongeWrapper implements WebsiteWrapper {
+class WebsiteWrapperChallonge implements WebsiteWrapper {
 	private baseUrl: string;
 	constructor(user: string, token: string) {
 		this.baseUrl = `https://${user}:${token}@api.challonge.com/v1/`;
@@ -326,5 +326,5 @@ class ChallongeWrapper implements WebsiteWrapper {
 	}
 }
 
-const challonge = new ChallongeWrapper(challongeUsername, challongeToken);
+const challonge = new WebsiteWrapperChallonge(challongeUsername, challongeToken);
 export const website = new WebsiteInterface(challonge);
