@@ -20,6 +20,7 @@ export interface DatabaseWrapper {
 
 export interface DatabasePlayer {
 	id: string;
+	deck: string;
 }
 
 // interface structure WIP as fleshed out command-by-command

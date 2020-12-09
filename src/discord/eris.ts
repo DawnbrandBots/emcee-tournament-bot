@@ -1,4 +1,14 @@
-import { Client, Guild, GuildChannel, Message, MessageContent, Role, TextChannel } from "eris";
+import {
+	Client,
+	Emoji,
+	Guild,
+	GuildChannel,
+	Message,
+	MessageContent,
+	PossiblyUncachedMessage,
+	Role,
+	TextChannel
+} from "eris";
 import { discordToken } from "../config/env";
 import { prefix, toRole } from "../config/config.json";
 import {
@@ -7,6 +17,8 @@ import {
 	DiscordMessageHandler,
 	DiscordMessageIn,
 	DiscordMessageOut,
+	DiscordMessageSent,
+	DiscordReactionHandler,
 	DiscordWrapper
 } from ".";
 import { AssertTextChannelError, UnauthorisedTOError, UserError } from "../errors";
@@ -39,6 +51,7 @@ function getChannel(msg: Message, mention?: string): TextChannel {
 export class DiscordWrapperEris implements DiscordWrapper {
 	private messageHandlers: DiscordMessageHandler[];
 	private pingHandlers: DiscordMessageHandler[];
+	private reactionHandlers: DiscordReactionHandler[];
 	private wrappedMessages: { [id: string]: Message };
 	private bot: Client;
 	private logger: Logger;
@@ -46,21 +59,24 @@ export class DiscordWrapperEris implements DiscordWrapper {
 		this.logger = logger;
 		this.messageHandlers = [];
 		this.pingHandlers = [];
+		this.reactionHandlers = [];
 		this.wrappedMessages = {};
 		this.bot = new Client(discordToken);
 		this.bot.on("ready", () => this.logger.info(`Logged in as ${this.bot.user.username} - ${this.bot.user.id}`));
 		this.bot.on("messageCreate", this.handleMessage);
+		this.bot.on("messageReactionAdd", this.handleReaction);
+		this.bot.on("messageDelete", this.cleanReactions);
 		this.bot.connect().catch(this.logger.error);
 	}
 
-	async sendMessage(msg: DiscordMessageOut, channel: string): Promise<void> {
+	async sendMessage(msg: DiscordMessageOut, channel: string): Promise<DiscordMessageSent> {
 		const out = this.unwrapMessageOut(msg);
 		const chan = this.bot.getChannel(channel);
 		if (chan instanceof TextChannel) {
-			await chan.createMessage(out);
-			return;
+			const response = await chan.createMessage(out);
+			return this.wrapMessageIn(response);
 		}
-		// otherwise throw?
+		throw new AssertTextChannelError(channel);
 	}
 
 	private wrapMessageIn(msg: Message): DiscordMessageIn {
@@ -93,17 +109,35 @@ export class DiscordWrapperEris implements DiscordWrapper {
 		return { embed: msg };
 	}
 
-	private handleMessage(msg: Message): void {
+	private async handleMessage(msg: Message): Promise<void> {
+		if (msg.author.bot) {
+			return;
+		}
 		const wrappedMsg = this.wrapMessageIn(msg);
 		if (msg.mentions.includes(this.bot.user)) {
 			for (const handler of this.pingHandlers) {
-				handler(wrappedMsg);
+				await handler(wrappedMsg);
 			}
 			return;
 		}
 		for (const handler of this.messageHandlers) {
-			handler(wrappedMsg);
+			await handler(wrappedMsg);
 		}
+	}
+
+	private async handleReaction(msg: PossiblyUncachedMessage, emoji: Emoji, userId: string): Promise<void> {
+		if (userId === this.bot.user.id) {
+			return;
+		}
+		const handlers = this.reactionHandlers.filter(h => h.msg === msg.id && h.emoji === emoji.name);
+		for (const handler of handlers) {
+			const fullMsg = await this.bot.getMessage(msg.channel.id, msg.id);
+			await handler.response(this.wrapMessageIn(fullMsg), userId);
+		}
+	}
+
+	private cleanReactions(msg: PossiblyUncachedMessage): void {
+		this.reactionHandlers = this.reactionHandlers.filter(h => !(h.msg === msg.id));
 	}
 
 	private async createTORole(guild: Guild): Promise<Role> {
@@ -138,6 +172,10 @@ export class DiscordWrapperEris implements DiscordWrapper {
 
 	public onPing(handler: DiscordMessageHandler): void {
 		this.pingHandlers.push(handler);
+	}
+
+	public onReaction(handler: DiscordReactionHandler): void {
+		this.reactionHandlers.push(handler);
 	}
 
 	public async authenticateTO(m: DiscordMessageIn): Promise<void> {
