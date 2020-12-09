@@ -44,6 +44,7 @@ export interface DiscordWrapper {
 	authenticateTO(msg: DiscordMessageIn): Promise<void>;
 	getMentionedUser(msg: DiscordMessageIn): string;
 	getUsername(userId: string): string;
+	sendDirectMessage(userId: string, content: DiscordMessageOut): Promise<void>;
 }
 
 export class DiscordInterface {
@@ -114,6 +115,10 @@ export class DiscordInterface {
 
 	public getUsername(userId: string): string {
 		return this.api.getUsername(userId);
+	}
+
+	public async sendDirectMessage(userId: string, content: DiscordMessageOut): Promise<void> {
+		await this.api.sendDirectMessage(userId, content);
 	}
 
 	public getChannel(query: string): string | undefined {
