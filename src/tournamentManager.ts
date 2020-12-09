@@ -44,7 +44,7 @@ export class TournamentManager {
 		channel: string,
 		type: "public" | "private"
 	): Promise<void> {
-		throw new Error("Not implemented!");
+		await this.database.addAnnouncementChannel(tournamentId, channel, type);
 	}
 
 	public async removeAnnouncementChannel(
