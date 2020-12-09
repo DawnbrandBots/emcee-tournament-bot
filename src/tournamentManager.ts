@@ -1,3 +1,4 @@
+import { Deck } from "ydeck";
 import { UnauthorisedHostError, UnauthorisedPlayerError } from "./errors";
 
 export async function authenticateHost(tournamentId: string, hostId: string): Promise<void> {
@@ -68,5 +69,9 @@ export async function nextRound(tournamentId: string): Promise<number> {
 }
 
 export async function listPlayers(tournamentId: string): Promise<string> {
+	throw new Error("Not implemented!");
+}
+
+export async function getPlayerDeck(tournamentId: string, playerId: string): Promise<Deck> {
 	throw new Error("Not implemented!");
 }

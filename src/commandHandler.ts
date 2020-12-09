@@ -1,4 +1,5 @@
 import { removeAnnouncementChannel } from "./actions";
+import { prettyPrint } from "./discordDeck";
 import { discord } from "./discordEris";
 import { DiscordMessageIn } from "./discordGeneric";
 import { UserError } from "./errors";
@@ -15,7 +16,8 @@ import {
 	submitScore,
 	nextRound,
 	listTournaments,
-	listPlayers
+	listPlayers,
+	getPlayerDeck
 } from "./tournamentManager";
 
 async function commandListTournaments(msg: DiscordMessageIn): Promise<void> {
@@ -165,3 +167,17 @@ async function commandListPlayers(msg: DiscordMessageIn, args: string[]): Promis
 	const list = await listPlayers(id);
 	await msg.reply(list);
 }
+
+discord.registerCommand("players", commandListPlayers);
+
+async function commandGetDeck(msg: DiscordMessageIn, args: string[]): Promise<void> {
+	const [id] = args;
+	await authenticateHost(id, msg.author);
+	const player = discord.getMentionedUser(msg);
+	const deck = await getPlayerDeck(id, player);
+	// TODO: Use player structs or add a name getter to the interface so we can name this file better.
+	const [message, attachment] = prettyPrint(deck, `${player}.ydk`);
+	await msg.reply(message, attachment);
+}
+
+discord.registerCommand("deck", commandGetDeck);
