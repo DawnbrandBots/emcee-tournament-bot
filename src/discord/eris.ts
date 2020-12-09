@@ -9,7 +9,7 @@ import {
 	DiscordMessageOut,
 	DiscordWrapper
 } from ".";
-import { AssertTextChannelError, UnauthorisedTOError } from "../errors";
+import { AssertTextChannelError, UnauthorisedTOError, UserError } from "../errors";
 import logger from "../logger";
 import { Logger } from "winston";
 
@@ -164,6 +164,16 @@ export class DiscordWrapperEris implements DiscordWrapper {
 	public getUsername(userId: string): string {
 		const user = this.bot.users.get(userId);
 		return user ? `${user.username}#${user.discriminator}` : userId;
+	}
+
+	public async sendDirectMessage(userId: string, content: DiscordMessageOut): Promise<void> {
+		const user = this.bot.users.get(userId);
+		if (!user) {
+			// user error means error by the bot user, not error related to the discord user
+			throw new UserError(`Cannot find user ${userId} to direct message!`);
+		}
+		const channel = await user.getDMChannel();
+		await channel.createMessage(this.unwrapMessageOut(content));
 	}
 }
 
