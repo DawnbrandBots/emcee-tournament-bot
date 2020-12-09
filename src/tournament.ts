@@ -73,50 +73,6 @@ export class Tournament {
 		this.id = id;
 	}
 
-	public static async init(name: string, description: string, msg: Message): Promise<Tournament> {
-		if (!(msg.channel instanceof GuildChannel)) {
-			throw new UserError("Tournaments cannot be constructed in Direct Messages!");
-		}
-
-		// generate a URL based on the name, with added numbers to prevent conflicts
-		const baseUrl = name.toLowerCase().replace(/[^a-zA-Z0-9_]/g, "");
-		let candidateUrl = `mc_${baseUrl}`;
-		let i = 0;
-		while (await TournamentModel.findOne({ challongeId: candidateUrl })) {
-			candidateUrl = baseUrl + i;
-			i++;
-		}
-
-		const tournament = await challonge.createTournament({
-			name,
-			description,
-			// eslint-disable-next-line @typescript-eslint/camelcase
-			tournament_type: "swiss",
-			url: candidateUrl
-		});
-
-		await initTournament(msg.author.id, msg.channel.guild.id, tournament.tournament.url, name, description);
-
-		const tourn = new Tournament(tournament.tournament.url);
-		tournaments[tourn.id] = tourn;
-
-		if (defaultHosts && defaultHosts.length > 0) {
-			await Promise.all(defaultHosts.map(o => tourn.addHost(msg.author.id, o)));
-		}
-
-		if (defaultPublicChannels && defaultPublicChannels.length > 0) {
-			await Promise.all(defaultPublicChannels.map(c => tourn.addChannel(c, msg.author.id)));
-		}
-
-		if (defaultPrivateChannels && defaultPrivateChannels.length > 0) {
-			await Promise.all(defaultPrivateChannels.map(c => tourn.addChannel(c, msg.author.id, true)));
-		}
-
-		logger.verbose(`New tournament created ${tourn.id} by ${msg.author.id}.`);
-
-		return tourn;
-	}
-
 	private async getTournament(): Promise<TournamentDoc> {
 		return await findTournament(this.id);
 	}
