@@ -20,6 +20,13 @@ import {
 	getPlayerDeck
 } from "./tournamentManager";
 
+async function commandHelp(msg: DiscordMessageIn): Promise<void> {
+	await msg.reply("Emcee's documentation can be found at https://github.com/AlphaKretin/emcee-tournament-bot/wiki.");
+}
+
+discord.registerCommand("help", commandHelp);
+discord.onPing(commandHelp);
+
 async function commandListTournaments(msg: DiscordMessageIn): Promise<void> {
 	await discord.authenticateTO(msg);
 	const list = await listTournaments();

@@ -38,6 +38,7 @@ export type DiscordMessageHandler = (msg: DiscordMessageIn) => Promise<void> | v
 
 export interface DiscordWrapper {
 	onMessage: (handler: DiscordMessageHandler) => void;
+	onPing: (hander: DiscordMessageHandler) => void;
 	sendMessage(msg: DiscordMessageOut, channel: string): Promise<void>;
 	authenticateTO(msg: DiscordMessageIn): Promise<void>;
 	getMentionedUser(msg: DiscordMessageIn): string;
@@ -82,6 +83,9 @@ export class DiscordInterface {
 	public registerCommand(name: string, func: DiscordCommand): void {
 		this.commands[name] = func;
 	}
+
+	public onPing(func: DiscordCommand): void {
+		this.api.onPing(func);
 
 	public async authenticateTO(msg: DiscordMessageIn): Promise<void> {
 		return await this.api.authenticateTO(msg);
