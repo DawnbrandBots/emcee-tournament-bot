@@ -114,26 +114,27 @@ class DatabaseWrapperMongoose implements DatabaseWrapper {
 		await tournament.save();
 	}
 
-	public async addHost(host: DiscordID, challongeId: TournamentID): Promise<boolean> {
+	public async addHost(challongeId: TournamentID, host: DiscordID): Promise<void> {
 		const tournament = await this.findTournament(challongeId);
 		if (tournament.hosts.includes(host)) {
-			return false;
+			throw new UserError(`Tournament ${challongeId} already includes user ${host} as a host!`);
 		}
 		tournament.hosts.push(host);
 		await tournament.save();
-		return true;
 	}
 
-	public async removeHost(host: DiscordID, challongeId: TournamentID): Promise<boolean> {
+	public async removeHost(challongeId: TournamentID, host: DiscordID): Promise<void> {
 		const tournament = await this.findTournament(challongeId);
-		if (tournament.hosts.length < 2 || !tournament.hosts.includes(host)) {
-			return false;
+		if (tournament.hosts.length < 2) {
+			throw new UserError(`Tournament ${challongeId} has too few hosts to remove one!`);
+		}
+		if (!tournament.hosts.includes(host)) {
+			throw new UserError(`Tournament ${challongeId} doesn't include user ${host} as a host!`);
 		}
 		const i = tournament.hosts.indexOf(host);
 		// i < 0 is impossible by precondition
 		tournament.hosts.splice(i, 1);
 		await tournament.save();
-		return true;
 	}
 
 	public async findTournamentByRegisterMessage(
