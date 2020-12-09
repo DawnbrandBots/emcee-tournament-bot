@@ -1,7 +1,7 @@
 import { getDeck } from "./deck";
 import fetch from "node-fetch";
 import { DeckNotFoundError } from "./errors";
-import { DiscordAttachmentOut, DiscordMessageIn, DiscordMessageOut } from "./discordGeneric";
+import { DiscordAttachmentOut, DiscordMessageIn, DiscordMessageOut } from "./discord";
 import { Deck, UrlConstructionError } from "ydeck";
 import { DeckError } from "ydeck/dist/validation";
 
