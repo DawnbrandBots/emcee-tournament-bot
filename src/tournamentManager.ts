@@ -25,8 +25,9 @@ export async function createTournament(name: string, desc: string): Promise<[str
 	return [web.id, web.url];
 }
 export async function updateTournament(tournamentId: string, name: string, desc: string): Promise<void> {
-	await dummyWebsite.updateTournament(tournamentId, name, desc);
+	// Update DB first because it performs an important check that might throw
 	await dummyDb.updateTournament(tournamentId, name, desc);
+	await dummyWebsite.updateTournament(tournamentId, name, desc);
 }
 export async function addAnnouncementChannel(
 	tournamentId: string,
