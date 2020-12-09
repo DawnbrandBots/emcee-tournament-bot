@@ -17,7 +17,9 @@ import {
 	nextRound,
 	listTournaments,
 	listPlayers,
-	getPlayerDeck
+	getPlayerDeck,
+	dropPlayer,
+	syncTournament
 } from "./tournamentManager";
 
 async function commandHelp(msg: DiscordMessageIn): Promise<void> {
@@ -188,3 +190,23 @@ async function commandGetDeck(msg: DiscordMessageIn, args: string[]): Promise<vo
 }
 
 discord.registerCommand("deck", commandGetDeck);
+
+async function commandDropPlayer(msg: DiscordMessageIn, args: string[]): Promise<void> {
+	const [id] = args;
+	await authenticateHost(id, msg.author);
+	const player = discord.getMentionedUser(msg);
+	await dropPlayer(id, player);
+	// TODO: Use player structs or add a name getter to the interface so we can reply better.
+	await msg.reply(`Player ${player} successfully dropped from Tournament ${id}.`);
+}
+
+discord.registerCommand("drop", commandDropPlayer);
+
+async function commandSyncTournament(msg: DiscordMessageIn, args: string[]): Promise<void> {
+	const [id] = args;
+	await authenticateHost(id, msg.author);
+	await syncTournament(id);
+	await msg.reply(`Tournament ${id} database successfully synchronised with remote website.`);
+}
+
+discord.registerCommand("sync", commandSyncTournament);
