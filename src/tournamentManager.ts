@@ -1,6 +1,6 @@
 import { Deck } from "ydeck";
 import { DatabaseInterface } from "./databaseGeneric";
-import { database } from "./databaseMongoos";
+import { database } from "./databaseMongoose";
 import { discord } from "./discordEris";
 import { DiscordInterface } from "./discordGeneric";
 import { website } from "./websiteChallonge";
