@@ -19,11 +19,7 @@ export interface TournamentDoc extends Document {
 	confirmedParticipants: {
 		challongeId: number;
 		discord: DiscordID;
-		deck: {
-			main: number[];
-			extra: number[];
-			side: number[];
-		};
+		deck?: string; // YDKE URL
 	}[];
 	pendingParticipants: DiscordID[];
 	currentRound: number;
@@ -55,11 +51,7 @@ export const TournamentSchema = new Schema({
 		{
 			challongeId: { type: Number, required: true },
 			discord: { type: String, required: true },
-			deck: {
-				main: { type: [Number], required: true },
-				extra: { type: [Number], required: true },
-				side: { type: [Number], required: true }
-			}
+			deck: { type: String, required: false } // YDKE url
 		}
 	],
 	pendingParticipants: { type: [String], required: true, default: [] },

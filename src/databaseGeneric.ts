@@ -2,12 +2,18 @@ import { UnauthorisedHostError, UnauthorisedPlayerError, UserError } from "./err
 import { WebsiteTournament } from "./websiteGeneric";
 
 export interface DatabaseWrapper {
-	createTournament(name: string, desc: string): Promise<DatabaseTournament>;
+	createTournament(
+		host: string,
+		server: string,
+		challongeId: string,
+		name: string,
+		description: string
+	): Promise<DatabaseTournament>;
 	getTournament(tournamentId: string): Promise<DatabaseTournament>;
 	getActiveTournaments(): Promise<DatabaseTournament[]>;
 }
 
-interface DatabasePlayer {
+export interface DatabasePlayer {
 	id: string;
 }
 
@@ -16,10 +22,10 @@ export interface DatabaseTournament {
 	id: string;
 	name: string;
 	description: string;
-	status: "preparing" | "ongoing" | "finished";
+	status: "preparing" | "in progress" | "complete";
 	players: string[]; // list of IDs, for more info use findPlayer();
-	findHost: (id: string) => Promise<boolean>;
-	findPlayer: (id: string) => Promise<DatabasePlayer | undefined>;
+	findHost: (id: string) => boolean;
+	findPlayer: (id: string) => DatabasePlayer | undefined;
 	updateDetails: (name: string, desc: string) => Promise<void>;
 }
 
@@ -49,10 +55,10 @@ export class DatabaseInterface {
 		return await this.db.getActiveTournaments();
 	}
 
-	public async createTournament(web: WebsiteTournament): Promise<DatabaseTournament> {
+	public async createTournament(host: string, server: string, web: WebsiteTournament): Promise<DatabaseTournament> {
 		// TODO: As DB design is fleshed out, decide exactly what properties we want to extract
 		// from the website interface
-		return await this.db.createTournament(web.name, web.desc);
+		return await this.db.createTournament(host, server, web.id, web.name, web.desc);
 	}
 
 	public async updateTournament(tournamentId: string, name: string, desc: string): Promise<void> {
