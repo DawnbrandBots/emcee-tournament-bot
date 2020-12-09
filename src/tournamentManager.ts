@@ -8,6 +8,10 @@ export async function authenticatePlayer(tournamentId: string, playerId: string)
 	throw new UnauthorisedPlayerError(playerId, tournamentId);
 }
 
+export async function listTournaments(): Promise<string> {
+	throw new Error("Not yet implemented!");
+}
+
 export async function createTournament(name: string, desc: string): Promise<[string, string]> {
 	throw new Error("Not implemented!");
 }
