@@ -1,8 +1,16 @@
+import { WebsiteTournament } from "./websiteGeneric";
+
 export interface DatabaseWrapper {
-	getTournament(tournamentId: string): DatabaseTournament;
+	createTournament(name: string, desc: string): Promise<DatabaseTournament>;
+	getTournament(tournamentId: string): Promise<DatabaseTournament>;
 }
 
-export interface DatabaseTournament {}
+// interface structure WIP as fleshed out command-by-command
+export interface DatabaseTournament {
+	id: string;
+	name: string;
+	description: string;
+}
 
 export class DatabaseInterface {
 	private db: DatabaseWrapper;
@@ -10,7 +18,15 @@ export class DatabaseInterface {
 		this.db = db;
 	}
 
-	public getTournament(tournamentId: string): DatabaseTournament {
-		return this.db.getTournament(tournamentId);
+	public async createTournament(web: WebsiteTournament): Promise<DatabaseTournament> {
+		// TODO: As DB design is fleshed out, decide exactly what properties we want to extract
+		// from the website interface
+		return await this.db.createTournament(web.name, web.desc);
+	}
+
+	public async getTournament(tournamentId: string): Promise<DatabaseTournament> {
+		return await this.db.getTournament(tournamentId);
 	}
 }
+
+export const dummyDb = new DatabaseInterface();

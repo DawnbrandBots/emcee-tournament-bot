@@ -1,5 +1,8 @@
 import { Deck } from "ydeck";
+import { dummyDb } from "./databaseGeneric";
 import { UnauthorisedHostError, UnauthorisedPlayerError } from "./errors";
+import logger from "./logger";
+import { dummyWebsite } from "./websiteGeneric";
 
 export async function authenticateHost(tournamentId: string, hostId: string): Promise<void> {
 	throw new UnauthorisedHostError(hostId, tournamentId);
@@ -14,7 +17,11 @@ export async function listTournaments(): Promise<string> {
 }
 
 export async function createTournament(name: string, desc: string): Promise<[string, string]> {
-	throw new Error("Not implemented!");
+	const web = await dummyWebsite.createTournament(name, desc);
+	await dummyDb.createTournament(web);
+	// TODO: Worth passing user ID just for logging? Log in commands instead?
+	logger.verbose(`New tournament created ${web.id}.`);
+	return [web.id, web.url];
 }
 export async function updateTournament(tournamentId: string, name: string, desc: string): Promise<void> {
 	throw new Error("Not implemented!");
