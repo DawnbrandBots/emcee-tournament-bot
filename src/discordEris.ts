@@ -37,10 +37,12 @@ function getChannel(msg: Message, mention?: string): TextChannel {
 
 export class DiscordWrapperEris implements DiscordWrapper {
 	private messageHandlers: DiscordMessageHandler[];
+	private pingHandlers: DiscordMessageHandler[];
 	private wrappedMessages: { [id: string]: Message };
 	private bot: Client;
 	constructor() {
 		this.messageHandlers = [];
+		this.pingHandlers = [];
 		this.wrappedMessages = {};
 		this.bot = new Client(discordToken);
 		this.bot.on("messageCreate", this.handleMessage);
@@ -67,12 +69,7 @@ export class DiscordWrapperEris implements DiscordWrapper {
 			reply: async (out: DiscordMessageOut, file?: DiscordAttachmentOut): Promise<void> => {
 				await msg.channel.createMessage(
 					this.unwrapMessageOut(out),
-					file
-						? {
-								file: file.contents,
-								name: file.filename
-						  }
-						: undefined
+					file ? { file: file.contents, name: file.filename } : undefined
 				);
 			}
 		};
@@ -88,6 +85,12 @@ export class DiscordWrapperEris implements DiscordWrapper {
 
 	private handleMessage(msg: Message): void {
 		const wrappedMsg = this.wrapMessageIn(msg);
+		if (msg.mentions.includes(this.bot.user)) {
+			for (const handler of this.pingHandlers) {
+				handler(wrappedMsg);
+			}
+			return;
+		}
 		for (const handler of this.messageHandlers) {
 			handler(wrappedMsg);
 		}
@@ -121,6 +124,10 @@ export class DiscordWrapperEris implements DiscordWrapper {
 
 	public onMessage(handler: DiscordMessageHandler): void {
 		this.messageHandlers.push(handler);
+	}
+
+	public onPing(handler: DiscordMessageHandler): void {
+		this.pingHandlers.push(handler);
 	}
 
 	public async authenticateTO(m: DiscordMessageIn): Promise<void> {
