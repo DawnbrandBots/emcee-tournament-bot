@@ -52,7 +52,7 @@ export class TournamentManager {
 		channel: string,
 		type: "public" | "private"
 	): Promise<void> {
-		throw new Error("Not implemented!");
+		await this.database.removeAnnouncementChannel(tournamentId, channel, type);
 	}
 
 	public async addHost(tournamentId: string, newHost: string): Promise<void> {
