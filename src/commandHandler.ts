@@ -13,8 +13,17 @@ import {
 	startTournament,
 	authenticatePlayer,
 	submitScore,
-	nextRound
+	nextRound,
+	listTournaments
 } from "./tournamentManager";
+
+async function commandListTournaments(msg: DiscordMessageIn): Promise<void> {
+	await discord.authenticateTO(msg);
+	const list = await listTournaments();
+	await msg.reply(list);
+}
+
+discord.registerCommand("list", commandListTournaments);
 
 async function commandCreateTournament(msg: DiscordMessageIn, args: string[]): Promise<void> {
 	await discord.authenticateTO(msg);
@@ -146,3 +155,5 @@ async function commandNextRound(msg: DiscordMessageIn, args: string[]): Promise<
 	const round = await nextRound(id);
 	await msg.reply(`Tournament ${id} successfully progressed to round ${round}.`);
 }
+
+discord.registerCommand("round", commandNextRound);
