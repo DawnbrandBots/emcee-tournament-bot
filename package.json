@@ -3,7 +3,7 @@
 	"version": "0.1.0",
 	"description": "A Discord bot to facilitate organising Challonge tournaments and verify submitted decks.",
 	"private": true,
-	"main": "dist/index.js",
+	"main": "dist/commandHandler.js",
 	"scripts": {
 		"test": "nyc mocha dist/test/test.js --timeout 20000",
 		"cover": "nyc report",

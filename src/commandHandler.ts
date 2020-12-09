@@ -1,3 +1,4 @@
+import { Logger } from "winston";
 import { removeAnnouncementChannel } from "./actions";
 import { prettyPrint } from "./discordDeck";
 import { discord } from "./discordEris";
@@ -9,9 +10,11 @@ import { tournamentManager, TournamentManager } from "./tournamentManager";
 class CommandHandler {
 	private discord: DiscordInterface;
 	private tournamentManager: TournamentManager;
-	constructor(discord: DiscordInterface, tournamentManager: TournamentManager) {
+	private logger: Logger;
+	constructor(discord: DiscordInterface, tournamentManager: TournamentManager, logger: Logger) {
 		this.discord = discord;
 		this.tournamentManager = tournamentManager;
+		this.logger = logger;
 
 		this.discord.registerCommand("help", this.commandHelp);
 		this.discord.onPing(this.commandHelp);
@@ -48,7 +51,7 @@ class CommandHandler {
 		await this.discord.authenticateTO(msg);
 		const [name, desc] = args;
 		const [id, url] = await this.tournamentManager.createTournament(name, desc);
-		logger.verbose(`New tournament created ${id} by ${msg.author}.`);
+		this.logger.verbose(`New tournament created ${id} by ${msg.author}.`);
 		await msg.reply(
 			`Tournament ${name} created! You can find it at ${url}. For future commands, refer to this tournament by the id \`${id}\`.`
 		);
@@ -58,7 +61,7 @@ class CommandHandler {
 		const [id, name, desc] = args;
 		await this.tournamentManager.authenticateHost(id, msg.author);
 		await this.tournamentManager.updateTournament(id, name, desc);
-		logger.verbose(`Tournament ${id} updated with name ${name} and description ${desc} by ${msg.author}.`);
+		this.logger.verbose(`Tournament ${id} updated with name ${name} and description ${desc} by ${msg.author}.`);
 		await msg.reply(`{
 		Tournament \`${id}\` updated! It now has the name ${name} and the given description.
 	}`);
@@ -201,4 +204,4 @@ class CommandHandler {
 	}
 }
 
-const commandHandler = new CommandHandler(discord, tournamentManager);
+const commandHandler = new CommandHandler(discord, tournamentManager, logger);
