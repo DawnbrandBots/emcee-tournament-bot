@@ -67,6 +67,3 @@ export class DatabaseInterface {
 		return await this.db.getTournament(tournamentId);
 	}
 }
-
-// TODO: Rename to "database" when a wrapper is implemented
-export const dummyDb = new DatabaseInterface();
