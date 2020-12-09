@@ -1,15 +1,14 @@
 import { Deck } from "ydeck";
 import { dummyDb } from "./databaseGeneric";
-import { UnauthorisedHostError, UnauthorisedPlayerError } from "./errors";
 import logger from "./logger";
 import { dummyWebsite } from "./websiteGeneric";
 
 export async function authenticateHost(tournamentId: string, hostId: string): Promise<void> {
-	throw new UnauthorisedHostError(hostId, tournamentId);
+	await dummyDb.authenticateHost(tournamentId, hostId);
 }
 
 export async function authenticatePlayer(tournamentId: string, playerId: string): Promise<void> {
-	throw new UnauthorisedPlayerError(playerId, tournamentId);
+	await dummyDb.authenticatePlayer(tournamentId, playerId);
 }
 
 export async function listTournaments(): Promise<string> {

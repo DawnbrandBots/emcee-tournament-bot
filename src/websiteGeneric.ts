@@ -21,4 +21,5 @@ export class WebsiteInterface {
 	}
 }
 
+// TODO: Rename to "website" when a wrapper is implemented
 export const dummyWebsite = new WebsiteInterface();
