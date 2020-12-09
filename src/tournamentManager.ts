@@ -25,7 +25,7 @@ export class TournamentManager {
 
 	public async listTournaments(): Promise<string> {
 		const list = await this.database.listTournaments();
-		const text = list.map(t => `${t.name}\t${t.players.length} players`);
+		const text = list.map(t => `ID: ${t.id}|Name: ${t.name}|Status: ${t.status}|Players: ${t.players.length}`);
 		return text.join("\n");
 	}
 
