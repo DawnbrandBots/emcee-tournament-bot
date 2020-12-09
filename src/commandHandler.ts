@@ -7,7 +7,9 @@ import {
 	authenticateHost,
 	createTournament,
 	removeHost,
-	updateTournament
+	updateTournament,
+	openTournament,
+	startTournament
 } from "./tournamentManager";
 
 async function commandCreateTournament(msg: DiscordMessageIn, args: string[]): Promise<void> {
@@ -89,3 +91,30 @@ async function commandRemoveHost(msg: DiscordMessageIn, args: string[]): Promise
 }
 
 discord.registerCommand("removehost", commandRemoveHost);
+
+async function commandOpenTournament(msg: DiscordMessageIn, args: string[]): Promise<void> {
+	const [id] = args;
+	await authenticateHost(id, msg.author);
+	await openTournament(id);
+	await msg.reply(`Tournament ${id} opened for registration!`);
+}
+
+discord.registerCommand("open", commandOpenTournament);
+
+async function commandStartTournament(msg: DiscordMessageIn, args: string[]): Promise<void> {
+	const [id] = args;
+	await authenticateHost(id, msg.author);
+	await startTournament(id);
+	await msg.reply(`Tournament ${id} successfully commenced!`);
+}
+
+discord.registerCommand("start", commandStartTournament);
+
+async function commandCancelTournament(msg: DiscordMessageIn, args: string[]): Promise<void> {
+	const [id] = args;
+	await authenticateHost(id, msg.author);
+	await startTournament(id);
+	await msg.reply(`Tournament ${id} successfully canceled.`);
+}
+
+discord.registerCommand("cancel", commandCancelTournament);
