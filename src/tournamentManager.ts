@@ -32,3 +32,15 @@ export async function addHost(tournamentId: string, newHost: string): Promise<vo
 export async function removeHost(tournamentId: string, newHost: string): Promise<void> {
 	throw new Error("Not implemented!");
 }
+
+export async function openTournament(tournamentId: string): Promise<void> {
+	throw new Error("Not implemented!");
+}
+
+export async function startTournament(tournamentId: string): Promise<void> {
+	throw new Error("Not implemented!");
+}
+
+export async function cancelTournament(tournamentId: string): Promise<void> {
+	throw new Error("Not implemented!");
+}
