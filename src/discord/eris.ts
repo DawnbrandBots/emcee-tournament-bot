@@ -160,6 +160,11 @@ export class DiscordWrapperEris implements DiscordWrapper {
 		const msg = this.wrappedMessages[m.id];
 		return msg.mentions[0].id;
 	}
+
+	public getUsername(userId: string): string {
+		const user = this.bot.users.get(userId);
+		return user ? `${user.username}#${user.discriminator}` : userId;
+	}
 }
 
 const eris = new DiscordWrapperEris(logger);

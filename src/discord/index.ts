@@ -43,6 +43,7 @@ export interface DiscordWrapper {
 	sendMessage(msg: DiscordMessageOut, channel: string): Promise<void>;
 	authenticateTO(msg: DiscordMessageIn): Promise<void>;
 	getMentionedUser(msg: DiscordMessageIn): string;
+	getUsername(userId: string): string;
 }
 
 export class DiscordInterface {
@@ -109,5 +110,15 @@ export class DiscordInterface {
 
 	public getMentionedUser(msg: DiscordMessageIn): string {
 		return this.api.getMentionedUser(msg);
+	}
+
+	public getUsername(userId: string): string {
+		return this.api.getUsername(userId);
+	}
+
+	public getChannel(query: string): string | undefined {
+		const channelRegex = /<#(\d+?)>/g;
+		const channelMatch = channelRegex.exec(query);
+		return channelMatch ? channelMatch[1] : undefined;
 	}
 }
