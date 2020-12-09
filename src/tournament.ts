@@ -100,44 +100,6 @@ export class Tournament {
 		return newRole.id;
 	}
 
-	public async addChannel(channelId: string, host: string, isPrivate = false): Promise<string> {
-		await this.verifyHost(host);
-		const channel = bot.getChannel(channelId);
-		if (!(channel instanceof TextChannel)) {
-			throw new AssertTextChannelError(channelId);
-		}
-		const tournament = await this.getTournament();
-		const mes = await channel.createMessage(
-			`This channel now displaying announcements for ${tournament.name} (${this.id})`
-		);
-		await addAnnouncementChannel(channelId, this.id, host, isPrivate ? "private" : "public");
-		logger.verbose(
-			`Channel ${channelId} added to tournament ${this.id} with level ${
-				isPrivate ? "private" : "public"
-			} by ${host}.`
-		);
-
-		return mes.id;
-	}
-
-	public async removeChannel(channelId: string, host: string, isPrivate = false): Promise<void> {
-		await this.verifyHost(host);
-		const channel = bot.getChannel(channelId);
-		if (!(channel instanceof TextChannel)) {
-			throw new AssertTextChannelError(channelId);
-		}
-		if (!(await removeAnnouncementChannel(channelId, this.id, host, isPrivate ? "private" : "public"))) {
-			throw new UserError(`Channel ${channel.name} is not a registered announcement channel`);
-		}
-		const tournament = await this.getTournament();
-		await channel.createMessage(`This channel no longer displaying announcements for ${tournament.name}`);
-		logger.verbose(
-			`Channel ${channelId} removed from tournament ${this.id} with level ${
-				isPrivate ? "private" : "public"
-			} by ${host}.`
-		);
-	}
-
 	private async openRegistrationInChannel(channelId: string, name: string, desc: string): Promise<string> {
 		const channel = bot.getChannel(channelId);
 		if (!(channel instanceof TextChannel)) {
@@ -330,27 +292,6 @@ export class Tournament {
 		logger.verbose(`Tournament ${this.id} finished by ${host}.`);
 	}
 
-	public async addHost(host: string, newHost: string): Promise<boolean> {
-		await this.verifyHost(host);
-		const result = await addHost(newHost, this.id);
-		if (result) {
-			logger.verbose(`Tournament ${this.id} added new host ${newHost} by ${host}.`);
-		}
-		return result;
-	}
-
-	public async removeHost(host: string, toRemove: string): Promise<boolean> {
-		await this.verifyHost(host);
-		if (host === toRemove) {
-			throw new UserError("You cannot remove yourself from organising a tournament!");
-		}
-		const result = await removeHost(toRemove, this.id);
-		if (result) {
-			logger.verbose(`Tournament ${this.id} removed host ${toRemove} by ${host}.`);
-		}
-		return result;
-	}
-
 	public async dropPlayer(host: string, discord: string): Promise<boolean> {
 		await this.verifyHost(host);
 		const user = await dropConfirmedParticipant(this.id, discord);
@@ -362,25 +303,6 @@ export class Tournament {
 			return true;
 		}
 		return false;
-	}
-
-	public async synchronise(host: string): Promise<void> {
-		await this.verifyHost(host);
-		const doc = await this.getTournament();
-		const newDoc: SyncDoc = {
-			confirmedParticipants: doc.confirmedParticipants.map(p => p.challongeId),
-			name: doc.name,
-			description: doc.description,
-			totalRounds: doc.totalRounds
-		};
-		const challongeData = (await challonge.showTournament(this.id, true)).tournament;
-		newDoc.name = challongeData.name;
-		newDoc.description = challongeData.description;
-		newDoc.totalRounds = challongeData.swiss_rounds;
-		if (challongeData.participants) {
-			newDoc.confirmedParticipants = challongeData.participants.map(p => p.participant.id);
-		}
-		await synchronise(this.id, newDoc);
 	}
 }
 
