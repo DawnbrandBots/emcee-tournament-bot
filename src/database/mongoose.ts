@@ -37,7 +37,7 @@ export class DatabaseWrapperMongoose implements DatabaseWrapper {
 	}
 
 	private wrapPlayer(player: MongoPlayer): DatabasePlayer {
-		return { id: player.discord, deck: player.deck };
+		return { discordId: player.discord, challongeId: player.challongeId, deck: player.deck };
 	}
 
 	private findPlayer(tournament: TournamentDoc): (id: string) => DatabasePlayer {
@@ -202,8 +202,12 @@ export class DatabaseWrapperMongoose implements DatabaseWrapper {
 	}
 
 	// Invoke after a user requests to leave a tournament they haven't been confirmed for.
-	public async removePendingParticipant(message: DiscordID, channel: DiscordID, user: DiscordID): Promise<boolean> {
-		return !!(await TournamentModel.findOneAndUpdate(
+	public async removePendingPlayer(
+		message: DiscordID,
+		channel: DiscordID,
+		user: DiscordID
+	): Promise<DatabaseTournament | undefined> {
+		const tournament = await TournamentModel.findOneAndUpdate(
 			{
 				"registerMessages.channel": channel,
 				"registerMessages.message": message,
@@ -212,45 +216,44 @@ export class DatabaseWrapperMongoose implements DatabaseWrapper {
 			{
 				$pull: { pendingParticipants: user }
 			}
-		));
+		);
+		return tournament ? this.wrapTournament(tournament) : undefined;
 	}
 
 	// Invoke after a user requests to leave a tournament they have been confirmed for
-	public async removeConfirmedParticipant(
+	public async removeConfirmedPlayerReaction(
 		message: DiscordID,
 		channel: DiscordID,
 		user: DiscordID
-	): Promise<MongoPlayer | undefined> {
-		return (
-			await TournamentModel.findOneAndUpdate(
-				{
-					"registerMessages.channel": channel,
-					"registerMessages.message": message,
-					"confirmedParticipants.discord": user
-				},
-				{
-					$pull: { confirmedParticipants: { discord: user } }
-				}
-			)
-		)?.confirmedParticipants.find(p => p.discord === user);
+	): Promise<DatabaseTournament | undefined> {
+		const tournament = await TournamentModel.findOneAndUpdate(
+			{
+				"registerMessages.channel": channel,
+				"registerMessages.message": message,
+				"confirmedParticipants.discord": user
+			},
+			{
+				$pull: { confirmedParticipants: { discord: user } }
+			}
+		);
+		return tournament ? this.wrapTournament(tournament) : undefined;
 	}
 
 	// Invoke after a host removes a player from a tournament they have been confirmed for
-	public async dropConfirmedParticipant(
+	public async removeConfirmedPlayerForce(
 		challongeId: TournamentID,
 		user: DiscordID
-	): Promise<MongoPlayer | undefined> {
-		return (
-			await TournamentModel.findOneAndUpdate(
-				{
-					challongeId: challongeId,
-					"confirmedParticipants.discord": user
-				},
-				{
-					$pull: { confirmedParticipants: { discord: user } }
-				}
-			)
-		)?.confirmedParticipants.find(p => p.discord === user);
+	): Promise<DatabaseTournament | undefined> {
+		const tournament = await TournamentModel.findOneAndUpdate(
+			{
+				challongeId: challongeId,
+				"confirmedParticipants.discord": user
+			},
+			{
+				$pull: { confirmedParticipants: { discord: user } }
+			}
+		);
+		return tournament ? this.wrapTournament(tournament) : undefined;
 	}
 
 	// Remove all pending participants and start the tournament

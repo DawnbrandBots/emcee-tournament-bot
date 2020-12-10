@@ -54,6 +54,7 @@ export interface DiscordWrapper {
 	onDelete: (handler: DiscordDeleteHandler) => void;
 	onPing: (hander: DiscordMessageHandler) => void;
 	onReaction: (handler: DiscordReactionHandler) => void;
+	onReactionRemove: (handler: DiscordReactionHandler) => void;
 	sendMessage(channel: string, msg: DiscordMessageOut, file?: DiscordAttachmentOut): Promise<DiscordMessageSent>;
 	deleteMessage(channelId: string, messageId: string): Promise<void>;
 	authenticateTO(msg: DiscordMessageIn): Promise<void>;
@@ -122,10 +123,12 @@ export class DiscordInterface {
 		content: DiscordMessageOut,
 		channel: string,
 		emoji: string,
-		response: DiscordReactionResponse
+		response: DiscordReactionResponse,
+		removeResponse: DiscordReactionResponse
 	): Promise<DiscordMessageSent> {
 		const msg = await this.sendMessage(channel, content);
 		this.api.onReaction({ msg: msg.id, emoji, response });
+		this.api.onReactionRemove({ msg: msg.id, emoji, response: removeResponse });
 		return msg;
 	}
 

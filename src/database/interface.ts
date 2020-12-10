@@ -21,13 +21,25 @@ export interface DatabaseWrapper {
 	cleanRegistration(channelId: string, messageId: string): Promise<void>;
 	getPendingTournaments(playerId: string): Promise<DatabaseTournament[]>;
 	addPendingPlayer(channelId: string, messageId: string, playerId: string): Promise<DatabaseTournament | undefined>;
+	removePendingPlayer(
+		channelId: string,
+		messageId: string,
+		playerId: string
+	): Promise<DatabaseTournament | undefined>;
 	confirmPlayer(tournamentId: string, playerId: string, challongeId: number, deck: string): Promise<void>;
+	removeConfirmedPlayerReaction(
+		channelId: string,
+		messageId: string,
+		playerId: string
+	): Promise<DatabaseTournament | undefined>;
+	removeConfirmedPlayerForce(tournamentId: string, playerId: string): Promise<DatabaseTournament | undefined>;
 	startTournament(tournamentId: string, rounds: number): Promise<string[]>;
 	synchronise(tournamentId: string, newData: SynchroniseTournament): Promise<void>;
 }
 
 export interface DatabasePlayer {
-	id: string;
+	discordId: string;
+	challongeId: number;
 	deck: string;
 }
 
@@ -141,6 +153,14 @@ export class DatabaseInterface {
 		return await this.db.addPendingPlayer(channelId, messageId, playerId);
 	}
 
+	public async removePendingPlayer(
+		channelId: string,
+		messageId: string,
+		playerId: string
+	): Promise<DatabaseTournament | undefined> {
+		return await this.db.removePendingPlayer(channelId, messageId, playerId);
+	}
+
 	public async confirmPlayer(
 		tournamentId: string,
 		playerId: string,
@@ -148,6 +168,21 @@ export class DatabaseInterface {
 		deck: string
 	): Promise<void> {
 		return await this.db.confirmPlayer(tournamentId, playerId, challongeId, deck);
+	}
+
+	public async removeConfirmedPlayerReaction(
+		channelId: string,
+		messageId: string,
+		playerId: string
+	): Promise<DatabaseTournament | undefined> {
+		return await this.removeConfirmedPlayerReaction(channelId, messageId, playerId);
+	}
+
+	public async removeConfirmedPlayerForce(
+		tournamentId: string,
+		playerId: string
+	): Promise<DatabaseTournament | undefined> {
+		return await this.removeConfirmedPlayerForce(tournamentId, playerId);
 	}
 
 	public async startTournament(tournamentId: string, rounds: number): Promise<string[]> {

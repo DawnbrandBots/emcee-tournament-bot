@@ -309,8 +309,8 @@ export class WebsiteWrapperChallonge implements WebsiteWrapper {
 		return participant.participant.id;
 	}
 
-	private async removeParticipant(tournament: string, participant: number): Promise<void> {
-		const response = await fetch(`${this.baseUrl}tournaments/${tournament}/participants/${participant}.json`, {
+	public async removePlayer(tournamentId: string, playerId: number): Promise<void> {
+		const response = await fetch(`${this.baseUrl}tournaments/${tournamentId}/participants/${playerId}.json`, {
 			method: "DELETE"
 		});
 		await this.validateResponse(response);
