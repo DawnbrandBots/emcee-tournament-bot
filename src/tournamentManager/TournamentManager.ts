@@ -8,16 +8,24 @@ import { getDeckFromMessage, prettyPrint } from "../discordDeck";
 import { Logger } from "winston";
 import { splitText } from "../discord";
 
+interface MatchScore {
+	playerId: number;
+	playerScore: number;
+	oppScore: number;
+}
+
 export class TournamentManager {
 	private discord: DiscordInterface;
 	private database: DatabaseInterface;
 	private website: WebsiteInterface;
 	private logger: Logger;
+	private matchScores: { [matchId: number]: MatchScore };
 	constructor(discord: DiscordInterface, database: DatabaseInterface, website: WebsiteInterface, logger: Logger) {
 		this.discord = discord;
 		this.database = database;
 		this.website = website;
 		this.logger = logger;
+		this.matchScores = {};
 	}
 	public async authenticateHost(tournamentId: string, hostId: string): Promise<void> {
 		await this.database.authenticateHost(tournamentId, hostId);
@@ -195,6 +203,17 @@ export class TournamentManager {
 		await this.discord.sendMessage(channel, message);
 	}
 
+	private async startNewRound(tournament: DatabaseTournament, url: string, round: number): Promise<void> {
+		const bye = await this.website.getBye(tournament.id);
+		// send round 1 message
+		const channels = tournament.publicChannels;
+		await Promise.all(
+			channels.map(async c => {
+				await this.sendNewRoundMessage(c, round, tournament, url, bye);
+			})
+		);
+	}
+
 	public async startTournament(tournamentId: string): Promise<void> {
 		const tournament = await this.database.getTournament(tournamentId);
 		if (tournament.players.length < 2) {
@@ -222,14 +241,7 @@ export class TournamentManager {
 		);
 		// start tournament on challonge
 		await this.website.startTournament(tournamentId);
-		const bye = await this.website.getBye(tournamentId);
-		// send round 1 message
-		const channels = tournament.publicChannels;
-		await Promise.all(
-			channels.map(async c => {
-				await this.sendNewRoundMessage(c, 1, tournament, webTourn.url, bye);
-			})
-		);
+		await this.startNewRound(tournament, webTourn.url, 1);
 	}
 
 	public async cancelTournament(tournamentId: string): Promise<void> {
@@ -241,8 +253,34 @@ export class TournamentManager {
 		playerId: string,
 		scorePlayer: number,
 		scoreOpp: number
-	): Promise<void> {
-		throw new Error("Not implemented!");
+	): Promise<string> {
+		const tournament = await this.database.getTournament(tournamentId);
+		const player = tournament.findPlayer(playerId);
+		const match = await this.website.findMatch(tournamentId, player.challongeId);
+		const mention = this.discord.mentionUser(playerId); // prepare for multiple uses below
+		if (!match) {
+			return `Could not find an open match in Tournament ${tournament.name} including you, ${mention}`;
+		}
+		if (match.matchId in this.matchScores) {
+			const score = this.matchScores[match.matchId];
+			// player double reporting
+			if (score.playerId === player.challongeId) {
+				return `You have already reported your score for this match ${mention}, please have your opponent confirm the score.`;
+			}
+			// player correctly confirming
+			if (scorePlayer === score.oppScore && scoreOpp === score.playerScore) {
+				const weWon = scorePlayer > scoreOpp;
+				// in the case of a tie, winnerScore and loserScore will turn out the same
+				const winner = weWon ? player.challongeId : score.playerId;
+				const winnerScore = weWon ? scorePlayer : scoreOpp;
+				const loserScore = weWon ? scoreOpp : scorePlayer;
+				await this.website.submitScore(tournamentId, winner, winnerScore, loserScore);
+				return `You have successfully reported a score of ${scorePlayer}-${scoreOpp}, and it matches your opponent's report, so the score has been saved. Thank you, ${mention}.`;
+			}
+			// player mismatched confirming
+			return `Your score does not match your opponent's reported score of ${score.oppScore}-${score.playerScore}. Both you and them will need to report again. ${mention}`;
+		}
+		return `You have reported a score of ${scorePlayer}-${scoreOpp}, ${mention}. Your opponent still needs to confirm this score.`;
 	}
 
 	public async nextRound(tournamentId: string): Promise<number> {

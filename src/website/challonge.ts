@@ -338,18 +338,24 @@ export class WebsiteWrapperChallonge implements WebsiteWrapper {
 		const match = m.match;
 		return {
 			player1: match.player1_id,
-			player2: match.player2_id
+			player2: match.player2_id,
+			matchId: match.id
 		};
 	}
 
 	public async getMatches(tournamentId: string): Promise<WebsiteMatch[]> {
-		const webMatches = await this.indexMatches(tournamentId);
+		const webMatches = await this.indexMatches(tournamentId, "open");
 		return webMatches.map(this.wrapMatch);
+	}
+
+	public async getMatchWithPlayer(tournamentId: string, playerId: number): Promise<WebsiteMatch> {
+		const webMatch = await this.indexMatches(tournamentId, "open", playerId);
+		return this.wrapMatch(webMatch[0]);
 	}
 
 	private async updateMatch(
 		tournament: string,
-		match: string,
+		match: number,
 		settings: UpdateMatchSettings
 	): Promise<ChallongeMatch> {
 		const response = await fetch(`${this.baseUrl}tournaments/${tournament}/matches/${match}.json`, {
@@ -358,5 +364,22 @@ export class WebsiteWrapperChallonge implements WebsiteWrapper {
 			headers: { "Content-Type": "application/json" }
 		});
 		return (await this.validateResponse(response)) as ChallongeMatch;
+	}
+
+	public async submitScore(
+		tournamentId: string,
+		winner: number,
+		winnerScore: number,
+		loserScore: number
+	): Promise<void> {
+		const webMatch = await this.indexMatches(tournamentId, "open", winner);
+		const match = webMatch[0].match;
+		const score = match.player1_id === winner ? `${winnerScore}-${loserScore}` : `${loserScore}-${winnerScore}`;
+		await this.updateMatch(tournamentId, match.id, {
+			// eslint-disable-next-line @typescript-eslint/camelcase
+			winner_id: winnerScore === loserScore ? "tie" : winner,
+			// eslint-disable-next-line @typescript-eslint/camelcase
+			scores_csv: score
+		});
 	}
 }

@@ -5,7 +5,9 @@ export interface WebsiteWrapper {
 	registerPlayer(tournamentId: string, playerName: string, playerId: string): Promise<number>;
 	startTournament(tournamentId: string): Promise<void>;
 	getMatches(tournamentId: string): Promise<WebsiteMatch[]>;
+	getMatchWithPlayer(tournamentId: string, playerId: number): Promise<WebsiteMatch>;
 	removePlayer(tournamentId: string, playerId: number): Promise<void>;
+	submitScore(tournamentId: string, winner: number, winnerScore: number, loserScore: number): Promise<void>;
 }
 
 interface WebsitePlayer {
@@ -26,6 +28,7 @@ export interface WebsiteTournament {
 export interface WebsiteMatch {
 	player1: number;
 	player2: number;
+	matchId: number;
 }
 
 export class WebsiteInterface {
@@ -67,7 +70,20 @@ export class WebsiteInterface {
 		return bye?.discordId;
 	}
 
+	public async findMatch(tournamentId: string, playerId: number): Promise<WebsiteMatch | undefined> {
+		return await this.api.getMatchWithPlayer(tournamentId, playerId);
+	}
+
 	public async removePlayer(tournamentId: string, playerId: number): Promise<void> {
 		await this.api.removePlayer(tournamentId, playerId);
+	}
+
+	public async submitScore(
+		tournamentId: string,
+		winner: number,
+		winnerScore: number,
+		loserScore: number
+	): Promise<void> {
+		await this.api.submitScore(tournamentId, winner, winnerScore, loserScore);
 	}
 }
