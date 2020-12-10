@@ -141,6 +141,7 @@ export class CommandHandler {
 		const [id] = args;
 		await this.tournamentManager.authenticateHost(id, msg.author);
 		await this.tournamentManager.startTournament(id);
+		this.logger.verbose(`Tournament ${id} commenced by ${msg.author}.`);
 		await msg.reply(`Tournament ${id} successfully commenced!`);
 	}
 

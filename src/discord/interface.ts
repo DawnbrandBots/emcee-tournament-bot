@@ -58,6 +58,8 @@ export interface DiscordWrapper {
 	authenticateTO(msg: DiscordMessageIn): Promise<void>;
 	getMentionedUser(msg: DiscordMessageIn): string;
 	getUsername(userId: string): string;
+	getPlayerRole(tournamentId: string, channel: string): Promise<string>;
+	grantPlayerRole(userId: string, channelId: string, roleId: string): Promise<void>;
 	sendDirectMessage(userId: string, content: DiscordMessageOut): Promise<void>;
 }
 
@@ -138,6 +140,10 @@ export class DiscordInterface {
 		return `<@${userId}>`;
 	}
 
+	public mentionRole(roleId: string): string {
+		return `<&${roleId}>`;
+	}
+
 	public async sendMessage(
 		channel: string,
 		msg: DiscordMessageOut,
@@ -156,6 +162,14 @@ export class DiscordInterface {
 
 	public async sendDirectMessage(userId: string, content: DiscordMessageOut): Promise<void> {
 		await this.api.sendDirectMessage(userId, content);
+	}
+
+	public async getPlayerRole(tournamentId: string, chanenlId: string): Promise<string> {
+		return await this.api.getPlayerRole(tournamentId, chanenlId);
+	}
+
+	public async grantPlayerRole(userId: string, channelId: string, roleId: string): Promise<void> {
+		await this.api.grantPlayerRole(userId, channelId, roleId);
 	}
 
 	public getChannel(query: string): string | undefined {

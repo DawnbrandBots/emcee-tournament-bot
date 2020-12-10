@@ -1,5 +1,5 @@
 import { Deck } from "ydeck";
-import { DatabaseInterface, DatabaseTournament } from "../database";
+import { DatabaseInterface, DatabaseTournament } from "../database/interface";
 import { DiscordInterface, DiscordMessageIn } from "../discord/interface";
 import { WebsiteInterface } from "../website/interface";
 import { BlockedDMsError, UnauthorisedPlayerError, UserError } from "../errors";
@@ -170,8 +170,51 @@ export class TournamentManager {
 		);
 	}
 
+	private async sendNewRoundMessage(
+		channel: string,
+		round: number,
+		tournament: DatabaseTournament,
+		url: string,
+		bye?: string
+	): Promise<void> {
+		const role = await this.discord.getPlayerRole(tournament.id, channel);
+		let message = `Round ${round} of ${tournament.name} has begun! ${this.discord.mentionRole(
+			role
+		)}\nPairings: ${url}`;
+		if (bye) {
+			message += `\n${this.discord.mentionUser(bye)} has the bye for this round.`;
+		}
+		await this.discord.sendMessage(channel, message);
+	}
+
 	public async startTournament(tournamentId: string): Promise<void> {
-		throw new Error("Not implemented!");
+		const tournament = await this.database.getTournament(tournamentId);
+		if (tournament.players.length < 2) {
+			throw new UserError("Cannot start a tournament without at least 2 confirmed participants!");
+		}
+		// TODO: delete register messages
+		// get challonge rounds with current player pool
+		const webTourn = await this.website.getTournament(tournamentId);
+		// drop pending participants
+		const droppedPlayers = await this.database.startTournament(tournamentId, webTourn.rounds);
+		await Promise.all(
+			droppedPlayers.map(async p => {
+				await this.discord.sendDirectMessage(
+					p,
+					`Sorry, Tournament ${tournament.name} has started and you didn't submit a deck, so you have been dropped.`
+				);
+			})
+		);
+		// start tournament on challonge
+		await this.website.startTournament(tournamentId);
+		const bye = await this.website.getBye(tournamentId);
+		// send round 1 message
+		const channels = tournament.publicChannels;
+		await Promise.all(
+			channels.map(async c => {
+				await this.sendNewRoundMessage(c, 1, tournament, webTourn.url, bye);
+			})
+		);
 	}
 
 	public async cancelTournament(tournamentId: string): Promise<void> {
@@ -213,7 +256,7 @@ export class TournamentManager {
 		await this.database.synchronise(tournamentId, {
 			name: tournamentData.name,
 			description: tournamentData.desc,
-			players: tournamentData.players
+			players: tournamentData.players.map(p => p.challongeId)
 		});
 	}
 }

@@ -1,4 +1,4 @@
-import { DatabaseInterface, DatabaseTournament, DatabaseWrapper, DatabasePlayer, SynchroniseTournament } from ".";
+import { DatabaseTournament, DatabaseWrapper, DatabasePlayer, SynchroniseTournament } from "./interface";
 import { TournamentModel, TournamentDoc } from "./models";
 import { TournamentNotFoundError, UserError } from "../errors";
 
@@ -11,7 +11,7 @@ interface MongoPlayer {
 	deck: string; // ydke url
 }
 
-class DatabaseWrapperMongoose implements DatabaseWrapper {
+export class DatabaseWrapperMongoose implements DatabaseWrapper {
 	private wrapTournament(tournament: TournamentDoc): DatabaseTournament {
 		return {
 			id: tournament.challongeId,
@@ -22,8 +22,7 @@ class DatabaseWrapperMongoose implements DatabaseWrapper {
 			publicChannels: tournament.publicChannels,
 			privateChannels: tournament.privateChannels,
 			findHost: this.findHost(tournament),
-			findPlayer: this.findPlayer(tournament),
-			updateDetails: this.updateDetails(tournament)
+			findPlayer: this.findPlayer(tournament)
 		};
 	}
 
@@ -39,14 +38,6 @@ class DatabaseWrapperMongoose implements DatabaseWrapper {
 		return (id: string): DatabasePlayer | undefined => {
 			const p = tournament.confirmedParticipants.find(p => p.discord === id);
 			return p ? this.wrapPlayer(p) : undefined;
-		};
-	}
-
-	private updateDetails(tournament: TournamentDoc): (name: string, desc: string) => Promise<void> {
-		return async (name: string, desc: string): Promise<void> => {
-			tournament.name = name;
-			tournament.description = desc;
-			await tournament.save();
 		};
 	}
 
@@ -73,12 +64,22 @@ class DatabaseWrapperMongoose implements DatabaseWrapper {
 		return this.wrapTournament(await this.findTournament(challongeId));
 	}
 
-	public async findTournament(challongeId: TournamentID): Promise<TournamentDoc> {
+	private async findTournament(challongeId: TournamentID): Promise<TournamentDoc> {
 		const tournament = await TournamentModel.findOne({ challongeId });
 		if (!tournament) {
 			throw new TournamentNotFoundError(challongeId);
 		}
 		return tournament;
+	}
+
+	public async updateTournament(tournamentId: string, name: string, desc: string): Promise<void> {
+		const tournament = await this.findTournament(tournamentId);
+		if (!(tournament.status === "preparing")) {
+			throw new UserError(`It's too late to update the information for ${tournament.name}.`);
+		}
+		tournament.name = name;
+		tournament.description = desc;
+		await tournament.save();
 	}
 
 	public async addAnnouncementChannel(
@@ -351,6 +352,3 @@ class DatabaseWrapperMongoose implements DatabaseWrapper {
 		await tournament.save();
 	}
 }
-
-const mongoose = new DatabaseWrapperMongoose();
-export const database = new DatabaseInterface(mongoose);

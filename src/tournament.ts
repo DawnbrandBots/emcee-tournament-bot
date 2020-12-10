@@ -150,7 +150,7 @@ export class Tournament {
 		const announcements = await Promise.all(
 			channels.map(c => this.startRound(c, this.id, 1, tournament.name, bye))
 		);
-		logger.verbose(`Tournament ${this.id} commenced by ${host}.`);
+
 		return announcements;
 	}
 

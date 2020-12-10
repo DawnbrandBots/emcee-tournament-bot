@@ -3,6 +3,13 @@ export interface WebsiteWrapper {
 	updateTournament(tournamentId: string, name: string, desc: string): Promise<void>;
 	getTournament(tournamentId: string): Promise<WebsiteTournament>;
 	registerPlayer(tournamentId: string, playerName: string, playerId: string): Promise<number>;
+	startTournament(tournamentId: string): Promise<void>;
+	getMatches(tournamentId: string): Promise<WebsiteMatch[]>;
+}
+
+interface WebsitePlayer {
+	challongeId: number;
+	discordId: string;
 }
 
 // interface structure WIP as fleshed out command-by-command
@@ -11,7 +18,13 @@ export interface WebsiteTournament {
 	name: string;
 	desc: string;
 	url: string;
-	players: number[];
+	players: WebsitePlayer[];
+	rounds: number;
+}
+
+export interface WebsiteMatch {
+	player1: number;
+	player2: number;
 }
 
 export class WebsiteInterface {
@@ -34,5 +47,22 @@ export class WebsiteInterface {
 
 	public async registerPlayer(tournamentId: string, playerName: string, playerId: string): Promise<number> {
 		return await this.api.registerPlayer(tournamentId, playerName, playerId);
+	}
+
+	public async startTournament(tournamentId: string): Promise<void> {
+		await this.api.startTournament(tournamentId);
+	}
+
+	public async getBye(tournamentId: string): Promise<string | undefined> {
+		const tournament = await this.getTournament(tournamentId);
+		if (tournament.players.length % 2 === 0) {
+			// even number of players means no bye
+			return undefined;
+		}
+		const matches = await this.api.getMatches(tournamentId);
+		const bye = tournament.players.find(
+			p => !matches.find(m => m.player1 !== p.challongeId && m.player2 !== p.challongeId)
+		);
+		return bye?.discordId;
 	}
 }
