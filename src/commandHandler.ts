@@ -2,7 +2,7 @@ import { Logger } from "winston";
 import { prettyPrint } from "./discordDeck";
 import { DiscordInterface, DiscordMessageIn } from "./discord/interface";
 import { UserError } from "./errors";
-import { TournamentManager } from "./tournamentManager/TournamentManager";
+import { TournamentManager } from "./TournamentManager";
 
 export class CommandHandler {
 	private discord: DiscordInterface;
@@ -13,29 +13,29 @@ export class CommandHandler {
 		this.tournamentManager = tournamentManager;
 		this.logger = logger;
 
-		this.discord.registerCommand("help", this.commandHelp);
-		this.discord.onPing(this.commandHelp);
-		this.discord.registerCommand("list", this.commandListTournaments);
-		this.discord.registerCommand("create", this.commandCreateTournament);
-		this.discord.registerCommand("update", this.commandUpdateTournament);
-		this.discord.registerCommand("addchannel", this.commandAddChannel);
-		this.discord.registerCommand("addchannel", this.commandRemoveChannel);
-		this.discord.registerCommand("addhost", this.commandAddHost);
-		this.discord.registerCommand("removehost", this.commandRemoveHost);
-		this.discord.registerCommand("open", this.commandOpenTournament);
-		this.discord.registerCommand("start", this.commandStartTournament);
-		this.discord.registerCommand("cancel", this.commandCancelTournament);
-		this.discord.registerCommand("score", this.commandSubmitScore);
-		this.discord.registerCommand("round", this.commandNextRound);
-		this.discord.registerCommand("players", this.commandListPlayers);
-		this.discord.registerCommand("deck", this.commandGetDeck);
-		this.discord.registerCommand("drop", this.commandDropPlayerSelf);
-		this.discord.registerCommand("forcedrop", this.commandDropPlayerSelf);
-		this.discord.registerCommand("sync", this.commandSyncTournament);
-		this.discord.registerCommand("pie", this.commandPieChart);
+		this.discord.registerCommand("help", this.commandHelp.bind(this));
+		this.discord.onPing(this.commandHelp.bind(this));
+		this.discord.registerCommand("list", this.commandListTournaments.bind(this));
+		this.discord.registerCommand("create", this.commandCreateTournament.bind(this));
+		this.discord.registerCommand("update", this.commandUpdateTournament.bind(this));
+		this.discord.registerCommand("addchannel", this.commandAddChannel.bind(this));
+		this.discord.registerCommand("addchannel", this.commandRemoveChannel.bind(this));
+		this.discord.registerCommand("addhost", this.commandAddHost.bind(this));
+		this.discord.registerCommand("removehost", this.commandRemoveHost.bind(this));
+		this.discord.registerCommand("open", this.commandOpenTournament.bind(this));
+		this.discord.registerCommand("start", this.commandStartTournament.bind(this));
+		this.discord.registerCommand("cancel", this.commandCancelTournament.bind(this));
+		this.discord.registerCommand("score", this.commandSubmitScore.bind(this));
+		this.discord.registerCommand("round", this.commandNextRound.bind(this));
+		this.discord.registerCommand("players", this.commandListPlayers.bind(this));
+		this.discord.registerCommand("deck", this.commandGetDeck.bind(this));
+		this.discord.registerCommand("drop", this.commandDropPlayerSelf.bind(this));
+		this.discord.registerCommand("forcedrop", this.commandDropPlayerSelf.bind(this));
+		this.discord.registerCommand("sync", this.commandSyncTournament.bind(this));
+		this.discord.registerCommand("pie", this.commandPieChart.bind(this));
 
-		this.discord.onMessage(this.tournamentManager.confirmPlayer);
-		this.discord.onDelete(this.tournamentManager.cleanRegistration);
+		this.discord.onMessage(this.tournamentManager.confirmPlayer.bind(this.tournamentManager));
+		this.discord.onDelete(this.tournamentManager.cleanRegistration.bind(this.tournamentManager));
 	}
 	private async commandHelp(msg: DiscordMessageIn): Promise<void> {
 		await msg.reply(
