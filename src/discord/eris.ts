@@ -11,44 +11,21 @@ import {
 	TextChannel
 } from "eris";
 import { discordToken } from "../config/env";
-import { prefix, toRole } from "../config/config.json";
+import { toRole } from "../config/config.json";
 import {
 	DiscordAttachmentOut,
 	DiscordDeleteHandler,
-	DiscordInterface,
 	DiscordMessageHandler,
 	DiscordMessageIn,
 	DiscordMessageOut,
 	DiscordMessageSent,
 	DiscordReactionHandler,
 	DiscordWrapper
-} from ".";
+} from "./interface";
 import { AssertTextChannelError, BlockedDMsError, UnauthorisedTOError, UserError } from "../errors";
-import logger from "../logger";
 import { Logger } from "winston";
 
 const toRoles: { [guild: string]: string } = {};
-
-// from commands/channels.ts. should be used somewhere but unsure immediately how to adapt
-/*
-function getChannel(msg: Message, mention?: string): TextChannel {
-	if (mention) {
-		const channelRegex = /<#(\d+?)>/g;
-		const channelMatch = channelRegex.exec(mention);
-		if (channelMatch !== null) {
-			const channelCandidate = bot.getChannel(channelMatch[1]);
-			if (channelCandidate && channelCandidate instanceof TextChannel) {
-				return channelCandidate;
-			}
-		}
-	}
-
-	if (!(msg.channel instanceof TextChannel)) {
-		throw new AssertTextChannelError(msg.channel.id);
-	}
-	return msg.channel;
-}
-*/
 
 export class DiscordWrapperEris implements DiscordWrapper {
 	private messageHandlers: DiscordMessageHandler[];
@@ -241,6 +218,3 @@ export class DiscordWrapperEris implements DiscordWrapper {
 		}
 	}
 }
-
-const eris = new DiscordWrapperEris(logger);
-export const discord = new DiscordInterface(eris, prefix, logger);

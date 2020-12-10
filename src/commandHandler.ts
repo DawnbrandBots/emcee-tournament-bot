@@ -1,12 +1,10 @@
 import { Logger } from "winston";
 import { prettyPrint } from "./discordDeck";
-import { discord } from "./discord/eris";
-import { DiscordInterface, DiscordMessageIn } from "./discord";
+import { DiscordInterface, DiscordMessageIn } from "./discord/interface";
 import { UserError } from "./errors";
-import logger from "./logger";
-import { tournamentManager, TournamentManager } from "./tournamentManager";
+import { TournamentManager } from "./tournamentManager/TournamentManager";
 
-class CommandHandler {
+export class CommandHandler {
 	private discord: DiscordInterface;
 	private tournamentManager: TournamentManager;
 	private logger: Logger;
@@ -102,7 +100,7 @@ class CommandHandler {
 		if (!channel) {
 			channel = msg.channel;
 		}
-		await tournamentManager.removeAnnouncementChannel(id, channel, type as "public" | "private");
+		await this.tournamentManager.removeAnnouncementChannel(id, channel, type as "public" | "private");
 		this.logger.verbose(`Channel ${channel} removed from tournament ${id} with level ${type} by ${msg.author}.`);
 		await this.discord.sendMessage(
 			`This channel removed as a ${type} announcement channel for Tournament ${id}!`,
@@ -210,5 +208,3 @@ class CommandHandler {
 		await msg.reply(`Tournament ${id} database successfully synchronised with remote website.`);
 	}
 }
-
-new CommandHandler(discord, tournamentManager, logger);
