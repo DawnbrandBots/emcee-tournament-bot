@@ -47,11 +47,14 @@ export interface DiscordReactionHandler {
 	response: DiscordReactionResponse;
 }
 
+export type DiscordDeleteHandler = DiscordMessageHandler;
+
 export interface DiscordWrapper {
 	onMessage: (handler: DiscordMessageHandler) => void;
+	onDelete: (handler: DiscordDeleteHandler) => void;
 	onPing: (hander: DiscordMessageHandler) => void;
 	onReaction: (handler: DiscordReactionHandler) => void;
-	sendMessage(msg: DiscordMessageOut, channel: string): Promise<DiscordMessageSent>;
+	sendMessage(channel: string, msg: DiscordMessageOut, file?: DiscordAttachmentOut): Promise<DiscordMessageSent>;
 	authenticateTO(msg: DiscordMessageIn): Promise<void>;
 	getMentionedUser(msg: DiscordMessageIn): string;
 	getUsername(userId: string): string;
@@ -100,6 +103,14 @@ export class DiscordInterface {
 		this.commands[name] = func;
 	}
 
+	public onMessage(func: DiscordMessageHandler): void {
+		this.api.onMessage(func);
+	}
+
+	public onDelete(func: DiscordDeleteHandler): void {
+		this.api.onDelete(func);
+	}
+
 	public onPing(func: DiscordMessageHandler): void {
 		this.api.onPing(func);
 	}
@@ -109,9 +120,10 @@ export class DiscordInterface {
 		channel: string,
 		emoji: string,
 		response: DiscordReactionResponse
-	): Promise<void> {
-		const msg = await this.sendMessage(content, channel);
+	): Promise<DiscordMessageSent> {
+		const msg = await this.sendMessage(channel, content);
 		this.api.onReaction({ msg: msg.id, emoji, response });
+		return msg;
 	}
 
 	public async authenticateTO(msg: DiscordMessageIn): Promise<void> {
@@ -126,8 +138,12 @@ export class DiscordInterface {
 		return `<@${userId}>`;
 	}
 
-	public async sendMessage(msg: DiscordMessageOut, channel: string): Promise<DiscordMessageSent> {
-		return await this.api.sendMessage(msg, channel);
+	public async sendMessage(
+		channel: string,
+		msg: DiscordMessageOut,
+		file?: DiscordAttachmentOut
+	): Promise<DiscordMessageSent> {
+		return await this.api.sendMessage(channel, msg, file);
 	}
 
 	public getMentionedUser(msg: DiscordMessageIn): string {

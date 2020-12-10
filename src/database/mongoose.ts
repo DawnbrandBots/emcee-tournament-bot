@@ -19,6 +19,8 @@ class DatabaseWrapperMongoose implements DatabaseWrapper {
 			description: tournament.description,
 			status: tournament.status,
 			players: tournament.confirmedParticipants.map(p => p.discord),
+			publicChannels: tournament.publicChannels,
+			privateChannels: tournament.privateChannels,
 			findHost: this.findHost(tournament),
 			findPlayer: this.findPlayer(tournament),
 			updateDetails: this.updateDetails(tournament)
@@ -130,7 +132,7 @@ class DatabaseWrapperMongoose implements DatabaseWrapper {
 		await tournament.save();
 	}
 
-	public async findTournamentByRegisterMessage(
+	private async findTournamentByRegisterMessage(
 		message: DiscordID,
 		channel: DiscordID
 	): Promise<TournamentDoc | null> {
@@ -141,36 +143,47 @@ class DatabaseWrapperMongoose implements DatabaseWrapper {
 	}
 
 	// Invoke after a registration message has been sent to an announcement channel.
-	public async addRegisterMessage(message: DiscordID, channel: DiscordID, challongeId: TournamentID): Promise<void> {
+	public async openRegistration(challongeId: TournamentID, channel: DiscordID, message: DiscordID): Promise<void> {
 		const tournament = await this.findTournament(challongeId);
 		tournament.registerMessages.push({ message, channel });
 		await tournament.save();
 	}
 
 	// Invoke after a registration message gets deleted.
-	public async removeRegisterMessage(message: DiscordID, channel: DiscordID): Promise<boolean> {
+	public async cleanRegistration(channel: DiscordID, message: DiscordID): Promise<void> {
 		const tournament = await this.findTournamentByRegisterMessage(message, channel);
 		if (!tournament) {
-			return false;
+			return; // failure is OK
 		}
 		const i = tournament.registerMessages.indexOf({ message, channel });
 		// i < 0 is impossible by precondition
 		tournament.registerMessages.splice(i, 1); // consider $pullAll
 		await tournament.save();
-		return true;
+	}
+
+	public async getPendingTournaments(playerId: string): Promise<DatabaseTournament[]> {
+		const tournaments = await TournamentModel.find({
+			pendingParticipants: playerId
+		});
+		return tournaments.map(this.wrapTournament);
 	}
 
 	// Invoke after a user requests to join a tournament and the appropriate response is delivered.
-	public async addPendingParticipant(message: DiscordID, channel: DiscordID, user: DiscordID): Promise<boolean> {
+	// Returns undefined if cannot be added.
+	public async addPendingPlayer(
+		message: DiscordID,
+		channel: DiscordID,
+		user: DiscordID
+	): Promise<DatabaseTournament | undefined> {
 		const tournament = await this.findTournamentByRegisterMessage(message, channel);
 		if (!tournament) {
-			return false;
+			return;
 		}
 		if (!tournament.pendingParticipants.includes(user)) {
 			tournament.pendingParticipants.push(user);
 			await tournament.save();
+			return this.wrapTournament(tournament);
 		}
-		return true;
 	}
 
 	// Invoke after a user requests to leave a tournament they haven't been confirmed for.
@@ -259,16 +272,13 @@ class DatabaseWrapperMongoose implements DatabaseWrapper {
 	}
 
 	// Invoke after a participant's deck is validated and they are registered on Challonge
-	public async confirmParticipant(
-		tournamentId: DiscordID,
+	public async confirmPlayer(
+		tournamentId: TournamentID,
 		participantId: DiscordID,
 		challongeId: number,
 		deck: string
-	): Promise<boolean> {
-		const tournament = await TournamentModel.findOne({ challongeId: tournamentId });
-		if (!tournament) {
-			return false;
-		}
+	): Promise<void> {
+		const tournament = await this.findTournament(tournamentId);
 		const i = tournament.pendingParticipants.indexOf(participantId);
 		if (i >= 0) {
 			tournament.pendingParticipants.splice(i, 1); // consider $pullAll
@@ -284,7 +294,6 @@ class DatabaseWrapperMongoose implements DatabaseWrapper {
 			});
 		}
 		await tournament.save();
-		return true;
 	}
 
 	public async setTournamentName(challongeId: string, name: string): Promise<string> {

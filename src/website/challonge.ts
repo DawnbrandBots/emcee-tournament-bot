@@ -292,6 +292,14 @@ class WebsiteWrapperChallonge implements WebsiteWrapper {
 		return (await this.validateResponse(response)) as ChallongeParticipant;
 	}
 
+	public async registerPlayer(tournamentId: string, playerName: string, playerId: string): Promise<number> {
+		const participant = await this.addParticipant(tournamentId, {
+			name: playerName,
+			misc: playerId
+		});
+		return participant.participant.id;
+	}
+
 	private async removeParticipant(tournament: string, participant: number): Promise<void> {
 		const response = await fetch(`${this.baseUrl}tournaments/${tournament}/participants/${participant}.json`, {
 			method: "DELETE"

@@ -2,6 +2,7 @@ export interface WebsiteWrapper {
 	createTournament(name: string, desc: string): Promise<WebsiteTournament>;
 	updateTournament(tournamentId: string, name: string, desc: string): Promise<void>;
 	getTournament(tournamentId: string): Promise<WebsiteTournament>;
+	registerPlayer(tournamentId: string, playerName: string, playerId: string): Promise<number>;
 }
 
 // interface structure WIP as fleshed out command-by-command
@@ -29,5 +30,9 @@ export class WebsiteInterface {
 
 	public async getTournament(tournamentId: string): Promise<WebsiteTournament> {
 		return await this.api.getTournament(tournamentId);
+	}
+
+	public async registerPlayer(tournamentId: string, playerName: string, playerId: string): Promise<number> {
+		return await this.api.registerPlayer(tournamentId, playerName, playerId);
 	}
 }

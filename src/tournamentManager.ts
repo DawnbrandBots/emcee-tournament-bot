@@ -1,21 +1,26 @@
 import { Deck } from "ydeck";
-import { DatabaseInterface } from "./database";
+import { DatabaseInterface, DatabaseTournament } from "./database";
 import { database } from "./database/mongoose";
 import { discord } from "./discord/eris";
-import { DiscordInterface } from "./discord";
+import { DiscordInterface, DiscordMessageIn } from "./discord";
 import { website } from "./website/challonge";
 import { WebsiteInterface } from "./website";
-import { UnauthorisedPlayerError } from "./errors";
+import { BlockedDMsError, UnauthorisedPlayerError, UserError } from "./errors";
 import { getDeck } from "./deck";
+import { getDeckFromMessage, prettyPrint } from "./discordDeck";
+import { Logger } from "winston";
+import logger from "./logger";
 
 export class TournamentManager {
 	private discord: DiscordInterface;
 	private database: DatabaseInterface;
 	private website: WebsiteInterface;
-	constructor(discord: DiscordInterface, database: DatabaseInterface, website: WebsiteInterface) {
+	private logger: Logger;
+	constructor(discord: DiscordInterface, database: DatabaseInterface, website: WebsiteInterface, logger: Logger) {
 		this.discord = discord;
 		this.database = database;
 		this.website = website;
+		this.logger = logger;
 	}
 	public async authenticateHost(tournamentId: string, hostId: string): Promise<void> {
 		await this.database.authenticateHost(tournamentId, hostId);
@@ -65,8 +70,108 @@ export class TournamentManager {
 		await this.database.removeHost(tournamentId, newHost);
 	}
 
+	private async handleDmFailure(userId: string, tournament: DatabaseTournament): Promise<void> {
+		const channels = tournament.privateChannels;
+		await Promise.all(
+			channels.map(async c => {
+				await this.discord.sendMessage(
+					c,
+					`Player ${this.discord.mentionUser(userId)} (${this.discord.getUsername(
+						userId
+					)}) is trying to sign up for Tournament ${tournament.name} (${
+						tournament.id
+					}), but I cannot send them DMs. Please ask them to allow DMs from this server.`
+				);
+			})
+		);
+	}
+
+	private async registerPlayer(msg: DiscordMessageIn, userId: string): Promise<void> {
+		const tournament = await this.database.addPendingPlayer(msg.channel, msg.id, userId);
+		if (tournament) {
+			try {
+				await this.discord.sendDirectMessage(
+					userId,
+					`You registering for ${tournament.name}. ` +
+						"Please submit a deck to complete your registration, by uploading a YDK file or sending a message with a YDKE URL."
+				);
+				this.logger.verbose(`User ${userId} registered for tournament ${tournament.id}.`);
+			} catch (e) {
+				if (e instanceof BlockedDMsError) {
+					await this.handleDmFailure(userId, tournament);
+				} else {
+					throw e;
+				}
+			}
+		}
+	}
+
+	public async confirmPlayer(msg: DiscordMessageIn): Promise<void> {
+		const tournaments = await this.database.getPendingTournaments(msg.author);
+		if (tournaments.length > 1) {
+			const out = tournaments.map(t => t.name).join("\n");
+			await msg.reply(
+				`You are registering in multiple tournaments. Please register in one at a time by unchecking the reaction on all others.\n${out}`
+			);
+			return;
+		}
+		if (tournaments.length === 1) {
+			const tournament = tournaments[0];
+			const deck = await getDeckFromMessage(msg);
+			const [content, file] = prettyPrint(deck, `${this.discord.getUsername(msg.author)}.ydk`);
+			if (deck.validationErrors.length > 0) {
+				await msg.reply(
+					`Your deck is not legal for Tournament ${tournament.name}. Please see the print out below for all the errors. You have NOT been registered yet, please submit again with a legal deck.`
+				);
+				await msg.reply(content, file);
+				return;
+			}
+			const challongeId = await this.website.registerPlayer(
+				tournament.id,
+				this.discord.getUsername(msg.author),
+				msg.author
+			);
+			await this.database.confirmPlayer(tournament.id, msg.author, challongeId, deck.url);
+			const channels = tournament.privateChannels;
+			await Promise.all(
+				channels.map(async c => {
+					await this.discord.sendMessage(
+						c,
+						`Player ${this.discord.mentionUser(msg.author)} (${this.discord.getUsername(
+							msg.author
+						)}) has signed up for Tournament ${tournament.name} (${tournament.id}) with the following deck!`
+					);
+					await this.discord.sendMessage(c, content, file);
+				})
+			);
+			this.logger.verbose(`User ${msg.author} confirmed for tournament ${tournament.id}.`);
+			await msg.reply(
+				`You have successfully signed up for Tournament ${tournament.name}! Your deck is below to double-check.`
+			);
+			await msg.reply(content, file);
+		}
+	}
+
+	public async cleanRegistration(msg: DiscordMessageIn): Promise<void> {
+		await this.database.cleanRegistration(msg.channel, msg.id);
+	}
+
+	private CHECK_EMOJI = "✅";
 	public async openTournament(tournamentId: string): Promise<void> {
-		throw new Error("Not implemented!");
+		const tournament = await this.database.getTournament(tournamentId);
+		const channels = tournament.publicChannels;
+		if (channels.length < 1) {
+			throw new UserError(
+				"You must register at least one public announcement channel before opening a tournament for registration!"
+			);
+		}
+		await Promise.all(
+			channels.map(async c => {
+				const content = `__Registration now open for **${tournament.name}**!__\n${tournament.description}\n__Click the ${this.CHECK_EMOJI} below to sign up!`;
+				const msg = await this.discord.awaitReaction(content, c, this.CHECK_EMOJI, this.registerPlayer);
+				await this.database.openRegistration(tournamentId, msg.channel, msg.id);
+			})
+		);
 	}
 
 	public async startTournament(tournamentId: string): Promise<void> {
@@ -117,4 +222,4 @@ export class TournamentManager {
 	}
 }
 
-export const tournamentManager = new TournamentManager(discord, database, website);
+export const tournamentManager = new TournamentManager(discord, database, website, logger);
