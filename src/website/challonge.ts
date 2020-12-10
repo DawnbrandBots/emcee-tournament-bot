@@ -1,4 +1,4 @@
-import { WebsiteTournament, WebsiteWrapper } from "./interface";
+import { WebsiteMatch, WebsiteTournament, WebsiteWrapper } from "./interface";
 import fetch, { Response } from "node-fetch";
 import { ChallongeAPIError } from "../errors";
 
@@ -211,12 +211,17 @@ export class WebsiteWrapperChallonge implements WebsiteWrapper {
 
 	private wrapTournament(t: ChallongeTournament): WebsiteTournament {
 		const tournament = t.tournament;
+		const p = tournament.participants;
+		const participants = p
+			? p.map(pa => ({ challongeId: pa.participant.id, discordId: pa.participant.misc || "DUMMY" }))
+			: [];
 		return {
 			id: tournament.id.toString(),
 			name: tournament.name,
 			desc: tournament.description,
 			url: tournament.url,
-			players: tournament.participants ? tournament.participants.map(p => p.participant.id) : []
+			players: participants,
+			rounds: tournament.swiss_rounds
 		};
 	}
 
@@ -264,13 +269,18 @@ export class WebsiteWrapperChallonge implements WebsiteWrapper {
 		return this.wrapTournament(await this.showTournament(tournamentId, true, true));
 	}
 
-	private async startTournament(tournament: string, settings: StartTournamentSettings): Promise<void> {
+	private async startTournamentRemote(tournament: string, settings: StartTournamentSettings): Promise<void> {
 		const response = await fetch(`${this.baseUrl}tournaments/${tournament}/start.json`, {
 			method: "POST",
 			body: JSON.stringify(settings),
 			headers: { "Content-Type": "application/json" }
 		});
 		await this.validateResponse(response);
+	}
+
+	public async startTournament(tournamentId: string): Promise<void> {
+		// eslint-disable-next-line @typescript-eslint/camelcase
+		await this.startTournamentRemote(tournamentId, { include_matches: 0, include_participants: 0 });
 	}
 
 	private async finaliseTournament(tournament: string, settings: StartTournamentSettings): Promise<void> {
@@ -322,6 +332,19 @@ export class WebsiteWrapperChallonge implements WebsiteWrapper {
 		}
 		const response = await fetch(url);
 		return (await this.validateResponse(response)) as IndexMatchResponse;
+	}
+
+	private wrapMatch(m: ChallongeMatch): WebsiteMatch {
+		const match = m.match;
+		return {
+			player1: match.player1_id,
+			player2: match.player2_id
+		};
+	}
+
+	public async getMatches(tournamentId: string): Promise<WebsiteMatch[]> {
+		const webMatches = await this.indexMatches(tournamentId);
+		return webMatches.map(this.wrapMatch);
 	}
 
 	private async updateMatch(

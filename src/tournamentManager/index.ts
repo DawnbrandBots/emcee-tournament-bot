@@ -1,4 +1,4 @@
-import { database } from "../database/mongoose";
+import { database } from "../database";
 import { discord } from "../discord";
 import logger from "../logger";
 import { website } from "../website";
