@@ -1,15 +1,11 @@
 import { Deck } from "ydeck";
-import { DatabaseInterface, DatabaseTournament } from "./database";
-import { database } from "./database/mongoose";
-import { discord } from "./discord/eris";
-import { DiscordInterface, DiscordMessageIn } from "./discord";
-import { website } from "./website/challonge";
-import { WebsiteInterface } from "./website";
-import { BlockedDMsError, UnauthorisedPlayerError, UserError } from "./errors";
-import { getDeck } from "./deck";
-import { getDeckFromMessage, prettyPrint } from "./discordDeck";
+import { DatabaseInterface, DatabaseTournament } from "../database";
+import { DiscordInterface, DiscordMessageIn } from "../discord/interface";
+import { WebsiteInterface } from "../website/interface";
+import { BlockedDMsError, UnauthorisedPlayerError, UserError } from "../errors";
+import { getDeck } from "../deck";
+import { getDeckFromMessage, prettyPrint } from "../discordDeck";
 import { Logger } from "winston";
-import logger from "./logger";
 
 export class TournamentManager {
 	private discord: DiscordInterface;
@@ -200,7 +196,7 @@ export class TournamentManager {
 	}
 
 	public async getPlayerDeck(tournamentId: string, playerId: string): Promise<Deck> {
-		const tourn = await database.getTournament(tournamentId);
+		const tourn = await this.database.getTournament(tournamentId);
 		const player = tourn.findPlayer(playerId);
 		if (!player) {
 			throw new UnauthorisedPlayerError(playerId, tournamentId);
@@ -221,5 +217,3 @@ export class TournamentManager {
 		});
 	}
 }
-
-export const tournamentManager = new TournamentManager(discord, database, website, logger);

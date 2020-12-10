@@ -1,5 +1,4 @@
-import { WebsiteInterface, WebsiteTournament, WebsiteWrapper } from ".";
-import { challongeUsername, challongeToken } from "../config/env";
+import { WebsiteTournament, WebsiteWrapper } from "./interface";
 import fetch, { Response } from "node-fetch";
 import { ChallongeAPIError } from "../errors";
 
@@ -196,7 +195,7 @@ interface AddParticipantSettings {
 	misc?: string;
 }
 
-class WebsiteWrapperChallonge implements WebsiteWrapper {
+export class WebsiteWrapperChallonge implements WebsiteWrapper {
 	private baseUrl: string;
 	constructor(user: string, token: string) {
 		this.baseUrl = `https://${user}:${token}@api.challonge.com/v1/`;
@@ -338,6 +337,3 @@ class WebsiteWrapperChallonge implements WebsiteWrapper {
 		return (await this.validateResponse(response)) as ChallongeMatch;
 	}
 }
-
-const challonge = new WebsiteWrapperChallonge(challongeUsername, challongeToken);
-export const website = new WebsiteInterface(challonge);

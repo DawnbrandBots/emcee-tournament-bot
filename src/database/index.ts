@@ -1,5 +1,5 @@
 import { UnauthorisedHostError, UnauthorisedPlayerError, UserError } from "../errors";
-import { WebsiteTournament } from "../website";
+import { WebsiteTournament } from "../website/interface";
 
 export interface DatabaseWrapper {
 	createTournament(
