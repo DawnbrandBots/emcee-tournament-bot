@@ -31,6 +31,7 @@ export class CommandHandler {
 		this.discord.registerCommand("deck", this.commandGetDeck);
 		this.discord.registerCommand("drop", this.commandDropPlayer);
 		this.discord.registerCommand("sync", this.commandSyncTournament);
+		this.discord.registerCommand("pie", this.commandPieChart);
 
 		this.discord.onMessage(this.tournamentManager.confirmPlayer);
 		this.discord.onDelete(this.tournamentManager.cleanRegistration);
@@ -209,5 +210,11 @@ export class CommandHandler {
 		await this.tournamentManager.authenticateHost(id, msg.author);
 		await this.tournamentManager.syncTournament(id);
 		await msg.reply(`Tournament ${id} database successfully synchronised with remote website.`);
+	}
+
+	private async commandPieChart(msg: DiscordMessageIn, args: string[]): Promise<void> {
+		const [id] = args;
+		const csv = await this.tournamentManager.generatePieChart(id);
+		await msg.reply(`Archetype counts are available in this file.`, csv);
 	}
 }

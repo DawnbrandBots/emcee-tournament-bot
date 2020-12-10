@@ -13,6 +13,7 @@
 	"author": "AlphaKretin",
 	"license": "AGPL-3.0-or-later",
 	"dependencies": {
+		"@fast-csv/format": "^4.3.5",
 		"dotenv": "^8.2.0",
 		"eris": "^0.13.3",
 		"mongoose": "^5.9.24",
