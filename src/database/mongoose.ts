@@ -1,4 +1,10 @@
-import { DatabaseTournament, DatabaseWrapper, DatabasePlayer, SynchroniseTournament } from "./interface";
+import {
+	DatabaseTournament,
+	DatabaseWrapper,
+	DatabasePlayer,
+	SynchroniseTournament,
+	DatabaseMessage
+} from "./interface";
 import { TournamentModel, TournamentDoc } from "./models";
 import { TournamentNotFoundError, UserError } from "../errors";
 
@@ -148,6 +154,11 @@ export class DatabaseWrapperMongoose implements DatabaseWrapper {
 		const tournament = await this.findTournament(challongeId);
 		tournament.registerMessages.push({ message, channel });
 		await tournament.save();
+	}
+
+	public async getRegisterMessages(tournamentId: string): Promise<DatabaseMessage[]> {
+		const tournament = await this.findTournament(tournamentId);
+		return tournament.registerMessages;
 	}
 
 	// Invoke after a registration message gets deleted.

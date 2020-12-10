@@ -55,6 +55,7 @@ export interface DiscordWrapper {
 	onPing: (hander: DiscordMessageHandler) => void;
 	onReaction: (handler: DiscordReactionHandler) => void;
 	sendMessage(channel: string, msg: DiscordMessageOut, file?: DiscordAttachmentOut): Promise<DiscordMessageSent>;
+	deleteMessage(channelId: string, messageId: string): Promise<void>;
 	authenticateTO(msg: DiscordMessageIn): Promise<void>;
 	getMentionedUser(msg: DiscordMessageIn): string;
 	getUsername(userId: string): string;
@@ -150,6 +151,10 @@ export class DiscordInterface {
 		file?: DiscordAttachmentOut
 	): Promise<DiscordMessageSent> {
 		return await this.api.sendMessage(channel, msg, file);
+	}
+
+	public async deleteMessage(channelId: string, messageId: string): Promise<void> {
+		await this.api.deleteMessage(channelId, messageId);
 	}
 
 	public getMentionedUser(msg: DiscordMessageIn): string {
