@@ -19,7 +19,7 @@ export class CommandHandler {
 		this.discord.registerCommand("create", this.commandCreateTournament.bind(this));
 		this.discord.registerCommand("update", this.commandUpdateTournament.bind(this));
 		this.discord.registerCommand("addchannel", this.commandAddChannel.bind(this));
-		this.discord.registerCommand("addchannel", this.commandRemoveChannel.bind(this));
+		this.discord.registerCommand("removechannel", this.commandRemoveChannel.bind(this));
 		this.discord.registerCommand("addhost", this.commandAddHost.bind(this));
 		this.discord.registerCommand("removehost", this.commandRemoveHost.bind(this));
 		this.discord.registerCommand("open", this.commandOpenTournament.bind(this));
@@ -64,9 +64,7 @@ export class CommandHandler {
 		await this.tournamentManager.authenticateHost(id, msg.author);
 		await this.tournamentManager.updateTournament(id, name, desc);
 		this.logger.verbose(`Tournament ${id} updated with name ${name} and description ${desc} by ${msg.author}.`);
-		await msg.reply(`{
-		Tournament \`${id}\` updated! It now has the name ${name} and the given description.
-	}`);
+		await msg.reply(`Tournament \`${id}\` updated! It now has the name ${name} and the given description.`);
 	}
 
 	private async commandAddChannel(msg: DiscordMessageIn, args: string[]): Promise<void> {

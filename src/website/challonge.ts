@@ -216,19 +216,20 @@ export class WebsiteWrapperChallonge implements WebsiteWrapper {
 			? p.map(pa => ({ challongeId: pa.participant.id, discordId: pa.participant.misc || "DUMMY" }))
 			: [];
 		return {
-			id: tournament.id.toString(),
+			id: tournament.url,
 			name: tournament.name,
 			desc: tournament.description,
-			url: tournament.url,
+			url: `https://challonge.com/${tournament.url}`,
 			players: participants,
 			rounds: tournament.swiss_rounds
 		};
 	}
 
-	public async createTournament(name: string, desc: string): Promise<WebsiteTournament> {
+	public async createTournament(name: string, desc: string, url: string): Promise<WebsiteTournament> {
 		const settings: ChallongeTournamentSettings = {
 			name,
-			description: desc
+			description: desc,
+			url
 		};
 		const response = await fetch(`${this.baseUrl}tournaments.json`, {
 			method: "POST",
