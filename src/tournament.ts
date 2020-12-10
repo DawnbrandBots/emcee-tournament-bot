@@ -47,72 +47,6 @@ export class Tournament {
 		this.id = id;
 	}
 
-	public async getRole(channelId: string): Promise<string> {
-		const channel = bot.getChannel(channelId);
-		if (!(channel instanceof GuildChannel)) {
-			throw new AssertTextChannelError(channelId);
-		}
-		const guild = channel.guild;
-		if (guild.id in this.roles) {
-			return this.roles[guild.id];
-		}
-		const name = `MC-Tournament-${this.id}`;
-		const role = guild.roles.find(r => r.name === name);
-		if (role) {
-			this.roles[guild.id] = role.id;
-			return role.id;
-		}
-		const newRole = await guild.createRole(
-			{
-				name: name,
-				color: 0xe67e22
-			},
-			"Auto-created by Emcee bot."
-		);
-		logger.verbose(`New participant role ${newRole.id} created in ${guild.id}.`);
-		this.roles[guild.id] = newRole.id;
-		return newRole.id;
-	}
-
-	private async warnClosedParticipant(participant: string, name: string): Promise<string> {
-		const channel = await bot.getDMChannel(participant);
-		const msg = await channel.createMessage(
-			`Sorry, the ${name} tournament you registered for has started, and you had not submitted a valid decklist, so you have been dropped.
-			If you think this is a mistake, contact the tournament host.`
-		);
-		return msg.id;
-	}
-
-	private async deleteRegisterMessage(ids: { channel: string; message: string }): Promise<void> {
-		const message = await bot.getMessage(ids.channel, ids.message);
-		await message.delete();
-		await removeRegisterMessage(ids.message, ids.channel);
-	}
-
-	private async checkBye(): Promise<string | undefined> {
-		// odd number of participants means a bye
-		const tournament = await this.getTournament();
-		if (tournament.confirmedParticipants.length % 2 === 1) {
-			const matches = await challonge.indexMatches(this.id, "open");
-			const players = tournament.confirmedParticipants.map(p => p.challongeId);
-			for (const match of matches) {
-				const i = players.indexOf(match.match.player1_id);
-				if (i > -1) {
-					players.splice(i);
-				}
-				const j = players.indexOf(match.match.player2_id);
-				if (j > -1) {
-					players.splice(j);
-				}
-			}
-			if (players.length === 1) {
-				const user = await getPlayerFromId(this.id, players[0]);
-				return user?.discord;
-			}
-		}
-		return;
-	}
-
 	private async startRound(
 		channelId: string,
 		url: string,
@@ -131,27 +65,6 @@ export class Tournament {
 		}
 		const msg = await channel.createMessage(message);
 		return msg.id;
-	}
-
-	public async start(host: string): Promise<string[]> {
-		await this.verifyHost(host);
-		const tournament = await this.getTournament();
-		if (tournament.confirmedParticipants.length < 2) {
-			throw new UserError("Cannot start a tournament without at least 2 confirmed participants!");
-		}
-		await challonge.startTournament(this.id, {});
-		const tournData = await challonge.showTournament(this.id);
-		const removedIDs = await startTournament(this.id, host, tournData.tournament.swiss_rounds);
-		await Promise.all(removedIDs.map(i => this.warnClosedParticipant(i, tournament.name)));
-		const messages = tournament.registerMessages;
-		await Promise.all(messages.map(this.deleteRegisterMessage));
-		const channels = tournament.publicChannels;
-		const bye = await this.checkBye();
-		const announcements = await Promise.all(
-			channels.map(c => this.startRound(c, this.id, 1, tournament.name, bye))
-		);
-
-		return announcements;
 	}
 
 	public async submitScore(
@@ -251,36 +164,6 @@ export class Tournament {
 	}
 }
 
-bot.on("messageReactionAdd", async (msg, emoji, userId) => {
-	if (userId === bot.user.id) {
-		return;
-	}
-	// register pending participant
-	if (emoji.name === CHECK_EMOJI && (await addPendingParticipant(msg.id, msg.channel.id, userId))) {
-		const chan = await bot.getDMChannel(userId);
-		const tournament = await findTournamentByRegisterMessage(msg.id, msg.channel.id);
-		if (!tournament) {
-			// impossible because of addPendingParticipant except in the case of a race condition
-			logger.error(new MiscInternalError(`User ${userId} added to non-existent tournament!`));
-			return;
-		}
-		try {
-			await chan.createMessage(
-				`You have successfully registered for ${tournament.name}. ` +
-					"Please submit a deck to complete your registration, by uploading a YDK file or sending a message with a YDKE URL."
-			);
-			logger.verbose(`User ${userId} registered for tournament ${tournament.challongeId}.`);
-		} catch (e) {
-			// DiscordRESTError - User blocking DMs
-			if (e.code === 50007) {
-				await Promise.all(tournament.privateChannels.map(c => handleDMFailure(c, userId, tournament.name)));
-				return;
-			}
-			logger.error(e);
-		}
-	}
-});
-
 bot.on("messageReactionRemove", async (msg, emoji, userId) => {
 	if (userId === bot.user.id || emoji.name !== CHECK_EMOJI) {
 		return;
@@ -331,22 +214,3 @@ bot.on("messageReactionRemove", async (msg, emoji, userId) => {
 		}
 	}
 });
-
-async function grantTournamentRole(channelId: string, user: string, tournamentId: string): Promise<boolean> {
-	const channel = bot.getChannel(channelId);
-	if (!(channel instanceof GuildChannel)) {
-		throw new AssertTextChannelError(channelId);
-	}
-	const member = channel.guild.members.get(user);
-	if (!member) {
-		return false;
-	}
-	const tournament = tournaments[tournamentId];
-	try {
-		const role = await tournament.getRole(channelId);
-		await member.addRole(role, "Tournament registration");
-	} catch (e) {
-		logger.error(e);
-	}
-	return true;
-}

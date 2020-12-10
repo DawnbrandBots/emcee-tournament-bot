@@ -166,6 +166,7 @@ export class TournamentManager {
 			channels.map(async c => {
 				const content = `__Registration now open for **${tournament.name}**!__\n${tournament.description}\n__Click the ${this.CHECK_EMOJI} below to sign up!`;
 				const msg = await this.discord.awaitReaction(content, c, this.CHECK_EMOJI, this.registerPlayer);
+				// TODO: add handler for removing the reaction too, to drop
 				await this.database.openRegistration(tournamentId, msg.channel, msg.id);
 			})
 		);
