@@ -113,6 +113,7 @@ export class TournamentManager {
 	}
 
 	public async confirmPlayer(msg: DiscordMessageIn): Promise<void> {
+		// TODO: check we're in DMs!!
 		const tournaments = await this.database.getPendingTournaments(msg.author);
 		if (tournaments.length > 1) {
 			const out = tournaments.map(t => t.name).join("\n");
@@ -153,6 +154,51 @@ export class TournamentManager {
 			this.logger.verbose(`User ${msg.author} confirmed for tournament ${tournament.id}.`);
 			await msg.reply(
 				`You have successfully signed up for Tournament ${tournament.name}! Your deck is below to double-check.`
+			);
+			await msg.reply(content, file);
+		}
+		// allow confirmed user to resubmit
+		const allTourns = await this.database.listTournaments();
+		const confirmedTourns = allTourns.filter(t => t.players.includes(msg.author) && t.status === "preparing");
+		if (confirmedTourns.length > 1) {
+			const out = confirmedTourns.map(t => t.name).join("\n");
+			await msg.reply(
+				`You're trying to update your deck for a tournament, but you're in multiple! Please choose one by dropping and registering again.\n${out}`
+			);
+			return;
+		}
+		if (confirmedTourns.length === 1) {
+			const tournament = confirmedTourns[0];
+			const deck = await getDeckFromMessage(msg);
+			const [content, file] = prettyPrint(deck, `${this.discord.getUsername(msg.author)}.ydk`);
+			if (deck.validationErrors.length > 0) {
+				await msg.reply(
+					`Your new deck is not legal for Tournament ${tournament.name}. Please see the print out below for all the errors. Your deck has not been changed.`
+				);
+				await msg.reply(content, file);
+				return;
+			}
+			// already registered on website
+			const player = tournament.findPlayer(msg.author);
+			// running for a confirmed player updates the deck
+			await this.database.confirmPlayer(tournament.id, msg.author, player.challongeId, deck.url);
+			const channels = tournament.privateChannels;
+			await Promise.all(
+				channels.map(async c => {
+					await this.discord.sendMessage(
+						c,
+						`Player ${this.discord.mentionUser(msg.author)} (${this.discord.getUsername(
+							msg.author
+						)}) has updated their deck for Tournament ${tournament.name} (${
+							tournament.id
+						}) to the following!`
+					);
+					await this.discord.sendMessage(c, content, file);
+				})
+			);
+			this.logger.verbose(`User ${msg.author} updated deck for tournament ${tournament.id}.`);
+			await msg.reply(
+				`You have successfully changed your deck for Tournament ${tournament.name}! Your deck is below to double-check.`
 			);
 			await msg.reply(content, file);
 		}
