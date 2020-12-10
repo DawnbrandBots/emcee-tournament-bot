@@ -5,6 +5,7 @@ export interface WebsiteWrapper {
 	registerPlayer(tournamentId: string, playerName: string, playerId: string): Promise<number>;
 	startTournament(tournamentId: string): Promise<void>;
 	getMatches(tournamentId: string): Promise<WebsiteMatch[]>;
+	removePlayer(tournamentId: string, playerId: number): Promise<void>;
 }
 
 interface WebsitePlayer {
@@ -64,5 +65,9 @@ export class WebsiteInterface {
 			p => !matches.find(m => m.player1 !== p.challongeId && m.player2 !== p.challongeId)
 		);
 		return bye?.discordId;
+	}
+
+	public async removePlayer(tournamentId: string, playerId: number): Promise<void> {
+		await this.api.removePlayer(tournamentId, playerId);
 	}
 }

@@ -165,7 +165,13 @@ export class TournamentManager {
 		await Promise.all(
 			channels.map(async c => {
 				const content = `__Registration now open for **${tournament.name}**!__\n${tournament.description}\n__Click the ${this.CHECK_EMOJI} below to sign up!`;
-				const msg = await this.discord.awaitReaction(content, c, this.CHECK_EMOJI, this.registerPlayer);
+				const msg = await this.discord.awaitReaction(
+					content,
+					c,
+					this.CHECK_EMOJI,
+					this.registerPlayer,
+					this.dropPlayerReaction
+				);
 				// TODO: add handler for removing the reaction too, to drop
 				await this.database.openRegistration(tournamentId, msg.channel, msg.id);
 			})
@@ -248,7 +254,7 @@ export class TournamentManager {
 		const playerProfiles = await Promise.all(
 			tournament.players.map(async p => {
 				const player = tournament.findPlayer(p);
-				const name = this.discord.getUsername(player.id);
+				const name = this.discord.getUsername(player.discordId);
 				const deck = await getDeck(player.deck);
 				return `${name}\t${deck.themes.join("/")}`;
 			})
@@ -262,8 +268,51 @@ export class TournamentManager {
 		return await getDeck(player.deck);
 	}
 
+	private async dropPlayerReaction(msg: DiscordMessageIn, playerId: string): Promise<void> {
+		// try to remove pending
+		const droppedTournament = await this.database.removePendingPlayer(msg.channel, msg.id, playerId);
+		// an unconfirmed player dropping isn't worth reporting to the hosts
+		if (droppedTournament) {
+			return;
+		}
+		// if wasn't found pending, try to remove confirmed
+		const tournament = await this.database.removeConfirmedPlayerReaction(msg.channel, msg.id, playerId);
+		if (tournament) {
+			const player = tournament.findPlayer(playerId);
+			await this.website.removePlayer(tournament.id, player.challongeId);
+			const channels = tournament.privateChannels;
+			await Promise.all(
+				channels.map(
+					async c =>
+						await this.discord.sendMessage(
+							c,
+							`Player ${this.discord.mentionUser(playerId)} (${this.discord.getUsername(
+								playerId
+							)}) has chosen to drop from Tournament ${tournament.name} (${tournament.id}).`
+						)
+				)
+			);
+		}
+	}
+
 	public async dropPlayer(tournamentId: string, playerId: string): Promise<void> {
-		throw new Error("Not implemented!");
+		const tournament = await this.database.removeConfirmedPlayerForce(tournamentId, playerId);
+		if (tournament) {
+			const player = tournament.findPlayer(playerId);
+			await this.website.removePlayer(tournament.id, player.challongeId);
+			const channels = tournament.privateChannels;
+			await Promise.all(
+				channels.map(
+					async c =>
+						await this.discord.sendMessage(
+							c,
+							`Player ${this.discord.mentionUser(playerId)} (${this.discord.getUsername(
+								playerId
+							)}) forcefully dropped from Tournament ${tournament.name} (${tournament.id}).`
+						)
+				)
+			);
+		}
 	}
 
 	public async syncTournament(tournamentId: string): Promise<void> {

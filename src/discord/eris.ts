@@ -29,6 +29,7 @@ export class DiscordWrapperEris implements DiscordWrapper {
 	private messageHandlers: DiscordMessageHandler[];
 	private pingHandlers: DiscordMessageHandler[];
 	private reactionHandlers: DiscordReactionHandler[];
+	private reactionRemoveHandlers: DiscordReactionHandler[];
 	private deleteHandlers: DiscordDeleteHandler[];
 	private wrappedMessages: { [id: string]: Message };
 	private toRoles: { [guild: string]: string };
@@ -41,6 +42,7 @@ export class DiscordWrapperEris implements DiscordWrapper {
 		this.deleteHandlers = [];
 		this.pingHandlers = [];
 		this.reactionHandlers = [];
+		this.reactionRemoveHandlers = [];
 		this.wrappedMessages = {};
 		this.toRoles = {};
 		this.playerRoles = {};
@@ -48,6 +50,7 @@ export class DiscordWrapperEris implements DiscordWrapper {
 		this.bot.on("ready", () => this.logger.info(`Logged in as ${this.bot.user.username} - ${this.bot.user.id}`));
 		this.bot.on("messageCreate", this.handleMessage);
 		this.bot.on("messageReactionAdd", this.handleReaction);
+		this.bot.on("messageReactionRemove", this.handleReactionRemove);
 		this.bot.on("messageDelete", this.handleDelete);
 		this.bot.connect().catch(this.logger.error);
 	}
@@ -138,6 +141,17 @@ export class DiscordWrapperEris implements DiscordWrapper {
 		}
 	}
 
+	private async handleReactionRemove(msg: PossiblyUncachedMessage, emoji: Emoji, userId: string): Promise<void> {
+		if (userId === this.bot.user.id) {
+			return;
+		}
+		const fullMsg = await this.bot.getMessage(msg.channel.id, msg.id);
+		const handlers = this.reactionRemoveHandlers.filter(h => h.msg === msg.id && h.emoji === emoji.name);
+		for (const handler of handlers) {
+			await handler.response(this.wrapMessageIn(fullMsg), userId);
+		}
+	}
+
 	private async createTORole(guild: Guild): Promise<Role> {
 		const newRole = await guild.createRole(
 			{
@@ -223,6 +237,10 @@ export class DiscordWrapperEris implements DiscordWrapper {
 
 	public onReaction(handler: DiscordReactionHandler): void {
 		this.reactionHandlers.push(handler);
+	}
+
+	public onReactionRemove(handler: DiscordReactionHandler): void {
+		this.reactionRemoveHandlers.push(handler);
 	}
 
 	public async authenticateTO(m: DiscordMessageIn): Promise<void> {
