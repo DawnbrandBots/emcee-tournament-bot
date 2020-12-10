@@ -34,6 +34,8 @@ export interface DatabaseWrapper {
 	): Promise<DatabaseTournament | undefined>;
 	removeConfirmedPlayerForce(tournamentId: string, playerId: string): Promise<DatabaseTournament | undefined>;
 	startTournament(tournamentId: string, rounds: number): Promise<string[]>;
+	nextRound(tournamentId: string): Promise<number>;
+	finishTournament(tournamentId: string): Promise<void>;
 	synchronise(tournamentId: string, newData: SynchroniseTournament): Promise<void>;
 }
 
@@ -187,6 +189,14 @@ export class DatabaseInterface {
 
 	public async startTournament(tournamentId: string, rounds: number): Promise<string[]> {
 		return this.db.startTournament(tournamentId, rounds);
+	}
+
+	public async nextRound(tournamentId: string): Promise<number> {
+		return await this.db.nextRound(tournamentId);
+	}
+
+	public async finishTournament(tournamentId: string): Promise<void> {
+		await this.db.finishTournament(tournamentId);
 	}
 
 	public async synchronise(tournamentId: string, data: SynchroniseTournament): Promise<void> {

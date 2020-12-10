@@ -8,6 +8,7 @@ export interface WebsiteWrapper {
 	getMatchWithPlayer(tournamentId: string, playerId: number): Promise<WebsiteMatch>;
 	removePlayer(tournamentId: string, playerId: number): Promise<void>;
 	submitScore(tournamentId: string, winner: number, winnerScore: number, loserScore: number): Promise<void>;
+	finishTournament(tournamentId: string): Promise<void>;
 }
 
 interface WebsitePlayer {
@@ -85,5 +86,17 @@ export class WebsiteInterface {
 		loserScore: number
 	): Promise<void> {
 		await this.api.submitScore(tournamentId, winner, winnerScore, loserScore);
+	}
+
+	public async tieMatches(tournamentId: string): Promise<void> {
+		const matches = await this.api.getMatches(tournamentId);
+		// we can use either player to report a tie, the submitScore logic will make it a tie
+		await Promise.all(matches.map(async m => await this.submitScore(tournamentId, m.player1, 0, 0)));
+	}
+
+	public async finishTournament(tournamentId: string): Promise<WebsiteTournament> {
+		const tournament = await this.api.getTournament(tournamentId);
+		await this.api.finishTournament(tournamentId);
+		return tournament;
 	}
 }

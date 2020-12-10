@@ -283,15 +283,6 @@ export class WebsiteWrapperChallonge implements WebsiteWrapper {
 		await this.startTournamentRemote(tournamentId, { include_matches: 0, include_participants: 0 });
 	}
 
-	private async finaliseTournament(tournament: string, settings: StartTournamentSettings): Promise<void> {
-		const response = await fetch(`${this.baseUrl}tournaments/${tournament}/finalize.json`, {
-			method: "POST",
-			body: JSON.stringify(settings),
-			headers: { "Content-Type": "application/json" }
-		});
-		await this.validateResponse(response);
-	}
-
 	private async addParticipant(tournament: string, settings: AddParticipantSettings): Promise<ChallongeParticipant> {
 		const response = await fetch(`${this.baseUrl}tournaments/${tournament}/participants.json`, {
 			method: "POST",
@@ -381,5 +372,19 @@ export class WebsiteWrapperChallonge implements WebsiteWrapper {
 			// eslint-disable-next-line @typescript-eslint/camelcase
 			scores_csv: score
 		});
+	}
+
+	private async finaliseTournament(tournament: string, settings: StartTournamentSettings): Promise<void> {
+		const response = await fetch(`${this.baseUrl}tournaments/${tournament}/finalize.json`, {
+			method: "POST",
+			body: JSON.stringify(settings),
+			headers: { "Content-Type": "application/json" }
+		});
+		await this.validateResponse(response);
+	}
+
+	public async finishTournament(tournamentId: string): Promise<void> {
+		// eslint-disable-next-line @typescript-eslint/camelcase
+		await this.finaliseTournament(tournamentId, { include_matches: 0, include_participants: 0 });
 	}
 }

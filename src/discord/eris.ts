@@ -223,6 +223,18 @@ export class DiscordWrapperEris implements DiscordWrapper {
 		await member.addRole(roleId);
 	}
 
+	public async deletePlayerRole(tournamentId: string, channelId: string): Promise<void> {
+		// yes this creates it just to delete it if it doesn't exist
+		// but that's better than not deleting it if it exists but isn't cached
+		const role = await this.getPlayerRole(tournamentId, channelId);
+		const chan = this.bot.getChannel(channelId);
+		if (!(chan instanceof GuildChannel)) {
+			throw new AssertTextChannelError(channelId);
+		}
+		const guild = chan.guild;
+		await guild.deleteRole(role);
+	}
+
 	public onMessage(handler: DiscordMessageHandler): void {
 		this.messageHandlers.push(handler);
 	}

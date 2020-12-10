@@ -62,6 +62,7 @@ export interface DiscordWrapper {
 	getUsername(userId: string): string;
 	getPlayerRole(tournamentId: string, channel: string): Promise<string>;
 	grantPlayerRole(userId: string, channelId: string, roleId: string): Promise<void>;
+	deletePlayerRole(tournamentId: string, channelId: string): Promise<void>;
 	sendDirectMessage(userId: string, content: DiscordMessageOut): Promise<void>;
 }
 
@@ -178,6 +179,10 @@ export class DiscordInterface {
 
 	public async grantPlayerRole(userId: string, channelId: string, roleId: string): Promise<void> {
 		await this.api.grantPlayerRole(userId, channelId, roleId);
+	}
+
+	public async deletePlayerRole(tournamentId: string, channelId: string): Promise<void> {
+		await this.api.deletePlayerRole(tournamentId, channelId);
 	}
 
 	public getChannel(query: string): string | undefined {

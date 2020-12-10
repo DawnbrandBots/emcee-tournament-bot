@@ -148,7 +148,7 @@ export class CommandHandler {
 	private async commandCancelTournament(msg: DiscordMessageIn, args: string[]): Promise<void> {
 		const [id] = args;
 		await this.tournamentManager.authenticateHost(id, msg.author);
-		await this.tournamentManager.startTournament(id);
+		await this.tournamentManager.cancelTournament(id);
 		await msg.reply(`Tournament ${id} successfully canceled.`);
 	}
 
@@ -169,6 +169,10 @@ export class CommandHandler {
 		const [id] = args;
 		await this.tournamentManager.authenticateHost(id, msg.author);
 		const round = await this.tournamentManager.nextRound(id);
+		if (round === -1) {
+			await msg.reply(`Tournament ${id} successfully progressed past final round and completed.`);
+			return;
+		}
 		await msg.reply(`Tournament ${id} successfully progressed to round ${round}.`);
 	}
 

@@ -244,8 +244,27 @@ export class TournamentManager {
 		await this.startNewRound(tournament, webTourn.url, 1);
 	}
 
+	private async finishTournament(tournamentId: string, cancel = false): Promise<void> {
+		const tournament = await this.database.getTournament(tournamentId);
+		const channels = tournament.publicChannels;
+		const webTourn = await this.website.finishTournament(tournamentId);
+		await this.database.finishTournament(tournamentId);
+		await Promise.all(
+			channels.map(async c => {
+				const role = await this.discord.getPlayerRole(tournamentId, c);
+				await this.discord.sendMessage(
+					c,
+					`${tournament.name} has ${
+						cancel ? "been cancelled." : "concluded!"
+					} Thank you all for playing! ${this.discord.mentionRole(role)}\nResults: ${webTourn.url}`
+				);
+				await this.discord.deletePlayerRole(tournamentId, c);
+			})
+		);
+	}
+
 	public async cancelTournament(tournamentId: string): Promise<void> {
-		throw new Error("Not implemented!");
+		await this.finishTournament(tournamentId, true);
 	}
 
 	public async submitScore(
@@ -284,7 +303,17 @@ export class TournamentManager {
 	}
 
 	public async nextRound(tournamentId: string): Promise<number> {
-		throw new Error("Not implemented!");
+		await this.website.tieMatches(tournamentId);
+		const round = await this.database.nextRound(tournamentId);
+		// finalise tournament
+		if (round === -1) {
+			await this.finishTournament(tournamentId);
+			return round;
+		}
+		const tournament = await this.database.getTournament(tournamentId);
+		const webTourn = await this.website.getTournament(tournamentId);
+		await this.startNewRound(tournament, webTourn.url, round);
+		return round;
 	}
 
 	public async listPlayers(tournamentId: string): Promise<string[]> {
