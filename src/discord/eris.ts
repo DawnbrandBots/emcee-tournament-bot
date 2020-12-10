@@ -7,6 +7,7 @@ import {
 	MessageContent,
 	MessageFile,
 	PossiblyUncachedMessage,
+	PrivateChannel,
 	Role,
 	TextChannel
 } from "eris";
@@ -68,6 +69,7 @@ export class DiscordWrapperEris implements DiscordWrapper {
 			author: msg.author.id,
 			channel: channel.id,
 			server: channel.guild.id,
+			isDM: msg.channel instanceof PrivateChannel,
 			reply: async (out: DiscordMessageOut, file?: DiscordAttachmentOut): Promise<void> => {
 				await msg.channel.createMessage(this.unwrapMessageOut(out), this.unwrapFileOut(file));
 			}
