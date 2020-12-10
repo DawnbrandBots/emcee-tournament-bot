@@ -2,10 +2,11 @@ import { Deck } from "ydeck";
 import { DatabaseInterface, DatabaseTournament } from "../database/interface";
 import { DiscordInterface, DiscordMessageIn } from "../discord/interface";
 import { WebsiteInterface } from "../website/interface";
-import { BlockedDMsError, UnauthorisedPlayerError, UserError } from "../errors";
+import { BlockedDMsError, UserError } from "../errors";
 import { getDeck } from "../deck";
 import { getDeckFromMessage, prettyPrint } from "../discordDeck";
 import { Logger } from "winston";
+import { splitText } from "../discord";
 
 export class TournamentManager {
 	private discord: DiscordInterface;
@@ -241,16 +242,22 @@ export class TournamentManager {
 		throw new Error("Not implemented!");
 	}
 
-	public async listPlayers(tournamentId: string): Promise<string> {
-		throw new Error("Not implemented!");
+	public async listPlayers(tournamentId: string): Promise<string[]> {
+		const tournament = await this.database.getTournament(tournamentId);
+		const playerProfiles = await Promise.all(
+			tournament.players.map(async p => {
+				const player = tournament.findPlayer(p);
+				const name = this.discord.getUsername(player.id);
+				const deck = await getDeck(player.deck);
+				return `${name}\t${deck.themes.join("/")}`;
+			})
+		);
+		return splitText(playerProfiles.join("\n"));
 	}
 
 	public async getPlayerDeck(tournamentId: string, playerId: string): Promise<Deck> {
 		const tourn = await this.database.getTournament(tournamentId);
 		const player = tourn.findPlayer(playerId);
-		if (!player) {
-			throw new UnauthorisedPlayerError(playerId, tournamentId);
-		}
 		return await getDeck(player.deck);
 	}
 

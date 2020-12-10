@@ -180,7 +180,9 @@ export class CommandHandler {
 		const [id] = args;
 		await this.tournamentManager.authenticateHost(id, msg.author);
 		const list = await this.tournamentManager.listPlayers(id);
-		await msg.reply(list);
+		for (const content of list) {
+			await msg.reply(`\`\`\`\n${content}\`\`\``);
+		}
 	}
 
 	private async commandGetDeck(msg: DiscordMessageIn, args: string[]): Promise<void> {

@@ -6,7 +6,7 @@ import {
 	DatabaseMessage
 } from "./interface";
 import { TournamentModel, TournamentDoc } from "./models";
-import { TournamentNotFoundError, UserError } from "../errors";
+import { TournamentNotFoundError, UnauthorisedPlayerError, UserError } from "../errors";
 
 type DiscordID = string;
 type TournamentID = string; // from Challonge
@@ -40,10 +40,13 @@ export class DatabaseWrapperMongoose implements DatabaseWrapper {
 		return { id: player.discord, deck: player.deck };
 	}
 
-	private findPlayer(tournament: TournamentDoc): (id: string) => DatabasePlayer | undefined {
-		return (id: string): DatabasePlayer | undefined => {
+	private findPlayer(tournament: TournamentDoc): (id: string) => DatabasePlayer {
+		return (id: string): DatabasePlayer => {
 			const p = tournament.confirmedParticipants.find(p => p.discord === id);
-			return p ? this.wrapPlayer(p) : undefined;
+			if (!p) {
+				throw new UnauthorisedPlayerError(id, tournament.id);
+			}
+			return this.wrapPlayer(p);
 		};
 	}
 

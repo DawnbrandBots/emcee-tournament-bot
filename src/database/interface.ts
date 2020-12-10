@@ -46,7 +46,7 @@ export interface DatabaseTournament {
 	publicChannels: string[];
 	privateChannels: string[];
 	findHost: (id: string) => boolean;
-	findPlayer: (id: string) => DatabasePlayer | undefined;
+	findPlayer: (id: string) => DatabasePlayer;
 }
 
 export interface SynchroniseTournament {

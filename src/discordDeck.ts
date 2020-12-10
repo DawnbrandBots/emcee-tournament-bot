@@ -4,6 +4,7 @@ import { DeckNotFoundError } from "./errors";
 import { DiscordAttachmentOut, DiscordMessageIn, DiscordMessageOut } from "./discord/interface";
 import { Deck, UrlConstructionError } from "ydeck";
 import { DeckError } from "ydeck/dist/validation";
+import { splitText } from "./discord";
 
 async function extractYdk(msg: DiscordMessageIn): Promise<string> {
 	const attach = msg.attachments[0];
@@ -27,27 +28,6 @@ export async function getDeckFromMessage(msg: DiscordMessageIn): Promise<Deck> {
 			throw e;
 		}
 	}
-}
-
-// utility function could go anywhere
-function splitText(outString: string, cap = 2000): string[] {
-	const outStrings: string[] = [];
-	while (outString.length > cap) {
-		let index = outString.slice(0, cap).lastIndexOf("\n");
-		if (index === -1 || index >= cap) {
-			index = outString.slice(0, cap).lastIndexOf(".");
-			if (index === -1 || index >= cap) {
-				index = outString.slice(0, cap).lastIndexOf(" ");
-				if (index === -1 || index >= cap) {
-					index = cap - 1;
-				}
-			}
-		}
-		outStrings.push(outString.slice(0, index + 1));
-		outString = outString.slice(index + 1);
-	}
-	outStrings.push(outString);
-	return outStrings;
 }
 
 function capFirst(str: string): string {
