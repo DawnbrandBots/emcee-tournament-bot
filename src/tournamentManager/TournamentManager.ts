@@ -113,7 +113,10 @@ export class TournamentManager {
 	}
 
 	public async confirmPlayer(msg: DiscordMessageIn): Promise<void> {
-		// TODO: check we're in DMs!!
+		// only check decklists in DMs
+		if (!msg.isDM) {
+			return;
+		}
 		const tournaments = await this.database.getPendingTournaments(msg.author);
 		if (tournaments.length > 1) {
 			const out = tournaments.map(t => t.name).join("\n");

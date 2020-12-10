@@ -13,6 +13,7 @@ export interface DiscordMessageIn {
 	author: string;
 	channel: string;
 	server: string;
+	isDM: boolean;
 	reply: (msg: DiscordMessageOut, file?: DiscordAttachmentOut) => Promise<void>;
 }
 
