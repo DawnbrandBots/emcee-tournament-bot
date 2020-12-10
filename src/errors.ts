@@ -54,4 +54,10 @@ export class AssertTextChannelError extends UserError {
 	}
 }
 
+export class BlockedDMsError extends UserError {
+	constructor(userId: string) {
+		super(`User <@${userId}> does not accept DMs from me! Please ask them to change their settings to allow this.`);
+	}
+}
+
 export class MiscInternalError extends Error {}

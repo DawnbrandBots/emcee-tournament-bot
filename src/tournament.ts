@@ -1,28 +1,20 @@
 import { challonge, ChallongeMatch } from "./challonge";
-import { GuildChannel, Message, TextChannel, PrivateChannel } from "eris";
+import { GuildChannel, TextChannel } from "eris";
 import {
 	startTournament,
 	removeRegisterMessage,
-	confirmParticipant,
 	findTournamentByRegisterMessage,
 	removePendingParticipant,
 	addPendingParticipant,
 	nextRound,
 	finishTournament,
-	getOngoingTournaments,
-	addRegisterMessage,
 	getPlayerFromId,
 	removeConfirmedParticipant,
 	dropConfirmedParticipant
 } from "./actions";
 import { bot } from "./bot";
-import { TournamentModel } from "./models";
-import { DeckNotFoundError, AssertTextChannelError, UserError, MiscInternalError } from "./errors";
+import { AssertTextChannelError, UserError, MiscInternalError } from "./errors";
 import logger from "./logger";
-import { Deck } from "ydeck";
-import { prettyPrint } from "./discordDeck";
-
-const CHECK_EMOJI = "✅";
 
 const tournaments: {
 	[id: string]: Tournament;
@@ -80,35 +72,6 @@ export class Tournament {
 		logger.verbose(`New participant role ${newRole.id} created in ${guild.id}.`);
 		this.roles[guild.id] = newRole.id;
 		return newRole.id;
-	}
-
-	private async openRegistrationInChannel(channelId: string, name: string, desc: string): Promise<string> {
-		const channel = bot.getChannel(channelId);
-		if (!(channel instanceof TextChannel)) {
-			throw new AssertTextChannelError(channelId);
-		}
-		const msg = await channel.createMessage(
-			`**New Tournament Open: ${name}**\n${desc}\nClick the ${CHECK_EMOJI} below to sign up!`
-		);
-		await msg.addReaction(CHECK_EMOJI);
-		await addRegisterMessage(msg.id, channelId, this.id);
-		return msg.id;
-	}
-
-	public async openRegistration(host: string): Promise<string[]> {
-		await this.verifyHost(host);
-		const tournament = await this.getTournament();
-		const channels = tournament.publicChannels;
-		if (channels.length < 1) {
-			throw new UserError(
-				"You must register at least one public announcement channel before opening a tournament for registration!"
-			);
-		}
-		const messages = await Promise.all(
-			channels.map(c => this.openRegistrationInChannel(c, tournament.name, tournament.description))
-		);
-		logger.verbose(`Tournament ${this.id} opened for registration by ${host}.`);
-		return messages;
 	}
 
 	private async warnClosedParticipant(participant: string, name: string): Promise<string> {
@@ -288,27 +251,6 @@ export class Tournament {
 	}
 }
 
-bot.on("messageDelete", msg => {
-	removeRegisterMessage(msg.id, msg.channel.id)
-		.then(result => {
-			if (result) {
-				logger.verbose(`Registration message ${msg.id} in ${msg.channel.id} deleted.`);
-			}
-		})
-		.catch(logger.error);
-});
-
-async function handleDMFailure(channelId: string, userId: string, tournament: string): Promise<string> {
-	const channel = bot.getChannel(channelId);
-	if (!(channel instanceof TextChannel)) {
-		throw new AssertTextChannelError(channelId);
-	}
-	const msg = await channel.createMessage(
-		`User <@${userId}> is trying to register for ${tournament}, but does not accept DMs from me! Please ask them to change their settings to allow this.`
-	);
-	return msg.id;
-}
-
 bot.on("messageReactionAdd", async (msg, emoji, userId) => {
 	if (userId === bot.user.id) {
 		return;
@@ -408,96 +350,3 @@ async function grantTournamentRole(channelId: string, user: string, tournamentId
 	}
 	return true;
 }
-
-async function sendTournamentRegistration(
-	channelId: string,
-	userId: string,
-	deck: Deck,
-	name: string
-): Promise<string> {
-	const channel = bot.getChannel(channelId);
-	if (!(channel instanceof TextChannel)) {
-		throw new AssertTextChannelError(channelId);
-	}
-	const msg = await channel.createMessage(`<@${userId}> has signed up for ${name} with the following deck.`);
-	const user = bot.users.get(userId);
-	const [embed, file] = prettyPrint(deck, `${user ? `${user.username}#${user.discriminator}` : userId}.ydk`);
-	await channel.createMessage(embed, file);
-	return msg.id;
-}
-
-export async function confirmDeck(msg: Message): Promise<void> {
-	if (msg.channel instanceof PrivateChannel) {
-		// confirm participant
-		const docs = await TournamentModel.find({
-			pendingParticipants: msg.author.id
-		});
-		if (docs.length === 0) {
-			try {
-				await DiscordDeck.sendProfile(msg, msg.channel);
-			} catch (e) {
-				// ignore "no deck" message
-				if (!(e instanceof DeckNotFoundError)) {
-					throw e;
-				}
-			}
-			return;
-		}
-		if (docs.length > 1) {
-			const tournaments = docs.map(t => t.name || t.challongeId).join("\n");
-			await msg.channel.createMessage(
-				`You are registering in multiple tournaments. Please register in one at a time by unchecking the reaction on all others.\n${tournaments}`
-			);
-			return;
-		}
-		// length === 1
-		const doc = docs[0];
-		try {
-			const deck = await DiscordDeck.constructFromMessage(msg);
-			const result = await deck.validate();
-			if (result.length > 0) {
-				await msg.channel.createMessage(
-					"Your deck is not legal, so you have not been registered. Please fix the issues listed below and try submitting again."
-				);
-				await deck.sendProfile(msg.channel, `${msg.author.username}#${msg.author.discriminator}.ydk`);
-				return;
-			}
-			const challongeUser = await challonge.addParticipant(doc.challongeId, {
-				name: `${msg.author.username}#${msg.author.discriminator}`,
-				misc: msg.author.id
-			});
-			await confirmParticipant(
-				doc.challongeId,
-				msg.author.id,
-				challongeUser.participant.id,
-				[...deck.record.main],
-				[...deck.record.extra],
-				[...deck.record.side]
-			);
-			const channels = doc.publicChannels;
-			await Promise.all(channels.map(c => grantTournamentRole(c, msg.author.id, doc.challongeId)));
-			await msg.channel.createMessage(
-				`Congratulations! You have been registered in ${doc.name} with the following deck.`
-			);
-			await deck.sendProfile(msg.channel, `${msg.author.username}#${msg.author.discriminator}.ydk`);
-			await Promise.all(
-				doc.privateChannels.map(c => sendTournamentRegistration(c, msg.author.id, deck, doc.name))
-			);
-			logger.verbose(`User ${msg.author.id} confirmed deck for tournament ${doc.challongeId}.`);
-		} catch (e) {
-			if (e instanceof DeckNotFoundError) {
-				await msg.channel.createMessage(e.message);
-			} else {
-				// nowhere to throw
-				logger.error(e);
-			}
-		}
-	}
-}
-
-getOngoingTournaments().then(ts => {
-	for (const t of ts) {
-		tournaments[t.challongeId] = new Tournament(t.challongeId);
-	}
-	logger.info("Loaded persistent tournaments!");
-});

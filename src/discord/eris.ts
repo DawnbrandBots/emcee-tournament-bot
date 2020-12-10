@@ -5,6 +5,7 @@ import {
 	GuildChannel,
 	Message,
 	MessageContent,
+	MessageFile,
 	PossiblyUncachedMessage,
 	Role,
 	TextChannel
@@ -13,6 +14,7 @@ import { discordToken } from "../config/env";
 import { prefix, toRole } from "../config/config.json";
 import {
 	DiscordAttachmentOut,
+	DiscordDeleteHandler,
 	DiscordInterface,
 	DiscordMessageHandler,
 	DiscordMessageIn,
@@ -21,7 +23,7 @@ import {
 	DiscordReactionHandler,
 	DiscordWrapper
 } from ".";
-import { AssertTextChannelError, UnauthorisedTOError, UserError } from "../errors";
+import { AssertTextChannelError, BlockedDMsError, UnauthorisedTOError, UserError } from "../errors";
 import logger from "../logger";
 import { Logger } from "winston";
 
@@ -52,12 +54,14 @@ export class DiscordWrapperEris implements DiscordWrapper {
 	private messageHandlers: DiscordMessageHandler[];
 	private pingHandlers: DiscordMessageHandler[];
 	private reactionHandlers: DiscordReactionHandler[];
+	private deleteHandlers: DiscordDeleteHandler[];
 	private wrappedMessages: { [id: string]: Message };
 	private bot: Client;
 	private logger: Logger;
 	constructor(logger: Logger) {
 		this.logger = logger;
 		this.messageHandlers = [];
+		this.deleteHandlers = [];
 		this.pingHandlers = [];
 		this.reactionHandlers = [];
 		this.wrappedMessages = {};
@@ -65,15 +69,20 @@ export class DiscordWrapperEris implements DiscordWrapper {
 		this.bot.on("ready", () => this.logger.info(`Logged in as ${this.bot.user.username} - ${this.bot.user.id}`));
 		this.bot.on("messageCreate", this.handleMessage);
 		this.bot.on("messageReactionAdd", this.handleReaction);
-		this.bot.on("messageDelete", this.cleanReactions);
+		this.bot.on("messageDelete", this.handleDelete);
 		this.bot.connect().catch(this.logger.error);
 	}
 
-	async sendMessage(msg: DiscordMessageOut, channel: string): Promise<DiscordMessageSent> {
+	async sendMessage(
+		channel: string,
+		msg: DiscordMessageOut,
+		file?: DiscordAttachmentOut
+	): Promise<DiscordMessageSent> {
 		const out = this.unwrapMessageOut(msg);
+		const outFile = this.unwrapFileOut(file);
 		const chan = this.bot.getChannel(channel);
 		if (chan instanceof TextChannel) {
-			const response = await chan.createMessage(out);
+			const response = await chan.createMessage(out, outFile);
 			return this.wrapMessageIn(response);
 		}
 		throw new AssertTextChannelError(channel);
@@ -93,10 +102,7 @@ export class DiscordWrapperEris implements DiscordWrapper {
 			channel: channel.id,
 			server: channel.guild.id,
 			reply: async (out: DiscordMessageOut, file?: DiscordAttachmentOut): Promise<void> => {
-				await msg.channel.createMessage(
-					this.unwrapMessageOut(out),
-					file ? { file: file.contents, name: file.filename } : undefined
-				);
+				await msg.channel.createMessage(this.unwrapMessageOut(out), this.unwrapFileOut(file));
 			}
 		};
 	}
@@ -107,6 +113,10 @@ export class DiscordWrapperEris implements DiscordWrapper {
 		}
 		// else embed
 		return { embed: msg };
+	}
+
+	private unwrapFileOut(file?: DiscordAttachmentOut): MessageFile | undefined {
+		return file ? { file: file.contents, name: file.filename } : undefined;
 	}
 
 	private async handleMessage(msg: Message): Promise<void> {
@@ -125,19 +135,24 @@ export class DiscordWrapperEris implements DiscordWrapper {
 		}
 	}
 
+	private async handleDelete(msg: PossiblyUncachedMessage): Promise<void> {
+		// clean reactions
+		this.reactionHandlers = this.reactionHandlers.filter(h => !(h.msg === msg.id));
+		const fullMsg = await this.bot.getMessage(msg.channel.id, msg.id);
+		for (const handler of this.deleteHandlers) {
+			await handler(this.wrapMessageIn(fullMsg));
+		}
+	}
+
 	private async handleReaction(msg: PossiblyUncachedMessage, emoji: Emoji, userId: string): Promise<void> {
 		if (userId === this.bot.user.id) {
 			return;
 		}
+		const fullMsg = await this.bot.getMessage(msg.channel.id, msg.id);
 		const handlers = this.reactionHandlers.filter(h => h.msg === msg.id && h.emoji === emoji.name);
 		for (const handler of handlers) {
-			const fullMsg = await this.bot.getMessage(msg.channel.id, msg.id);
 			await handler.response(this.wrapMessageIn(fullMsg), userId);
 		}
-	}
-
-	private cleanReactions(msg: PossiblyUncachedMessage): void {
-		this.reactionHandlers = this.reactionHandlers.filter(h => !(h.msg === msg.id));
 	}
 
 	private async createTORole(guild: Guild): Promise<Role> {
@@ -168,6 +183,10 @@ export class DiscordWrapperEris implements DiscordWrapper {
 
 	public onMessage(handler: DiscordMessageHandler): void {
 		this.messageHandlers.push(handler);
+	}
+
+	public onDelete(handler: DiscordDeleteHandler): void {
+		this.deleteHandlers.push(handler);
 	}
 
 	public onPing(handler: DiscordMessageHandler): void {
@@ -211,7 +230,15 @@ export class DiscordWrapperEris implements DiscordWrapper {
 			throw new UserError(`Cannot find user ${userId} to direct message!`);
 		}
 		const channel = await user.getDMChannel();
-		await channel.createMessage(this.unwrapMessageOut(content));
+		try {
+			await channel.createMessage(this.unwrapMessageOut(content));
+		} catch (e) {
+			// DiscordRESTError - User blocking DMs
+			if (e.code === 50007) {
+				throw new BlockedDMsError(userId);
+			}
+			this.logger.error(e);
+		}
 	}
 }
 

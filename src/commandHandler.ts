@@ -33,6 +33,9 @@ class CommandHandler {
 		this.discord.registerCommand("deck", this.commandGetDeck);
 		this.discord.registerCommand("drop", this.commandDropPlayer);
 		this.discord.registerCommand("sync", this.commandSyncTournament);
+
+		this.discord.onMessage(this.tournamentManager.confirmPlayer);
+		this.discord.onDelete(this.tournamentManager.cleanRegistration);
 	}
 	private async commandHelp(msg: DiscordMessageIn): Promise<void> {
 		await msg.reply(
@@ -132,6 +135,7 @@ class CommandHandler {
 		const [id] = args;
 		await this.tournamentManager.authenticateHost(id, msg.author);
 		await this.tournamentManager.openTournament(id);
+		this.logger.verbose(`Tournament ${id} opened for registration by ${msg.author}.`);
 		await msg.reply(`Tournament ${id} opened for registration!`);
 	}
 
