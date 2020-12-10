@@ -29,7 +29,8 @@ export class CommandHandler {
 		this.discord.registerCommand("round", this.commandNextRound);
 		this.discord.registerCommand("players", this.commandListPlayers);
 		this.discord.registerCommand("deck", this.commandGetDeck);
-		this.discord.registerCommand("drop", this.commandDropPlayer);
+		this.discord.registerCommand("drop", this.commandDropPlayerSelf);
+		this.discord.registerCommand("forcedrop", this.commandDropPlayerSelf);
 		this.discord.registerCommand("sync", this.commandSyncTournament);
 		this.discord.registerCommand("pie", this.commandPieChart);
 
@@ -196,7 +197,15 @@ export class CommandHandler {
 		await msg.reply(message, attachment);
 	}
 
-	private async commandDropPlayer(msg: DiscordMessageIn, args: string[]): Promise<void> {
+	private async commandDropPlayerSelf(msg: DiscordMessageIn, args: string[]): Promise<void> {
+		const [id] = args;
+		await this.tournamentManager.authenticatePlayer(id, msg.author);
+		await this.tournamentManager.dropPlayer(id, msg.author);
+		const name = this.discord.getUsername(msg.author);
+		await msg.reply(`Player ${name}, you have successfully dropped from Tournament ${id}.`);
+	}
+
+	private async commandDropPlayerByHost(msg: DiscordMessageIn, args: string[]): Promise<void> {
 		const [id] = args;
 		await this.tournamentManager.authenticateHost(id, msg.author);
 		const player = this.discord.getMentionedUser(msg);
