@@ -1,12 +1,13 @@
 import { Deck } from "ydeck";
 import { DatabaseInterface, DatabaseTournament } from "../database/interface";
-import { DiscordInterface, DiscordMessageIn } from "../discord/interface";
+import { DiscordAttachmentOut, DiscordInterface, DiscordMessageIn } from "../discord/interface";
 import { WebsiteInterface } from "../website/interface";
 import { BlockedDMsError, UserError } from "../errors";
 import { getDeck } from "../deck";
 import { getDeckFromMessage, prettyPrint } from "../discordDeck";
 import { Logger } from "winston";
 import { splitText } from "../discord";
+import * as csv from "@fast-csv/format";
 
 interface MatchScore {
 	playerId: number;
@@ -399,5 +400,33 @@ export class TournamentManager {
 			description: tournamentData.desc,
 			players: tournamentData.players.map(p => p.challongeId)
 		});
+	}
+
+	// utility function, can be moved elsewhere if it turns out to be more universally useful
+	// copied from ydeck/counts.ts, doesn't seem in-scope to expose it
+	private countStrings(list: string[]): { [element: string]: number } {
+		return list.reduce<{ [element: string]: number }>((acc, curr) => {
+			acc[curr] = (acc[curr] || 0) + 1;
+			return acc;
+		}, {});
+	}
+
+	public async generatePieChart(tournamentId: string): Promise<DiscordAttachmentOut> {
+		const tournament = await this.database.getTournament(tournamentId);
+		const themes = await Promise.all(
+			tournament.players.map(async p => {
+				const player = tournament.findPlayer(p);
+				const deck = await getDeck(player.deck);
+				return deck.themes.join("/");
+			})
+		);
+		const counts = this.countStrings(themes);
+		const rows = Object.entries(counts).map(e => [e[0], e[1].toString()]);
+		rows.unshift(["Theme", "Count"]);
+		const contents = await csv.writeToString(rows);
+		return {
+			filename: `${tournament.name}.csv`,
+			contents
+		};
 	}
 }
