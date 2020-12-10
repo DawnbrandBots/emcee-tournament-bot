@@ -280,6 +280,11 @@ export class TournamentManager {
 		if (tournament) {
 			const player = tournament.findPlayer(playerId);
 			await this.website.removePlayer(tournament.id, player.challongeId);
+			this.logger.verbose(`User ${playerId} dropped from tournament ${tournament.id}.`);
+			await this.discord.sendDirectMessage(
+				playerId,
+				`You have successfully dropped from Tournament ${tournament.name}.`
+			);
 			const channels = tournament.privateChannels;
 			await Promise.all(
 				channels.map(
@@ -300,6 +305,11 @@ export class TournamentManager {
 		if (tournament) {
 			const player = tournament.findPlayer(playerId);
 			await this.website.removePlayer(tournament.id, player.challongeId);
+			this.logger.verbose(`User ${playerId} dropped from tournament ${tournament.id} by host.`);
+			await this.discord.sendDirectMessage(
+				playerId,
+				`You have dropped from Tournament ${tournament.name} by the hosts.`
+			);
 			const channels = tournament.privateChannels;
 			await Promise.all(
 				channels.map(
