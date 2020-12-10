@@ -2,7 +2,7 @@ import { Deck } from "ydeck";
 import { DatabaseInterface, DatabaseTournament } from "./database/interface";
 import { DiscordAttachmentOut, DiscordInterface, DiscordMessageIn } from "./discord/interface";
 import { WebsiteInterface } from "./website/interface";
-import { BlockedDMsError, UserError } from "./errors";
+import { BlockedDMsError, TournamentNotFoundError, UserError } from "./errors";
 import { getDeck } from "./deck";
 import { getDeckFromMessage, prettyPrint } from "./discordDeck";
 import { Logger } from "winston";
@@ -43,8 +43,30 @@ export class TournamentManager {
 		return text.join("\n");
 	}
 
+	private async checkUrlTaken(url: string): Promise<boolean> {
+		try {
+			await this.database.getTournament(url);
+			return true;
+		} catch (e) {
+			if (e instanceof TournamentNotFoundError) {
+				return false;
+			}
+			throw e;
+		}
+	}
+
 	public async createTournament(host: string, server: string, name: string, desc: string): Promise<[string, string]> {
-		const web = await this.website.createTournament(name, desc);
+		// generate a URL based on the name, with added numbers to prevent conflicts
+		const baseUrl = name.toLowerCase().replace(/[^a-zA-Z0-9_]/g, "");
+		let candidateUrl = `mc_${baseUrl}`;
+		let i = 0;
+		// while a tournament with that ID exists, the URL is taken
+		while (await this.checkUrlTaken(candidateUrl)) {
+			candidateUrl = `mc_${baseUrl}${i}`;
+			i++;
+		}
+
+		const web = await this.website.createTournament(name, desc, candidateUrl);
 		await this.database.createTournament(host, server, web);
 		return [web.id, web.url];
 	}
