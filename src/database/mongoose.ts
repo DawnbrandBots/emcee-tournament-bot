@@ -330,19 +330,6 @@ export class DatabaseWrapperMongoose implements DatabaseWrapper {
 		return old.description;
 	}
 
-	private async getPlayerFromId(challongeId: TournamentID, playerId: number): Promise<MongoPlayer | undefined> {
-		const tournament = await this.findTournament(challongeId);
-		return tournament.confirmedParticipants.find(p => p.challongeId === playerId);
-	}
-
-	private async getPlayerFromDiscord(
-		challongeId: TournamentID,
-		discordId: DiscordID
-	): Promise<MongoPlayer | undefined> {
-		const tournament = await this.findTournament(challongeId);
-		return tournament.confirmedParticipants.find(p => p.discord === discordId);
-	}
-
 	// Get persisted tournaments that are not finished, for restoration upon launch
 	public async getActiveTournaments(): Promise<DatabaseTournament[]> {
 		const tournaments = await TournamentModel.find({ $or: [{ status: "in progress" }, { status: "preparing" }] });
