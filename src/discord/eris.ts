@@ -52,21 +52,6 @@ export class DiscordWrapperEris implements DiscordWrapper {
 		this.bot.connect().catch(this.logger.error);
 	}
 
-	async sendMessage(
-		channel: string,
-		msg: DiscordMessageOut,
-		file?: DiscordAttachmentOut
-	): Promise<DiscordMessageSent> {
-		const out = this.unwrapMessageOut(msg);
-		const outFile = this.unwrapFileOut(file);
-		const chan = this.bot.getChannel(channel);
-		if (chan instanceof TextChannel) {
-			const response = await chan.createMessage(out, outFile);
-			return this.wrapMessageIn(response);
-		}
-		throw new AssertTextChannelError(channel);
-	}
-
 	private wrapMessageIn(msg: Message): DiscordMessageIn {
 		this.wrappedMessages[msg.id] = msg;
 		const channel = msg.channel;
@@ -96,6 +81,25 @@ export class DiscordWrapperEris implements DiscordWrapper {
 
 	private unwrapFileOut(file?: DiscordAttachmentOut): MessageFile | undefined {
 		return file ? { file: file.contents, name: file.filename } : undefined;
+	}
+
+	public async sendMessage(
+		channel: string,
+		msg: DiscordMessageOut,
+		file?: DiscordAttachmentOut
+	): Promise<DiscordMessageSent> {
+		const out = this.unwrapMessageOut(msg);
+		const outFile = this.unwrapFileOut(file);
+		const chan = this.bot.getChannel(channel);
+		if (chan instanceof TextChannel) {
+			const response = await chan.createMessage(out, outFile);
+			return this.wrapMessageIn(response);
+		}
+		throw new AssertTextChannelError(channel);
+	}
+
+	public async deleteMessage(channelId: string, messageId: string): Promise<void> {
+		await this.bot.deleteMessage(channelId, messageId);
 	}
 
 	private async handleMessage(msg: Message): Promise<void> {

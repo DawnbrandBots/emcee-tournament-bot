@@ -192,7 +192,14 @@ export class TournamentManager {
 		if (tournament.players.length < 2) {
 			throw new UserError("Cannot start a tournament without at least 2 confirmed participants!");
 		}
-		// TODO: delete register messages
+		// delete register messages
+		const messages = await this.database.getRegisterMessages(tournamentId);
+		await Promise.all(
+			messages.map(async m => {
+				// onDelete handler will handle database cleanup
+				await this.discord.deleteMessage(m.channel, m.message);
+			})
+		);
 		// get challonge rounds with current player pool
 		const webTourn = await this.website.getTournament(tournamentId);
 		// drop pending participants
