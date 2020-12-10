@@ -161,12 +161,8 @@ export class CommandHandler {
 		if (scoreNums.length < 2) {
 			throw new UserError("Must provide score in format `#-#` e.g. `2-1`.");
 		}
-		await this.tournamentManager.submitScore(id, msg.author, scoreNums[0], scoreNums[1]);
-		await msg.reply(
-			`Score of ${scoreNums[0]}-${scoreNums[1]} recorded for ${this.discord.mentionUser(
-				msg.author
-			)} in Tournament ${id}.`
-		);
+		const response = await this.tournamentManager.submitScore(id, msg.author, scoreNums[0], scoreNums[1]);
+		await msg.reply(response);
 	}
 
 	private async commandNextRound(msg: DiscordMessageIn, args: string[]): Promise<void> {
