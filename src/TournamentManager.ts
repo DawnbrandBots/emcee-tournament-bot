@@ -1,12 +1,12 @@
 import { Deck } from "ydeck";
-import { DatabaseInterface, DatabaseTournament } from "../database/interface";
-import { DiscordAttachmentOut, DiscordInterface, DiscordMessageIn } from "../discord/interface";
-import { WebsiteInterface } from "../website/interface";
-import { BlockedDMsError, UserError } from "../errors";
-import { getDeck } from "../deck";
-import { getDeckFromMessage, prettyPrint } from "../discordDeck";
+import { DatabaseInterface, DatabaseTournament } from "./database/interface";
+import { DiscordAttachmentOut, DiscordInterface, DiscordMessageIn } from "./discord/interface";
+import { WebsiteInterface } from "./website/interface";
+import { BlockedDMsError, UserError } from "./errors";
+import { getDeck } from "./deck";
+import { getDeckFromMessage, prettyPrint } from "./discordDeck";
 import { Logger } from "winston";
-import { splitText } from "../discord";
+import { splitText } from "./discord/interface";
 import * as csv from "@fast-csv/format";
 
 interface MatchScore {
@@ -28,6 +28,7 @@ export class TournamentManager {
 		this.logger = logger;
 		this.matchScores = {};
 	}
+
 	public async authenticateHost(tournamentId: string, hostId: string): Promise<void> {
 		await this.database.authenticateHost(tournamentId, hostId);
 	}
@@ -47,11 +48,13 @@ export class TournamentManager {
 		await this.database.createTournament(host, server, web);
 		return [web.id, web.url];
 	}
+
 	public async updateTournament(tournamentId: string, name: string, desc: string): Promise<void> {
 		// Update DB first because it performs an important check that might throw
 		await this.database.updateTournament(tournamentId, name, desc);
 		await this.website.updateTournament(tournamentId, name, desc);
 	}
+
 	public async addAnnouncementChannel(
 		tournamentId: string,
 		channel: string,
@@ -114,7 +117,7 @@ export class TournamentManager {
 
 	public async confirmPlayer(msg: DiscordMessageIn): Promise<void> {
 		// only check decklists in DMs
-		if (!msg.isDM) {
+		if (msg.server !== "private") {
 			return;
 		}
 		const tournaments = await this.database.getPendingTournaments(msg.author);
@@ -227,8 +230,8 @@ export class TournamentManager {
 					content,
 					c,
 					this.CHECK_EMOJI,
-					this.registerPlayer,
-					this.dropPlayerReaction
+					this.registerPlayer.bind(this),
+					this.dropPlayerReaction.bind(this)
 				);
 				// TODO: add handler for removing the reaction too, to drop
 				await this.database.openRegistration(tournamentId, msg.channel, msg.id);

@@ -7,7 +7,6 @@ import {
 	MessageContent,
 	MessageFile,
 	PossiblyUncachedMessage,
-	PrivateChannel,
 	Role,
 	TextChannel
 } from "eris";
@@ -49,27 +48,24 @@ export class DiscordWrapperEris implements DiscordWrapper {
 		this.playerRoles = {};
 		this.bot = new Client(discordToken);
 		this.bot.on("ready", () => this.logger.info(`Logged in as ${this.bot.user.username} - ${this.bot.user.id}`));
-		this.bot.on("messageCreate", this.handleMessage);
-		this.bot.on("messageReactionAdd", this.handleReaction);
-		this.bot.on("messageReactionRemove", this.handleReactionRemove);
-		this.bot.on("messageDelete", this.handleDelete);
+		this.bot.on("messageCreate", this.handleMessage.bind(this));
+		this.bot.on("messageReactionAdd", this.handleReaction.bind(this));
+		this.bot.on("messageReactionRemove", this.handleReactionRemove.bind(this));
+		this.bot.on("messageDelete", this.handleDelete.bind(this));
 		this.bot.connect().catch(this.logger.error);
 	}
 
 	private wrapMessageIn(msg: Message): DiscordMessageIn {
 		this.wrappedMessages[msg.id] = msg;
 		const channel = msg.channel;
-		if (!(channel instanceof GuildChannel)) {
-			throw new AssertTextChannelError(channel.id);
-		}
+		const guildId = channel instanceof GuildChannel ? channel.guild.id : "private";
 		return {
 			id: msg.id,
 			attachments: msg.attachments,
 			content: msg.content,
 			author: msg.author.id,
 			channel: channel.id,
-			server: channel.guild.id,
-			isDM: msg.channel instanceof PrivateChannel,
+			server: guildId,
 			reply: async (out: DiscordMessageOut, file?: DiscordAttachmentOut): Promise<void> => {
 				await msg.channel.createMessage(this.unwrapMessageOut(out), this.unwrapFileOut(file));
 			}
