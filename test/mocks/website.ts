@@ -14,8 +14,15 @@ export class WebsiteWrapperMock implements WebsiteWrapper {
 	async updateTournament(): Promise<void> {
 		return;
 	}
-	getTournament(tournamentId: string): Promise<WebsiteTournament> {
-		throw new Error("Not yet implemented!");
+	async getTournament(tournamentId: string): Promise<WebsiteTournament> {
+		return {
+			id: tournamentId,
+			name: "name",
+			desc: "desc",
+			url: "https://example.com/url",
+			players: [],
+			rounds: 3
+		};
 	}
 	registerPlayer(tournamentId: string, playerName: string, playerId: string): Promise<number> {
 		throw new Error("Not yet implemented!");

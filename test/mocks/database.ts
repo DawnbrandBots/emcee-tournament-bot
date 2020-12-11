@@ -100,8 +100,8 @@ export class DatabaseWrapperMock implements DatabaseWrapper {
 	async openRegistration(): Promise<void> {
 		return;
 	}
-	getRegisterMessages(tournamentId: string): Promise<DatabaseMessage[]> {
-		throw new Error("Not yet implemented!");
+	async getRegisterMessages(): Promise<DatabaseMessage[]> {
+		return [];
 	}
 	async cleanRegistration(): Promise<void> {
 		return;
@@ -132,8 +132,8 @@ export class DatabaseWrapperMock implements DatabaseWrapper {
 	removeConfirmedPlayerForce(tournamentId: string, playerId: string): Promise<DatabaseTournament | undefined> {
 		throw new Error("Not yet implemented!");
 	}
-	startTournament(tournamentId: string, rounds: number): Promise<string[]> {
-		throw new Error("Not yet implemented!");
+	async startTournament(): Promise<string[]> {
+		return [];
 	}
 	nextRound(tournamentId: string): Promise<number> {
 		throw new Error("Not yet implemented!");
