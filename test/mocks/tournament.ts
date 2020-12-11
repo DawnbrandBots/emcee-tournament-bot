@@ -1,4 +1,5 @@
 import { Deck } from "ydeck";
+import { getDeck } from "../../src/deck";
 import { DiscordAttachmentOut } from "../../src/discord/interface";
 import { TournamentInterface } from "../../src/TournamentManager";
 
@@ -78,11 +79,17 @@ export class TournamentMock implements TournamentInterface {
 	}
 
 	public async listPlayers(tournamentId: string): Promise<DiscordAttachmentOut> {
-		throw new Error("Not yet implemented!");
+		return {
+			filename: `${tournamentId}.csv`,
+			contents: tournamentId
+		};
 	}
 
-	public async getPlayerDeck(tournamentId: string, playerId: string): Promise<Deck> {
-		throw new Error("Not yet implemented!");
+	public async getPlayerDeck(): Promise<Deck> {
+		// ABC test deck from YDeck test suites
+		return await getDeck(
+			"ydke://5m3qBeZt6gV9+McCffjHAn34xwK8beUDvG3lA7xt5QMfX5ICWvTJAVr0yQFa9MkBrDOdBKwznQSsM50Ey/UzAMv1MwDL9TMAdAxQBQ6wYAKvI94AryPeAK8j3gCmm/QBWXtjBOMavwDjGr8A4xq/AD6kcQGeE8oEnhPKBJ4TygSlLfUDpS31A6Ut9QMiSJkAIkiZACJImQCANVMDgDVTAw==!FtIXALVcnwC1XJ8AiBF2A4gRdgNLTV4Elt0IAMf4TQHCT0EAvw5JAqSaKwD5UX8EweoDA2LO9ATaI+sD!H1+SAg==!"
+		);
 	}
 
 	public async dropPlayer(): Promise<void> {
@@ -94,6 +101,9 @@ export class TournamentMock implements TournamentInterface {
 	}
 
 	public async generatePieChart(tournamentId: string): Promise<DiscordAttachmentOut> {
-		throw new Error("Not yet implemented!");
+		return {
+			filename: `${tournamentId}.csv`,
+			contents: tournamentId
+		};
 	}
 }

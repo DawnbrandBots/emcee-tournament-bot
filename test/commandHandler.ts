@@ -104,11 +104,49 @@ describe("Tournament flow commands", function () {
 		);
 	});
 });
-describe("Minor tournament commads", function () {
-	it("List players");
-	it("Get player deck");
-	it("Drop self");
-	it("Drop player");
-	it("Sync");
-	it("Pie chart");
+describe("Misc tournament commands", function () {
+	it("List players", async function () {
+		await discord.simMessage("mc!players mc_name", "players");
+		expect(discord.getResponse("players")).to.equal(
+			"A list of players for tournament mc_name with the theme of their deck is attached."
+		);
+		expect(discord.getFile("players")).to.deep.equal({
+			filename: "mc_name.csv",
+			contents: "mc_name"
+		});
+	});
+	it("Drop self", async function () {
+		await discord.simMessage("mc!drop mc_name", "drop");
+		expect(discord.getResponse("drop")).to.equal(
+			"Player testUser, you have successfully dropped from Tournament mc_name."
+		);
+	});
+	it("Drop player", async function () {
+		await discord.simMessage("mc!forcedrop mc_name|<@1101>", "forcedrop");
+		expect(discord.getResponse("forcedrop")).to.equal("Player 1101 successfully dropped from Tournament mc_name.");
+	});
+	it("Sync", async function () {
+		await discord.simMessage("mc!sync mc_name", "sync");
+		expect(discord.getResponse("sync")).to.equal(
+			"Tournament mc_name database successfully synchronised with remote website."
+		);
+	});
+	it("Pie chart", async function () {
+		await discord.simMessage("mc!pie mc_name", "pie");
+		expect(discord.getResponse("pie")).to.equal("Archetype counts for Tournament mc_name are attached.");
+		expect(discord.getFile("players")).to.deep.equal({
+			filename: "mc_name.csv",
+			contents: "mc_name"
+		});
+	});
+	it("Get player deck", async function () {
+		await discord.simMessage("mc!deck mc_name|<@1101>", "deck");
+		// TODO: test embed fields :(
+		// ABC test deck from YDeck test suites
+		expect(discord.getFile("deck")).to.deep.equal({
+			filename: "1101.ydk",
+			contents:
+				"#created by YDeck\n#main\n99249638\n99249638\n46659709\n46659709\n46659709\n65367484\n65367484\n65367484\n43147039\n30012506\n30012506\n30012506\n77411244\n77411244\n77411244\n3405259\n3405259\n3405259\n89132148\n39890958\n14558127\n14558127\n14558127\n32807846\n73628505\n12524259\n12524259\n12524259\n24224830\n80352158\n80352158\n80352158\n66399653\n66399653\n66399653\n10045474\n10045474\n10045474\n55784832\n55784832\n#extra\n1561110\n10443957\n10443957\n58069384\n58069384\n73289035\n581014\n21887175\n4280258\n38342335\n2857636\n75452921\n50588353\n83152482\n65741786\n!side\n43147039\n"
+		});
+	});
 });
