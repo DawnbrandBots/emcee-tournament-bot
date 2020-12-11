@@ -82,6 +82,9 @@ export class DiscordWrapperMock implements DiscordWrapper {
 		file?: DiscordAttachmentOut
 	): Promise<DiscordMessageSent> {
 		this.messages[channel] = msg;
+		if (file) {
+			this.files[channel] = file;
+		}
 		return {
 			id: "testId",
 			content: typeof msg === "string" ? msg : "embed",
