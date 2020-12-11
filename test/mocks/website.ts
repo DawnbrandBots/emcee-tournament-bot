@@ -4,8 +4,8 @@ export class WebsiteWrapperMock implements WebsiteWrapper {
 	createTournament(name: string, desc: string, url: string): Promise<WebsiteTournament> {
 		throw new Error("Not yet implemented!");
 	}
-	updateTournament(tournamentId: string, name: string, desc: string): Promise<void> {
-		throw new Error("Not yet implemented!");
+	async updateTournament(): Promise<void> {
+		return;
 	}
 	getTournament(tournamentId: string): Promise<WebsiteTournament> {
 		throw new Error("Not yet implemented!");
@@ -13,8 +13,8 @@ export class WebsiteWrapperMock implements WebsiteWrapper {
 	registerPlayer(tournamentId: string, playerName: string, playerId: string): Promise<number> {
 		throw new Error("Not yet implemented!");
 	}
-	startTournament(tournamentId: string): Promise<void> {
-		throw new Error("Not yet implemented!");
+	async startTournament(): Promise<void> {
+		return;
 	}
 	getMatches(tournamentId: string): Promise<WebsiteMatch[]> {
 		throw new Error("Not yet implemented!");
@@ -22,13 +22,13 @@ export class WebsiteWrapperMock implements WebsiteWrapper {
 	getMatchWithPlayer(tournamentId: string, playerId: number): Promise<WebsiteMatch> {
 		throw new Error("Not yet implemented!");
 	}
-	removePlayer(tournamentId: string, playerId: number): Promise<void> {
-		throw new Error("Not yet implemented!");
+	async removePlayer(): Promise<void> {
+		return;
 	}
-	submitScore(tournamentId: string, winner: number, winnerScore: number, loserScore: number): Promise<void> {
-		throw new Error("Not yet implemented!");
+	async submitScore(): Promise<void> {
+		return;
 	}
-	finishTournament(tournamentId: string): Promise<void> {
-		throw new Error("Not yet implemented!");
+	async finishTournament(): Promise<void> {
+		return;
 	}
 }
