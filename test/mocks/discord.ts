@@ -17,6 +17,7 @@ export class DiscordWrapperMock implements DiscordWrapper {
 
 	private messages: { [channel: string]: DiscordMessageOut };
 	private files: { [channel: string]: DiscordAttachmentOut };
+	private emoji: { [message: string]: string };
 	constructor() {
 		this.messageHandlers = [];
 		this.pingHandlers = [];
@@ -24,6 +25,7 @@ export class DiscordWrapperMock implements DiscordWrapper {
 
 		this.messages = {};
 		this.files = {};
+		this.emoji = {};
 	}
 
 	public async simMessage(content: string, testCode: string): Promise<void> {
@@ -58,7 +60,7 @@ export class DiscordWrapperMock implements DiscordWrapper {
 				this.messages[testCode] = msg;
 			},
 			react: async (emoji: string) => {
-				throw new Error("Not yet implemented!");
+				this.emoji[testCode] = emoji;
 			}
 		});
 	}
@@ -69,6 +71,10 @@ export class DiscordWrapperMock implements DiscordWrapper {
 
 	public getFile(testCode: string): DiscordAttachmentOut | undefined {
 		return this.files[testCode];
+	}
+
+	public getEmoji(testCode: string): string | undefined {
+		return this.emoji[testCode];
 	}
 
 	public async sendMessage(
@@ -88,7 +94,7 @@ export class DiscordWrapperMock implements DiscordWrapper {
 				this.messages[channel] = msg;
 			},
 			react: async (emoji: string): Promise<void> => {
-				throw new Error("Not yet implemented!");
+				this.emoji[channel] = emoji;
 			}
 		};
 	}
@@ -121,12 +127,12 @@ export class DiscordWrapperMock implements DiscordWrapper {
 		this.pingHandlers.push(handler);
 	}
 
-	public onReaction(handler: DiscordReactionHandler): void {
-		throw new Error("Not yet implemented!");
+	public onReaction(): void {
+		return; // out of scope for these tests
 	}
 
-	public onReactionRemove(handler: DiscordReactionHandler): void {
-		throw new Error("Not yet implemented!");
+	public onReactionRemove(): void {
+		return; // out of scope for these tests
 	}
 
 	public async authenticateTO(m: DiscordMessageIn): Promise<void> {
