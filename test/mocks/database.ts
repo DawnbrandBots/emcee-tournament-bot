@@ -135,8 +135,11 @@ export class DatabaseWrapperMock implements DatabaseWrapper {
 	async startTournament(): Promise<string[]> {
 		return [];
 	}
-	nextRound(tournamentId: string): Promise<number> {
-		throw new Error("Not yet implemented!");
+	async nextRound(tournamentId: string): Promise<number> {
+		if (tournamentId === "tourn2") {
+			return -1;
+		}
+		return 2;
 	}
 	async finishTournament(): Promise<void> {
 		return;
