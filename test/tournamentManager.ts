@@ -80,13 +80,11 @@ describe("Misc commands", function () {
 			"ID: tourn1|Name: Tournament 1|Status: preparing|Players: 2\nID: tourn2|Name: Tournament 2|Status: preparing|Players: 2"
 		);
 	});
-	it(
-		"List players" /*, async function () {
+	it("List players", async function () {
 		const file = await tournament.listPlayers("tourn1");
-		expect(file.filename).to.equal("tourn1.csv");
+		expect(file.filename).to.equal("Tournament 1.csv");
 		// TODO: test file contents? sounds scary
-	}*/ // dummy out while we figure out octokit auth issues
-	);
+	});
 	it("Get player deck");
 	it("Drop player", async function () {
 		await tournament.dropPlayer("tourn1", "player1");
