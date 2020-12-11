@@ -6,7 +6,6 @@ import { BlockedDMsError, TournamentNotFoundError, UserError } from "./errors";
 import { getDeck } from "./deck";
 import { getDeckFromMessage, prettyPrint } from "./discordDeck";
 import { Logger } from "winston";
-import { splitText } from "./discord/interface";
 import * as csv from "@fast-csv/format";
 
 interface MatchScore {
@@ -392,17 +391,23 @@ export class TournamentManager {
 		return round;
 	}
 
-	public async listPlayers(tournamentId: string): Promise<string[]> {
+	public async listPlayers(tournamentId: string): Promise<DiscordAttachmentOut> {
 		const tournament = await this.database.getTournament(tournamentId);
-		const playerProfiles = await Promise.all(
+		const rows = await Promise.all(
 			tournament.players.map(async p => {
 				const player = tournament.findPlayer(p);
 				const name = this.discord.getUsername(player.discordId);
 				const deck = await getDeck(player.deck);
-				return `${name}\t${deck.themes.join("/")}`;
+				const themes = deck.themes.length > 0 ? deck.themes.join("/") : "No themes";
+				return [name, themes];
 			})
 		);
-		return splitText(playerProfiles.join("\n"));
+		rows.unshift(["Player", "Theme"]);
+		const contents = await csv.writeToString(rows);
+		return {
+			filename: `${tournament.name}.csv`,
+			contents
+		};
 	}
 
 	public async getPlayerDeck(tournamentId: string, playerId: string): Promise<Deck> {
@@ -492,7 +497,7 @@ export class TournamentManager {
 			tournament.players.map(async p => {
 				const player = tournament.findPlayer(p);
 				const deck = await getDeck(player.deck);
-				return deck.themes.join("/");
+				return deck.themes.length > 0 ? deck.themes.join("/") : "No themes";
 			})
 		);
 		const counts = this.countStrings(themes);
