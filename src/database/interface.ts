@@ -184,7 +184,7 @@ export class DatabaseInterface {
 		tournamentId: string,
 		playerId: string
 	): Promise<DatabaseTournament | undefined> {
-		return await this.removeConfirmedPlayerForce(tournamentId, playerId);
+		return await this.db.removeConfirmedPlayerForce(tournamentId, playerId);
 	}
 
 	public async startTournament(tournamentId: string, rounds: number): Promise<string[]> {
