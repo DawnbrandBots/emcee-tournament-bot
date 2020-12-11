@@ -24,8 +24,8 @@ export class WebsiteWrapperMock implements WebsiteWrapper {
 			rounds: 3
 		};
 	}
-	registerPlayer(tournamentId: string, playerName: string, playerId: string): Promise<number> {
-		throw new Error("Not yet implemented!");
+	async registerPlayer(tournamentId: string, playerName: string, playerId: string): Promise<number> {
+		return 1; // challongeId won't matter lol
 	}
 	async startTournament(): Promise<void> {
 		return;

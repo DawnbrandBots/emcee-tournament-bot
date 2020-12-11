@@ -109,8 +109,8 @@ export class DatabaseWrapperMock implements DatabaseWrapper {
 	async cleanRegistration(): Promise<void> {
 		return;
 	}
-	getPendingTournaments(playerId: string): Promise<DatabaseTournament[]> {
-		throw new Error("Not yet implemented!");
+	async getPendingTournaments(): Promise<DatabaseTournament[]> {
+		return [this.tournaments[0]];
 	}
 	addPendingPlayer(channelId: string, messageId: string, playerId: string): Promise<DatabaseTournament | undefined> {
 		throw new Error("Not yet implemented!");
