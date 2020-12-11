@@ -42,7 +42,13 @@ describe("Tournament creation commands", async function () {
 });
 
 describe("Tournament flow commands", function () {
-	it("Open tournament");
+	it("Open tournament", async function () {
+		await tournament.openTournament("tourn1");
+		expect(discord.getResponse("channel1")).to.equal(
+			"__Registration now open for **Tournament 1**!__\nThe first tournament\n__Click the ✅ below to sign up!__"
+		);
+		expect(discord.getEmoji("channel1")).to.equal("✅");
+	});
 	it("Start tournament");
 	it("Cancel tournament");
 	it("Submit score");
