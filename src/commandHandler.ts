@@ -30,7 +30,7 @@ export class CommandHandler {
 		this.discord.registerCommand("players", this.commandListPlayers.bind(this));
 		this.discord.registerCommand("deck", this.commandGetDeck.bind(this));
 		this.discord.registerCommand("drop", this.commandDropPlayerSelf.bind(this));
-		this.discord.registerCommand("forcedrop", this.commandDropPlayerSelf.bind(this));
+		this.discord.registerCommand("forcedrop", this.commandDropPlayerByHost.bind(this));
 		this.discord.registerCommand("sync", this.commandSyncTournament.bind(this));
 		this.discord.registerCommand("pie", this.commandPieChart.bind(this));
 
@@ -180,9 +180,7 @@ export class CommandHandler {
 		const [id] = args;
 		await this.tournamentManager.authenticateHost(id, msg.author);
 		const list = await this.tournamentManager.listPlayers(id);
-		for (const content of list) {
-			await msg.reply(`\`\`\`\n${content}\`\`\``);
-		}
+		await msg.reply(`A list of players for tournament ${id} with the theme of their deck is attached.`, list);
 	}
 
 	private async commandGetDeck(msg: DiscordMessageIn, args: string[]): Promise<void> {
@@ -222,6 +220,6 @@ export class CommandHandler {
 	private async commandPieChart(msg: DiscordMessageIn, args: string[]): Promise<void> {
 		const [id] = args;
 		const csv = await this.tournamentManager.generatePieChart(id);
-		await msg.reply(`Archetype counts are available in this file.`, csv);
+		await msg.reply(`Archetype counts for Tournament ${id} are attached.`, csv);
 	}
 }
