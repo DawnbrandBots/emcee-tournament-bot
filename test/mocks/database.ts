@@ -1,11 +1,49 @@
-import {
-	DatabaseMessage,
-	DatabaseTournament,
-	DatabaseWrapper,
-	SynchroniseTournament
-} from "../../src/database/interface";
+import { DatabaseMessage, DatabasePlayer, DatabaseTournament, DatabaseWrapper } from "../../src/database/interface";
 
 export class DatabaseWrapperMock implements DatabaseWrapper {
+	tournaments: DatabaseTournament[];
+	constructor() {
+		this.tournaments = [
+			{
+				id: "tourn1",
+				name: "Tournament 1",
+				description: "The first tournament",
+				status: "preparing",
+				players: ["player1", "player2"],
+				publicChannels: ["channel1"],
+				privateChannels: ["channel2"],
+				findHost(): boolean {
+					return true;
+				},
+				findPlayer(id: string): DatabasePlayer {
+					return {
+						discordId: id,
+						challongeId: parseInt(id, 10), // will turn player1 into 1
+						deck: "" // TODO: plug in ABC.
+					};
+				}
+			},
+			{
+				id: "tourn2",
+				name: "Tournament 2",
+				description: "The second tournament",
+				status: "preparing",
+				players: ["player1", "player2"],
+				publicChannels: ["channel1"],
+				privateChannels: ["channel2"],
+				findHost(): boolean {
+					return true;
+				},
+				findPlayer(id: string): DatabasePlayer {
+					return {
+						discordId: id,
+						challongeId: parseInt(id, 10), // will turn player1 into 1
+						deck: "" // TODO: plug in ABC.
+					};
+				}
+			}
+		];
+	}
 	createTournament(
 		host: string,
 		server: string,
@@ -15,35 +53,35 @@ export class DatabaseWrapperMock implements DatabaseWrapper {
 	): Promise<DatabaseTournament> {
 		throw new Error("Not yet implemented!");
 	}
-	updateTournament(tournamentId: string, name: string, desc: string): Promise<void> {
-		throw new Error("Not yet implemented!");
+	async updateTournament(): Promise<void> {
+		return;
 	}
 	getTournament(tournamentId: string): Promise<DatabaseTournament> {
 		throw new Error("Not yet implemented!");
 	}
-	getActiveTournaments(): Promise<DatabaseTournament[]> {
-		throw new Error("Not yet implemented!");
+	async getActiveTournaments(): Promise<DatabaseTournament[]> {
+		return this.tournaments;
 	}
-	addAnnouncementChannel(tournamentId: string, channel: string, type: "public" | "private"): Promise<void> {
-		throw new Error("Not yet implemented!");
+	async addAnnouncementChannel(): Promise<void> {
+		return;
 	}
-	removeAnnouncementChannel(tournamentId: string, channel: string, type: "public" | "private"): Promise<void> {
-		throw new Error("Not yet implemented!");
+	async removeAnnouncementChannel(): Promise<void> {
+		return;
 	}
-	addHost(tournamentId: string, newHost: string): Promise<void> {
-		throw new Error("Not yet implemented!");
+	async addHost(): Promise<void> {
+		return;
 	}
-	removeHost(tournamentId: string, newHost: string): Promise<void> {
-		throw new Error("Not yet implemented!");
+	async removeHost(): Promise<void> {
+		return;
 	}
-	openRegistration(tournamentId: string, channelId: string, messageId: string): Promise<void> {
-		throw new Error("Not yet implemented!");
+	async openRegistration(): Promise<void> {
+		return;
 	}
 	getRegisterMessages(tournamentId: string): Promise<DatabaseMessage[]> {
 		throw new Error("Not yet implemented!");
 	}
-	cleanRegistration(channelId: string, messageId: string): Promise<void> {
-		throw new Error("Not yet implemented!");
+	async cleanRegistration(): Promise<void> {
+		return;
 	}
 	getPendingTournaments(playerId: string): Promise<DatabaseTournament[]> {
 		throw new Error("Not yet implemented!");
@@ -58,8 +96,8 @@ export class DatabaseWrapperMock implements DatabaseWrapper {
 	): Promise<DatabaseTournament | undefined> {
 		throw new Error("Not yet implemented!");
 	}
-	confirmPlayer(tournamentId: string, playerId: string, challongeId: number, deck: string): Promise<void> {
-		throw new Error("Not yet implemented!");
+	async confirmPlayer(): Promise<void> {
+		return;
 	}
 	removeConfirmedPlayerReaction(
 		channelId: string,
@@ -77,10 +115,10 @@ export class DatabaseWrapperMock implements DatabaseWrapper {
 	nextRound(tournamentId: string): Promise<number> {
 		throw new Error("Not yet implemented!");
 	}
-	finishTournament(tournamentId: string): Promise<void> {
-		throw new Error("Not yet implemented!");
+	async finishTournament(): Promise<void> {
+		return;
 	}
-	synchronise(tournamentId: string, newData: SynchroniseTournament): Promise<void> {
-		throw new Error("Not yet implemented!");
+	async synchronise(): Promise<void> {
+		return;
 	}
 }
