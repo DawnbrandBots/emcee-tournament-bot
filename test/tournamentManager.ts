@@ -21,11 +21,21 @@ const tournament = new TournamentManager(mockDiscord, mockDb, mockWebsite, logge
 
 describe("Tournament creation commands", function () {
 	it("Create tournament");
-	it("Update tournament");
-	it("Add announcement channel");
-	it("Remove announcement channel");
-	it("Add host");
-	it("Remove host");
+	it("Update tournament", function () {
+		expect(async () => await tournament.updateTournament("mc_name", "newName", "newDesc")).to.not.throw;
+	});
+	it("Add announcement channel", function () {
+		expect(async () => await tournament.addAnnouncementChannel("mc_name", "testChannel", "public")).to.not.throw;
+	});
+	it("Remove announcement channel", function () {
+		expect(async () => await tournament.removeAnnouncementChannel("mc_name", "testChannel", "public")).to.not.throw;
+	});
+	it("Add host", function () {
+		expect(async () => await tournament.addHost("mc_name", "testUser")).to.not.throw;
+	});
+	it("Remove host", function () {
+		expect(async () => await tournament.removeHost("mc_name", "testUser")).to.not.throw;
+	});
 });
 
 describe("Tournament flow commands", function () {
@@ -52,7 +62,15 @@ describe("Misc commands", function () {
 
 describe("Misc functions", function () {
 	it("Confirm player");
-	it("Clean registration");
+	it("Clean registration", function () {
+		expect(
+			async () =>
+				await tournament.cleanRegistration({
+					id: "testMsg",
+					channel: "testChannel"
+				})
+		).to.not.throw;
+	});
 	it("Authenticate host", function () {
 		expect(async () => await tournament.authenticateHost("mc_name", "testUser")).to.not.throw;
 	});
