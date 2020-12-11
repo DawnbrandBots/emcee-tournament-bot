@@ -45,14 +45,32 @@ export class DatabaseWrapperMock implements DatabaseWrapper {
 			}
 		];
 	}
-	createTournament(
+	async createTournament(
 		host: string,
 		server: string,
 		challongeId: string,
 		name: string,
 		description: string
 	): Promise<DatabaseTournament> {
-		throw new Error("Not yet implemented!");
+		return {
+			id: challongeId,
+			name: name,
+			description: description,
+			status: "preparing",
+			players: [],
+			publicChannels: [],
+			privateChannels: [],
+			findHost(): boolean {
+				return true;
+			},
+			findPlayer(id: string): DatabasePlayer {
+				return {
+					discordId: id,
+					challongeId: parseInt(id, 10), // will turn player1 into 1
+					deck: "" // TODO: plug in ABC.
+				};
+			}
+		};
 	}
 	async updateTournament(): Promise<void> {
 		return;

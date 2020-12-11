@@ -1,8 +1,15 @@
 import { WebsiteMatch, WebsiteTournament, WebsiteWrapper } from "../../src/website/interface";
 
 export class WebsiteWrapperMock implements WebsiteWrapper {
-	createTournament(name: string, desc: string, url: string): Promise<WebsiteTournament> {
-		throw new Error("Not yet implemented!");
+	async createTournament(name: string, desc: string, url: string): Promise<WebsiteTournament> {
+		return {
+			id: `mc_${name}`,
+			name: name,
+			desc: desc,
+			url: `https://example.com/${url}`,
+			players: [],
+			rounds: 3
+		};
 	}
 	async updateTournament(): Promise<void> {
 		return;
