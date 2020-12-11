@@ -23,7 +23,11 @@ const mockWebsite = new WebsiteInterface(mockWebsiteWrapper);
 const tournament = new TournamentManager(mockDiscord, mockDb, mockWebsite, logger);
 
 describe("Tournament creation commands", async function () {
-	it("Create tournament");
+	it("Create tournament", async function () {
+		const [id, url] = await tournament.createTournament("testUser", "testServer", "name", "desc");
+		expect(id).to.equal("mc_name");
+		expect(url).to.equal("https://example.com/mc_name");
+	});
 	it("Update tournament", async function () {
 		await expect(tournament.updateTournament("mc_name", "newName", "newDesc")).to.not.be.rejected;
 	});
