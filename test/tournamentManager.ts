@@ -59,7 +59,12 @@ describe("Tournament flow commands", function () {
 			"Round 1 of Tournament 1 has begun! <&role>\nPairings: https://example.com/url"
 		);
 	});
-	it("Cancel tournament");
+	it("Cancel tournament", async function () {
+		await tournament.cancelTournament("tourn1");
+		expect(discord.getResponse("channel1")).to.equal(
+			"Tournament 1 has been cancelled. Thank you all for playing! <&role>\nResults: https://example.com/url"
+		);
+	});
 	it("Submit score");
 	it("Next round");
 });
