@@ -14,7 +14,31 @@ interface MatchScore {
 	oppScore: number;
 }
 
-export class TournamentManager {
+export interface TournamentInterface {
+	confirmPlayer(msg: DiscordMessageIn): Promise<void>;
+	cleanRegistration(msg: DiscordMessageLimited): Promise<void>;
+	authenticateHost(tournamentId: string, hostId: string): Promise<void>;
+	authenticatePlayer(tournamentId: string, playerId: string): Promise<void>;
+	listTournaments(): Promise<string>;
+	createTournament(host: string, server: string, name: string, desc: string): Promise<[string, string]>;
+	updateTournament(tournamentId: string, name: string, desc: string): Promise<void>;
+	addAnnouncementChannel(tournamentId: string, channel: string, type: "public" | "private"): Promise<void>;
+	removeAnnouncementChannel(tournamentId: string, channel: string, type: "public" | "private"): Promise<void>;
+	addHost(tournamentId: string, newHost: string): Promise<void>;
+	removeHost(tournamentId: string, newHost: string): Promise<void>;
+	openTournament(tournamentId: string): Promise<void>;
+	startTournament(tournamentId: string): Promise<void>;
+	cancelTournament(tournamentId: string): Promise<void>;
+	submitScore(tournamentId: string, playerId: string, scorePlayer: number, scoreOpp: number): Promise<string>;
+	nextRound(tournamentId: string): Promise<number>;
+	listPlayers(tournamentId: string): Promise<DiscordAttachmentOut>;
+	getPlayerDeck(tournamentId: string, playerId: string): Promise<Deck>;
+	dropPlayer(tournamentId: string, playerId: string): Promise<void>;
+	syncTournament(tournamentId: string): Promise<void>;
+	generatePieChart(tournamentId: string): Promise<DiscordAttachmentOut>;
+}
+
+export class TournamentManager implements TournamentInterface {
 	private discord: DiscordInterface;
 	private database: DatabaseInterface;
 	private website: WebsiteInterface;
