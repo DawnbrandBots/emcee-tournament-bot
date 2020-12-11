@@ -1,4 +1,5 @@
 import { DatabaseMessage, DatabasePlayer, DatabaseTournament, DatabaseWrapper } from "../../src/database/interface";
+import { TournamentNotFoundError } from "../../src/errors";
 
 export class DatabaseWrapperMock implements DatabaseWrapper {
 	tournaments: DatabaseTournament[];
@@ -56,8 +57,12 @@ export class DatabaseWrapperMock implements DatabaseWrapper {
 	async updateTournament(): Promise<void> {
 		return;
 	}
-	getTournament(tournamentId: string): Promise<DatabaseTournament> {
-		throw new Error("Not yet implemented!");
+	async getTournament(tournamentId: string): Promise<DatabaseTournament> {
+		const tournament = this.tournaments.find(t => t.id === tournamentId);
+		if (!tournament) {
+			throw new TournamentNotFoundError(tournamentId);
+		}
+		return tournament;
 	}
 	async getActiveTournaments(): Promise<DatabaseTournament[]> {
 		return this.tournaments;
