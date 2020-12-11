@@ -70,7 +70,7 @@ export class CommandHandler {
 	private async commandAddChannel(msg: DiscordMessageIn, args: string[]): Promise<void> {
 		const [id, baseType, channelMention] = args;
 		await this.tournamentManager.authenticateHost(id, msg.author);
-		let type = baseType.toLowerCase().trim();
+		let type = baseType ? baseType.toLowerCase().trim() : "public";
 		if (!(type === "private")) {
 			type = "public";
 		}
@@ -81,8 +81,8 @@ export class CommandHandler {
 		await this.tournamentManager.addAnnouncementChannel(id, channel, type as "public" | "private");
 		this.logger.verbose(`Channel ${channel} added to tournament ${id} with level ${type} by ${msg.author}.`);
 		await this.discord.sendMessage(
-			`This channel added as a ${type} announcement channel for Tournament ${id}!`,
-			channel
+			channel,
+			`This channel added as a ${type} announcement channel for Tournament ${id}!`
 		);
 		await msg.reply(
 			`${this.discord.mentionChannel(channel)} added as a ${type} announcement channel for Tournament ${id}!`
@@ -92,7 +92,7 @@ export class CommandHandler {
 	private async commandRemoveChannel(msg: DiscordMessageIn, args: string[]): Promise<void> {
 		const [id, baseType, channelMention] = args;
 		await this.tournamentManager.authenticateHost(id, msg.author);
-		let type = baseType.toLowerCase().trim();
+		let type = baseType ? baseType.toLowerCase().trim() : "public";
 		if (!(type === "private")) {
 			type = "public";
 		}
@@ -103,8 +103,8 @@ export class CommandHandler {
 		await this.tournamentManager.removeAnnouncementChannel(id, channel, type as "public" | "private");
 		this.logger.verbose(`Channel ${channel} removed from tournament ${id} with level ${type} by ${msg.author}.`);
 		await this.discord.sendMessage(
-			`This channel removed as a ${type} announcement channel for Tournament ${id}!`,
-			channel
+			channel,
+			`This channel removed as a ${type} announcement channel for Tournament ${id}!`
 		);
 		await msg.reply(
 			`${this.discord.mentionChannel(channel)} removed as a ${type} announcement channel for Tournament ${id}!`
