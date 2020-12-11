@@ -12,6 +12,48 @@
 			"program": "${workspaceFolder}/dist/index.js",
 			"preLaunchTask": "tsc: build - tsconfig.json",
 			"outFiles": ["${workspaceFolder}/dist/**/*.js"]
+		},
+		{
+			"type": "node",
+			"request": "launch",
+			"name": "Mocha All",
+			"program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
+			"args": [
+				"--require",
+				"ts-node/register",
+				"--timeout",
+				"999999",
+				"--colors",
+				"--check-leaks",
+				"--enable-source-maps",
+				"${workspaceFolder}/test/*.ts"
+			],
+			"console": "integratedTerminal",
+			"internalConsoleOptions": "neverOpen",
+			"skipFiles": [
+				"<node_internals>/**/*.js"
+			]
+		},
+		{
+			"type": "node",
+			"request": "launch",
+			"name": "Mocha Current File",
+			"program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
+			"args": [
+				  "--require",
+				  "ts-node/register",
+				"--timeout",
+				"999999",
+				"--colors",
+				"--check-leaks",
+				"--enable-source-maps",
+				"${file}"
+			],
+			"console": "integratedTerminal",
+			"internalConsoleOptions": "neverOpen",
+			"skipFiles": [
+				"<node_internals>/**/*.js"
+			]
 		}
 	]
 }
