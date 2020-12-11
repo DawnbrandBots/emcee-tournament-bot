@@ -7,8 +7,8 @@ export class TournamentMock implements TournamentInterface {
 		return;
 	}
 
-	public async authenticatePlayer(tournamentId: string, playerId: string): Promise<void> {
-		throw new Error("Not yet implemented!");
+	public async authenticatePlayer(): Promise<void> {
+		return;
 	}
 
 	public async listTournaments(): Promise<string> {
@@ -67,11 +67,14 @@ export class TournamentMock implements TournamentInterface {
 		scorePlayer: number,
 		scoreOpp: number
 	): Promise<string> {
-		throw new Error("Not yet implemented!");
+		return "For more detail, test the tournament handler!";
 	}
 
 	public async nextRound(tournamentId: string): Promise<number> {
-		throw new Error("Not yet implemented!");
+		if (tournamentId === "mc_final") {
+			return -1;
+		}
+		return 2;
 	}
 
 	public async listPlayers(tournamentId: string): Promise<DiscordAttachmentOut> {
