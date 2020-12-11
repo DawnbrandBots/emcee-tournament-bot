@@ -98,7 +98,9 @@ describe("Misc commands", function () {
 			"Player <@player1> (player1) forcefully dropped from Tournament Tournament 1 (tourn1)."
 		);
 	});
-	it("Sync tournament");
+	it("Sync tournament", async function () {
+		await expect(tournament.syncTournament("tourn1")).to.not.be.rejected;
+	});
 	it("Generate pie chart");
 });
 
