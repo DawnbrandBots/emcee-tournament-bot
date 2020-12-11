@@ -65,6 +65,17 @@ describe("Tournament creation commands", function () {
 			)} added as a private announcement channel for Tournament mc_name!`
 		);
 	});
+	it("Add channel - unspecified type", async function () {
+		await discord.simMessage("mc!addchannel mc_name", "addchannel3");
+		expect(discord.getResponse("testChannel")).to.equal(
+			"This channel added as a public announcement channel for Tournament mc_name!"
+		);
+		expect(discord.getResponse("addchannel3")).to.equal(
+			`${mockDiscord.mentionChannel(
+				"testChannel"
+			)} added as a public announcement channel for Tournament mc_name!`
+		);
+	});
 	it("Remove channel - public/specified", async function () {
 		await discord.simMessage("mc!removechannel mc_name|public|<#1102>", "remchannel");
 		expect(discord.getResponse("1102")).to.equal(
@@ -83,6 +94,17 @@ describe("Tournament creation commands", function () {
 			`${mockDiscord.mentionChannel(
 				"testChannel"
 			)} removed as a private announcement channel for Tournament mc_name!`
+		);
+	});
+	it("Remove channel - unspecified type", async function () {
+		await discord.simMessage("mc!removechannel mc_name", "remchannel3");
+		expect(discord.getResponse("testChannel")).to.equal(
+			"This channel removed as a public announcement channel for Tournament mc_name!"
+		);
+		expect(discord.getResponse("remchannel3")).to.equal(
+			`${mockDiscord.mentionChannel(
+				"testChannel"
+			)} removed as a public announcement channel for Tournament mc_name!`
 		);
 	});
 	it("Add host", async function () {
