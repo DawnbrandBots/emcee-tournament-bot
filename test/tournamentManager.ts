@@ -6,7 +6,10 @@ import { DiscordWrapperMock } from "./mocks/discord";
 import { WebsiteWrapperMock } from "./mocks/website";
 import { DatabaseWrapperMock } from "./mocks/database";
 import { DatabaseInterface } from "../src/database/interface";
-import { expect } from "chai";
+import chai, { expect } from "chai";
+import chaiAsPromised from "chai-as-promised";
+
+chai.use(chaiAsPromised);
 
 const discord = new DiscordWrapperMock(); // will be used to fetch responses in some cases
 const mockDiscord = new DiscordInterface(discord, "mc!", logger);
@@ -19,22 +22,22 @@ const mockWebsite = new WebsiteInterface(mockWebsiteWrapper);
 
 const tournament = new TournamentManager(mockDiscord, mockDb, mockWebsite, logger);
 
-describe("Tournament creation commands", function () {
+describe("Tournament creation commands", async function () {
 	it("Create tournament");
-	it("Update tournament", function () {
-		expect(async () => await tournament.updateTournament("mc_name", "newName", "newDesc")).to.not.throw;
+	it("Update tournament", async function () {
+		await expect(tournament.updateTournament("mc_name", "newName", "newDesc")).to.not.be.rejected;
 	});
-	it("Add announcement channel", function () {
-		expect(async () => await tournament.addAnnouncementChannel("mc_name", "testChannel", "public")).to.not.throw;
+	it("Add announcement channel", async function () {
+		await expect(tournament.addAnnouncementChannel("mc_name", "testChannel", "public")).to.not.be.rejected;
 	});
-	it("Remove announcement channel", function () {
-		expect(async () => await tournament.removeAnnouncementChannel("mc_name", "testChannel", "public")).to.not.throw;
+	it("Remove announcement channel", async function () {
+		await expect(tournament.removeAnnouncementChannel("mc_name", "testChannel", "public")).to.not.be.rejected;
 	});
-	it("Add host", function () {
-		expect(async () => await tournament.addHost("mc_name", "testUser")).to.not.throw;
+	it("Add host", async function () {
+		await expect(tournament.addHost("mc_name", "testUser")).to.not.be.rejected;
 	});
-	it("Remove host", function () {
-		expect(async () => await tournament.removeHost("mc_name", "testUser")).to.not.throw;
+	it("Remove host", async function () {
+		await expect(tournament.removeHost("mc_name", "testUser")).to.not.be.rejected;
 	});
 });
 
@@ -62,19 +65,18 @@ describe("Misc commands", function () {
 
 describe("Misc functions", function () {
 	it("Confirm player");
-	it("Clean registration", function () {
-		expect(
-			async () =>
-				await tournament.cleanRegistration({
-					id: "testMsg",
-					channel: "testChannel"
-				})
-		).to.not.throw;
+	it("Clean registration", async function () {
+		await expect(
+			tournament.cleanRegistration({
+				id: "testMsg",
+				channel: "testChannel"
+			})
+		).to.not.be.rejected;
 	});
-	it("Authenticate host", function () {
-		expect(async () => await tournament.authenticateHost("mc_name", "testUser")).to.not.throw;
+	it("Authenticate host", async function () {
+		await expect(tournament.authenticateHost("tourn1", "testUser")).to.not.be.rejected;
 	});
-	it("Authenticate player", function () {
-		expect(async () => await tournament.authenticatePlayer("mc_name", "testUser")).to.not.throw;
+	it("Authenticate player", async function () {
+		await expect(tournament.authenticatePlayer("tourn1", "player1")).to.not.be.rejected;
 	});
 });
