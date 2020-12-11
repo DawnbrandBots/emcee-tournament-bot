@@ -53,7 +53,12 @@ describe("Tournament flow commands", function () {
 		);
 		expect(discord.getEmoji("channel1")).to.equal("✅");
 	});
-	it("Start tournament");
+	it("Start tournament", async function () {
+		await tournament.startTournament("tourn1");
+		expect(discord.getResponse("channel1")).to.equal(
+			"Round 1 of Tournament 1 has begun! <&role>\nPairings: https://example.com/url"
+		);
+	});
 	it("Cancel tournament");
 	it("Submit score");
 	it("Next round");

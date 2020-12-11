@@ -5,7 +5,6 @@ import {
 	DiscordMessageIn,
 	DiscordMessageOut,
 	DiscordMessageSent,
-	DiscordReactionHandler,
 	DiscordWrapper
 } from "../../src/discord/interface";
 import { UserError } from "../../src/errors";
@@ -90,8 +89,11 @@ export class DiscordWrapperMock implements DiscordWrapper {
 			author: "you",
 			channel: channel,
 			server: "testServer",
-			reply: async (msg: DiscordMessageOut): Promise<void> => {
+			reply: async (msg: DiscordMessageOut, file?: DiscordAttachmentOut): Promise<void> => {
 				this.messages[channel] = msg;
+				if (file) {
+					this.files[channel] = file;
+				}
 			},
 			react: async (emoji: string): Promise<void> => {
 				this.emoji[channel] = emoji;
@@ -99,20 +101,20 @@ export class DiscordWrapperMock implements DiscordWrapper {
 		};
 	}
 
-	public async deleteMessage(channelId: string, messageId: string): Promise<void> {
-		throw new Error("Not yet implemented!");
+	public async deleteMessage(): Promise<void> {
+		return;
 	}
 
-	public async getPlayerRole(tournamentId: string, channel: string): Promise<string> {
-		throw new Error("Not yet implemented!");
+	public async getPlayerRole(): Promise<string> {
+		return "role";
 	}
 
-	public async grantPlayerRole(userId: string, channelId: string, roleId: string): Promise<void> {
-		throw new Error("Not yet implemented!");
+	public async grantPlayerRole(): Promise<void> {
+		return;
 	}
 
-	public async deletePlayerRole(tournamentId: string, channelId: string): Promise<void> {
-		throw new Error("Not yet implemented!");
+	public async deletePlayerRole(): Promise<void> {
+		return;
 	}
 
 	public onMessage(handler: DiscordMessageHandler): void {
