@@ -14,6 +14,12 @@ export interface DiscordMessageIn {
 	channel: string;
 	server: string;
 	reply: (msg: DiscordMessageOut, file?: DiscordAttachmentOut) => Promise<void>;
+	react: (emoji: string) => Promise<void>;
+}
+
+export interface DiscordMessageLimited {
+	id: string;
+	channel: string;
 }
 
 export type DiscordMessageOut = string | DiscordEmbed;
@@ -39,6 +45,8 @@ export type DiscordCommand = (message: DiscordMessageIn, params: string[]) => Pr
 
 export type DiscordMessageHandler = (msg: DiscordMessageIn) => Promise<void> | void;
 
+export type DiscordDeleteHandler = (msg: DiscordMessageLimited) => Promise<void> | void;
+
 type DiscordReactionResponse = (msg: DiscordMessageIn, userId: string) => Promise<void> | void;
 
 export interface DiscordReactionHandler {
@@ -46,8 +54,6 @@ export interface DiscordReactionHandler {
 	emoji: string;
 	response: DiscordReactionResponse;
 }
-
-export type DiscordDeleteHandler = DiscordMessageHandler;
 
 export interface DiscordWrapper {
 	onMessage: (handler: DiscordMessageHandler) => void;
@@ -128,6 +134,7 @@ export class DiscordInterface {
 		removeResponse: DiscordReactionResponse
 	): Promise<DiscordMessageSent> {
 		const msg = await this.sendMessage(channel, content);
+		await msg.react(emoji);
 		this.api.onReaction({ msg: msg.id, emoji, response });
 		this.api.onReactionRemove({ msg: msg.id, emoji, response: removeResponse });
 		return msg;

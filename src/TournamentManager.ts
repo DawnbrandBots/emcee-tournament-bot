@@ -1,6 +1,6 @@
 import { Deck } from "ydeck";
 import { DatabaseInterface, DatabaseTournament } from "./database/interface";
-import { DiscordAttachmentOut, DiscordInterface, DiscordMessageIn } from "./discord/interface";
+import { DiscordAttachmentOut, DiscordInterface, DiscordMessageIn, DiscordMessageLimited } from "./discord/interface";
 import { WebsiteInterface } from "./website/interface";
 import { BlockedDMsError, TournamentNotFoundError, UserError } from "./errors";
 import { getDeck } from "./deck";
@@ -184,6 +184,7 @@ export class TournamentManager {
 				`You have successfully signed up for Tournament ${tournament.name}! Your deck is below to double-check.`
 			);
 			await msg.reply(content, file);
+			return;
 		}
 		// allow confirmed user to resubmit
 		const allTourns = await this.database.listTournaments();
@@ -232,7 +233,7 @@ export class TournamentManager {
 		}
 	}
 
-	public async cleanRegistration(msg: DiscordMessageIn): Promise<void> {
+	public async cleanRegistration(msg: DiscordMessageLimited): Promise<void> {
 		await this.database.cleanRegistration(msg.channel, msg.id);
 	}
 
@@ -247,7 +248,7 @@ export class TournamentManager {
 		}
 		await Promise.all(
 			channels.map(async c => {
-				const content = `__Registration now open for **${tournament.name}**!__\n${tournament.description}\n__Click the ${this.CHECK_EMOJI} below to sign up!`;
+				const content = `__Registration now open for **${tournament.name}**!__\n${tournament.description}\n__Click the ${this.CHECK_EMOJI} below to sign up!__`;
 				const msg = await this.discord.awaitReaction(
 					content,
 					c,
@@ -410,7 +411,7 @@ export class TournamentManager {
 		return await getDeck(player.deck);
 	}
 
-	private async dropPlayerReaction(msg: DiscordMessageIn, playerId: string): Promise<void> {
+	private async dropPlayerReaction(msg: DiscordMessageLimited, playerId: string): Promise<void> {
 		// try to remove pending
 		const droppedTournament = await this.database.removePendingPlayer(msg.channel, msg.id, playerId);
 		// an unconfirmed player dropping isn't worth reporting to the hosts
