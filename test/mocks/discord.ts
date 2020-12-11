@@ -8,7 +8,7 @@ import {
 	DiscordReactionHandler,
 	DiscordWrapper
 } from "../../src/discord/interface";
-import { UnauthorisedHostError, UserError } from "../../src/errors";
+import { UserError } from "../../src/errors";
 
 export class DiscordWrapperMock implements DiscordWrapper {
 	private messageHandlers: DiscordMessageHandler[];
@@ -16,12 +16,14 @@ export class DiscordWrapperMock implements DiscordWrapper {
 	private deleteHandlers: DiscordDeleteHandler[];
 
 	private messages: { [channel: string]: DiscordMessageOut };
+	private files: { [channel: string]: DiscordAttachmentOut };
 	constructor() {
 		this.messageHandlers = [];
 		this.pingHandlers = [];
 		this.deleteHandlers = [];
 
 		this.messages = {};
+		this.files = {};
 	}
 
 	public async simMessage(content: string, testCode: string): Promise<void> {
@@ -32,8 +34,11 @@ export class DiscordWrapperMock implements DiscordWrapper {
 			author: "testUser",
 			channel: "testChannel",
 			server: "testServer",
-			reply: async (msg: DiscordMessageOut) => {
+			reply: async (msg: DiscordMessageOut, file?: DiscordAttachmentOut) => {
 				this.messages[testCode] = msg;
+				if (file) {
+					this.files[testCode] = file;
+				}
 			},
 			react: async (emoji: string) => {
 				throw new Error("Not yet implemented!");
@@ -60,6 +65,10 @@ export class DiscordWrapperMock implements DiscordWrapper {
 
 	public getResponse(testCode: string): DiscordMessageOut | undefined {
 		return this.messages[testCode];
+	}
+
+	public getFile(testCode: string): DiscordAttachmentOut | undefined {
+		return this.files[testCode];
 	}
 
 	public async sendMessage(
@@ -136,10 +145,10 @@ export class DiscordWrapperMock implements DiscordWrapper {
 	}
 
 	public getUsername(userId: string): string {
-		throw new Error("Not yet implemented!");
+		return userId;
 	}
 
 	public async sendDirectMessage(userId: string, content: DiscordMessageOut): Promise<void> {
-		throw new Error("Not yet implemented!");
+		this.messages[userId] = content;
 	}
 }
