@@ -177,7 +177,7 @@ export class DatabaseInterface {
 		messageId: string,
 		playerId: string
 	): Promise<DatabaseTournament | undefined> {
-		return await this.removeConfirmedPlayerReaction(channelId, messageId, playerId);
+		return await this.db.removeConfirmedPlayerReaction(channelId, messageId, playerId);
 	}
 
 	public async removeConfirmedPlayerForce(

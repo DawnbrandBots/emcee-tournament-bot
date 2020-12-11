@@ -17,6 +17,7 @@ import {
 	DiscordDeleteHandler,
 	DiscordMessageHandler,
 	DiscordMessageIn,
+	DiscordMessageLimited,
 	DiscordMessageOut,
 	DiscordMessageSent,
 	DiscordReactionHandler,
@@ -68,6 +69,9 @@ export class DiscordWrapperEris implements DiscordWrapper {
 			server: guildId,
 			reply: async (out: DiscordMessageOut, file?: DiscordAttachmentOut): Promise<void> => {
 				await msg.channel.createMessage(this.unwrapMessageOut(out), this.unwrapFileOut(file));
+			},
+			react: async (emoji: string): Promise<void> => {
+				await msg.addReaction(emoji);
 			}
 		};
 	}
@@ -119,12 +123,18 @@ export class DiscordWrapperEris implements DiscordWrapper {
 		}
 	}
 
+	private wrapMessageLimited(msg: PossiblyUncachedMessage): DiscordMessageLimited {
+		return {
+			channel: msg.channel.id,
+			id: msg.id
+		};
+	}
+
 	private async handleDelete(msg: PossiblyUncachedMessage): Promise<void> {
 		// clean reactions
 		this.reactionHandlers = this.reactionHandlers.filter(h => !(h.msg === msg.id));
-		const fullMsg = await this.bot.getMessage(msg.channel.id, msg.id);
 		for (const handler of this.deleteHandlers) {
-			await handler(this.wrapMessageIn(fullMsg));
+			await handler(this.wrapMessageLimited(msg));
 		}
 	}
 

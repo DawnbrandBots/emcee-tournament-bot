@@ -27,8 +27,8 @@ export class DatabaseWrapperMongoose implements DatabaseWrapper {
 			players: tournament.confirmedParticipants.map(p => p.discord),
 			publicChannels: tournament.publicChannels,
 			privateChannels: tournament.privateChannels,
-			findHost: this.findHost(tournament),
-			findPlayer: this.findPlayer(tournament)
+			findHost: this.findHost(tournament).bind(this),
+			findPlayer: this.findPlayer(tournament).bind(this)
 		};
 	}
 
@@ -92,27 +92,27 @@ export class DatabaseWrapperMongoose implements DatabaseWrapper {
 	}
 
 	public async addAnnouncementChannel(
-		channel: DiscordID,
-		challongeId: TournamentID,
+		tournamentId: TournamentID,
+		channelId: DiscordID,
 		kind: "public" | "private" = "public"
 	): Promise<void> {
-		const tournament = await this.findTournament(challongeId);
+		const tournament = await this.findTournament(tournamentId);
 		const channels = kind === "public" ? tournament.publicChannels : tournament.privateChannels;
-		channels.push(channel);
+		channels.push(channelId);
 		await tournament.save();
 	}
 
 	public async removeAnnouncementChannel(
-		channel: DiscordID,
-		challongeId: TournamentID,
+		tournamentId: TournamentID,
+		channelId: DiscordID,
 		kind: "public" | "private" = "public"
 	): Promise<void> {
-		const tournament = await this.findTournament(challongeId);
+		const tournament = await this.findTournament(tournamentId);
 		const channels = kind === "public" ? tournament.publicChannels : tournament.privateChannels;
-		const i = channels.indexOf(channel);
+		const i = channels.indexOf(channelId);
 		if (i < 0) {
 			throw new UserError(
-				`Channel ${channel} is not a ${kind} announcement channel for Tournament ${challongeId}!`
+				`Channel ${channelId} is not a ${kind} announcement channel for Tournament ${tournamentId}!`
 			);
 		}
 		channels.splice(i, 1); // consider $pullAll
@@ -143,8 +143,8 @@ export class DatabaseWrapperMongoose implements DatabaseWrapper {
 	}
 
 	private async findTournamentByRegisterMessage(
-		message: DiscordID,
-		channel: DiscordID
+		channel: DiscordID,
+		message: DiscordID
 	): Promise<TournamentDoc | null> {
 		return await TournamentModel.findOne({
 			"registerMessages.channel": channel,
@@ -166,7 +166,7 @@ export class DatabaseWrapperMongoose implements DatabaseWrapper {
 
 	// Invoke after a registration message gets deleted.
 	public async cleanRegistration(channel: DiscordID, message: DiscordID): Promise<void> {
-		const tournament = await this.findTournamentByRegisterMessage(message, channel);
+		const tournament = await this.findTournamentByRegisterMessage(channel, message);
 		if (!tournament) {
 			return; // failure is OK
 		}
@@ -180,17 +180,17 @@ export class DatabaseWrapperMongoose implements DatabaseWrapper {
 		const tournaments = await TournamentModel.find({
 			pendingParticipants: playerId
 		});
-		return tournaments.map(this.wrapTournament);
+		return tournaments.map(this.wrapTournament.bind(this));
 	}
 
 	// Invoke after a user requests to join a tournament and the appropriate response is delivered.
 	// Returns undefined if cannot be added.
 	public async addPendingPlayer(
-		message: DiscordID,
 		channel: DiscordID,
+		message: DiscordID,
 		user: DiscordID
 	): Promise<DatabaseTournament | undefined> {
-		const tournament = await this.findTournamentByRegisterMessage(message, channel);
+		const tournament = await this.findTournamentByRegisterMessage(channel, message);
 		if (!tournament) {
 			return;
 		}
@@ -203,8 +203,8 @@ export class DatabaseWrapperMongoose implements DatabaseWrapper {
 
 	// Invoke after a user requests to leave a tournament they haven't been confirmed for.
 	public async removePendingPlayer(
-		message: DiscordID,
 		channel: DiscordID,
+		message: DiscordID,
 		user: DiscordID
 	): Promise<DatabaseTournament | undefined> {
 		const tournament = await TournamentModel.findOneAndUpdate(
@@ -333,7 +333,7 @@ export class DatabaseWrapperMongoose implements DatabaseWrapper {
 	// Get persisted tournaments that are not finished, for restoration upon launch
 	public async getActiveTournaments(): Promise<DatabaseTournament[]> {
 		const tournaments = await TournamentModel.find({ $or: [{ status: "in progress" }, { status: "preparing" }] });
-		return tournaments.map(this.wrapTournament);
+		return tournaments.map(this.wrapTournament.bind(this));
 	}
 
 	// Update information to reflect the state in the challonge API
