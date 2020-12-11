@@ -2,13 +2,13 @@ import { Logger } from "winston";
 import { prettyPrint } from "./discordDeck";
 import { DiscordInterface, DiscordMessageIn } from "./discord/interface";
 import { UserError } from "./errors";
-import { TournamentManager } from "./TournamentManager";
+import { TournamentInterface } from "./TournamentManager";
 
 export class CommandHandler {
 	private discord: DiscordInterface;
-	private tournamentManager: TournamentManager;
+	private tournamentManager: TournamentInterface;
 	private logger: Logger;
-	constructor(discord: DiscordInterface, tournamentManager: TournamentManager, logger: Logger) {
+	constructor(discord: DiscordInterface, tournamentManager: TournamentInterface, logger: Logger) {
 		this.discord = discord;
 		this.tournamentManager = tournamentManager;
 		this.logger = logger;
