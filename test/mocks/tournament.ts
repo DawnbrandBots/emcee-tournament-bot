@@ -13,7 +13,7 @@ export class TournamentMock implements TournamentInterface {
 	}
 
 	public async listTournaments(): Promise<string> {
-		throw new Error("Not yet implemented!");
+		return "This sure is a list.";
 	}
 
 	public async createTournament(host: string, server: string, name: string): Promise<[string, string]> {

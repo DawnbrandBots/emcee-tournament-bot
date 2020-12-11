@@ -44,7 +44,7 @@ describe("Tournament creation commands", function () {
 			"Tournament `mc_name` updated! It now has the name newName and the given description."
 		);
 	});
-	it("Add channel", async function () {
+	it("Add channel - public/specific", async function () {
 		// channel mentions must be digits
 		await discord.simMessage("mc!addchannel mc_name|public|<#1101>", "addchannel");
 		expect(discord.getResponse("1101")).to.equal(
@@ -54,13 +54,35 @@ describe("Tournament creation commands", function () {
 			`${mockDiscord.mentionChannel("1101")} added as a public announcement channel for Tournament mc_name!`
 		);
 	});
-	it("Remove channel", async function () {
+	it("Add channel - private/default", async function () {
+		await discord.simMessage("mc!addchannel mc_name|private", "addchannel2");
+		expect(discord.getResponse("testChannel")).to.equal(
+			"This channel added as a private announcement channel for Tournament mc_name!"
+		);
+		expect(discord.getResponse("addchannel2")).to.equal(
+			`${mockDiscord.mentionChannel(
+				"testChannel"
+			)} added as a private announcement channel for Tournament mc_name!`
+		);
+	});
+	it("Remove channel - public/specified", async function () {
 		await discord.simMessage("mc!removechannel mc_name|public|<#1102>", "remchannel");
 		expect(discord.getResponse("1102")).to.equal(
 			"This channel removed as a public announcement channel for Tournament mc_name!"
 		);
 		expect(discord.getResponse("remchannel")).to.equal(
 			`${mockDiscord.mentionChannel("1102")} removed as a public announcement channel for Tournament mc_name!`
+		);
+	});
+	it("Remove channel - private/default", async function () {
+		await discord.simMessage("mc!removechannel mc_name|private", "remchannel2");
+		expect(discord.getResponse("testChannel")).to.equal(
+			"This channel removed as a private announcement channel for Tournament mc_name!"
+		);
+		expect(discord.getResponse("remchannel2")).to.equal(
+			`${mockDiscord.mentionChannel(
+				"testChannel"
+			)} removed as a private announcement channel for Tournament mc_name!`
 		);
 	});
 	it("Add host", async function () {
@@ -89,9 +111,13 @@ describe("Tournament flow commands", function () {
 		await discord.simMessage("mc!cancel mc_name", "cancel");
 		expect(discord.getResponse("cancel")).to.equal("Tournament mc_name successfully canceled.");
 	});
-	it("Submit score", async function () {
+	it("Submit score - good input", async function () {
 		await discord.simMessage("mc!score mc_name|2-1", "score");
 		expect(discord.getResponse("score")).to.equal("For more detail, test the tournament handler!");
+	});
+	it("Submit score - bad input", async function () {
+		await discord.simMessage("mc!score mc_name|i won", "score");
+		expect(discord.getResponse("score")).to.equal("Must provide score in format `#-#` e.g. `2-1`.");
 	});
 	it("Next round - normal", async function () {
 		await discord.simMessage("mc!round mc_name", "round1");
@@ -105,6 +131,10 @@ describe("Tournament flow commands", function () {
 	});
 });
 describe("Misc tournament commands", function () {
+	it("List tournaments", async function () {
+		await discord.simMessage("mc!list", "list");
+		expect(discord.getResponse("list")).to.equal("```\nThis sure is a list.```");
+	});
 	it("List players", async function () {
 		await discord.simMessage("mc!players mc_name", "players");
 		expect(discord.getResponse("players")).to.equal(
