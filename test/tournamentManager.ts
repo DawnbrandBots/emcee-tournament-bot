@@ -101,7 +101,11 @@ describe("Misc commands", function () {
 	it("Sync tournament", async function () {
 		await expect(tournament.syncTournament("tourn1")).to.not.be.rejected;
 	});
-	it("Generate pie chart");
+	it("Generate pie chart", async function () {
+		const file = await tournament.generatePieChart("tourn1");
+		expect(file.filename).to.equal("Tournament 1.csv");
+		// TODO: test file contents? sounds scary
+	});
 });
 
 describe("Misc functions", function () {
