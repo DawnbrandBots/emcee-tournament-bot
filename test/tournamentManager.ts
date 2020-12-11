@@ -66,7 +66,11 @@ describe("Tournament flow commands", function () {
 		);
 	});
 	it("Submit score");
-	it("Next round");
+	// TODO: test multiple cases
+	it("Next round", async function () {
+		const round = await tournament.nextRound("tourn1");
+		expect(round).to.equal(2);
+	});
 });
 
 describe("Misc commands", function () {
