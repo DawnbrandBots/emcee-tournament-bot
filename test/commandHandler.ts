@@ -77,11 +77,32 @@ describe("Tournament creation commands", function () {
 	});
 });
 describe("Tournament flow commands", function () {
-	it("Open tournament");
-	it("Start tournament");
-	it("Cancel tournament");
-	it("Submit score");
-	it("Next round");
+	it("Open tournament", async function () {
+		await discord.simMessage("mc!open mc_name", "open");
+		expect(discord.getResponse("open")).to.equal("Tournament mc_name opened for registration!");
+	});
+	it("Start tournament", async function () {
+		await discord.simMessage("mc!start mc_name", "start");
+		expect(discord.getResponse("start")).to.equal("Tournament mc_name successfully commenced!");
+	});
+	it("Cancel tournament", async function () {
+		await discord.simMessage("mc!cancel mc_name", "cancel");
+		expect(discord.getResponse("cancel")).to.equal("Tournament mc_name successfully canceled.");
+	});
+	it("Submit score", async function () {
+		await discord.simMessage("mc!score mc_name|2-1", "score");
+		expect(discord.getResponse("score")).to.equal("For more detail, test the tournament handler!");
+	});
+	it("Next round - normal", async function () {
+		await discord.simMessage("mc!round mc_name", "round1");
+		expect(discord.getResponse("round1")).to.equal("Tournament mc_name successfully progressed to round 2.");
+	});
+	it("Next round - final", async function () {
+		await discord.simMessage("mc!round mc_final", "round2");
+		expect(discord.getResponse("round2")).to.equal(
+			"Tournament mc_final successfully progressed past final round and completed."
+		);
+	});
 });
 describe("Minor tournament commads", function () {
 	it("List players");
