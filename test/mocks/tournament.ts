@@ -1,10 +1,5 @@
 import { Deck } from "ydeck";
-import {
-	DiscordAttachmentOut,
-	DiscordMessageIn,
-	DiscordMessageLimited,
-	DiscordMessageOut
-} from "../../src/discord/interface";
+import { DiscordAttachmentOut, DiscordMessageIn, DiscordMessageLimited } from "../../src/discord/interface";
 import { TournamentInterface } from "../../src/TournamentManager";
 
 export class TournamentMock implements TournamentInterface {
@@ -21,7 +16,9 @@ export class TournamentMock implements TournamentInterface {
 	}
 
 	public async createTournament(host: string, server: string, name: string, desc: string): Promise<[string, string]> {
-		throw new Error("Not yet implemented!");
+		// the point of this file is to return a simulated input for testing other files
+		// actual functionality here will be tested with other files
+		return [`mc_${name}`, `https://example.com/${name}`];
 	}
 
 	public async updateTournament(tournamentId: string, name: string, desc: string): Promise<void> {

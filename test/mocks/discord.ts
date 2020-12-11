@@ -106,7 +106,9 @@ export class DiscordWrapperMock implements DiscordWrapper {
 	}
 
 	public async authenticateTO(m: DiscordMessageIn): Promise<void> {
-		throw new Error("Not yet implemented!");
+		// if implemented properly would throw error if not authenticated
+		// but for these unit tests we will assume authentication
+		return;
 	}
 
 	public getMentionedUser(m: DiscordMessageIn): string {
