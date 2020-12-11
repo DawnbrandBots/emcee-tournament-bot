@@ -1,10 +1,10 @@
 import { Deck } from "ydeck";
-import { DiscordAttachmentOut, DiscordMessageIn, DiscordMessageLimited } from "../../src/discord/interface";
+import { DiscordAttachmentOut } from "../../src/discord/interface";
 import { TournamentInterface } from "../../src/TournamentManager";
 
 export class TournamentMock implements TournamentInterface {
-	public async authenticateHost(tournamentId: string, hostId: string): Promise<void> {
-		throw new Error("Not yet implemented!");
+	public async authenticateHost(): Promise<void> {
+		return;
 	}
 
 	public async authenticatePlayer(tournamentId: string, playerId: string): Promise<void> {
@@ -15,58 +15,50 @@ export class TournamentMock implements TournamentInterface {
 		throw new Error("Not yet implemented!");
 	}
 
-	public async createTournament(host: string, server: string, name: string, desc: string): Promise<[string, string]> {
+	public async createTournament(host: string, server: string, name: string): Promise<[string, string]> {
 		// the point of this file is to return a simulated input for testing other files
 		// actual functionality here will be tested with other files
 		return [`mc_${name}`, `https://example.com/${name}`];
 	}
 
-	public async updateTournament(tournamentId: string, name: string, desc: string): Promise<void> {
-		throw new Error("Not yet implemented!");
+	public async updateTournament(): Promise<void> {
+		return;
 	}
 
-	public async addAnnouncementChannel(
-		tournamentId: string,
-		channel: string,
-		type: "public" | "private"
-	): Promise<void> {
-		throw new Error("Not yet implemented!");
+	public async addAnnouncementChannel(): Promise<void> {
+		return;
 	}
 
-	public async removeAnnouncementChannel(
-		tournamentId: string,
-		channel: string,
-		type: "public" | "private"
-	): Promise<void> {
-		throw new Error("Not yet implemented!");
+	public async removeAnnouncementChannel(): Promise<void> {
+		return;
 	}
 
-	public async addHost(tournamentId: string, newHost: string): Promise<void> {
-		throw new Error("Not yet implemented!");
+	public async addHost(): Promise<void> {
+		return;
 	}
 
-	public async removeHost(tournamentId: string, newHost: string): Promise<void> {
-		throw new Error("Not yet implemented!");
+	public async removeHost(): Promise<void> {
+		return;
 	}
 
-	public async confirmPlayer(msg: DiscordMessageIn): Promise<void> {
-		throw new Error("Not yet implemented!");
+	public async confirmPlayer(): Promise<void> {
+		return;
 	}
 
-	public async cleanRegistration(msg: DiscordMessageLimited): Promise<void> {
-		throw new Error("Not yet implemented!");
+	public async cleanRegistration(): Promise<void> {
+		return;
 	}
 
-	public async openTournament(tournamentId: string): Promise<void> {
-		throw new Error("Not yet implemented!");
+	public async openTournament(): Promise<void> {
+		return;
 	}
 
-	public async startTournament(tournamentId: string): Promise<void> {
-		throw new Error("Not yet implemented!");
+	public async startTournament(): Promise<void> {
+		return;
 	}
 
-	public async cancelTournament(tournamentId: string): Promise<void> {
-		throw new Error("Not yet implemented!");
+	public async cancelTournament(): Promise<void> {
+		return;
 	}
 
 	public async submitScore(
@@ -90,12 +82,12 @@ export class TournamentMock implements TournamentInterface {
 		throw new Error("Not yet implemented!");
 	}
 
-	public async dropPlayer(tournamentId: string, playerId: string): Promise<void> {
-		throw new Error("Not yet implemented!");
+	public async dropPlayer(): Promise<void> {
+		return;
 	}
 
-	public async syncTournament(tournamentId: string): Promise<void> {
-		throw new Error("Not yet implemented!");
+	public async syncTournament(): Promise<void> {
+		return;
 	}
 
 	public async generatePieChart(tournamentId: string): Promise<DiscordAttachmentOut> {
