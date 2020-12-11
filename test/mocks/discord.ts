@@ -8,6 +8,7 @@ import {
 	DiscordReactionHandler,
 	DiscordWrapper
 } from "../../src/discord/interface";
+import { UnauthorisedHostError, UserError } from "../../src/errors";
 
 export class DiscordWrapperMock implements DiscordWrapper {
 	private messageHandlers: DiscordMessageHandler[];
@@ -23,7 +24,7 @@ export class DiscordWrapperMock implements DiscordWrapper {
 		this.messages = {};
 	}
 
-	public async simMessage(content: string, testCode: string) {
+	public async simMessage(content: string, testCode: string): Promise<void> {
 		await this.messageHandlers[0]({
 			id: "testId",
 			content: content,
@@ -40,7 +41,7 @@ export class DiscordWrapperMock implements DiscordWrapper {
 		});
 	}
 
-	public async simPing(testCode: string) {
+	public async simPing(testCode: string): Promise<void> {
 		await this.pingHandlers[0]({
 			id: "testId",
 			content: "@you",
@@ -66,7 +67,21 @@ export class DiscordWrapperMock implements DiscordWrapper {
 		msg: DiscordMessageOut,
 		file?: DiscordAttachmentOut
 	): Promise<DiscordMessageSent> {
-		throw new Error("Not yet implemented!");
+		this.messages[channel] = msg;
+		return {
+			id: "testId",
+			content: typeof msg === "string" ? msg : "embed",
+			attachments: [],
+			author: "you",
+			channel: channel,
+			server: "testServer",
+			reply: async (msg: DiscordMessageOut): Promise<void> => {
+				this.messages[channel] = msg;
+			},
+			react: async (emoji: string): Promise<void> => {
+				throw new Error("Not yet implemented!");
+			}
+		};
 	}
 
 	public async deleteMessage(channelId: string, messageId: string): Promise<void> {
@@ -112,7 +127,12 @@ export class DiscordWrapperMock implements DiscordWrapper {
 	}
 
 	public getMentionedUser(m: DiscordMessageIn): string {
-		throw new Error("Not yet implemented!");
+		const mentionReg = /<@(.+)>/;
+		const result = mentionReg.exec(m.content);
+		if (!result) {
+			throw new UserError("User not found in message!");
+		}
+		return result[1];
 	}
 
 	public getUsername(userId: string): string {
