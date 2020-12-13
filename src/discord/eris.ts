@@ -72,6 +72,9 @@ export class DiscordWrapperEris implements DiscordWrapper {
 			},
 			react: async (emoji: string): Promise<void> => {
 				await msg.addReaction(emoji);
+			},
+			edit: async (newMsg: DiscordMessageOut): Promise<void> => {
+				await msg.edit(this.unwrapMessageOut(newMsg));
 			}
 		};
 	}

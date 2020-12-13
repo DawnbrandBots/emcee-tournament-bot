@@ -7,6 +7,7 @@ import { getDeck } from "./deck";
 import { getDeckFromMessage, prettyPrint } from "./discordDeck";
 import { Logger } from "winston";
 import * as csv from "@fast-csv/format";
+import { Timer } from "./Timer";
 
 interface MatchScore {
 	playerId: number;
@@ -44,12 +45,14 @@ export class TournamentManager implements TournamentInterface {
 	private website: WebsiteInterface;
 	private logger: Logger;
 	private matchScores: { [matchId: number]: MatchScore };
+	private timers: { [channelId: string]: Timer };
 	constructor(discord: DiscordInterface, database: DatabaseInterface, website: WebsiteInterface, logger: Logger) {
 		this.discord = discord;
 		this.database = database;
 		this.website = website;
 		this.logger = logger;
 		this.matchScores = {};
+		this.timers = {};
 	}
 
 	public async authenticateHost(tournamentId: string, hostId: string): Promise<void> {
@@ -308,7 +311,19 @@ export class TournamentManager implements TournamentInterface {
 		const channels = tournament.publicChannels;
 		await Promise.all(
 			channels.map(async c => {
+				if (c in this.timers) {
+					await this.timers[c].abort();
+				}
 				await this.sendNewRoundMessage(c, round, tournament, url, bye);
+				this.timers[c] = await Timer.create(
+					50,
+					c,
+					this.discord,
+					`That's time in the round, ${this.discord.getPlayerRole(
+						tournament.id,
+						c
+					)}! Please end the current phase, then the player with the lower LP must forfeit!`
+				);
 			})
 		);
 	}

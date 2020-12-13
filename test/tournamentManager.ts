@@ -125,6 +125,9 @@ describe("Misc functions", function () {
 			},
 			react: async () => {
 				return;
+			},
+			edit: async () => {
+				return;
 			}
 		});
 		const privateFile = discord.getFile("channel2");

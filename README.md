@@ -1,9 +1,9 @@
 # [Project Ignis](https://github.com/ProjectIgnis): Emcee
 
-![Build](https://github.com/AlphaKretin/deck-parse-bot/workflows/Build/badge.svg)&nbsp;
-[![Coverage Status](https://coveralls.io/repos/github/AlphaKretin/deck-parse-bot/badge.svg?t=iUM0Et)](https://coveralls.io/github/AlphaKretin/deck-parse-bot)
+![Build](https://github.com/AlphaKretin/emcee-tournament-bot/workflows/Build/badge.svg)&nbsp;
+[![Coverage Status](https://coveralls.io/repos/github/AlphaKretin/emcee-tournament-bot/badge.svg?t=iUM0Et)](https://coveralls.io/github/AlphaKretin/emcee-tournament-bot)
 
-A Discord bot to facilitate organising [Challonge](https://challonge.com/) tournaments and verify submitted decks.
+A Discord bot to facilitate organising Yu-Gi-Oh! tournaments online and verify submitted decks. Currently uses [Challonge](https://challonge.com/).
 
 Supports YGOPro deck files (.ydk) and `ydke://` URLs from [Project Ignis: EDOPro](https://github.com/edo9300/edopro).
 
