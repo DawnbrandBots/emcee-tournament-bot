@@ -15,6 +15,7 @@ export interface DiscordMessageIn {
 	server: string;
 	reply: (msg: DiscordMessageOut, file?: DiscordAttachmentOut) => Promise<void>;
 	react: (emoji: string) => Promise<void>;
+	edit: (newMsg: DiscordMessageOut) => Promise<void>;
 }
 
 export interface DiscordMessageLimited {
@@ -180,8 +181,8 @@ export class DiscordInterface {
 		await this.api.sendDirectMessage(userId, content);
 	}
 
-	public async getPlayerRole(tournamentId: string, chanenlId: string): Promise<string> {
-		return await this.api.getPlayerRole(tournamentId, chanenlId);
+	public async getPlayerRole(tournamentId: string, channelId: string): Promise<string> {
+		return await this.api.getPlayerRole(tournamentId, channelId);
 	}
 
 	public async grantPlayerRole(userId: string, channelId: string, roleId: string): Promise<void> {

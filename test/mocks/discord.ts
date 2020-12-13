@@ -42,7 +42,10 @@ export class DiscordWrapperMock implements DiscordWrapper {
 				}
 			},
 			react: async (emoji: string) => {
-				throw new Error("Not yet implemented!");
+				this.emoji[testCode] = emoji;
+			},
+			edit: async (newMsg: DiscordMessageOut): Promise<void> => {
+				this.messages[testCode] = newMsg;
 			}
 		});
 	}
@@ -60,6 +63,9 @@ export class DiscordWrapperMock implements DiscordWrapper {
 			},
 			react: async (emoji: string) => {
 				this.emoji[testCode] = emoji;
+			},
+			edit: async (newMsg: DiscordMessageOut): Promise<void> => {
+				this.messages[testCode] = newMsg;
 			}
 		});
 	}
@@ -100,6 +106,9 @@ export class DiscordWrapperMock implements DiscordWrapper {
 			},
 			react: async (emoji: string): Promise<void> => {
 				this.emoji[channel] = emoji;
+			},
+			edit: async (newMsg: DiscordMessageOut): Promise<void> => {
+				this.messages[channel] = newMsg;
 			}
 		};
 	}
@@ -140,7 +149,7 @@ export class DiscordWrapperMock implements DiscordWrapper {
 		return; // out of scope for these tests
 	}
 
-	public async authenticateTO(m: DiscordMessageIn): Promise<void> {
+	public async authenticateTO(): Promise<void> {
 		// if implemented properly would throw error if not authenticated
 		// but for these unit tests we will assume authentication
 		return;
