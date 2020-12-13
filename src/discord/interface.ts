@@ -11,8 +11,8 @@ export interface DiscordMessageIn {
 	content: string;
 	attachments: DiscordAttachmentIn[];
 	author: string;
-	channel: string;
-	server: string;
+	channelId: string;
+	serverId: string;
 	reply: (msg: DiscordMessageOut, file?: DiscordAttachmentOut) => Promise<void>;
 	react: (emoji: string) => Promise<void>;
 	edit: (newMsg: DiscordMessageOut) => Promise<void>;
@@ -20,7 +20,7 @@ export interface DiscordMessageIn {
 
 export interface DiscordMessageLimited {
 	id: string;
-	channel: string;
+	channelId: string;
 }
 
 export type DiscordMessageOut = string | DiscordEmbed;
@@ -62,12 +62,12 @@ export interface DiscordWrapper {
 	onPing: (hander: DiscordMessageHandler) => void;
 	onReaction: (handler: DiscordReactionHandler) => void;
 	onReactionRemove: (handler: DiscordReactionHandler) => void;
-	sendMessage(channel: string, msg: DiscordMessageOut, file?: DiscordAttachmentOut): Promise<DiscordMessageSent>;
+	sendMessage(channelId: string, msg: DiscordMessageOut, file?: DiscordAttachmentOut): Promise<DiscordMessageSent>;
 	deleteMessage(channelId: string, messageId: string): Promise<void>;
 	authenticateTO(msg: DiscordMessageIn): Promise<void>;
 	getMentionedUser(msg: DiscordMessageIn): string;
 	getUsername(userId: string): string;
-	getPlayerRole(tournamentId: string, channel: string): Promise<string>;
+	getPlayerRole(tournamentId: string, channelId: string): Promise<string>;
 	grantPlayerRole(userId: string, channelId: string, roleId: string): Promise<void>;
 	deletePlayerRole(tournamentId: string, channelId: string): Promise<void>;
 	sendDirectMessage(userId: string, content: DiscordMessageOut): Promise<void>;
@@ -129,12 +129,12 @@ export class DiscordInterface {
 
 	public async awaitReaction(
 		content: DiscordMessageOut,
-		channel: string,
+		channelId: string,
 		emoji: string,
 		response: DiscordReactionResponse,
 		removeResponse: DiscordReactionResponse
 	): Promise<DiscordMessageSent> {
-		const msg = await this.sendMessage(channel, content);
+		const msg = await this.sendMessage(channelId, content);
 		await msg.react(emoji);
 		this.api.onReaction({ msg: msg.id, emoji, response });
 		this.api.onReactionRemove({ msg: msg.id, emoji, response: removeResponse });
@@ -158,11 +158,11 @@ export class DiscordInterface {
 	}
 
 	public async sendMessage(
-		channel: string,
+		channelId: string,
 		msg: DiscordMessageOut,
 		file?: DiscordAttachmentOut
 	): Promise<DiscordMessageSent> {
-		return await this.api.sendMessage(channel, msg, file);
+		return await this.api.sendMessage(channelId, msg, file);
 	}
 
 	public async deleteMessage(channelId: string, messageId: string): Promise<void> {

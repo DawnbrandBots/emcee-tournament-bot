@@ -3,33 +3,33 @@ export class UserError extends Error {}
 export class ChallongeAPIError extends Error {}
 
 export class TournamentNotFoundError extends UserError {
-	challongeId: string;
+	tournamentId: string;
 
-	constructor(challongeId: string) {
-		super(`Unknown tournament ${challongeId}.`);
-		this.challongeId = challongeId;
+	constructor(tournamentId: string) {
+		super(`Unknown tournament ${tournamentId}.`);
+		this.tournamentId = tournamentId;
 	}
 }
 
 export class UnauthorisedHostError extends UserError {
-	host: string;
-	challongeId: string;
+	hostId: string;
+	tournamentId: string;
 
-	constructor(host: string, challongeId: string) {
-		super(`User ${host} not authorised for tournament ${challongeId}.`);
-		this.host = host;
-		this.challongeId = challongeId;
+	constructor(hostId: string, tournamentId: string) {
+		super(`User ${hostId} not authorised for tournament ${tournamentId}.`);
+		this.hostId = hostId;
+		this.tournamentId = tournamentId;
 	}
 }
 
 export class UnauthorisedPlayerError extends UserError {
-	player: string;
-	challongeId: string;
+	playerId: string;
+	tournamentId: string;
 
-	constructor(player: string, challongeId: string) {
-		super(`User ${player} not a player in tournament ${challongeId}.`);
-		this.player = player;
-		this.challongeId = challongeId;
+	constructor(playerId: string, tournamentId: string) {
+		super(`User ${playerId} not a player in tournament ${tournamentId}.`);
+		this.playerId = playerId;
+		this.tournamentId = tournamentId;
 	}
 }
 

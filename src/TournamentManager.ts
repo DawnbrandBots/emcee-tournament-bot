@@ -7,7 +7,7 @@ import { getDeck } from "./deck";
 import { getDeckFromMessage, prettyPrint } from "./discordDeck";
 import { Logger } from "winston";
 import * as csv from "@fast-csv/format";
-import { Timer } from "./Timer";
+import { TimerInterface } from "./timer/interface";
 
 interface MatchScore {
 	playerId: number;
@@ -21,10 +21,10 @@ export interface TournamentInterface {
 	authenticateHost(tournamentId: string, hostId: string): Promise<void>;
 	authenticatePlayer(tournamentId: string, playerId: string): Promise<void>;
 	listTournaments(): Promise<string>;
-	createTournament(host: string, server: string, name: string, desc: string): Promise<[string, string]>;
+	createTournament(hostId: string, serverId: string, name: string, desc: string): Promise<[string, string]>;
 	updateTournament(tournamentId: string, name: string, desc: string): Promise<void>;
-	addAnnouncementChannel(tournamentId: string, channel: string, type: "public" | "private"): Promise<void>;
-	removeAnnouncementChannel(tournamentId: string, channel: string, type: "public" | "private"): Promise<void>;
+	addAnnouncementChannel(tournamentId: string, channelId: string, type: "public" | "private"): Promise<void>;
+	removeAnnouncementChannel(tournamentId: string, channelId: string, type: "public" | "private"): Promise<void>;
 	addHost(tournamentId: string, newHost: string): Promise<void>;
 	removeHost(tournamentId: string, newHost: string): Promise<void>;
 	openTournament(tournamentId: string): Promise<void>;
@@ -44,13 +44,21 @@ export class TournamentManager implements TournamentInterface {
 	private database: DatabaseInterface;
 	private website: WebsiteInterface;
 	private logger: Logger;
+	private timer: typeof TimerInterface;
 	private matchScores: { [matchId: number]: MatchScore };
-	private timers: { [channelId: string]: Timer };
-	constructor(discord: DiscordInterface, database: DatabaseInterface, website: WebsiteInterface, logger: Logger) {
+	private timers: { [channelId: string]: TimerInterface };
+	constructor(
+		discord: DiscordInterface,
+		database: DatabaseInterface,
+		website: WebsiteInterface,
+		logger: Logger,
+		timer: typeof TimerInterface
+	) {
 		this.discord = discord;
 		this.database = database;
 		this.website = website;
 		this.logger = logger;
+		this.timer = timer;
 		this.matchScores = {};
 		this.timers = {};
 	}
@@ -81,7 +89,12 @@ export class TournamentManager implements TournamentInterface {
 		}
 	}
 
-	public async createTournament(host: string, server: string, name: string, desc: string): Promise<[string, string]> {
+	public async createTournament(
+		hostId: string,
+		serverId: string,
+		name: string,
+		desc: string
+	): Promise<[string, string]> {
 		// generate a URL based on the name, with added numbers to prevent conflicts
 		const baseUrl = name.toLowerCase().replace(/[^a-zA-Z0-9_]/g, "");
 		let candidateUrl = `mc_${baseUrl}`;
@@ -93,7 +106,7 @@ export class TournamentManager implements TournamentInterface {
 		}
 
 		const web = await this.website.createTournament(name, desc, candidateUrl);
-		await this.database.createTournament(host, server, web);
+		await this.database.createTournament(hostId, serverId, web);
 		return [web.id, web.url];
 	}
 
@@ -105,18 +118,18 @@ export class TournamentManager implements TournamentInterface {
 
 	public async addAnnouncementChannel(
 		tournamentId: string,
-		channel: string,
+		channelId: string,
 		type: "public" | "private"
 	): Promise<void> {
-		await this.database.addAnnouncementChannel(tournamentId, channel, type);
+		await this.database.addAnnouncementChannel(tournamentId, channelId, type);
 	}
 
 	public async removeAnnouncementChannel(
 		tournamentId: string,
-		channel: string,
+		channelId: string,
 		type: "public" | "private"
 	): Promise<void> {
-		await this.database.removeAnnouncementChannel(tournamentId, channel, type);
+		await this.database.removeAnnouncementChannel(tournamentId, channelId, type);
 	}
 
 	public async addHost(tournamentId: string, newHost: string): Promise<void> {
@@ -127,14 +140,14 @@ export class TournamentManager implements TournamentInterface {
 		await this.database.removeHost(tournamentId, newHost);
 	}
 
-	private async handleDmFailure(userId: string, tournament: DatabaseTournament): Promise<void> {
+	private async handleDmFailure(playerId: string, tournament: DatabaseTournament): Promise<void> {
 		const channels = tournament.privateChannels;
 		await Promise.all(
 			channels.map(async c => {
 				await this.discord.sendMessage(
 					c,
-					`Player ${this.discord.mentionUser(userId)} (${this.discord.getUsername(
-						userId
+					`Player ${this.discord.mentionUser(playerId)} (${this.discord.getUsername(
+						playerId
 					)}) is trying to sign up for Tournament ${tournament.name} (${
 						tournament.id
 					}), but I cannot send them DMs. Please ask them to allow DMs from this server.`
@@ -143,19 +156,19 @@ export class TournamentManager implements TournamentInterface {
 		);
 	}
 
-	private async registerPlayer(msg: DiscordMessageIn, userId: string): Promise<void> {
-		const tournament = await this.database.addPendingPlayer(msg.channel, msg.id, userId);
+	private async registerPlayer(msg: DiscordMessageIn, playerId: string): Promise<void> {
+		const tournament = await this.database.addPendingPlayer(msg.channelId, msg.id, playerId);
 		if (tournament) {
 			try {
 				await this.discord.sendDirectMessage(
-					userId,
+					playerId,
 					`You registering for ${tournament.name}. ` +
 						"Please submit a deck to complete your registration, by uploading a YDK file or sending a message with a YDKE URL."
 				);
-				this.logger.verbose(`User ${userId} registered for tournament ${tournament.id}.`);
+				this.logger.verbose(`User ${playerId} registered for tournament ${tournament.id}.`);
 			} catch (e) {
 				if (e instanceof BlockedDMsError) {
-					await this.handleDmFailure(userId, tournament);
+					await this.handleDmFailure(playerId, tournament);
 				} else {
 					throw e;
 				}
@@ -165,7 +178,7 @@ export class TournamentManager implements TournamentInterface {
 
 	public async confirmPlayer(msg: DiscordMessageIn): Promise<void> {
 		// only check decklists in DMs
-		if (msg.server !== "private") {
+		if (msg.serverId !== "private") {
 			return;
 		}
 		const tournaments = await this.database.getPendingTournaments(msg.author);
@@ -260,7 +273,7 @@ export class TournamentManager implements TournamentInterface {
 	}
 
 	public async cleanRegistration(msg: DiscordMessageLimited): Promise<void> {
-		await this.database.cleanRegistration(msg.channel, msg.id);
+		await this.database.cleanRegistration(msg.channelId, msg.id);
 	}
 
 	private CHECK_EMOJI = "✅";
@@ -283,26 +296,26 @@ export class TournamentManager implements TournamentInterface {
 					this.dropPlayerReaction.bind(this)
 				);
 				// TODO: add handler for removing the reaction too, to drop
-				await this.database.openRegistration(tournamentId, msg.channel, msg.id);
+				await this.database.openRegistration(tournamentId, msg.channelId, msg.id);
 			})
 		);
 	}
 
 	private async sendNewRoundMessage(
-		channel: string,
+		channelId: string,
 		round: number,
 		tournament: DatabaseTournament,
 		url: string,
 		bye?: string
 	): Promise<void> {
-		const role = await this.discord.getPlayerRole(tournament.id, channel);
+		const role = await this.discord.getPlayerRole(tournament.id, channelId);
 		let message = `Round ${round} of ${tournament.name} has begun! ${this.discord.mentionRole(
 			role
 		)}\nPairings: ${url}`;
 		if (bye) {
 			message += `\n${this.discord.mentionUser(bye)} has the bye for this round.`;
 		}
-		await this.discord.sendMessage(channel, message);
+		await this.discord.sendMessage(channelId, message);
 	}
 
 	private async startNewRound(tournament: DatabaseTournament, url: string, round: number): Promise<void> {
@@ -315,7 +328,7 @@ export class TournamentManager implements TournamentInterface {
 					await this.timers[c].abort();
 				}
 				await this.sendNewRoundMessage(c, round, tournament, url, bye);
-				this.timers[c] = await Timer.create(
+				this.timers[c] = await this.timer.create(
 					50,
 					c,
 					this.discord,
@@ -338,7 +351,7 @@ export class TournamentManager implements TournamentInterface {
 		await Promise.all(
 			messages.map(async m => {
 				// onDelete handler will handle database cleanup
-				await this.discord.deleteMessage(m.channel, m.message);
+				await this.discord.deleteMessage(m.channelId, m.messageId);
 			})
 		);
 		// get challonge rounds with current player pool
@@ -457,13 +470,13 @@ export class TournamentManager implements TournamentInterface {
 
 	private async dropPlayerReaction(msg: DiscordMessageLimited, playerId: string): Promise<void> {
 		// try to remove pending
-		const droppedTournament = await this.database.removePendingPlayer(msg.channel, msg.id, playerId);
+		const droppedTournament = await this.database.removePendingPlayer(msg.channelId, msg.id, playerId);
 		// an unconfirmed player dropping isn't worth reporting to the hosts
 		if (droppedTournament) {
 			return;
 		}
 		// if wasn't found pending, try to remove confirmed
-		const tournament = await this.database.removeConfirmedPlayerReaction(msg.channel, msg.id, playerId);
+		const tournament = await this.database.removeConfirmedPlayerReaction(msg.channelId, msg.id, playerId);
 		if (tournament) {
 			const player = tournament.findPlayer(playerId);
 			await this.website.removePlayer(tournament.id, player.challongeId);

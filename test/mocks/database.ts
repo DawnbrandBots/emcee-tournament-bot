@@ -48,14 +48,14 @@ export class DatabaseWrapperMock implements DatabaseWrapper {
 		];
 	}
 	async createTournament(
-		host: string,
-		server: string,
-		challongeId: string,
+		hostId: string,
+		serverId: string,
+		tournamentId: string,
 		name: string,
 		description: string
 	): Promise<DatabaseTournament> {
 		return {
-			id: challongeId,
+			id: tournamentId,
 			name: name,
 			description: description,
 			status: "preparing",

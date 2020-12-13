@@ -16,7 +16,7 @@ export class TournamentMock implements TournamentInterface {
 		return "This sure is a list.";
 	}
 
-	public async createTournament(host: string, server: string, name: string): Promise<[string, string]> {
+	public async createTournament(hostId: string, serverId: string, name: string): Promise<[string, string]> {
 		// the point of this file is to return a simulated input for testing other files
 		// actual functionality here will be tested with other files
 		return [`mc_${name}`, `https://example.com/${name}`];
