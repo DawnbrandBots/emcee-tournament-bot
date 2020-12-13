@@ -5,20 +5,20 @@ type DiscordID = string;
 export interface TournamentDoc extends Document {
 	name: string;
 	description: string;
-	challongeId: string;
+	tournamentId: string;
 	hosts: DiscordID[];
 	owningDiscordServer: DiscordID;
 	publicChannels: DiscordID[];
 	privateChannels: DiscordID[];
 	registerMessages: {
-		channel: DiscordID;
-		message: DiscordID;
+		channelId: DiscordID;
+		messageId: DiscordID;
 	}[];
 	status: "preparing" | "in progress" | "complete";
 	participantLimit: DiscordID;
 	confirmedParticipants: {
 		challongeId: number;
-		discord: DiscordID;
+		discordId: DiscordID;
 		deck: string; // YDKE URL
 	}[];
 	pendingParticipants: DiscordID[];
@@ -29,15 +29,15 @@ export interface TournamentDoc extends Document {
 export const TournamentSchema = new Schema({
 	name: { type: String, required: true },
 	description: { type: String, required: true },
-	challongeId: { type: String, required: true, unique: true },
+	tournamentId: { type: String, required: true, unique: true },
 	hosts: { type: [String], required: true },
 	owningDiscordServer: { type: String, required: true },
 	publicChannels: { type: [String], required: true },
 	privateChannels: { type: [String], required: true },
 	registerMessages: [
 		{
-			channel: { type: String, required: true },
-			message: { type: String, required: true }
+			channelId: { type: String, required: true },
+			messageId: { type: String, required: true }
 		}
 	],
 	status: {

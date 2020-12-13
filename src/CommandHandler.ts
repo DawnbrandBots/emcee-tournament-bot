@@ -52,7 +52,7 @@ export class CommandHandler {
 	private async commandCreateTournament(msg: DiscordMessageIn, args: string[]): Promise<void> {
 		await this.discord.authenticateTO(msg);
 		const [name, desc] = args;
-		const [id, url] = await this.tournamentManager.createTournament(msg.author, msg.server, name, desc);
+		const [id, url] = await this.tournamentManager.createTournament(msg.author, msg.serverId, name, desc);
 		this.logger.verbose(`New tournament created ${id} by ${msg.author}.`);
 		await msg.reply(
 			`Tournament ${name} created! You can find it at ${url}. For future commands, refer to this tournament by the id \`${id}\`.`
@@ -74,18 +74,18 @@ export class CommandHandler {
 		if (!(type === "private")) {
 			type = "public";
 		}
-		let channel = this.discord.getChannel(channelMention);
-		if (!channel) {
-			channel = msg.channel;
+		let channelId = this.discord.getChannel(channelMention);
+		if (!channelId) {
+			channelId = msg.channelId;
 		}
-		await this.tournamentManager.addAnnouncementChannel(id, channel, type as "public" | "private");
-		this.logger.verbose(`Channel ${channel} added to tournament ${id} with level ${type} by ${msg.author}.`);
+		await this.tournamentManager.addAnnouncementChannel(id, channelId, type as "public" | "private");
+		this.logger.verbose(`Channel ${channelId} added to tournament ${id} with level ${type} by ${msg.author}.`);
 		await this.discord.sendMessage(
-			channel,
+			channelId,
 			`This channel added as a ${type} announcement channel for Tournament ${id}!`
 		);
 		await msg.reply(
-			`${this.discord.mentionChannel(channel)} added as a ${type} announcement channel for Tournament ${id}!`
+			`${this.discord.mentionChannel(channelId)} added as a ${type} announcement channel for Tournament ${id}!`
 		);
 	}
 
@@ -96,18 +96,18 @@ export class CommandHandler {
 		if (!(type === "private")) {
 			type = "public";
 		}
-		let channel = this.discord.getChannel(channelMention);
-		if (!channel) {
-			channel = msg.channel;
+		let channelId = this.discord.getChannel(channelMention);
+		if (!channelId) {
+			channelId = msg.channelId;
 		}
-		await this.tournamentManager.removeAnnouncementChannel(id, channel, type as "public" | "private");
-		this.logger.verbose(`Channel ${channel} removed from tournament ${id} with level ${type} by ${msg.author}.`);
+		await this.tournamentManager.removeAnnouncementChannel(id, channelId, type as "public" | "private");
+		this.logger.verbose(`Channel ${channelId} removed from tournament ${id} with level ${type} by ${msg.author}.`);
 		await this.discord.sendMessage(
-			channel,
+			channelId,
 			`This channel removed as a ${type} announcement channel for Tournament ${id}!`
 		);
 		await msg.reply(
-			`${this.discord.mentionChannel(channel)} removed as a ${type} announcement channel for Tournament ${id}!`
+			`${this.discord.mentionChannel(channelId)} removed as a ${type} announcement channel for Tournament ${id}!`
 		);
 	}
 

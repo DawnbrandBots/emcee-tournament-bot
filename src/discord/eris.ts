@@ -65,8 +65,8 @@ export class DiscordWrapperEris implements DiscordWrapper {
 			attachments: msg.attachments,
 			content: msg.content,
 			author: msg.author.id,
-			channel: channel.id,
-			server: guildId,
+			channelId: channel.id,
+			serverId: guildId,
 			reply: async (out: DiscordMessageOut, file?: DiscordAttachmentOut): Promise<void> => {
 				await msg.channel.createMessage(this.unwrapMessageOut(out), this.unwrapFileOut(file));
 			},
@@ -92,18 +92,18 @@ export class DiscordWrapperEris implements DiscordWrapper {
 	}
 
 	public async sendMessage(
-		channel: string,
+		channelId: string,
 		msg: DiscordMessageOut,
 		file?: DiscordAttachmentOut
 	): Promise<DiscordMessageSent> {
 		const out = this.unwrapMessageOut(msg);
 		const outFile = this.unwrapFileOut(file);
-		const chan = this.bot.getChannel(channel);
+		const chan = this.bot.getChannel(channelId);
 		if (chan instanceof TextChannel) {
 			const response = await chan.createMessage(out, outFile);
 			return this.wrapMessageIn(response);
 		}
-		throw new AssertTextChannelError(channel);
+		throw new AssertTextChannelError(channelId);
 	}
 
 	public async deleteMessage(channelId: string, messageId: string): Promise<void> {
@@ -128,7 +128,7 @@ export class DiscordWrapperEris implements DiscordWrapper {
 
 	private wrapMessageLimited(msg: PossiblyUncachedMessage): DiscordMessageLimited {
 		return {
-			channel: msg.channel.id,
+			channelId: msg.channel.id,
 			id: msg.id
 		};
 	}
@@ -202,13 +202,13 @@ export class DiscordWrapperEris implements DiscordWrapper {
 		return newRole;
 	}
 
-	public async getPlayerRole(tournamentId: string, channel: string): Promise<string> {
+	public async getPlayerRole(tournamentId: string, channelId: string): Promise<string> {
 		if (tournamentId in this.playerRoles) {
 			return this.playerRoles[tournamentId];
 		}
-		const chan = this.bot.getChannel(channel);
+		const chan = this.bot.getChannel(channelId);
 		if (!(chan instanceof GuildChannel)) {
-			throw new AssertTextChannelError(channel);
+			throw new AssertTextChannelError(channelId);
 		}
 		const guild = chan.guild;
 		const role = guild.roles.find(r => r.name === `MC-${tournamentId}-player`);

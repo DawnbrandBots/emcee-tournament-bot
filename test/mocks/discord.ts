@@ -14,9 +14,9 @@ export class DiscordWrapperMock implements DiscordWrapper {
 	private pingHandlers: DiscordMessageHandler[];
 	private deleteHandlers: DiscordDeleteHandler[];
 
-	private messages: { [channel: string]: DiscordMessageOut };
-	private files: { [channel: string]: DiscordAttachmentOut };
-	private emoji: { [message: string]: string };
+	private messages: { [channelId: string]: DiscordMessageOut };
+	private files: { [channelId: string]: DiscordAttachmentOut };
+	private emoji: { [messageId: string]: string };
 	constructor() {
 		this.messageHandlers = [];
 		this.pingHandlers = [];
@@ -33,8 +33,8 @@ export class DiscordWrapperMock implements DiscordWrapper {
 			content: content,
 			attachments: [],
 			author: "testUser",
-			channel: "testChannel",
-			server: "testServer",
+			channelId: "testChannel",
+			serverId: "testServer",
 			reply: async (msg: DiscordMessageOut, file?: DiscordAttachmentOut) => {
 				this.messages[testCode] = msg;
 				if (file) {
@@ -56,8 +56,8 @@ export class DiscordWrapperMock implements DiscordWrapper {
 			content: "@you",
 			attachments: [],
 			author: "testUser",
-			channel: "testChannel",
-			server: "testServer",
+			channelId: "testChannel",
+			serverId: "testServer",
 			reply: async (msg: DiscordMessageOut) => {
 				this.messages[testCode] = msg;
 			},
@@ -83,32 +83,32 @@ export class DiscordWrapperMock implements DiscordWrapper {
 	}
 
 	public async sendMessage(
-		channel: string,
+		channelId: string,
 		msg: DiscordMessageOut,
 		file?: DiscordAttachmentOut
 	): Promise<DiscordMessageSent> {
-		this.messages[channel] = msg;
+		this.messages[channelId] = msg;
 		if (file) {
-			this.files[channel] = file;
+			this.files[channelId] = file;
 		}
 		return {
 			id: "testId",
 			content: typeof msg === "string" ? msg : "embed",
 			attachments: [],
 			author: "you",
-			channel: channel,
-			server: "testServer",
+			channelId: channelId,
+			serverId: "testServer",
 			reply: async (msg: DiscordMessageOut, file?: DiscordAttachmentOut): Promise<void> => {
-				this.messages[channel] = msg;
+				this.messages[channelId] = msg;
 				if (file) {
-					this.files[channel] = file;
+					this.files[channelId] = file;
 				}
 			},
 			react: async (emoji: string): Promise<void> => {
-				this.emoji[channel] = emoji;
+				this.emoji[channelId] = emoji;
 			},
 			edit: async (newMsg: DiscordMessageOut): Promise<void> => {
-				this.messages[channel] = newMsg;
+				this.messages[channelId] = newMsg;
 			}
 		};
 	}

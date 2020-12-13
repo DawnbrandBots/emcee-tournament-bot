@@ -3,17 +3,17 @@ import { WebsiteTournament } from "../website/interface";
 
 export interface DatabaseWrapper {
 	createTournament(
-		host: string,
-		server: string,
-		challongeId: string,
+		hostId: string,
+		serverId: string,
+		tournamentId: string,
 		name: string,
 		description: string
 	): Promise<DatabaseTournament>;
 	updateTournament(tournamentId: string, name: string, desc: string): Promise<void>;
 	getTournament(tournamentId: string): Promise<DatabaseTournament>;
 	getActiveTournaments(): Promise<DatabaseTournament[]>;
-	addAnnouncementChannel(tournamentId: string, channel: string, type: "public" | "private"): Promise<void>;
-	removeAnnouncementChannel(tournamentId: string, channel: string, type: "public" | "private"): Promise<void>;
+	addAnnouncementChannel(tournamentId: string, channelId: string, type: "public" | "private"): Promise<void>;
+	removeAnnouncementChannel(tournamentId: string, channelId: string, type: "public" | "private"): Promise<void>;
 	addHost(tournamentId: string, newHost: string): Promise<void>;
 	removeHost(tournamentId: string, newHost: string): Promise<void>;
 	openRegistration(tournamentId: string, channelId: string, messageId: string): Promise<void>;
@@ -46,8 +46,8 @@ export interface DatabasePlayer {
 }
 
 export interface DatabaseMessage {
-	message: string;
-	channel: string;
+	messageId: string;
+	channelId: string;
 }
 
 // interface structure WIP as fleshed out command-by-command
@@ -95,8 +95,12 @@ export class DatabaseInterface {
 		return await this.db.getActiveTournaments();
 	}
 
-	public async createTournament(host: string, server: string, web: WebsiteTournament): Promise<DatabaseTournament> {
-		return await this.db.createTournament(host, server, web.id, web.name, web.desc);
+	public async createTournament(
+		hostId: string,
+		serverId: string,
+		web: WebsiteTournament
+	): Promise<DatabaseTournament> {
+		return await this.db.createTournament(hostId, serverId, web.id, web.name, web.desc);
 	}
 
 	public async updateTournament(tournamentId: string, name: string, desc: string): Promise<void> {
@@ -109,18 +113,18 @@ export class DatabaseInterface {
 
 	public async addAnnouncementChannel(
 		tournamentId: string,
-		channel: string,
+		channelId: string,
 		type: "public" | "private"
 	): Promise<void> {
-		await this.db.addAnnouncementChannel(tournamentId, channel, type);
+		await this.db.addAnnouncementChannel(tournamentId, channelId, type);
 	}
 
 	public async removeAnnouncementChannel(
 		tournamentId: string,
-		channel: string,
+		channelId: string,
 		type: "public" | "private"
 	): Promise<void> {
-		await this.db.removeAnnouncementChannel(tournamentId, channel, type);
+		await this.db.removeAnnouncementChannel(tournamentId, channelId, type);
 	}
 
 	public async addHost(tournamentId: string, newHost: string): Promise<void> {
