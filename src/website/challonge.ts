@@ -225,11 +225,13 @@ export class WebsiteWrapperChallonge implements WebsiteWrapper {
 		};
 	}
 
-	public async createTournament(name: string, desc: string, url: string): Promise<WebsiteTournament> {
+	public async createTournament(name: string, desc: string, url: string, topCut = false): Promise<WebsiteTournament> {
 		const settings: ChallongeTournamentSettings = {
 			name,
 			description: desc,
-			url
+			url,
+			// eslint-disable-next-line @typescript-eslint/camelcase
+			tournament_type: topCut ? "single elimination" : "swiss"
 		};
 		const response = await fetch(`${this.baseUrl}tournaments.json`, {
 			method: "POST",
