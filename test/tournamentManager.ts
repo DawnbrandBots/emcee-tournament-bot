@@ -8,6 +8,7 @@ import { DatabaseWrapperMock } from "./mocks/database";
 import { DatabaseInterface } from "../src/database/interface";
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
+import { TimerInterface } from "../src/timer/interface";
 
 chai.use(chaiAsPromised);
 
@@ -20,7 +21,9 @@ const mockDb = new DatabaseInterface(mockDbWrapper);
 const mockWebsiteWrapper = new WebsiteWrapperMock();
 const mockWebsite = new WebsiteInterface(mockWebsiteWrapper);
 
-const tournament = new TournamentManager(mockDiscord, mockDb, mockWebsite, logger);
+const mockTimer = TimerInterface;
+
+const tournament = new TournamentManager(mockDiscord, mockDb, mockWebsite, logger, mockTimer);
 
 describe("Tournament creation commands", async function () {
 	it("Create tournament", async function () {
@@ -55,9 +58,7 @@ describe("Tournament flow commands", function () {
 	});
 	it("Start tournament", async function () {
 		await tournament.startTournament("tourn1");
-		expect(discord.getResponse("channel1")).to.equal(
-			"Round 1 of Tournament 1 has begun! <&role>\nPairings: https://example.com/url"
-		);
+		expect(discord.getResponse("channel1")).to.equal("Time left in the round: `50:00`"); // timer message posted after new round message
 	});
 	it("Cancel tournament", async function () {
 		await tournament.cancelTournament("tourn1");
