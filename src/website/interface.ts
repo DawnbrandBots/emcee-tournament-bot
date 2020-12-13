@@ -1,5 +1,5 @@
 export interface WebsiteWrapper {
-	createTournament(name: string, desc: string, url: string): Promise<WebsiteTournament>;
+	createTournament(name: string, desc: string, url: string, topCut?: boolean): Promise<WebsiteTournament>;
 	updateTournament(tournamentId: string, name: string, desc: string): Promise<void>;
 	getTournament(tournamentId: string): Promise<WebsiteTournament>;
 	registerPlayer(tournamentId: string, playerName: string, playerId: string): Promise<number>;
@@ -9,11 +9,13 @@ export interface WebsiteWrapper {
 	removePlayer(tournamentId: string, playerId: number): Promise<void>;
 	submitScore(tournamentId: string, winner: number, winnerScore: number, loserScore: number): Promise<void>;
 	finishTournament(tournamentId: string): Promise<void>;
+	getPlayers(tournamentId: string): Promise<WebsitePlayer[]>;
 }
 
-interface WebsitePlayer {
+export interface WebsitePlayer {
 	challongeId: number;
 	discordId: string;
+	rank: number;
 }
 
 // interface structure WIP as fleshed out command-by-command
@@ -38,8 +40,8 @@ export class WebsiteInterface {
 		this.api = api;
 	}
 
-	public async createTournament(name: string, desc: string, url: string): Promise<WebsiteTournament> {
-		return await this.api.createTournament(name, desc, url);
+	public async createTournament(name: string, desc: string, url: string, topCut = false): Promise<WebsiteTournament> {
+		return await this.api.createTournament(name, desc, url, topCut);
 	}
 
 	public async updateTournament(tournamentId: string, name: string, desc: string): Promise<void> {
@@ -98,5 +100,10 @@ export class WebsiteInterface {
 		const tournament = await this.api.getTournament(tournamentId);
 		await this.api.finishTournament(tournamentId);
 		return tournament;
+	}
+
+	public async getTopCut(tournamentId: string, cut = 8): Promise<WebsitePlayer[]> {
+		const players = await this.api.getPlayers(tournamentId);
+		return players.sort((p1, p2) => p2.rank - p1.rank).slice(0, cut); // descending order
 	}
 }

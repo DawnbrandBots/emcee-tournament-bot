@@ -388,6 +388,34 @@ export class TournamentManager implements TournamentInterface {
 				await this.discord.deletePlayerRole(tournamentId, c);
 			})
 		);
+		if (!cancel) {
+			const top = await this.website.getTopCut(tournamentId, 8);
+			const [newId] = await this.createTournament(
+				tournament.hosts[0],
+				tournament.server,
+				`${tournament.name} Top Cut`,
+				`Top Cut for ${tournament.name}`
+			);
+			for (const host of tournament.hosts.slice(1)) {
+				await this.database.addHost(newId, host);
+			}
+			for (const player of top) {
+				const challongeId = await this.website.registerPlayer(
+					tournament.id,
+					this.discord.getUsername(player.discordId),
+					player.discordId
+				);
+				const deck = tournament.findPlayer(player.discordId).deck;
+				await this.database.confirmPlayer(tournament.id, player.discordId, challongeId, deck);
+			}
+			for (const channel of tournament.publicChannels) {
+				await this.database.addAnnouncementChannel(newId, channel, "public");
+			}
+			for (const channel of tournament.privateChannels) {
+				await this.database.addAnnouncementChannel(newId, channel, "private");
+			}
+			await this.startTournament(newId);
+		}
 	}
 
 	public async cancelTournament(tournamentId: string): Promise<void> {

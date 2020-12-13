@@ -1,4 +1,4 @@
-import { WebsiteMatch, WebsiteTournament, WebsiteWrapper } from "../../src/website/interface";
+import { WebsiteMatch, WebsitePlayer, WebsiteTournament, WebsiteWrapper } from "../../src/website/interface";
 
 export class WebsiteWrapperMock implements WebsiteWrapper {
 	async createTournament(name: string, desc: string, url: string): Promise<WebsiteTournament> {
@@ -44,5 +44,8 @@ export class WebsiteWrapperMock implements WebsiteWrapper {
 	}
 	async finishTournament(): Promise<void> {
 		return;
+	}
+	async getPlayers(): Promise<WebsitePlayer[]> {
+		throw new Error("Not yet implemented!");
 	}
 }
