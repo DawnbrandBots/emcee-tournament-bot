@@ -1,4 +1,4 @@
-import { WebsiteMatch, WebsiteTournament, WebsiteWrapper } from "./interface";
+import { WebsiteMatch, WebsitePlayer, WebsiteTournament, WebsiteWrapper } from "./interface";
 import fetch, { Response } from "node-fetch";
 import { ChallongeAPIError } from "../errors";
 
@@ -42,7 +42,7 @@ interface ChallongeParticipant {
 		active: boolean;
 		checked_in_at: null | Date;
 		created_at: Date;
-		final_rank: null | string;
+		final_rank: null | number;
 		group_id: null | string;
 		icon: null | string;
 		id: number;
@@ -212,9 +212,7 @@ export class WebsiteWrapperChallonge implements WebsiteWrapper {
 	private wrapTournament(t: ChallongeTournament): WebsiteTournament {
 		const tournament = t.tournament;
 		const p = tournament.participants;
-		const participants = p
-			? p.map(pa => ({ challongeId: pa.participant.id, discordId: pa.participant.misc || "DUMMY" }))
-			: [];
+		const participants = p ? p.map(this.wrapPlayer) : [];
 		return {
 			id: tournament.url,
 			name: tournament.name,
@@ -242,12 +240,12 @@ export class WebsiteWrapperChallonge implements WebsiteWrapper {
 		return this.wrapTournament(tournament);
 	}
 
-	public async updateTournament(tournament: string, name: string, desc: string): Promise<void> {
+	public async updateTournament(tournamentId: string, name: string, desc: string): Promise<void> {
 		const settings: ChallongeTournamentSettings = {
 			name,
 			description: desc
 		};
-		const response = await fetch(`${this.baseUrl}tournaments/${tournament}.json`, {
+		const response = await fetch(`${this.baseUrl}tournaments/${tournamentId}.json`, {
 			method: "PUT",
 			body: JSON.stringify({ tournament: settings }),
 			headers: { "Content-Type": "application/json" }
@@ -256,12 +254,12 @@ export class WebsiteWrapperChallonge implements WebsiteWrapper {
 	}
 
 	private async showTournament(
-		tournament: string,
+		tournamentId: string,
 		includeParticipants = false,
 		includeMatches = false
 	): Promise<ChallongeTournament> {
 		const response = await fetch(
-			`${this.baseUrl}tournaments/${tournament}.json?include_participants=${Number(
+			`${this.baseUrl}tournaments/${tournamentId}.json?include_participants=${Number(
 				includeParticipants
 			)}&include_matches=${Number(includeMatches)}`
 		);
@@ -272,8 +270,8 @@ export class WebsiteWrapperChallonge implements WebsiteWrapper {
 		return this.wrapTournament(await this.showTournament(tournamentId, true, true));
 	}
 
-	private async startTournamentRemote(tournament: string, settings: StartTournamentSettings): Promise<void> {
-		const response = await fetch(`${this.baseUrl}tournaments/${tournament}/start.json`, {
+	private async startTournamentRemote(tournamentId: string, settings: StartTournamentSettings): Promise<void> {
+		const response = await fetch(`${this.baseUrl}tournaments/${tournamentId}/start.json`, {
 			method: "POST",
 			body: JSON.stringify(settings),
 			headers: { "Content-Type": "application/json" }
@@ -286,8 +284,11 @@ export class WebsiteWrapperChallonge implements WebsiteWrapper {
 		await this.startTournamentRemote(tournamentId, { include_matches: 0, include_participants: 0 });
 	}
 
-	private async addParticipant(tournament: string, settings: AddParticipantSettings): Promise<ChallongeParticipant> {
-		const response = await fetch(`${this.baseUrl}tournaments/${tournament}/participants.json`, {
+	private async addParticipant(
+		tournamentId: string,
+		settings: AddParticipantSettings
+	): Promise<ChallongeParticipant> {
+		const response = await fetch(`${this.baseUrl}tournaments/${tournamentId}/participants.json`, {
 			method: "POST",
 			body: JSON.stringify({ participant: settings }),
 			headers: { "Content-Type": "application/json" }
@@ -311,11 +312,11 @@ export class WebsiteWrapperChallonge implements WebsiteWrapper {
 	}
 
 	private async indexMatches(
-		tournament: string,
+		tournamentId: string,
 		state?: ChallongeMatchState,
 		participantId?: number
 	): Promise<IndexMatchResponse> {
-		let url = `${this.baseUrl}tournaments/${tournament}/matches.json`;
+		let url = `${this.baseUrl}tournaments/${tournamentId}/matches.json`;
 		if (state) {
 			url += `?state=${state}`;
 			if (participantId) {
@@ -348,11 +349,11 @@ export class WebsiteWrapperChallonge implements WebsiteWrapper {
 	}
 
 	private async updateMatch(
-		tournament: string,
+		tournamentId: string,
 		match: number,
 		settings: UpdateMatchSettings
 	): Promise<ChallongeMatch> {
-		const response = await fetch(`${this.baseUrl}tournaments/${tournament}/matches/${match}.json`, {
+		const response = await fetch(`${this.baseUrl}tournaments/${tournamentId}/matches/${match}.json`, {
 			method: "PUT",
 			body: JSON.stringify({ match: settings }),
 			headers: { "Content-Type": "application/json" }
@@ -377,8 +378,28 @@ export class WebsiteWrapperChallonge implements WebsiteWrapper {
 		});
 	}
 
-	private async finaliseTournament(tournament: string, settings: StartTournamentSettings): Promise<void> {
-		const response = await fetch(`${this.baseUrl}tournaments/${tournament}/finalize.json`, {
+	private async indexPlayers(tournamentId: string): Promise<ChallongeParticipant[]> {
+		const url = `${this.baseUrl}tournaments/${tournamentId}/participants.json`;
+		const response = await fetch(url);
+		return (await this.validateResponse(response)) as ChallongeParticipant[];
+	}
+
+	private wrapPlayer(p: ChallongeParticipant): WebsitePlayer {
+		const player = p.participant;
+		return {
+			challongeId: player.id,
+			discordId: player.misc || "DUMMY",
+			rank: player.final_rank || -1
+		};
+	}
+
+	public async getPlayers(tournamentId: string): Promise<WebsitePlayer[]> {
+		const players = await this.indexPlayers(tournamentId);
+		return players.map(this.wrapPlayer);
+	}
+
+	private async finaliseTournament(tournamentId: string, settings: StartTournamentSettings): Promise<void> {
+		const response = await fetch(`${this.baseUrl}tournaments/${tournamentId}/finalize.json`, {
 			method: "POST",
 			body: JSON.stringify(settings),
 			headers: { "Content-Type": "application/json" }

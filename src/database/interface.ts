@@ -56,7 +56,9 @@ export interface DatabaseTournament {
 	name: string;
 	description: string;
 	status: "preparing" | "in progress" | "complete";
+	hosts: string[];
 	players: string[]; // list of IDs, for more info use findPlayer();
+	server: string;
 	publicChannels: string[];
 	privateChannels: string[];
 	findHost: (id: string) => boolean;

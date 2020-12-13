@@ -24,9 +24,11 @@ export class DatabaseWrapperMongoose implements DatabaseWrapper {
 			name: tournament.name,
 			description: tournament.description,
 			status: tournament.status,
+			hosts: tournament.hosts,
 			players: tournament.confirmedParticipants.map(p => p.discordId),
 			publicChannels: tournament.publicChannels,
 			privateChannels: tournament.privateChannels,
+			server: tournament.owningDiscordServer,
 			findHost: this.findHost(tournament).bind(this),
 			findPlayer: this.findPlayer(tournament).bind(this)
 		};

@@ -10,9 +10,11 @@ export class DatabaseWrapperMock implements DatabaseWrapper {
 				name: "Tournament 1",
 				description: "The first tournament",
 				status: "preparing",
+				hosts: ["host1"],
 				players: ["player1", "player2"],
 				publicChannels: ["channel1"],
 				privateChannels: ["channel2"],
+				server: "testServer",
 				findHost(): boolean {
 					return true;
 				},
@@ -33,6 +35,8 @@ export class DatabaseWrapperMock implements DatabaseWrapper {
 				players: ["player1", "player2"],
 				publicChannels: ["channel1"],
 				privateChannels: ["channel2"],
+				hosts: ["host2"],
+				server: "testServer",
 				findHost(): boolean {
 					return true;
 				},
@@ -62,6 +66,8 @@ export class DatabaseWrapperMock implements DatabaseWrapper {
 			players: [],
 			publicChannels: [],
 			privateChannels: [],
+			hosts: [hostId],
+			server: serverId,
 			findHost(): boolean {
 				return true;
 			},
