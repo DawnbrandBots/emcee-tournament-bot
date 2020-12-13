@@ -71,6 +71,7 @@ describe("Tournament flow commands", function () {
 	it("Next round", async function () {
 		const round = await tournament.nextRound("tourn1");
 		expect(round).to.equal(2);
+		expect(discord.getResponse("channel1")).to.equal("Time left in the round: `50:00`"); // new round means new timer
 	});
 });
 
