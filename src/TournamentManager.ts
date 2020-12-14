@@ -37,6 +37,8 @@ export interface TournamentInterface {
 	dropPlayer(tournamentId: string, playerId: string): Promise<void>;
 	syncTournament(tournamentId: string): Promise<void>;
 	generatePieChart(tournamentId: string): Promise<DiscordAttachmentOut>;
+	registerBye(tournamentId: string, playerId: string): Promise<string[]>;
+	removeBye(tournamentId: string, playerId: string): Promise<string[]>;
 }
 
 export class TournamentManager implements TournamentInterface {
@@ -366,6 +368,7 @@ export class TournamentManager implements TournamentInterface {
 				);
 			})
 		);
+		// TODO: Add bye dummy players and rearrange seeds
 		// start tournament on challonge
 		await this.website.startTournament(tournamentId);
 		await this.startNewRound(tournament, webTourn.url, 1);
@@ -465,6 +468,7 @@ export class TournamentManager implements TournamentInterface {
 			await this.finishTournament(tournamentId);
 			return round;
 		}
+		// TODO: If second round, drop bye players
 		const tournament = await this.database.getTournament(tournamentId);
 		const webTourn = await this.website.getTournament(tournamentId);
 		await this.startNewRound(tournament, webTourn.url, round);
@@ -590,5 +594,17 @@ export class TournamentManager implements TournamentInterface {
 			filename: `${tournament.name}.csv`,
 			contents
 		};
+	}
+
+	public async registerBye(tournamentId: string, playerId: string): Promise<string[]> {
+		await this.database.registerBye(tournamentId, playerId);
+		const tournament = await this.database.getTournament(tournamentId);
+		return tournament.byes;
+	}
+
+	public async removeBye(tournamentId: string, playerId: string): Promise<string[]> {
+		await this.database.removeBye(tournamentId, playerId);
+		const tournament = await this.database.getTournament(tournamentId);
+		return tournament.byes;
 	}
 }

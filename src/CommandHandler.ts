@@ -33,6 +33,8 @@ export class CommandHandler {
 		this.discord.registerCommand("forcedrop", this.commandDropPlayerByHost.bind(this));
 		this.discord.registerCommand("sync", this.commandSyncTournament.bind(this));
 		this.discord.registerCommand("pie", this.commandPieChart.bind(this));
+		this.discord.registerCommand("addbye", this.commandRegisterBye.bind(this));
+		this.discord.registerCommand("removebye", this.commandRemoveBye.bind(this));
 
 		this.discord.onMessage(this.tournamentManager.confirmPlayer.bind(this.tournamentManager));
 		this.discord.onDelete(this.tournamentManager.cleanRegistration.bind(this.tournamentManager));
@@ -231,7 +233,34 @@ export class CommandHandler {
 
 	private async commandPieChart(msg: DiscordMessageIn, args: string[]): Promise<void> {
 		const [id] = this.validateArgs(args, 1);
+		await this.tournamentManager.authenticateHost(id, msg.author);
 		const csv = await this.tournamentManager.generatePieChart(id);
 		await msg.reply(`Archetype counts for Tournament ${id} are attached.`, csv);
+	}
+
+	private async commandRegisterBye(msg: DiscordMessageIn, args: string[]): Promise<void> {
+		const [id] = this.validateArgs(args, 1);
+		await this.tournamentManager.authenticateHost(id, msg.author);
+		const player = this.discord.getMentionedUser(msg);
+		const byes = await this.tournamentManager.registerBye(id, player);
+		const names = byes.map(b => `${this.discord.mentionUser(b)} (${this.discord.getUsername(b)})`);
+		await msg.reply(
+			`Bye registered for Player ${this.discord.mentionUser(player)} (${this.discord.getUsername(
+				player
+			)}) in Tournament ${id}!\nAll byes: ${names.join(", ")}`
+		);
+	}
+
+	private async commandRemoveBye(msg: DiscordMessageIn, args: string[]): Promise<void> {
+		const [id] = this.validateArgs(args, 1);
+		await this.tournamentManager.authenticateHost(id, msg.author);
+		const player = this.discord.getMentionedUser(msg);
+		const byes = await this.tournamentManager.removeBye(id, player);
+		const names = byes.map(b => `${this.discord.mentionUser(b)} (${this.discord.getUsername(b)})`);
+		await msg.reply(
+			`Bye registered for Player ${this.discord.mentionUser(player)} (${this.discord.getUsername(
+				player
+			)}) in Tournament ${id}!\nAll byes: ${names.join(", ")}`
+		);
 	}
 }
