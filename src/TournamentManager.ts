@@ -370,6 +370,7 @@ export class TournamentManager implements TournamentInterface {
 		);
 
 		// start tournament on challonge
+		await this.website.assignByes(tournamentId, tournament.players.length, tournament.byes);
 		await this.website.startTournament(tournamentId);
 		await this.startNewRound(tournament, webTourn.url, 1);
 	}
@@ -474,8 +475,11 @@ export class TournamentManager implements TournamentInterface {
 			await this.finishTournament(tournamentId);
 			return round;
 		}
-		// TODO: If second round, drop bye players
 		const tournament = await this.database.getTournament(tournamentId);
+		// drop byes after the first round
+		if (round === 2) {
+			await this.website.dropByes(tournamentId, tournament.byes.length);
+		}
 		const webTourn = await this.website.getTournament(tournamentId);
 		await this.startNewRound(tournament, webTourn.url, round);
 		return round;
