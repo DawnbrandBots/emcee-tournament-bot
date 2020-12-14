@@ -376,6 +376,7 @@ export class TournamentManager implements TournamentInterface {
 		const channels = tournament.publicChannels;
 		const webTourn = await this.website.finishTournament(tournamentId);
 		await this.database.finishTournament(tournamentId);
+		await this.discord.deletePlayerRole(tournament);
 		await Promise.all(
 			channels.map(async c => {
 				const role = await this.discord.getPlayerRole(tournament);
@@ -385,7 +386,6 @@ export class TournamentManager implements TournamentInterface {
 						cancel ? "been cancelled." : "concluded!"
 					} Thank you all for playing! ${this.discord.mentionRole(role)}\nResults: ${webTourn.url}`
 				);
-				await this.discord.deletePlayerRole(tournamentId, c);
 			})
 		);
 		if (!cancel) {
@@ -508,6 +508,7 @@ export class TournamentManager implements TournamentInterface {
 		if (tournament) {
 			const player = tournament.findPlayer(playerId);
 			await this.website.removePlayer(tournament.id, player.challongeId);
+			await this.discord.removePlayerRole(playerId, await this.discord.getPlayerRole(tournament));
 			this.logger.verbose(`User ${playerId} dropped from tournament ${tournament.id}.`);
 			await this.discord.sendDirectMessage(
 				playerId,
@@ -533,6 +534,7 @@ export class TournamentManager implements TournamentInterface {
 		if (tournament) {
 			const player = tournament.findPlayer(playerId);
 			await this.website.removePlayer(tournament.id, player.challongeId);
+			await this.discord.removePlayerRole(playerId, await this.discord.getPlayerRole(tournament));
 			this.logger.verbose(`User ${playerId} dropped from tournament ${tournament.id} by host.`);
 			await this.discord.sendDirectMessage(
 				playerId,

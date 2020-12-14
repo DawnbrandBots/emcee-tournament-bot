@@ -234,15 +234,28 @@ export class DiscordWrapperEris implements DiscordWrapper {
 		await member.addRole(roleId);
 	}
 
-	public async deletePlayerRole(tournamentId: string, channelId: string): Promise<void> {
+	public async removePlayerRole(userId: string, roleId: string): Promise<void> {
+		const guild = this.bot.guilds.find(g => g.roles.has(roleId));
+		if (!guild) {
+			throw new MiscInternalError(`Could not find guild with role ${roleId}.`);
+		}
+		const member = guild.members.get(userId);
+		if (!member) {
+			throw new MiscInternalError(`Could not find Member for user ${userId} in guild ${guild.id}.`);
+		}
+		await member.removeRole(roleId);
+	}
+
+	public async deletePlayerRole(tournamentId: string, serverId: string): Promise<void> {
 		// yes this creates it just to delete it if it doesn't exist
 		// but that's better than not deleting it if it exists but isn't cached
-		const role = await this.getPlayerRole(tournamentId, channelId);
-		const chan = this.bot.getChannel(channelId);
-		if (!(chan instanceof GuildChannel)) {
-			throw new AssertTextChannelError(channelId);
+		const role = await this.getPlayerRole(tournamentId, serverId);
+		const guild = this.bot.guilds.get(serverId);
+		if (!guild) {
+			throw new MiscInternalError(
+				`Could not find server ${serverId} as registered with Tournament ${tournamentId}.`
+			);
 		}
-		const guild = chan.guild;
 		await guild.deleteRole(role);
 	}
 
