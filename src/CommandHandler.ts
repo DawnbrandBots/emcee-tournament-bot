@@ -26,6 +26,7 @@ export class CommandHandler {
 		this.discord.registerCommand("start", this.commandStartTournament.bind(this));
 		this.discord.registerCommand("cancel", this.commandCancelTournament.bind(this));
 		this.discord.registerCommand("score", this.commandSubmitScore.bind(this));
+		this.discord.registerCommand("forcescore", this.commandSubmitScoreHost.bind(this));
 		this.discord.registerCommand("round", this.commandNextRound.bind(this));
 		this.discord.registerCommand("players", this.commandListPlayers.bind(this));
 		this.discord.registerCommand("deck", this.commandGetDeck.bind(this));
@@ -177,6 +178,22 @@ export class CommandHandler {
 		}
 		const response = await this.tournamentManager.submitScore(id, msg.author, scoreNums[0], scoreNums[1]);
 		await msg.reply(response);
+	}
+
+	private async commandSubmitScoreHost(msg: DiscordMessageIn, args: string[]): Promise<void> {
+		const [id, score] = this.validateArgs(args, 2);
+		await this.tournamentManager.authenticateHost(id, msg.author);
+		const player = this.discord.getMentionedUser(msg);
+		if (!player) {
+			throw new UserError("Must specify the winner of the match to report a score!");
+		}
+		const scores = score.split("-");
+		const scoreNums = scores.map(s => parseInt(s, 10));
+		if (scoreNums.length < 2) {
+			throw new UserError("Must provide score in format `#-#` e.g. `2-1`.");
+		}
+		const response = await this.tournamentManager.submitScore(id, player, scoreNums[0], scoreNums[1], true);
+		await msg.reply(`Score `);
 	}
 
 	private async commandNextRound(msg: DiscordMessageIn, args: string[]): Promise<void> {

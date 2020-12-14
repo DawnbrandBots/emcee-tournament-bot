@@ -30,7 +30,13 @@ export interface TournamentInterface {
 	openTournament(tournamentId: string): Promise<void>;
 	startTournament(tournamentId: string): Promise<void>;
 	cancelTournament(tournamentId: string): Promise<void>;
-	submitScore(tournamentId: string, playerId: string, scorePlayer: number, scoreOpp: number): Promise<string>;
+	submitScore(
+		tournamentId: string,
+		playerId: string,
+		scorePlayer: number,
+		scoreOpp: number,
+		host?: boolean
+	): Promise<string>;
 	nextRound(tournamentId: string): Promise<number>;
 	listPlayers(tournamentId: string): Promise<DiscordAttachmentOut>;
 	getPlayerDeck(tournamentId: string, playerId: string): Promise<Deck>;
@@ -436,11 +442,17 @@ export class TournamentManager implements TournamentInterface {
 		tournamentId: string,
 		playerId: string,
 		scorePlayer: number,
-		scoreOpp: number
+		scoreOpp: number,
+		host = false
 	): Promise<string> {
 		const tournament = await this.database.getTournament(tournamentId);
 		const player = tournament.findPlayer(playerId);
 		const match = await this.website.findMatch(tournamentId, player.challongeId);
+		// if a host is submitting, skip straight to trusting the score
+		if (host) {
+			await this.website.submitScore(tournamentId, player.challongeId, scorePlayer, scoreOpp);
+			return ""; // output in this case is handled by the command
+		}
 		const mention = this.discord.mentionUser(playerId); // prepare for multiple uses below
 		if (!match) {
 			return `Could not find an open match in Tournament ${tournament.name} including you, ${mention}`;
