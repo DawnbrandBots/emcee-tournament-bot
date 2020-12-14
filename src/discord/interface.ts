@@ -1,4 +1,5 @@
 import { Logger } from "winston";
+import { DatabaseTournament } from "../database/interface";
 import { UserError } from "../errors";
 
 export interface DiscordAttachmentIn {
@@ -68,7 +69,7 @@ export interface DiscordWrapper {
 	getMentionedUser(msg: DiscordMessageIn): string;
 	getUsername(userId: string): string;
 	getPlayerRole(tournamentId: string, channelId: string): Promise<string>;
-	grantPlayerRole(userId: string, channelId: string, roleId: string): Promise<void>;
+	grantPlayerRole(userId: string, roleId: string): Promise<void>;
 	deletePlayerRole(tournamentId: string, channelId: string): Promise<void>;
 	sendDirectMessage(userId: string, content: DiscordMessageOut): Promise<void>;
 }
@@ -181,12 +182,12 @@ export class DiscordInterface {
 		await this.api.sendDirectMessage(userId, content);
 	}
 
-	public async getPlayerRole(tournamentId: string, channelId: string): Promise<string> {
-		return await this.api.getPlayerRole(tournamentId, channelId);
+	public async getPlayerRole(tournament: DatabaseTournament): Promise<string> {
+		return await this.api.getPlayerRole(tournament.id, tournament.server);
 	}
 
-	public async grantPlayerRole(userId: string, channelId: string, roleId: string): Promise<void> {
-		await this.api.grantPlayerRole(userId, channelId, roleId);
+	public async grantPlayerRole(userId: string, roleId: string): Promise<void> {
+		await this.api.grantPlayerRole(userId, roleId);
 	}
 
 	public async deletePlayerRole(tournamentId: string, channelId: string): Promise<void> {

@@ -206,6 +206,7 @@ export class TournamentManager implements TournamentInterface {
 				msg.author
 			);
 			await this.database.confirmPlayer(tournament.id, msg.author, challongeId, deck.url);
+			await this.discord.grantPlayerRole(msg.author, await this.discord.getPlayerRole(tournament));
 			const channels = tournament.privateChannels;
 			await Promise.all(
 				channels.map(async c => {
@@ -308,7 +309,7 @@ export class TournamentManager implements TournamentInterface {
 		url: string,
 		bye?: string
 	): Promise<void> {
-		const role = await this.discord.getPlayerRole(tournament.id, channelId);
+		const role = await this.discord.getPlayerRole(tournament);
 		let message = `Round ${round} of ${tournament.name} has begun! ${this.discord.mentionRole(
 			role
 		)}\nPairings: ${url}`;
@@ -333,7 +334,7 @@ export class TournamentManager implements TournamentInterface {
 					c,
 					this.discord,
 					`That's time in the round, ${this.discord.mentionRole(
-						await this.discord.getPlayerRole(tournament.id, c)
+						await this.discord.getPlayerRole(tournament)
 					)}! Please end the current phase, then the player with the lower LP must forfeit!`
 				);
 			})
@@ -377,7 +378,7 @@ export class TournamentManager implements TournamentInterface {
 		await this.database.finishTournament(tournamentId);
 		await Promise.all(
 			channels.map(async c => {
-				const role = await this.discord.getPlayerRole(tournamentId, c);
+				const role = await this.discord.getPlayerRole(tournament);
 				await this.discord.sendMessage(
 					c,
 					`${tournament.name} has ${

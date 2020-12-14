@@ -202,15 +202,16 @@ export class DiscordWrapperEris implements DiscordWrapper {
 		return newRole;
 	}
 
-	public async getPlayerRole(tournamentId: string, channelId: string): Promise<string> {
+	public async getPlayerRole(tournamentId: string, serverId: string): Promise<string> {
 		if (tournamentId in this.playerRoles) {
 			return this.playerRoles[tournamentId];
 		}
-		const chan = this.bot.getChannel(channelId);
-		if (!(chan instanceof GuildChannel)) {
-			throw new AssertTextChannelError(channelId);
+		const guild = this.bot.guilds.get(serverId);
+		if (!guild) {
+			throw new MiscInternalError(
+				`Could not find server ${serverId} as registered with Tournament ${tournamentId}.`
+			);
 		}
-		const guild = chan.guild;
 		const role = guild.roles.find(r => r.name === `MC-${tournamentId}-player`);
 		if (role) {
 			this.playerRoles[tournamentId] = role.id;
@@ -221,15 +222,14 @@ export class DiscordWrapperEris implements DiscordWrapper {
 		return newRole.id;
 	}
 
-	public async grantPlayerRole(userId: string, channelId: string, roleId: string): Promise<void> {
-		const chan = this.bot.getChannel(channelId);
-		if (!(chan instanceof GuildChannel)) {
-			throw new AssertTextChannelError(channelId);
+	public async grantPlayerRole(userId: string, roleId: string): Promise<void> {
+		const guild = this.bot.guilds.find(g => g.roles.has(roleId));
+		if (!guild) {
+			throw new MiscInternalError(`Could not find guild with role ${roleId}.`);
 		}
-		const guild = chan.guild;
 		const member = guild.members.get(userId);
 		if (!member) {
-			throw new MiscInternalError(`Could not find Member for user ${userId} in channel ${channelId}.`);
+			throw new MiscInternalError(`Could not find Member for user ${userId} in guild ${guild.id}.`);
 		}
 		await member.addRole(roleId);
 	}
