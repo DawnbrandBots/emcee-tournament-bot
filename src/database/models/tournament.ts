@@ -22,6 +22,7 @@ export interface TournamentDoc extends Document {
 		deck: string; // YDKE URL
 	}[];
 	pendingParticipants: DiscordID[];
+	byeParticipants: DiscordID[];
 	currentRound: number;
 	totalRounds: number;
 }
@@ -55,6 +56,7 @@ export const TournamentSchema = new Schema({
 		}
 	],
 	pendingParticipants: { type: [String], required: true, default: [] },
+	byeParticipants: { type: [String], required: true, default: [] },
 	currentRound: { type: Number, required: true, default: 0 },
 	totalRounds: { type: Number, required: true, default: 0 }
 });

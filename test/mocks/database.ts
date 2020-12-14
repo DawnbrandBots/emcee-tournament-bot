@@ -15,6 +15,7 @@ export class DatabaseWrapperMock implements DatabaseWrapper {
 				publicChannels: ["channel1"],
 				privateChannels: ["channel2"],
 				server: "testServer",
+				byes: ["player1"],
 				findHost(): boolean {
 					return true;
 				},
@@ -37,6 +38,7 @@ export class DatabaseWrapperMock implements DatabaseWrapper {
 				privateChannels: ["channel2"],
 				hosts: ["host2"],
 				server: "testServer",
+				byes: ["player2"],
 				findHost(): boolean {
 					return true;
 				},
@@ -68,6 +70,7 @@ export class DatabaseWrapperMock implements DatabaseWrapper {
 			privateChannels: [],
 			hosts: [hostId],
 			server: serverId,
+			byes: [],
 			findHost(): boolean {
 				return true;
 			},
@@ -154,6 +157,12 @@ export class DatabaseWrapperMock implements DatabaseWrapper {
 		return;
 	}
 	async synchronise(): Promise<void> {
+		return;
+	}
+	async registerBye(): Promise<void> {
+		return;
+	}
+	async removeBye(): Promise<void> {
 		return;
 	}
 }

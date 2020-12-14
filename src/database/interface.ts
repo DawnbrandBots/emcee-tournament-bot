@@ -37,6 +37,8 @@ export interface DatabaseWrapper {
 	nextRound(tournamentId: string): Promise<number>;
 	finishTournament(tournamentId: string): Promise<void>;
 	synchronise(tournamentId: string, newData: SynchroniseTournament): Promise<void>;
+	registerBye(tournamentId: string, playerId: string): Promise<void>;
+	removeBye(tournamentId: string, playerId: string): Promise<void>;
 }
 
 export interface DatabasePlayer {
@@ -61,6 +63,7 @@ export interface DatabaseTournament {
 	server: string;
 	publicChannels: string[];
 	privateChannels: string[];
+	byes: string[];
 	findHost: (id: string) => boolean;
 	findPlayer: (id: string) => DatabasePlayer;
 }
@@ -207,5 +210,13 @@ export class DatabaseInterface {
 
 	public async synchronise(tournamentId: string, data: SynchroniseTournament): Promise<void> {
 		await this.db.synchronise(tournamentId, data);
+	}
+
+	public async registerBye(tournamentId: string, playerId: string): Promise<void> {
+		await this.db.registerBye(tournamentId, playerId);
+	}
+
+	public async removeBye(tournamentId: string, playerId: string): Promise<void> {
+		await this.db.removeBye(tournamentId, playerId);
 	}
 }

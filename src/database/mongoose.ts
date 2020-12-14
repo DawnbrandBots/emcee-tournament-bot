@@ -29,6 +29,7 @@ export class DatabaseWrapperMongoose implements DatabaseWrapper {
 			publicChannels: tournament.publicChannels,
 			privateChannels: tournament.privateChannels,
 			server: tournament.owningDiscordServer,
+			byes: tournament.byeParticipants,
 			findHost: this.findHost(tournament).bind(this),
 			findPlayer: this.findPlayer(tournament).bind(this)
 		};
@@ -281,7 +282,7 @@ export class DatabaseWrapperMongoose implements DatabaseWrapper {
 	public async nextRound(tournamentId: TournamentID): Promise<number> {
 		const tournament = await this.findTournament(tournamentId);
 		if (tournament.status !== "in progress") {
-			throw new Error(`Tournament ${tournamentId} is not in progress.`);
+			throw new UserError(`Tournament ${tournamentId} is not in progress.`);
 		}
 		if (tournament.currentRound < tournament.totalRounds) {
 			++tournament.currentRound;
@@ -346,6 +347,32 @@ export class DatabaseWrapperMongoose implements DatabaseWrapper {
 		}
 		tournament.name = newDoc.name;
 		tournament.description = newDoc.description;
+		await tournament.save();
+	}
+
+	public async registerBye(tournamentId: string, playerId: string): Promise<void> {
+		const tournament = await this.findTournament(tournamentId);
+		if (tournament.status !== "preparing") {
+			throw new UserError(`Tournament ${tournamentId} is not pending.`);
+		}
+		if (tournament.byeParticipants.includes(playerId)) {
+			throw new UserError(`Player ${playerId} already has a bye in Tournament ${tournament}`);
+		}
+		tournament.byeParticipants.push(playerId);
+		await tournament.save();
+	}
+
+	public async removeBye(tournamentId: string, playerId: string): Promise<void> {
+		const tournament = await this.findTournament(tournamentId);
+		if (tournament.status !== "preparing") {
+			throw new UserError(`Tournament ${tournamentId} is not pending.`);
+		}
+		const i = tournament.byeParticipants.indexOf(playerId);
+
+		if (!tournament.byeParticipants.includes(playerId)) {
+			throw new UserError(`Player ${playerId} does not have a bye in Tournament ${tournament}`);
+		}
+		tournament.byeParticipants.splice(i, 1); // consider $pullAll
 		await tournament.save();
 	}
 }

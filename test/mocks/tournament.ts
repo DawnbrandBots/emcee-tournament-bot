@@ -101,4 +101,12 @@ export class TournamentMock implements TournamentInterface {
 			contents: tournamentId
 		};
 	}
+
+	public async registerBye(): Promise<string[]> {
+		return ["bye1"];
+	}
+
+	public async removeBye(): Promise<string[]> {
+		return ["bye1"];
+	}
 }
