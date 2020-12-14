@@ -37,6 +37,18 @@ export class CommandHandler {
 		this.discord.onMessage(this.tournamentManager.confirmPlayer.bind(this.tournamentManager));
 		this.discord.onDelete(this.tournamentManager.cleanRegistration.bind(this.tournamentManager));
 	}
+
+	private validateArgs(args: string[], count: number): string[] {
+		for (let i = 0; i < count; i++) {
+			const arg = args[i];
+			if (arg === undefined || arg.length < 1) {
+				throw new UserError(`Missing parameter number ${i}!`);
+				// potential to add more checks here in the future if necessary
+			}
+		}
+		return args;
+	}
+
 	private async commandHelp(msg: DiscordMessageIn): Promise<void> {
 		await msg.reply(
 			"Emcee's documentation can be found at https://github.com/AlphaKretin/emcee-tournament-bot/wiki."
@@ -51,7 +63,7 @@ export class CommandHandler {
 
 	private async commandCreateTournament(msg: DiscordMessageIn, args: string[]): Promise<void> {
 		await this.discord.authenticateTO(msg);
-		const [name, desc] = args;
+		const [name, desc] = this.validateArgs(args, 2);
 		const [id, url] = await this.tournamentManager.createTournament(msg.author, msg.serverId, name, desc);
 		this.logger.verbose(`New tournament created ${id} by ${msg.author}.`);
 		await msg.reply(
@@ -60,7 +72,7 @@ export class CommandHandler {
 	}
 
 	private async commandUpdateTournament(msg: DiscordMessageIn, args: string[]): Promise<void> {
-		const [id, name, desc] = args;
+		const [id, name, desc] = this.validateArgs(args, 3);
 		await this.tournamentManager.authenticateHost(id, msg.author);
 		await this.tournamentManager.updateTournament(id, name, desc);
 		this.logger.verbose(`Tournament ${id} updated with name ${name} and description ${desc} by ${msg.author}.`);
@@ -68,7 +80,7 @@ export class CommandHandler {
 	}
 
 	private async commandAddChannel(msg: DiscordMessageIn, args: string[]): Promise<void> {
-		const [id, baseType, channelMention] = args;
+		const [id, baseType, channelMention] = this.validateArgs(args, 1); // other 2 are optional
 		await this.tournamentManager.authenticateHost(id, msg.author);
 		let type = baseType ? baseType.toLowerCase().trim() : "public";
 		if (!(type === "private")) {
@@ -90,7 +102,7 @@ export class CommandHandler {
 	}
 
 	private async commandRemoveChannel(msg: DiscordMessageIn, args: string[]): Promise<void> {
-		const [id, baseType, channelMention] = args;
+		const [id, baseType, channelMention] = this.validateArgs(args, 1);
 		await this.tournamentManager.authenticateHost(id, msg.author);
 		let type = baseType ? baseType.toLowerCase().trim() : "public";
 		if (!(type === "private")) {
@@ -112,7 +124,7 @@ export class CommandHandler {
 	}
 
 	private async commandAddHost(msg: DiscordMessageIn, args: string[]): Promise<void> {
-		const [id] = args;
+		const [id] = this.validateArgs(args, 1);
 		await this.tournamentManager.authenticateHost(id, msg.author);
 		const newHost = this.discord.getMentionedUser(msg);
 		await this.tournamentManager.addHost(id, newHost);
@@ -121,7 +133,7 @@ export class CommandHandler {
 	}
 
 	private async commandRemoveHost(msg: DiscordMessageIn, args: string[]): Promise<void> {
-		const [id] = args;
+		const [id] = this.validateArgs(args, 1);
 		await this.tournamentManager.authenticateHost(id, msg.author);
 		const newHost = this.discord.getMentionedUser(msg);
 		await this.tournamentManager.removeHost(id, newHost);
@@ -130,7 +142,7 @@ export class CommandHandler {
 	}
 
 	private async commandOpenTournament(msg: DiscordMessageIn, args: string[]): Promise<void> {
-		const [id] = args;
+		const [id] = this.validateArgs(args, 1);
 		await this.tournamentManager.authenticateHost(id, msg.author);
 		await this.tournamentManager.openTournament(id);
 		this.logger.verbose(`Tournament ${id} opened for registration by ${msg.author}.`);
@@ -138,7 +150,7 @@ export class CommandHandler {
 	}
 
 	private async commandStartTournament(msg: DiscordMessageIn, args: string[]): Promise<void> {
-		const [id] = args;
+		const [id] = this.validateArgs(args, 1);
 		await this.tournamentManager.authenticateHost(id, msg.author);
 		await this.tournamentManager.startTournament(id);
 		this.logger.verbose(`Tournament ${id} commenced by ${msg.author}.`);
@@ -146,7 +158,7 @@ export class CommandHandler {
 	}
 
 	private async commandCancelTournament(msg: DiscordMessageIn, args: string[]): Promise<void> {
-		const [id] = args;
+		const [id] = this.validateArgs(args, 1);
 		await this.tournamentManager.authenticateHost(id, msg.author);
 		await this.tournamentManager.cancelTournament(id);
 		await msg.reply(`Tournament ${id} successfully canceled.`);
@@ -154,7 +166,7 @@ export class CommandHandler {
 
 	// TODO infer tournamentId from tournament player is in? gotta make player-facing features as simple as possible
 	private async commandSubmitScore(msg: DiscordMessageIn, args: string[]): Promise<void> {
-		const [id, score] = args;
+		const [id, score] = this.validateArgs(args, 2); // improve error message clarity if player-facing?
 		await this.tournamentManager.authenticatePlayer(id, msg.author);
 		const scores = score.split("-");
 		const scoreNums = scores.map(s => parseInt(s, 10));
@@ -166,7 +178,7 @@ export class CommandHandler {
 	}
 
 	private async commandNextRound(msg: DiscordMessageIn, args: string[]): Promise<void> {
-		const [id] = args;
+		const [id] = this.validateArgs(args, 1);
 		await this.tournamentManager.authenticateHost(id, msg.author);
 		const round = await this.tournamentManager.nextRound(id);
 		if (round === -1) {
@@ -177,14 +189,14 @@ export class CommandHandler {
 	}
 
 	private async commandListPlayers(msg: DiscordMessageIn, args: string[]): Promise<void> {
-		const [id] = args;
+		const [id] = this.validateArgs(args, 1);
 		await this.tournamentManager.authenticateHost(id, msg.author);
 		const list = await this.tournamentManager.listPlayers(id);
 		await msg.reply(`A list of players for tournament ${id} with the theme of their deck is attached.`, list);
 	}
 
 	private async commandGetDeck(msg: DiscordMessageIn, args: string[]): Promise<void> {
-		const [id] = args;
+		const [id] = this.validateArgs(args, 1);
 		await this.tournamentManager.authenticateHost(id, msg.author);
 		const player = this.discord.getMentionedUser(msg);
 		const deck = await this.tournamentManager.getPlayerDeck(id, player);
@@ -194,7 +206,7 @@ export class CommandHandler {
 	}
 
 	private async commandDropPlayerSelf(msg: DiscordMessageIn, args: string[]): Promise<void> {
-		const [id] = args;
+		const [id] = this.validateArgs(args, 1);
 		await this.tournamentManager.authenticatePlayer(id, msg.author);
 		await this.tournamentManager.dropPlayer(id, msg.author);
 		const name = this.discord.getUsername(msg.author);
@@ -202,7 +214,7 @@ export class CommandHandler {
 	}
 
 	private async commandDropPlayerByHost(msg: DiscordMessageIn, args: string[]): Promise<void> {
-		const [id] = args;
+		const [id] = this.validateArgs(args, 1);
 		await this.tournamentManager.authenticateHost(id, msg.author);
 		const player = this.discord.getMentionedUser(msg);
 		await this.tournamentManager.dropPlayer(id, player);
@@ -211,14 +223,14 @@ export class CommandHandler {
 	}
 
 	private async commandSyncTournament(msg: DiscordMessageIn, args: string[]): Promise<void> {
-		const [id] = args;
+		const [id] = this.validateArgs(args, 1);
 		await this.tournamentManager.authenticateHost(id, msg.author);
 		await this.tournamentManager.syncTournament(id);
 		await msg.reply(`Tournament ${id} database successfully synchronised with remote website.`);
 	}
 
 	private async commandPieChart(msg: DiscordMessageIn, args: string[]): Promise<void> {
-		const [id] = args;
+		const [id] = this.validateArgs(args, 1);
 		const csv = await this.tournamentManager.generatePieChart(id);
 		await msg.reply(`Archetype counts for Tournament ${id} are attached.`, csv);
 	}
