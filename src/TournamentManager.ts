@@ -368,12 +368,6 @@ export class TournamentManager implements TournamentInterface {
 				);
 			})
 		);
-		// Add bye dummy players and rearrange seeds
-		const numByes = tournament.byes.length - (tournament.players.length % 2); // if odd no. of players, 1 can get the natural bye
-		const byePlayers = [];
-		for (let i = 0; i < numByes; i++) {
-			byePlayers.push(await this.website.registerPlayer(tournamentId, `Round 1 Bye #${i + 1}`, `DUMMY${i}`));
-		}
 
 		// start tournament on challonge
 		await this.website.startTournament(tournamentId);
