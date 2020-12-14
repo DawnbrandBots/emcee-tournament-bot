@@ -125,6 +125,10 @@ export class DiscordWrapperMock implements DiscordWrapper {
 		return;
 	}
 
+	public async removePlayerRole(): Promise<void> {
+		return;
+	}
+
 	public async deletePlayerRole(): Promise<void> {
 		return;
 	}
