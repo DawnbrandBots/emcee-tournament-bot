@@ -389,7 +389,8 @@ export class WebsiteWrapperChallonge implements WebsiteWrapper {
 		return {
 			challongeId: player.id,
 			discordId: player.misc || "DUMMY",
-			rank: player.final_rank || -1
+			rank: player.final_rank || -1,
+			seed: player.seed
 		};
 	}
 
@@ -410,5 +411,18 @@ export class WebsiteWrapperChallonge implements WebsiteWrapper {
 	public async finishTournament(tournamentId: string): Promise<void> {
 		// eslint-disable-next-line @typescript-eslint/camelcase
 		await this.finaliseTournament(tournamentId, { include_matches: 0, include_participants: 0 });
+	}
+
+	public async setSeed(tournamentId: string, playerId: number, newSeed: number): Promise<void> {
+		const response = await fetch(`${this.baseUrl}tournaments/${tournamentId}/participants/${playerId}.json`, {
+			method: "PUT",
+			body: JSON.stringify({
+				participant: {
+					seed: newSeed
+				}
+			}),
+			headers: { "Content-Type": "application/json" }
+		});
+		await this.validateResponse(response);
 	}
 }

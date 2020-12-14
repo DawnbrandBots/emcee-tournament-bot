@@ -368,7 +368,13 @@ export class TournamentManager implements TournamentInterface {
 				);
 			})
 		);
-		// TODO: Add bye dummy players and rearrange seeds
+		// Add bye dummy players and rearrange seeds
+		const numByes = tournament.byes.length - (tournament.players.length % 2); // if odd no. of players, 1 can get the natural bye
+		const byePlayers = [];
+		for (let i = 0; i < numByes; i++) {
+			byePlayers.push(await this.website.registerPlayer(tournamentId, `Round 1 Bye #${i + 1}`, `DUMMY${i}`));
+		}
+
 		// start tournament on challonge
 		await this.website.startTournament(tournamentId);
 		await this.startNewRound(tournament, webTourn.url, 1);
@@ -391,7 +397,7 @@ export class TournamentManager implements TournamentInterface {
 				);
 			})
 		);
-		// this conidition both prevents errors with small tournaments
+		// this condition both prevents errors with small tournaments
 		// and ensures top cuts don't get their own top cuts
 		if (!cancel && tournament.players.length > 8) {
 			const top = await this.website.getTopCut(tournamentId, 8);
