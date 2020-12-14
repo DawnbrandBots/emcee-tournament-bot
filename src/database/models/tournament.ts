@@ -50,7 +50,7 @@ export const TournamentSchema = new Schema({
 	confirmedParticipants: [
 		{
 			challongeId: { type: Number, required: true },
-			discord: { type: String, required: true },
+			discordId: { type: String, required: true },
 			deck: { type: String, required: true } // YDKE url
 		}
 	],

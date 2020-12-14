@@ -149,8 +149,8 @@ export class DatabaseWrapperMongoose implements DatabaseWrapper {
 		messageId: DiscordID
 	): Promise<TournamentDoc | null> {
 		return await TournamentModel.findOne({
-			"registerMessages.channel": channelId,
-			"registerMessages.message": messageId
+			"registerMessages.channelId": channelId,
+			"registerMessages.messageId": messageId
 		});
 	}
 
@@ -253,7 +253,7 @@ export class DatabaseWrapperMongoose implements DatabaseWrapper {
 		const tournament = await TournamentModel.findOneAndUpdate(
 			{
 				tournamentId,
-				"confirmedParticipants.discord": playerId
+				"confirmedParticipants.discordId": playerId
 			},
 			{
 				$pull: { confirmedParticipants: { discordId: playerId } }
