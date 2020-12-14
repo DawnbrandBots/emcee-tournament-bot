@@ -391,7 +391,9 @@ export class TournamentManager implements TournamentInterface {
 				);
 			})
 		);
-		if (!cancel) {
+		// this conidition both prevents errors with small tournaments
+		// and ensures top cuts don't get their own top cuts
+		if (!cancel && tournament.players.length > 8) {
 			const top = await this.website.getTopCut(tournamentId, 8);
 			const [newId] = await this.createTournament(
 				tournament.hosts[0],
@@ -399,9 +401,13 @@ export class TournamentManager implements TournamentInterface {
 				`${tournament.name} Top Cut`,
 				`Top Cut for ${tournament.name}`
 			);
-			for (const host of tournament.hosts.slice(1)) {
-				await this.database.addHost(newId, host);
+
+			if (tournament.hosts.length > 1) {
+				for (const host of tournament.hosts.slice(1)) {
+					await this.database.addHost(newId, host);
+				}
 			}
+
 			for (const player of top) {
 				const challongeId = await this.website.registerPlayer(
 					tournament.id,
