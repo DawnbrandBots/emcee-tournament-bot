@@ -167,4 +167,16 @@ export class WebsiteInterface {
 			await this.setSeed(tournamentId, byePlayers[i], oppSeed);
 		}
 	}
+
+	public async dropByes(tournamentId: string, numByes: number): Promise<void> {
+		const players = await this.api.getPlayers(tournamentId);
+		for (let i = 0; i < numByes; i++) {
+			const player = players.find(p => p.discordId === `DUMMY${i}`);
+			// could assert non-null here cuz we made these players
+			// but this is simple enough and handles them being manually dropped
+			if (player) {
+				await this.removePlayer(tournamentId, player.challongeId);
+			}
+		}
+	}
 }

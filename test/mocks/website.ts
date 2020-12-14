@@ -46,7 +46,14 @@ export class WebsiteWrapperMock implements WebsiteWrapper {
 		return;
 	}
 	async getPlayers(): Promise<WebsitePlayer[]> {
-		throw new Error("Not yet implemented!");
+		return [
+			{
+				challongeId: 1,
+				discordId: "player1",
+				rank: -1,
+				seed: 1
+			}
+		];
 	}
 	async setSeed(): Promise<void> {
 		return;
