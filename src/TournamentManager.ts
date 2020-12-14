@@ -332,9 +332,8 @@ export class TournamentManager implements TournamentInterface {
 					50,
 					c,
 					this.discord,
-					`That's time in the round, ${this.discord.getPlayerRole(
-						tournament.id,
-						c
+					`That's time in the round, ${this.discord.mentionRole(
+						await this.discord.getPlayerRole(tournament.id, c)
 					)}! Please end the current phase, then the player with the lower LP must forfeit!`
 				);
 			})
