@@ -154,7 +154,7 @@ export class DiscordInterface {
 	}
 
 	public mentionRole(roleId: string): string {
-		return `<&${roleId}>`;
+		return `<@&${roleId}>`;
 	}
 
 	public async sendMessage(
