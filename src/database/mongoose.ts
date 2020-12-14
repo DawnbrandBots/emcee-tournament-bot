@@ -100,6 +100,9 @@ export class DatabaseWrapperMongoose implements DatabaseWrapper {
 	): Promise<void> {
 		const tournament = await this.findTournament(tournamentId);
 		const channels = kind === "public" ? tournament.publicChannels : tournament.privateChannels;
+		if (channels.includes(channelId)) {
+			throw new UserError(`Tournament ${tournamentId} already has Channel ${channelId} as a ${kind} channel!`);
+		}
 		channels.push(channelId);
 		await tournament.save();
 	}
