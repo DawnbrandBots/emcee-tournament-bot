@@ -3,6 +3,7 @@ import { DiscordWrapperMock } from "./mocks/discord";
 import logger from "../src/util/logger";
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
+import { DatabaseTournament } from "../src/database/interface";
 chai.use(chaiAsPromised);
 
 const discordMock = new DiscordWrapperMock();
@@ -114,12 +115,37 @@ describe("Messages", function () {
 	});
 });
 
+const sampleTournament: DatabaseTournament = {
+	id: "mc_test",
+	name: "Test tournament",
+	description: "A sample tournament",
+	status: "preparing",
+	hosts: ["testHost"],
+	players: [],
+	server: "testServer",
+	publicChannels: [],
+	privateChannels: [],
+	byes: [],
+	findHost: () => true,
+	findPlayer: () => {
+		return { discordId: "testPlayer", challongeId: 1, deck: "" };
+	}
+};
 describe("Roles", function () {
-	it("getPlayerRole");
+	it("getPlayerRole", async function () {
+		const role = await discord.getPlayerRole(sampleTournament);
+		expect(role).to.equal("role");
+	});
 
-	it("grantPlayerRole");
+	it("grantPlayerRole", async function () {
+		await expect(discord.grantPlayerRole("testPlayer", "role")).to.not.be.rejected;
+	});
 
-	it("removePlayerRole");
+	it("removePlayerRole", async function () {
+		await expect(discord.removePlayerRole("testPlayer", "role")).to.not.be.rejected;
+	});
 
-	it("deletePlayerRole");
+	it("deletePlayerRole", async function () {
+		await expect(discord.deletePlayerRole(sampleTournament)).to.not.be.rejected;
+	});
 });
