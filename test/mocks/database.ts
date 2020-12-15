@@ -11,7 +11,7 @@ export class DatabaseWrapperMock implements DatabaseWrapper {
 				description: "The first tournament",
 				status: "preparing",
 				hosts: ["host1"],
-				players: ["player1", "player2"],
+				players: ["player1", "player2", "sJustRight", "sTooMany"],
 				publicChannels: ["channel1"],
 				privateChannels: ["channel2"],
 				server: "testServer",
@@ -33,7 +33,7 @@ export class DatabaseWrapperMock implements DatabaseWrapper {
 				name: "Tournament 2",
 				description: "The second tournament",
 				status: "preparing",
-				players: ["player1", "player2"],
+				players: ["player1", "player2", "sTooMany"],
 				publicChannels: ["channel1"],
 				privateChannels: ["channel2"],
 				hosts: ["host2"],
@@ -118,7 +118,13 @@ export class DatabaseWrapperMock implements DatabaseWrapper {
 	async cleanRegistration(): Promise<void> {
 		return;
 	}
-	async getPendingTournaments(): Promise<DatabaseTournament[]> {
+	async getPendingTournaments(playerId: string): Promise<DatabaseTournament[]> {
+		if (playerId === "tooLong") {
+			return this.tournaments;
+		}
+		if (playerId.startsWith("s")) {
+			return [];
+		}
 		return [this.tournaments[0]];
 	}
 	addPendingPlayer(channelId: string, messageId: string, playerId: string): Promise<DatabaseTournament | undefined> {

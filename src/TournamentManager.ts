@@ -191,7 +191,7 @@ export class TournamentManager implements TournamentInterface {
 		}
 		const tournaments = await this.database.getPendingTournaments(msg.author);
 		if (tournaments.length > 1) {
-			const out = tournaments.map(t => t.name).join("\n");
+			const out = tournaments.map(t => t.name).join(", ");
 			await msg.reply(
 				`You are registering in multiple tournaments. Please register in one at a time by unchecking the reaction on all others.\n${out}`
 			);
@@ -238,7 +238,7 @@ export class TournamentManager implements TournamentInterface {
 		const allTourns = await this.database.listTournaments();
 		const confirmedTourns = allTourns.filter(t => t.players.includes(msg.author) && t.status === "preparing");
 		if (confirmedTourns.length > 1) {
-			const out = confirmedTourns.map(t => t.name).join("\n");
+			const out = confirmedTourns.map(t => t.name).join(", ");
 			await msg.reply(
 				`You're trying to update your deck for a tournament, but you're in multiple! Please choose one by dropping and registering again.\n${out}`
 			);

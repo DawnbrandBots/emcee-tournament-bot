@@ -1,4 +1,4 @@
-import { DiscordAttachmentOut, DiscordInterface } from "../src/discord/interface";
+import { DiscordAttachmentOut, DiscordInterface, DiscordMessageOut } from "../src/discord/interface";
 import logger from "../src/logger";
 import { TournamentManager } from "../src/TournamentManager";
 import { WebsiteInterface } from "../src/website/interface";
@@ -24,6 +24,10 @@ const mockWebsite = new WebsiteInterface(mockWebsiteWrapper);
 const mockTimer = TimerInterface;
 
 const tournament = new TournamentManager(mockDiscord, mockDb, mockWebsite, logger, mockTimer);
+
+async function noop(): Promise<void> {
+	return;
+}
 
 describe("Tournament creation commands", async function () {
 	it("Create tournament", async function () {
@@ -103,7 +107,7 @@ describe("Misc commands", function () {
 	it("List tournaments", async function () {
 		const list = await tournament.listTournaments();
 		expect(list).to.equal(
-			"ID: tourn1|Name: Tournament 1|Status: preparing|Players: 2\nID: tourn2|Name: Tournament 2|Status: preparing|Players: 2"
+			"ID: tourn1|Name: Tournament 1|Status: preparing|Players: 4\nID: tourn2|Name: Tournament 2|Status: preparing|Players: 3"
 		);
 	});
 	it("List players", async function () {
@@ -141,10 +145,9 @@ describe("Misc commands", function () {
 		expect(byes).to.deep.equal(["player1"]);
 	});
 });
-
-describe("Misc functions", function () {
+describe("Confirm player", function () {
 	// TODO: test attachment version
-	it("Confirm player", async function () {
+	it("Normal operation", async function () {
 		let file: DiscordAttachmentOut | undefined;
 		await tournament.confirmPlayer({
 			id: "testId",
@@ -157,12 +160,8 @@ describe("Misc functions", function () {
 			reply: async (msg, fileIn) => {
 				file = fileIn;
 			},
-			react: async () => {
-				return;
-			},
-			edit: async () => {
-				return;
-			}
+			react: noop,
+			edit: noop
 		});
 		const privateFile = discord.getFile("channel2");
 		// TODO: save and test the embed sent for the message
@@ -175,6 +174,111 @@ describe("Misc functions", function () {
 			"#created by YDeck\n#main\n99249638\n99249638\n46659709\n46659709\n46659709\n65367484\n65367484\n65367484\n43147039\n30012506\n30012506\n30012506\n77411244\n77411244\n77411244\n3405259\n3405259\n3405259\n89132148\n39890958\n14558127\n14558127\n14558127\n32807846\n73628505\n12524259\n12524259\n12524259\n24224830\n80352158\n80352158\n80352158\n66399653\n66399653\n66399653\n10045474\n10045474\n10045474\n55784832\n55784832\n#extra\n1561110\n10443957\n10443957\n58069384\n58069384\n73289035\n581014\n21887175\n4280258\n38342335\n2857636\n75452921\n50588353\n83152482\n65741786\n!side\n43147039\n"
 		);
 	});
+	it("non DM", async function () {
+		let response: DiscordMessageOut | undefined;
+		await tournament.confirmPlayer({
+			id: "testId",
+			content:
+				"ydke://5m3qBeZt6gV9+McCffjHAn34xwK8beUDvG3lA7xt5QMfX5ICWvTJAVr0yQFa9MkBrDOdBKwznQSsM50Ey/UzAMv1MwDL9TMAdAxQBQ6wYAKvI94AryPeAK8j3gCmm/QBWXtjBOMavwDjGr8A4xq/AD6kcQGeE8oEnhPKBJ4TygSlLfUDpS31A6Ut9QMiSJkAIkiZACJImQCANVMDgDVTAw==!FtIXALVcnwC1XJ8AiBF2A4gRdgNLTV4Elt0IAMf4TQHCT0EAvw5JAqSaKwD5UX8EweoDA2LO9ATaI+sD!H1+SAg==!",
+			attachments: [],
+			author: "testUser",
+			channelId: "testChannel",
+			serverId: "a server",
+			reply: async msg => {
+				response = msg;
+			},
+			react: noop,
+			edit: noop
+		});
+		expect(response).to.be.undefined;
+	});
+	it("Multiple tournaments", async function () {
+		let response: DiscordMessageOut | undefined;
+		await tournament.confirmPlayer({
+			id: "testId",
+			content:
+				"ydke://5m3qBeZt6gV9+McCffjHAn34xwK8beUDvG3lA7xt5QMfX5ICWvTJAVr0yQFa9MkBrDOdBKwznQSsM50Ey/UzAMv1MwDL9TMAdAxQBQ6wYAKvI94AryPeAK8j3gCmm/QBWXtjBOMavwDjGr8A4xq/AD6kcQGeE8oEnhPKBJ4TygSlLfUDpS31A6Ut9QMiSJkAIkiZACJImQCANVMDgDVTAw==!FtIXALVcnwC1XJ8AiBF2A4gRdgNLTV4Elt0IAMf4TQHCT0EAvw5JAqSaKwD5UX8EweoDA2LO9ATaI+sD!H1+SAg==!",
+			attachments: [],
+			author: "tooLong",
+			channelId: "testChannel",
+			serverId: "private",
+			reply: async msg => {
+				response = msg;
+			},
+			react: noop,
+			edit: noop
+		});
+		expect(response).to.equal(
+			"You are registering in multiple tournaments. Please register in one at a time by unchecking the reaction on all others.\nTournament 1, Tournament 2"
+		);
+	});
+	it("No tournaments", async function () {
+		let response: DiscordMessageOut | undefined;
+		await tournament.confirmPlayer({
+			id: "testId",
+			content:
+				"ydke://5m3qBeZt6gV9+McCffjHAn34xwK8beUDvG3lA7xt5QMfX5ICWvTJAVr0yQFa9MkBrDOdBKwznQSsM50Ey/UzAMv1MwDL9TMAdAxQBQ6wYAKvI94AryPeAK8j3gCmm/QBWXtjBOMavwDjGr8A4xq/AD6kcQGeE8oEnhPKBJ4TygSlLfUDpS31A6Ut9QMiSJkAIkiZACJImQCANVMDgDVTAw==!FtIXALVcnwC1XJ8AiBF2A4gRdgNLTV4Elt0IAMf4TQHCT0EAvw5JAqSaKwD5UX8EweoDA2LO9ATaI+sD!H1+SAg==!",
+			attachments: [],
+			author: "sNoTournaments",
+			channelId: "testChannel",
+			serverId: "private",
+			reply: async msg => {
+				response = msg;
+			},
+			react: noop,
+			edit: noop
+		});
+		expect(response).to.be.undefined;
+	});
+	it("Update deck - too many tournaments", async function () {
+		let response: DiscordMessageOut | undefined;
+		await tournament.confirmPlayer({
+			id: "testId",
+			content:
+				"ydke://5m3qBeZt6gV9+McCffjHAn34xwK8beUDvG3lA7xt5QMfX5ICWvTJAVr0yQFa9MkBrDOdBKwznQSsM50Ey/UzAMv1MwDL9TMAdAxQBQ6wYAKvI94AryPeAK8j3gCmm/QBWXtjBOMavwDjGr8A4xq/AD6kcQGeE8oEnhPKBJ4TygSlLfUDpS31A6Ut9QMiSJkAIkiZACJImQCANVMDgDVTAw==!FtIXALVcnwC1XJ8AiBF2A4gRdgNLTV4Elt0IAMf4TQHCT0EAvw5JAqSaKwD5UX8EweoDA2LO9ATaI+sD!H1+SAg==!",
+			attachments: [],
+			author: "sTooMany",
+			channelId: "testChannel",
+			serverId: "private",
+			reply: async msg => {
+				response = msg;
+			},
+			react: noop,
+			edit: noop
+		});
+		expect(response).to.equal(
+			"You're trying to update your deck for a tournament, but you're in multiple! Please choose one by dropping and registering again.\nTournament 1, Tournament 2"
+		);
+	});
+	it("Update deck", async function () {
+		let file: DiscordAttachmentOut | undefined;
+		await tournament.confirmPlayer({
+			id: "testId",
+			content:
+				"ydke://5m3qBeZt6gV9+McCffjHAn34xwK8beUDvG3lA7xt5QMfX5ICWvTJAVr0yQFa9MkBrDOdBKwznQSsM50Ey/UzAMv1MwDL9TMAdAxQBQ6wYAKvI94AryPeAK8j3gCmm/QBWXtjBOMavwDjGr8A4xq/AD6kcQGeE8oEnhPKBJ4TygSlLfUDpS31A6Ut9QMiSJkAIkiZACJImQCANVMDgDVTAw==!FtIXALVcnwC1XJ8AiBF2A4gRdgNLTV4Elt0IAMf4TQHCT0EAvw5JAqSaKwD5UX8EweoDA2LO9ATaI+sD!H1+SAg==!",
+			attachments: [],
+			author: "sJustRight",
+			channelId: "testChannel",
+			serverId: "private",
+			reply: async (msg, fileIn) => {
+				file = fileIn;
+			},
+			react: noop,
+			edit: noop
+		});
+		const privateFile = discord.getFile("channel2");
+		// TODO: save and test the embed sent for the message
+		expect(file?.filename).to.equal("sJustRight.ydk");
+		expect(file?.contents).to.equal(
+			"#created by YDeck\n#main\n99249638\n99249638\n46659709\n46659709\n46659709\n65367484\n65367484\n65367484\n43147039\n30012506\n30012506\n30012506\n77411244\n77411244\n77411244\n3405259\n3405259\n3405259\n89132148\n39890958\n14558127\n14558127\n14558127\n32807846\n73628505\n12524259\n12524259\n12524259\n24224830\n80352158\n80352158\n80352158\n66399653\n66399653\n66399653\n10045474\n10045474\n10045474\n55784832\n55784832\n#extra\n1561110\n10443957\n10443957\n58069384\n58069384\n73289035\n581014\n21887175\n4280258\n38342335\n2857636\n75452921\n50588353\n83152482\n65741786\n!side\n43147039\n"
+		);
+		expect(privateFile?.filename).to.equal("sJustRight.ydk");
+		expect(privateFile?.contents).to.equal(
+			"#created by YDeck\n#main\n99249638\n99249638\n46659709\n46659709\n46659709\n65367484\n65367484\n65367484\n43147039\n30012506\n30012506\n30012506\n77411244\n77411244\n77411244\n3405259\n3405259\n3405259\n89132148\n39890958\n14558127\n14558127\n14558127\n32807846\n73628505\n12524259\n12524259\n12524259\n24224830\n80352158\n80352158\n80352158\n66399653\n66399653\n66399653\n10045474\n10045474\n10045474\n55784832\n55784832\n#extra\n1561110\n10443957\n10443957\n58069384\n58069384\n73289035\n581014\n21887175\n4280258\n38342335\n2857636\n75452921\n50588353\n83152482\n65741786\n!side\n43147039\n"
+		);
+	});
+});
+describe("Misc functions", function () {
 	it("Clean registration", async function () {
 		await expect(
 			tournament.cleanRegistration({

@@ -1,12 +1,10 @@
-import chai, { expect } from "chai";
+import { expect } from "chai";
 import { CommandHandler } from "../src/CommandHandler";
 import { DiscordInterface } from "../src/discord/interface";
 import logger from "../src/logger";
 import { DiscordWrapperMock } from "./mocks/discord";
 import { TournamentMock } from "./mocks/tournament";
-import chaiAsPromised from "chai-as-promised";
 
-chai.use(chaiAsPromised);
 // this will be the centre of the test, simulating input commands to stimulate output
 const discord = new DiscordWrapperMock();
 
