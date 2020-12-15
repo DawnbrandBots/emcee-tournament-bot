@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import { CommandHandler } from "../src/CommandHandler";
 import { DiscordInterface } from "../src/discord/interface";
-import logger from "../src/logger";
+import logger from "../src/util/logger";
 import { DiscordWrapperMock } from "./mocks/discord";
 import { TournamentMock } from "./mocks/tournament";
 

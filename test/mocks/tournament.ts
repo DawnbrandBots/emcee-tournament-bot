@@ -1,5 +1,5 @@
 import { Deck } from "ydeck";
-import { getDeck } from "../../src/deck";
+import { getDeck } from "../../src/deck/deck";
 import { DiscordAttachmentOut } from "../../src/discord/interface";
 import { TournamentInterface } from "../../src/TournamentManager";
 

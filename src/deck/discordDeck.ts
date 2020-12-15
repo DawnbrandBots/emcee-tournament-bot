@@ -1,10 +1,10 @@
 import { getDeck } from "./deck";
 import fetch from "node-fetch";
-import { DeckNotFoundError } from "./errors";
-import { DiscordAttachmentOut, DiscordMessageIn, DiscordMessageOut } from "./discord/interface";
+import { DeckNotFoundError } from "../util/errors";
+import { DiscordAttachmentOut, DiscordMessageIn, DiscordMessageOut } from "../discord/interface";
 import { Deck, UrlConstructionError } from "ydeck";
 import { DeckError } from "ydeck/dist/validation";
-import { splitText } from "./discord/interface";
+import { splitText } from "../discord/interface";
 
 async function extractYdk(msg: DiscordMessageIn): Promise<string> {
 	const attach = msg.attachments[0];

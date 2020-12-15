@@ -23,7 +23,13 @@ import {
 	DiscordReactionHandler,
 	DiscordWrapper
 } from "./interface";
-import { AssertTextChannelError, BlockedDMsError, MiscInternalError, UnauthorisedTOError, UserError } from "../errors";
+import {
+	AssertTextChannelError,
+	BlockedDMsError,
+	MiscInternalError,
+	UnauthorisedTOError,
+	UserError
+} from "../util/errors";
 import { Logger } from "winston";
 
 export class DiscordWrapperEris implements DiscordWrapper {

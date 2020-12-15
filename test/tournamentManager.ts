@@ -1,5 +1,5 @@
 import { DiscordAttachmentOut, DiscordInterface, DiscordMessageOut } from "../src/discord/interface";
-import logger from "../src/logger";
+import logger from "../src/util/logger";
 import { TournamentManager } from "../src/TournamentManager";
 import { WebsiteInterface } from "../src/website/interface";
 import { DiscordWrapperMock } from "./mocks/discord";

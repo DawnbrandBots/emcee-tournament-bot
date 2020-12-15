@@ -1,5 +1,5 @@
 import { DatabaseMessage, DatabasePlayer, DatabaseTournament, DatabaseWrapper } from "../../src/database/interface";
-import { TournamentNotFoundError } from "../../src/errors";
+import { TournamentNotFoundError } from "../../src/util/errors";
 
 export class DatabaseWrapperMock implements DatabaseWrapper {
 	tournaments: DatabaseTournament[];

@@ -1,5 +1,5 @@
 import { CommandHandler } from "./CommandHandler";
-import logger from "./logger";
+import logger from "./util/logger";
 
 import { DiscordWrapperEris } from "./discord/eris";
 import { DiscordInterface } from "./discord/interface";

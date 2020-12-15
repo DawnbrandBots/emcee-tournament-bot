@@ -1,7 +1,7 @@
 import { Logger } from "winston";
-import { prettyPrint } from "./discordDeck";
+import { prettyPrint } from "./deck/discordDeck";
 import { DiscordInterface, DiscordMessageIn } from "./discord/interface";
-import { UserError } from "./errors";
+import { UserError } from "./util/errors";
 import { TournamentInterface } from "./TournamentManager";
 
 export class CommandHandler {

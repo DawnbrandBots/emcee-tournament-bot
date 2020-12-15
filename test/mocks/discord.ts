@@ -7,7 +7,7 @@ import {
 	DiscordMessageSent,
 	DiscordWrapper
 } from "../../src/discord/interface";
-import { UserError } from "../../src/errors";
+import { UserError } from "../../src/util/errors";
 
 export class DiscordWrapperMock implements DiscordWrapper {
 	private messageHandlers: DiscordMessageHandler[];

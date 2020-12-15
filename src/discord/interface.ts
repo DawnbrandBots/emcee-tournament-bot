@@ -1,6 +1,6 @@
 import { Logger } from "winston";
 import { DatabaseTournament } from "../database/interface";
-import { UserError } from "../errors";
+import { UserError } from "../util/errors";
 
 export interface DiscordAttachmentIn {
 	filename: string;

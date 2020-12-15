@@ -1,6 +1,6 @@
 import { WebsiteMatch, WebsitePlayer, WebsiteTournament, WebsiteWrapper } from "./interface";
 import fetch, { Response } from "node-fetch";
-import { ChallongeAPIError } from "../errors";
+import { ChallongeAPIError } from "../util/errors";
 
 type TournamentType = "single elimination" | "double elimination" | "round robin" | "swiss";
 type RankedBy = "match wins" | "game wins" | "points scored" | "points difference" | "custom";

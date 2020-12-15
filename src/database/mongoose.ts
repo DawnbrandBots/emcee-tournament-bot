@@ -6,7 +6,7 @@ import {
 	DatabaseMessage
 } from "./interface";
 import { TournamentModel, TournamentDoc } from "./models";
-import { TournamentNotFoundError, UnauthorisedPlayerError, UserError } from "../errors";
+import { TournamentNotFoundError, UnauthorisedPlayerError, UserError } from "../util/errors";
 
 type DiscordID = string;
 type TournamentID = string; // from Challonge
