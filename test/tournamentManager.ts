@@ -9,6 +9,7 @@ import { DatabaseInterface } from "../src/database/interface";
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { TimerInterface } from "../src/timer/interface";
+import { UserError } from "../src/util/errors";
 
 chai.use(chaiAsPromised);
 
@@ -64,9 +65,26 @@ describe("Tournament flow commands", function () {
 		);
 		expect(discord.getEmoji("channel1")).to.equal("✅");
 	});
+	it("Open tournament - no channels", async function () {
+		await expect(tournament.openTournament("smallTournament")).to.be.rejectedWith(UserError);
+	});
 	it("Start tournament", async function () {
 		await tournament.startTournament("mc_tourn1");
 		expect(discord.getResponse("channel1")).to.equal("Time left in the round: `50:00`"); // timer message posted after new round message
+	});
+	it("Start tournament - with bye", async function () {
+		await tournament.startTournament("byeTournament");
+		// no difference in output, but ensures bye-related logic doesn't error
+		expect(discord.getResponse("channel1")).to.equal("Time left in the round: `50:00`"); // timer message posted after new round message
+	});
+	it("Start tournament - pending players", async function () {
+		await tournament.startTournament("pendingTournament");
+		expect(discord.getResponse("pendingPlayer")).to.equal(
+			"Sorry, Tournament Pending tournament has started and you didn't submit a deck, so you have been dropped."
+		);
+	});
+	it("Start tournament - no players", async function () {
+		await expect(tournament.startTournament("smallTournament")).to.be.rejectedWith(UserError);
 	});
 	it("Cancel tournament", async function () {
 		await tournament.cancelTournament("mc_tourn1");

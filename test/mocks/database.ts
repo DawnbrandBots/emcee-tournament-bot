@@ -91,6 +91,54 @@ export class DatabaseWrapperMock implements DatabaseWrapper {
 		return;
 	}
 	async getTournament(tournamentId: string): Promise<DatabaseTournament> {
+		if (tournamentId.startsWith("small")) {
+			return {
+				id: tournamentId,
+				name: "Small tournament",
+				description: "A Small Tournament",
+				status: "preparing",
+				hosts: ["testHost"],
+				players: [],
+				server: "testServer",
+				publicChannels: [],
+				privateChannels: [],
+				byes: [],
+				findHost: (): boolean => true,
+				findPlayer: (): undefined => undefined
+			};
+		}
+		if (tournamentId.startsWith("bye")) {
+			return {
+				id: tournamentId,
+				name: "Bye tournament",
+				description: "A tournament with a natural bye",
+				status: "preparing",
+				hosts: ["testHost"],
+				players: ["a", "b", "c"],
+				server: "testServer",
+				publicChannels: [],
+				privateChannels: [],
+				byes: [],
+				findHost: (): boolean => true,
+				findPlayer: (): undefined => undefined
+			};
+		}
+		if (tournamentId.startsWith("pend")) {
+			return {
+				id: tournamentId,
+				name: "Pending tournament",
+				description: "A tournament with a pending player",
+				status: "preparing",
+				hosts: ["testHost"],
+				players: ["a", "b"],
+				server: "testServer",
+				publicChannels: ["channel1"],
+				privateChannels: ["channel2"],
+				byes: [],
+				findHost: (): boolean => true,
+				findPlayer: (): undefined => undefined
+			};
+		}
 		const tournament = this.tournaments.find(t => t.id === tournamentId);
 		if (!tournament) {
 			throw new TournamentNotFoundError(tournamentId);
@@ -148,7 +196,10 @@ export class DatabaseWrapperMock implements DatabaseWrapper {
 	removeConfirmedPlayerForce(tournamentId: string): Promise<DatabaseTournament | undefined> {
 		return this.getTournament(tournamentId);
 	}
-	async startTournament(): Promise<string[]> {
+	async startTournament(tournamentId: string): Promise<string[]> {
+		if (tournamentId.startsWith("pend")) {
+			return ["pendingPlayer"];
+		}
 		return [];
 	}
 	async nextRound(tournamentId: string): Promise<number> {
