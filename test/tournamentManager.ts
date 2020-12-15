@@ -322,6 +322,23 @@ describe("Misc functions", function () {
 			"Player <@blockedPlayer> (blockedPlayer) is trying to sign up for Tournament Tournament 1 (mc_tourn1), but I cannot send them DMs. Please ask them to allow DMs from this server."
 		);
 	});
+	it("Register player - no tournament", async function () {
+		await tournament.registerPlayer(
+			{
+				id: "wrongMessage",
+				content: "React here to sign up",
+				author: "testHost",
+				channelId: "wrongChannel",
+				serverId: "testServer",
+				attachments: [],
+				reply: noop,
+				react: noop,
+				edit: noop
+			},
+			"testPlayer2"
+		);
+		expect(discord.getResponse("testPlayer2")).to.be.undefined;
+	});
 	it("Clean registration", async function () {
 		await expect(
 			tournament.cleanRegistration({

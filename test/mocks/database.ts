@@ -130,7 +130,10 @@ export class DatabaseWrapperMock implements DatabaseWrapper {
 		}
 		return [this.tournaments[0]];
 	}
-	async addPendingPlayer(): Promise<DatabaseTournament | undefined> {
+	async addPendingPlayer(channelId: string, messageId: string): Promise<DatabaseTournament | undefined> {
+		if (channelId.startsWith("wrong") || messageId.startsWith("wrong")) {
+			return;
+		}
 		return this.tournaments[0];
 	}
 	async removePendingPlayer(): Promise<DatabaseTournament | undefined> {
