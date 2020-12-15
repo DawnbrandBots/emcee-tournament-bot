@@ -36,7 +36,7 @@ function capFirst(str: string): string {
 
 function parseDeckError(err: DeckError): string {
 	if (err.type === "size") {
-		return `${capFirst(err.target)} too ${err.min ? "small" : "large"}! Should be at ${
+		return `${capFirst(err.target)} Deck too ${err.min ? "small" : "large"}! Should be at ${
 			err.min ? `least ${err.min}` : `most ${err.max}`
 		}, is ${err.actual}!`;
 	}

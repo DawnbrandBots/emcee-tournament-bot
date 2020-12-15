@@ -53,11 +53,11 @@ describe("Test embeds", function () {
 			"ydke://5m3qBeZt6gV9+McCffjHAn34xwK8beUDvG3lA7xt5QMfX5ICWvTJAVr0yQFa9MkBrDOdBKwznQSsM50Ey/UzAMv1MwDL9TMAdAxQBQ6wYAKvI94AryPeAK8j3gCmm/QBWXtjBOMavwDjGr8A4xq/AD6kcQGeE8oEnhPKBJ4TygSlLfUDpS31A6Ut9QMiSJkAIkiZACJImQCANVMDgDVTAw==!FtIXALVcnwC1XJ8AiBF2A4gRdgNLTV4Elt0IAMf4TQHCT0EAvw5JAqSaKwD5UX8EweoDA2LO9ATaI+sD!H1+SAg==!"
 		);
 		const [out, file] = prettyPrint(deck, "abc.ydk");
-		const embed = out as DiscordEmbed;
 		expect(file.filename).to.equal("abc.ydk");
 		expect(file.contents).to.equal(
 			"#created by YDeck\n#main\n99249638\n99249638\n46659709\n46659709\n46659709\n65367484\n65367484\n65367484\n43147039\n30012506\n30012506\n30012506\n77411244\n77411244\n77411244\n3405259\n3405259\n3405259\n89132148\n39890958\n14558127\n14558127\n14558127\n32807846\n73628505\n12524259\n12524259\n12524259\n24224830\n80352158\n80352158\n80352158\n66399653\n66399653\n66399653\n10045474\n10045474\n10045474\n55784832\n55784832\n#extra\n1561110\n10443957\n10443957\n58069384\n58069384\n73289035\n581014\n21887175\n4280258\n38342335\n2857636\n75452921\n50588353\n83152482\n65741786\n!side\n43147039\n"
 		);
+		const embed = out as DiscordEmbed;
 		expect(embed.title).to.equal("Contents of your deck:\n");
 		const mainField = embed.fields[0];
 		expect(mainField.name).to.equal("Main Deck (40 cards - 25 Monsters, 12 Spells, 3 Traps)");
@@ -72,7 +72,22 @@ describe("Test embeds", function () {
 		const sideField = embed.fields[2];
 		expect(sideField.name).to.equal("Side Deck (1 cards - 1 Monsters)");
 		expect(sideField.value).to.equal("1 Photon Vanisher");
+		const ydkeField = embed.fields[3];
+		expect(ydkeField.name).to.equal("YDKE URL");
+		expect(ydkeField.value).to.equal(
+			"ydke://5m3qBeZt6gV9+McCffjHAn34xwK8beUDvG3lA7xt5QMfX5ICWvTJAVr0yQFa9MkBrDOdBKwznQSsM50Ey/UzAMv1MwDL9TMAdAxQBQ6wYAKvI94AryPeAK8j3gCmm/QBWXtjBOMavwDjGr8A4xq/AD6kcQGeE8oEnhPKBJ4TygSlLfUDpS31A6Ut9QMiSJkAIkiZACJImQCANVMDgDVTAw==!FtIXALVcnwC1XJ8AiBF2A4gRdgNLTV4Elt0IAMf4TQHCT0EAvw5JAqSaKwD5UX8EweoDA2LO9ATaI+sD!H1+SAg==!"
+		);
+	});
+	it("Empty deck", async function () {
+		const deck = await getDeck("ydke://!!!");
+		const [out, file] = prettyPrint(deck, "blank.ydk");
+		expect(file.filename).to.equal("blank.ydk");
+		expect(file.contents).to.equal("#created by YDeck\n#main\n#extra\n!side\n");
+		const embed = out as DiscordEmbed;
+		expect(embed.title).to.equal("Contents of your deck:\n");
+		const errorField = embed.fields[1];
+		expect(errorField.name).to.equal("Deck is illegal!");
+		expect(errorField.value).to.equal("Main Deck too small! Should be at least 40, is 0!");
 	});
 	it("Deck with archetypes");
-	it("Deck with errors");
 });
