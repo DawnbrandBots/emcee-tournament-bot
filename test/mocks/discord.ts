@@ -28,26 +28,28 @@ export class DiscordWrapperMock implements DiscordWrapper {
 	}
 
 	public async simMessage(content: string, testCode: string): Promise<void> {
-		await this.messageHandlers[0]({
-			id: "testId",
-			content: content,
-			attachments: [],
-			author: "testUser",
-			channelId: "testChannel",
-			serverId: "testServer",
-			reply: async (msg: DiscordMessageOut, file?: DiscordAttachmentOut) => {
-				this.messages[testCode] = msg;
-				if (file) {
-					this.files[testCode] = file;
+		for (const handler of this.messageHandlers) {
+			await handler({
+				id: "testId",
+				content: content,
+				attachments: [],
+				author: "testUser",
+				channelId: "testChannel",
+				serverId: "testServer",
+				reply: async (msg: DiscordMessageOut, file?: DiscordAttachmentOut) => {
+					this.messages[testCode] = msg;
+					if (file) {
+						this.files[testCode] = file;
+					}
+				},
+				react: async (emoji: string) => {
+					this.emoji[testCode] = emoji;
+				},
+				edit: async (newMsg: DiscordMessageOut): Promise<void> => {
+					this.messages[testCode] = newMsg;
 				}
-			},
-			react: async (emoji: string) => {
-				this.emoji[testCode] = emoji;
-			},
-			edit: async (newMsg: DiscordMessageOut): Promise<void> => {
-				this.messages[testCode] = newMsg;
-			}
-		});
+			});
+		}
 	}
 
 	public async simPing(testCode: string): Promise<void> {

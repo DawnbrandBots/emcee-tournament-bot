@@ -1,4 +1,4 @@
-import { DiscordInterface, DiscordMessageIn } from "../src/discord/interface";
+import { DiscordCommand, DiscordInterface, DiscordMessageHandler, DiscordMessageIn } from "../src/discord/interface";
 import { DiscordWrapperMock } from "./mocks/discord";
 import logger from "../src/util/logger";
 import chai, { expect } from "chai";
@@ -55,15 +55,39 @@ describe("Simple helpers", function () {
 });
 
 describe("Callback setups", function () {
-	it("registerCommand");
+	it("registerCommand", async function () {
+		const command: DiscordCommand = async msg => msg.reply("pong");
+		discord.registerCommand("ping", command);
+		await discordMock.simMessage("mc!ping", "ping");
+		expect(discordMock.getResponse("ping")).to.equal("pong");
+	});
 
-	it("onMessage");
+	it("onMessage", async function () {
+		const handler: DiscordMessageHandler = async msg => msg.reply("pang");
+		discord.onMessage(handler);
+		await discordMock.simMessage("not a command", "pang");
+		expect(discordMock.getResponse("pang")).to.equal("pang");
+	});
 
-	it("onDelete");
+	it("onDelete", async function () {
+		// TODO: mock deletion?
+		expect(() => discord.onDelete(noop)).to.not.throw;
+	});
 
-	it("onPing");
+	it("onPing", async function () {
+		const handler: DiscordMessageHandler = async msg => msg.reply("peng");
+		discord.onPing(handler);
+		await discordMock.simPing("peng");
+		expect(discordMock.getResponse("peng")).to.equal("peng");
+	});
 
-	it("awaitReaction");
+	it("awaitReaction", async function () {
+		const msg = await discord.awaitReaction("reactionMessage", "pung", "😳", noop, noop);
+		expect(msg.content).to.equal("reactionMessage");
+		expect(discordMock.getResponse("pung")).to.equal("reactionMessage");
+		expect(discordMock.getEmoji("pung")).to.equal("😳");
+		// TODO: mock reactions?
+	});
 });
 
 describe("Messages", function () {
