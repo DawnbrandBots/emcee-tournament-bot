@@ -16,6 +16,7 @@ interface MatchScore {
 }
 
 export interface TournamentInterface {
+	registerPlayer(msg: DiscordMessageIn, playerId: string): Promise<void>;
 	confirmPlayer(msg: DiscordMessageIn): Promise<void>;
 	cleanRegistration(msg: DiscordMessageLimited): Promise<void>;
 	authenticateHost(tournamentId: string, hostId: string): Promise<void>;
@@ -164,7 +165,7 @@ export class TournamentManager implements TournamentInterface {
 		);
 	}
 
-	private async registerPlayer(msg: DiscordMessageIn, playerId: string): Promise<void> {
+	public async registerPlayer(msg: DiscordMessageIn, playerId: string): Promise<void> {
 		const tournament = await this.database.addPendingPlayer(msg.channelId, msg.id, playerId);
 		if (tournament) {
 			try {
