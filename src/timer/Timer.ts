@@ -2,7 +2,6 @@ import { TimerInterface } from "./interface";
 import { DiscordInterface, DiscordMessageSent } from "../discord/interface";
 
 export class Timer extends TimerInterface {
-	private interval: NodeJS.Timeout;
 	private tickLength = 5; // seconds
 	constructor(
 		mins: number,
@@ -12,7 +11,7 @@ export class Timer extends TimerInterface {
 		finalMessage: string
 	) {
 		super(mins, discord, channelId, message, finalMessage);
-		this.interval = setInterval(async () => {
+		super.interval = setInterval(async () => {
 			// arrow function to not rebind "this"
 			await this.tick();
 		}, this.tickLength * 1000); // seconds
@@ -49,11 +48,7 @@ export class Timer extends TimerInterface {
 	}
 
 	private async finish(): Promise<void> {
-		clearInterval(this.interval);
+		super.abort();
 		await this.discord.sendMessage(this.channelId, this.finalMessage);
-	}
-
-	public async abort(): Promise<void> {
-		clearInterval(this.interval);
 	}
 }

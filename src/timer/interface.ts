@@ -6,6 +6,7 @@ export class TimerInterface {
 	protected channelId: string;
 	protected message: DiscordMessageSent;
 	protected finalMessage: string;
+	protected interval: NodeJS.Timeout | undefined;
 	constructor(
 		mins: number,
 		discord: DiscordInterface,
@@ -31,6 +32,8 @@ export class TimerInterface {
 	}
 
 	public async abort(): Promise<void> {
-		return;
+		if (this.interval) {
+			clearInterval(this.interval);
+		}
 	}
 }
