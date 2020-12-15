@@ -6,7 +6,7 @@ export class DatabaseWrapperMock implements DatabaseWrapper {
 	constructor() {
 		this.tournaments = [
 			{
-				id: "tourn1",
+				id: "mc_tourn1",
 				name: "Tournament 1",
 				description: "The first tournament",
 				status: "preparing",

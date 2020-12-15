@@ -35,6 +35,10 @@ describe("Tournament creation commands", async function () {
 		expect(id).to.equal("mc_name");
 		expect(url).to.equal("https://example.com/mc_name");
 	});
+	it("Create tournament - taken URL", async function () {
+		const [id] = await tournament.createTournament("testUser", "testServer", "tourn1", "desc");
+		expect(id).to.equal("mc_tourn10");
+	});
 	it("Update tournament", async function () {
 		await expect(tournament.updateTournament("mc_name", "newName", "newDesc")).to.not.be.rejected;
 	});
@@ -54,50 +58,50 @@ describe("Tournament creation commands", async function () {
 
 describe("Tournament flow commands", function () {
 	it("Open tournament", async function () {
-		await tournament.openTournament("tourn1");
+		await tournament.openTournament("mc_tourn1");
 		expect(discord.getResponse("channel1")).to.equal(
 			"__Registration now open for **Tournament 1**!__\nThe first tournament\n__Click the ✅ below to sign up!__"
 		);
 		expect(discord.getEmoji("channel1")).to.equal("✅");
 	});
 	it("Start tournament", async function () {
-		await tournament.startTournament("tourn1");
+		await tournament.startTournament("mc_tourn1");
 		expect(discord.getResponse("channel1")).to.equal("Time left in the round: `50:00`"); // timer message posted after new round message
 	});
 	it("Cancel tournament", async function () {
-		await tournament.cancelTournament("tourn1");
+		await tournament.cancelTournament("mc_tourn1");
 		expect(discord.getResponse("channel1")).to.equal(
 			"Tournament 1 has been cancelled. Thank you all for playing! <@&role>\nResults: https://example.com/url"
 		);
 	});
 	it("Submit score", async function () {
-		const response1 = await tournament.submitScore("tourn1", "player1", 2, 1);
+		const response1 = await tournament.submitScore("mc_tourn1", "player1", 2, 1);
 		expect(response1).to.equal(
 			"You have reported a score of 2-1, <@player1>. Your opponent still needs to confirm this score."
 		);
-		const response2 = await tournament.submitScore("tourn1", "player1", 2, 1);
+		const response2 = await tournament.submitScore("mc_tourn1", "player1", 2, 1);
 		expect(response2).to.equal(
 			`You have already reported your score for this match, <@player1>. Please have your opponent confirm the score.`
 		);
-		const response3 = await tournament.submitScore("tourn1", "player2", 2, 1);
+		const response3 = await tournament.submitScore("mc_tourn1", "player2", 2, 1);
 		expect(response3).to.equal(
 			"Your score does not match your opponent's reported score of 1-2. Both you and they will need to report again, <@player2>."
 		);
-		const response4 = await tournament.submitScore("tourn1", "player2", 2, 1);
+		const response4 = await tournament.submitScore("mc_tourn1", "player2", 2, 1);
 		expect(response4).to.equal(
 			"You have reported a score of 2-1, <@player2>. Your opponent still needs to confirm this score."
 		);
-		const response5 = await tournament.submitScore("tourn1", "player1", 1, 2);
+		const response5 = await tournament.submitScore("mc_tourn1", "player1", 1, 2);
 		expect(response5).to.equal(
 			"You have successfully reported a score of 1-2, and it matches your opponent's report, so the score has been saved. Thank you, <@player1>."
 		);
 	});
 	it("Submit score - host", async function () {
-		const response = await tournament.submitScore("tourn1", "player1", 2, 1, true);
+		const response = await tournament.submitScore("mc_tourn1", "player1", 2, 1, true);
 		expect(response).to.equal("");
 	});
 	it("Next round", async function () {
-		const round = await tournament.nextRound("tourn1");
+		const round = await tournament.nextRound("mc_tourn1");
 		expect(round).to.equal(2);
 		expect(discord.getResponse("channel1")).to.equal("Time left in the round: `50:00`"); // new round means new timer
 	});
@@ -107,41 +111,41 @@ describe("Misc commands", function () {
 	it("List tournaments", async function () {
 		const list = await tournament.listTournaments();
 		expect(list).to.equal(
-			"ID: tourn1|Name: Tournament 1|Status: preparing|Players: 4\nID: tourn2|Name: Tournament 2|Status: preparing|Players: 3"
+			"ID: mc_tourn1|Name: Tournament 1|Status: preparing|Players: 4\nID: tourn2|Name: Tournament 2|Status: preparing|Players: 3"
 		);
 	});
 	it("List players", async function () {
-		const file = await tournament.listPlayers("tourn1");
+		const file = await tournament.listPlayers("mc_tourn1");
 		expect(file.filename).to.equal("Tournament 1.csv");
 		// TODO: test file contents? sounds scary
 	});
 	it("Get player deck", async function () {
-		const deck = await tournament.getPlayerDeck("tourn1", "player1");
+		const deck = await tournament.getPlayerDeck("mc_tourn1", "player1");
 		expect(deck.url).to.equal(
 			"ydke://5m3qBeZt6gV9+McCffjHAn34xwK8beUDvG3lA7xt5QMfX5ICWvTJAVr0yQFa9MkBrDOdBKwznQSsM50Ey/UzAMv1MwDL9TMAdAxQBQ6wYAKvI94AryPeAK8j3gCmm/QBWXtjBOMavwDjGr8A4xq/AD6kcQGeE8oEnhPKBJ4TygSlLfUDpS31A6Ut9QMiSJkAIkiZACJImQCANVMDgDVTAw==!FtIXALVcnwC1XJ8AiBF2A4gRdgNLTV4Elt0IAMf4TQHCT0EAvw5JAqSaKwD5UX8EweoDA2LO9ATaI+sD!H1+SAg==!"
 		);
 	});
 	it("Drop player", async function () {
-		await tournament.dropPlayer("tourn1", "player1");
+		await tournament.dropPlayer("mc_tourn1", "player1");
 		expect(discord.getResponse("player1")).to.equal("You have dropped from Tournament Tournament 1 by the hosts.");
 		expect(discord.getResponse("channel2")).to.equal(
-			"Player <@player1> (player1) forcefully dropped from Tournament Tournament 1 (tourn1)."
+			"Player <@player1> (player1) forcefully dropped from Tournament Tournament 1 (mc_tourn1)."
 		);
 	});
 	it("Sync tournament", async function () {
-		await expect(tournament.syncTournament("tourn1")).to.not.be.rejected;
+		await expect(tournament.syncTournament("mc_tourn1")).to.not.be.rejected;
 	});
 	it("Generate pie chart", async function () {
-		const file = await tournament.generatePieChart("tourn1");
+		const file = await tournament.generatePieChart("mc_tourn1");
 		expect(file.filename).to.equal("Tournament 1.csv");
 		// TODO: test file contents? sounds scary
 	});
 	it("Register bye", async function () {
-		const byes = await tournament.registerBye("tourn1", "bye1");
+		const byes = await tournament.registerBye("mc_tourn1", "bye1");
 		expect(byes).to.deep.equal(["player1"]);
 	});
 	it("Remove bye", async function () {
-		const byes = await tournament.removeBye("tourn1", "bye1");
+		const byes = await tournament.removeBye("mc_tourn1", "bye1");
 		expect(byes).to.deep.equal(["player1"]);
 	});
 });
@@ -288,9 +292,9 @@ describe("Misc functions", function () {
 		).to.not.be.rejected;
 	});
 	it("Authenticate host", async function () {
-		await expect(tournament.authenticateHost("tourn1", "testUser")).to.not.be.rejected;
+		await expect(tournament.authenticateHost("mc_tourn1", "testUser")).to.not.be.rejected;
 	});
 	it("Authenticate player", async function () {
-		await expect(tournament.authenticatePlayer("tourn1", "player1")).to.not.be.rejected;
+		await expect(tournament.authenticatePlayer("mc_tourn1", "player1")).to.not.be.rejected;
 	});
 });

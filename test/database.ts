@@ -81,7 +81,7 @@ describe("Player registration", function () {
 
 	it("addPendingPlayer", async function () {
 		const tournament = await database.addPendingPlayer("testChannel", "testMessage", "testPlayer");
-		expect(tournament?.id).to.equal("tourn1");
+		expect(tournament?.id).to.equal("mc_tourn1");
 		expect(tournament?.name).to.equal("Tournament 1");
 		expect(tournament?.description).to.equal("The first tournament");
 		expect(tournament?.status).to.equal("preparing");
@@ -95,7 +95,7 @@ describe("Player registration", function () {
 
 	it("removePendingPlayer", async function () {
 		const tournament = await database.removePendingPlayer("testChannel", "testMessage", "testPlayer");
-		expect(tournament?.id).to.equal("tourn1");
+		expect(tournament?.id).to.equal("mc_tourn1");
 		expect(tournament?.name).to.equal("Tournament 1");
 		expect(tournament?.description).to.equal("The first tournament");
 		expect(tournament?.status).to.equal("preparing");
@@ -113,7 +113,7 @@ describe("Player registration", function () {
 
 	it("removeConfirmedPlayerReaction", async function () {
 		const tournament = await database.removeConfirmedPlayerReaction("testChannel", "testMessage", "testPlayer");
-		expect(tournament?.id).to.equal("tourn1");
+		expect(tournament?.id).to.equal("mc_tourn1");
 		expect(tournament?.name).to.equal("Tournament 1");
 		expect(tournament?.description).to.equal("The first tournament");
 		expect(tournament?.status).to.equal("preparing");
@@ -126,8 +126,8 @@ describe("Player registration", function () {
 	});
 
 	it("removeConfirmedPlayerForce", async function () {
-		const tournament = await database.removeConfirmedPlayerForce("tourn1", "testPlayer");
-		expect(tournament?.id).to.equal("tourn1");
+		const tournament = await database.removeConfirmedPlayerForce("mc_tourn1", "testPlayer");
+		expect(tournament?.id).to.equal("mc_tourn1");
 		expect(tournament?.name).to.equal("Tournament 1");
 		expect(tournament?.description).to.equal("The first tournament");
 		expect(tournament?.status).to.equal("preparing");
@@ -158,26 +158,26 @@ describe("Tournament flow", function () {
 
 describe("Misc functions", function () {
 	it("authenticateHost", async function () {
-		await expect(database.authenticateHost("tourn1", "testHost")).to.not.be.rejected;
+		await expect(database.authenticateHost("mc_tourn1", "testHost")).to.not.be.rejected;
 	});
 
 	it("authenticateHost - failed", async function () {
-		await expect(database.authenticateHost("tourn1", "notHost")).to.be.rejectedWith(UnauthorisedHostError);
+		await expect(database.authenticateHost("mc_tourn1", "notHost")).to.be.rejectedWith(UnauthorisedHostError);
 	});
 
 	it("authenticatePlayer", async function () {
-		await expect(database.authenticatePlayer("tourn1", "player1")).to.not.be.rejected;
+		await expect(database.authenticatePlayer("mc_tourn1", "player1")).to.not.be.rejected;
 	});
 
 	it("authenticatePlayer - failed", async function () {
-		await expect(database.authenticatePlayer("tourn1", "notPlayer")).to.be.rejectedWith(UnauthorisedPlayerError);
+		await expect(database.authenticatePlayer("mc_tourn1", "notPlayer")).to.be.rejectedWith(UnauthorisedPlayerError);
 	});
 
 	it("listTournaments", async function () {
 		const tournaments = await database.listTournaments();
 		expect(tournaments.length).to.equal(2);
 		const tournament = tournaments[0];
-		expect(tournament?.id).to.equal("tourn1");
+		expect(tournament?.id).to.equal("mc_tourn1");
 		expect(tournament?.name).to.equal("Tournament 1");
 		expect(tournament?.description).to.equal("The first tournament");
 		expect(tournament?.status).to.equal("preparing");
@@ -190,8 +190,8 @@ describe("Misc functions", function () {
 	});
 
 	it("getTournament", async function () {
-		const tournament = await database.getTournament("tourn1");
-		expect(tournament?.id).to.equal("tourn1");
+		const tournament = await database.getTournament("mc_tourn1");
+		expect(tournament?.id).to.equal("mc_tourn1");
 		expect(tournament?.name).to.equal("Tournament 1");
 		expect(tournament?.description).to.equal("The first tournament");
 		expect(tournament?.status).to.equal("preparing");
