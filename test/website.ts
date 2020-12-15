@@ -87,9 +87,16 @@ describe("Tournament flow commands", function () {
 });
 
 describe("Misc functions", function () {
-	it("getTopCut");
+	it("getTopCut", async function () {
+		const top = await website.getTopCut("mc_test", 0);
+		expect(top.length).to.equal(0);
+	});
 
-	it("assignByes");
+	it("assignByes", async function () {
+		await expect(website.assignByes("mc_test", 0, [])).to.not.be.rejected;
+	});
 
-	it("dropByes");
+	it("dropByes", async function () {
+		await expect(website.dropByes("mc_test", 0)).to.not.be.rejected;
+	});
 });
