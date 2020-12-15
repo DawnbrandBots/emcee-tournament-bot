@@ -43,19 +43,47 @@ describe("Tournament creation commands", function () {
 });
 
 describe("Tournament flow commands", function () {
-	it("startTournament");
+	it("startTournament", async function () {
+		await expect(website.startTournament("mc_test")).to.not.be.rejected;
+	});
 
-	it("getBye");
+	it("getBye", async function () {
+		const bye = await website.getBye("mc_test");
+		expect(bye).to.be.undefined;
+	});
 
-	it("findMatch");
+	it("findMatch", async function () {
+		const match = await website.findMatch("mc_test", 1);
+		expect(match).to.deep.equal({
+			player1: 1,
+			player2: 2,
+			matchId: 0
+		});
+	});
 
-	it("removePlayer");
+	it("removePlayer", async function () {
+		await expect(website.removePlayer("mc_test", 1)).to.not.be.rejected;
+	});
 
-	it("submitScore");
+	it("submitScore", async function () {
+		await expect(website.submitScore("mc_test", 1, 2, 1)).to.not.be.rejected;
+	});
 
-	it("tieMatches");
+	it("tieMatches", async function () {
+		await expect(website.tieMatches("mc_test")).to.not.be.rejected;
+	});
 
-	it("finishTournament");
+	it("finishTournament", async function () {
+		const tournament = await website.finishTournament("mc_test");
+		expect(tournament).to.deep.equal({
+			id: "mc_test",
+			name: "name",
+			desc: "desc",
+			url: `https://example.com/url`,
+			players: [],
+			rounds: 3
+		});
+	});
 });
 
 describe("Misc functions", function () {
