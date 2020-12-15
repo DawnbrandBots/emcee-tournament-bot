@@ -60,23 +60,83 @@ describe("Tournament creation", function () {
 });
 
 describe("Player registration", function () {
-	it("openRegistration");
+	it("openRegistration", async function () {
+		await expect(database.openRegistration("mc_test", "testChannel", "testMessage")).to.not.be.rejected;
+	});
 
-	it("getRegisterMessages");
+	it("getRegisterMessages", async function () {
+		const messages = await database.getRegisterMessages("mc_test");
+		expect(messages.length).to.equal(0);
+	});
 
-	it("cleanRegistration");
+	it("cleanRegistration", async function () {
+		await expect(database.cleanRegistration("testChannel", "testMessage")).to.not.be.rejected;
+	});
 
-	it("getPendingTournaments");
+	it("getPendingTournaments", async function () {
+		const tournaments = await database.getPendingTournaments("s");
+		expect(tournaments.length).to.equal(0);
+	});
 
-	it("addPendingPlayer");
+	it("addPendingPlayer", async function () {
+		const tournament = await database.addPendingPlayer("testChannel", "testMessage", "testPlayer");
+		expect(tournament?.id).to.equal("tourn1");
+		expect(tournament?.name).to.equal("Tournament 1");
+		expect(tournament?.description).to.equal("The first tournament");
+		expect(tournament?.status).to.equal("preparing");
+		expect(tournament?.players).to.deep.equal(["player1", "player2", "sJustRight", "sTooMany"]);
+		expect(tournament?.publicChannels[0]).to.equal("channel1");
+		expect(tournament?.privateChannels[0]).to.equal("channel2");
+		expect(tournament?.hosts[0]).to.equal("host1");
+		expect(tournament?.server).to.equal("testServer");
+		expect(tournament?.byes[0]).to.equal("player1");
+	});
 
-	it("removePendingPlayer");
+	it("removePendingPlayer", async function () {
+		const tournament = await database.removePendingPlayer("testChannel", "testMessage", "testPlayer");
+		expect(tournament?.id).to.equal("tourn1");
+		expect(tournament?.name).to.equal("Tournament 1");
+		expect(tournament?.description).to.equal("The first tournament");
+		expect(tournament?.status).to.equal("preparing");
+		expect(tournament?.players).to.deep.equal(["player1", "player2", "sJustRight", "sTooMany"]);
+		expect(tournament?.publicChannels[0]).to.equal("channel1");
+		expect(tournament?.privateChannels[0]).to.equal("channel2");
+		expect(tournament?.hosts[0]).to.equal("host1");
+		expect(tournament?.server).to.equal("testServer");
+		expect(tournament?.byes[0]).to.equal("player1");
+	});
 
-	it("confirmPlayer");
+	it("confirmPlayer", async function () {
+		await expect(database.confirmPlayer("testTournament", "testPlayer", 1, "")).to.not.be.rejected;
+	});
 
-	it("removeConfirmedPlayerReaction");
+	it("removeConfirmedPlayerReaction", async function () {
+		const tournament = await database.removeConfirmedPlayerReaction("testChannel", "testMessage", "testPlayer");
+		expect(tournament?.id).to.equal("tourn1");
+		expect(tournament?.name).to.equal("Tournament 1");
+		expect(tournament?.description).to.equal("The first tournament");
+		expect(tournament?.status).to.equal("preparing");
+		expect(tournament?.players).to.deep.equal(["player1", "player2", "sJustRight", "sTooMany"]);
+		expect(tournament?.publicChannels[0]).to.equal("channel1");
+		expect(tournament?.privateChannels[0]).to.equal("channel2");
+		expect(tournament?.hosts[0]).to.equal("host1");
+		expect(tournament?.server).to.equal("testServer");
+		expect(tournament?.byes[0]).to.equal("player1");
+	});
 
-	it("removeConfirmedPlayerForce");
+	it("removeConfirmedPlayerForce", async function () {
+		const tournament = await database.removeConfirmedPlayerForce("tourn1", "testPlayer");
+		expect(tournament?.id).to.equal("tourn1");
+		expect(tournament?.name).to.equal("Tournament 1");
+		expect(tournament?.description).to.equal("The first tournament");
+		expect(tournament?.status).to.equal("preparing");
+		expect(tournament?.players).to.deep.equal(["player1", "player2", "sJustRight", "sTooMany"]);
+		expect(tournament?.publicChannels[0]).to.equal("channel1");
+		expect(tournament?.privateChannels[0]).to.equal("channel2");
+		expect(tournament?.hosts[0]).to.equal("host1");
+		expect(tournament?.server).to.equal("testServer");
+		expect(tournament?.byes[0]).to.equal("player1");
+	});
 });
 
 describe("Tournament flow", function () {

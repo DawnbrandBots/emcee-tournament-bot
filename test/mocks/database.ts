@@ -127,25 +127,17 @@ export class DatabaseWrapperMock implements DatabaseWrapper {
 		}
 		return [this.tournaments[0]];
 	}
-	addPendingPlayer(channelId: string, messageId: string, playerId: string): Promise<DatabaseTournament | undefined> {
-		throw new Error("Not yet implemented!");
+	async addPendingPlayer(): Promise<DatabaseTournament | undefined> {
+		return this.tournaments[0];
 	}
-	removePendingPlayer(
-		channelId: string,
-		messageId: string,
-		playerId: string
-	): Promise<DatabaseTournament | undefined> {
-		throw new Error("Not yet implemented!");
+	async removePendingPlayer(): Promise<DatabaseTournament | undefined> {
+		return this.tournaments[0];
 	}
 	async confirmPlayer(): Promise<void> {
 		return;
 	}
-	removeConfirmedPlayerReaction(
-		channelId: string,
-		messageId: string,
-		playerId: string
-	): Promise<DatabaseTournament | undefined> {
-		throw new Error("Not yet implemented!");
+	async removeConfirmedPlayerReaction(): Promise<DatabaseTournament | undefined> {
+		return this.tournaments[0];
 	}
 	removeConfirmedPlayerForce(tournamentId: string): Promise<DatabaseTournament | undefined> {
 		return this.getTournament(tournamentId);
