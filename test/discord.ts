@@ -1,4 +1,10 @@
-import { DiscordCommand, DiscordInterface, DiscordMessageHandler, DiscordMessageIn } from "../src/discord/interface";
+import {
+	DiscordCommand,
+	DiscordInterface,
+	DiscordMessageHandler,
+	DiscordMessageIn,
+	splitText
+} from "../src/discord/interface";
 import { DiscordWrapperMock } from "./mocks/discord";
 import logger from "../src/util/logger";
 import chai, { expect } from "chai";
@@ -61,6 +67,11 @@ describe("Callback setups", function () {
 		discord.registerCommand("ping", command);
 		await discordMock.simMessage("mc!ping", "ping");
 		expect(discordMock.getResponse("ping")).to.equal("pong");
+	});
+
+	it("Ignore non-command message", async function () {
+		await discordMock.sendMessage("mc!pong", "pong");
+		expect(discordMock.getResponse("pong")).to.be.undefined;
 	});
 
 	it("onMessage", async function () {
@@ -147,5 +158,28 @@ describe("Roles", function () {
 
 	it("deletePlayerRole", async function () {
 		await expect(discord.deletePlayerRole(sampleTournament)).to.not.be.rejected;
+	});
+});
+
+describe("Split text", function () {
+	it("Split on new line", function () {
+		const text = `aaaaaaaa\n${"a".repeat(2048)}`;
+		const split = splitText(text, 2000);
+		expect(split[0]).to.equal("aaaaaaaa\n");
+	});
+	it("Split on new sentence", function () {
+		const text = `aaaaaaaa.${"a".repeat(2048)}`;
+		const split = splitText(text, 2000);
+		expect(split[0]).to.equal("aaaaaaaa.");
+	});
+	it("Split on new word", function () {
+		const text = `aaaaaaaa ${"a".repeat(2048)}`;
+		const split = splitText(text, 2000);
+		expect(split[0]).to.equal("aaaaaaaa ");
+	});
+	it("Split on at absolute limit", function () {
+		const text = "a".repeat(2048);
+		const split = splitText(text, 2000);
+		expect(split[1].length).to.equal(48);
 	});
 });
