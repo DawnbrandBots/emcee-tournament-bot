@@ -174,7 +174,7 @@ describe("Split text", function () {
 	});
 	it("Split on new word", function () {
 		const text = `aaaaaaaa ${"a".repeat(2048)}`;
-		const split = splitText(text, 2000);
+		const split = splitText(text); // test default cap
 		expect(split[0]).to.equal("aaaaaaaa ");
 	});
 	it("Split on at absolute limit", function () {
