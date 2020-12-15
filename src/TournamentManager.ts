@@ -420,13 +420,13 @@ export class TournamentManager implements TournamentInterface {
 
 			for (const player of top) {
 				const challongeId = await this.website.registerPlayer(
-					tournament.id,
+					newId,
 					this.discord.getUsername(player.discordId),
 					player.discordId
 				);
 				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 				const deck = tournament.findPlayer(player.discordId)!.deck;
-				await this.database.confirmPlayer(tournament.id, player.discordId, challongeId, deck);
+				await this.database.confirmPlayer(newId, player.discordId, challongeId, deck);
 			}
 			for (const channel of tournament.publicChannels) {
 				await this.database.addAnnouncementChannel(newId, channel, "public");
