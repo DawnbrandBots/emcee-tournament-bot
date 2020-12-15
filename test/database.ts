@@ -175,7 +175,6 @@ describe("Misc functions", function () {
 
 	it("listTournaments", async function () {
 		const tournaments = await database.listTournaments();
-		expect(tournaments.length).to.equal(2);
 		const tournament = tournaments[0];
 		expect(tournament?.id).to.equal("mc_tourn1");
 		expect(tournament?.name).to.equal("Tournament 1");

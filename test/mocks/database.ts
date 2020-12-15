@@ -63,11 +63,11 @@ export class DatabaseWrapperMock implements DatabaseWrapper {
 		name: string,
 		description: string
 	): Promise<DatabaseTournament> {
-		return {
+		const newTournament = {
 			id: tournamentId,
 			name: name,
 			description: description,
-			status: "preparing",
+			status: "preparing" as "preparing",
 			players: [],
 			publicChannels: [],
 			privateChannels: [],
@@ -86,6 +86,8 @@ export class DatabaseWrapperMock implements DatabaseWrapper {
 				};
 			}
 		};
+		this.tournaments.push(newTournament);
+		return newTournament;
 	}
 	async updateTournament(): Promise<void> {
 		return;
@@ -139,7 +141,7 @@ export class DatabaseWrapperMock implements DatabaseWrapper {
 				findPlayer: (): undefined => undefined
 			};
 		}
-		if (tournamentId.startsWith("big")) {
+		if (tournamentId === "bigTournament") {
 			return {
 				id: tournamentId,
 				name: "Big tournament",
@@ -152,7 +154,13 @@ export class DatabaseWrapperMock implements DatabaseWrapper {
 				privateChannels: ["channel2"],
 				byes: [],
 				findHost: (): boolean => true,
-				findPlayer: (): undefined => undefined
+				findPlayer: (p: string): DatabasePlayer => {
+					return {
+						discordId: p,
+						challongeId: ["a", "b", "c", "d", "e", "f", "g", "h", "i"].indexOf(p),
+						deck: "ydke://!!!"
+					};
+				}
 			};
 		}
 		const tournament = this.tournaments.find(t => t.id === tournamentId);
@@ -164,8 +172,9 @@ export class DatabaseWrapperMock implements DatabaseWrapper {
 	async getActiveTournaments(): Promise<DatabaseTournament[]> {
 		return this.tournaments;
 	}
-	async addAnnouncementChannel(): Promise<void> {
-		return;
+	async addAnnouncementChannel(tournamentId: string, channelId: string): Promise<void> {
+		const index = this.tournaments.findIndex(t => t.id === tournamentId);
+		this.tournaments[index].publicChannels.push(channelId);
 	}
 	async removeAnnouncementChannel(): Promise<void> {
 		return;
@@ -203,8 +212,9 @@ export class DatabaseWrapperMock implements DatabaseWrapper {
 	async removePendingPlayer(): Promise<DatabaseTournament | undefined> {
 		return this.tournaments[0];
 	}
-	async confirmPlayer(): Promise<void> {
-		return;
+	async confirmPlayer(tournamentId: string, playerId: string): Promise<void> {
+		const index = this.tournaments.findIndex(t => t.id === tournamentId);
+		this.tournaments[index].players.push(playerId);
 	}
 	async removeConfirmedPlayerReaction(): Promise<DatabaseTournament | undefined> {
 		return this.tournaments[0];

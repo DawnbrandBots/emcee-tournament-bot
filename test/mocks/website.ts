@@ -67,6 +67,64 @@ export class WebsiteWrapperMock implements WebsiteWrapper {
 		return;
 	}
 	async getPlayers(tournamentId: string): Promise<WebsitePlayer[]> {
+		if (tournamentId === "bigTournament") {
+			return [
+				{
+					challongeId: 1,
+					discordId: "a",
+					rank: 1,
+					seed: 1
+				},
+				{
+					challongeId: 2,
+					discordId: "b",
+					rank: 2,
+					seed: 2
+				},
+				{
+					challongeId: 3,
+					discordId: "c",
+					rank: 3,
+					seed: 3
+				},
+				{
+					challongeId: 4,
+					discordId: "d",
+					rank: 4,
+					seed: 4
+				},
+				{
+					challongeId: 5,
+					discordId: "e",
+					rank: 5,
+					seed: 5
+				},
+				{
+					challongeId: 6,
+					discordId: "f",
+					rank: 6,
+					seed: 6
+				},
+				{
+					challongeId: 7,
+					discordId: "g",
+					rank: 7,
+					seed: 7
+				},
+				{
+					challongeId: 8,
+					discordId: "h",
+					rank: 8,
+					seed: 8
+				},
+				{
+					challongeId: 9,
+					discordId: "i",
+					rank: 9,
+					seed: 9
+				}
+			];
+		}
 		if (tournamentId === "mc_dummy") {
 			return [
 				{

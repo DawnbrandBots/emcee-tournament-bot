@@ -92,6 +92,10 @@ describe("Tournament flow commands", function () {
 			"Tournament 1 has been cancelled. Thank you all for playing! <@&role>\nResults: https://example.com/url"
 		);
 	});
+	it("Finish tournament - top cut", async function () {
+		await tournament.finishTournament("bigTournament", false);
+		expect(discord.getResponse("topChannel")).to.equal("Time left in the round: `50:00`"); // timer message posted after new round message
+	});
 	it("Submit score", async function () {
 		const response1 = await tournament.submitScore("mc_tourn1", "player1", 2, 1);
 		expect(response1).to.equal(
@@ -128,9 +132,10 @@ describe("Tournament flow commands", function () {
 describe("Misc commands", function () {
 	it("List tournaments", async function () {
 		const list = await tournament.listTournaments();
-		expect(list).to.equal(
-			"ID: mc_tourn1|Name: Tournament 1|Status: preparing|Players: 4\nID: tourn2|Name: Tournament 2|Status: preparing|Players: 3"
-		);
+		const expectedList =
+			"ID: mc_tourn1|Name: Tournament 1|Status: preparing|Players: 4\nID: tourn2|Name: Tournament 2|Status: preparing|Players: 3";
+		const testList = list.slice(0, expectedList.length);
+		expect(testList).to.equal(expectedList);
 	});
 	it("List players", async function () {
 		const file = await tournament.listPlayers("mc_tourn1");
@@ -230,9 +235,10 @@ describe("Confirm player", function () {
 			react: noop,
 			edit: noop
 		});
-		expect(response).to.equal(
-			"You are registering in multiple tournaments. Please register in one at a time by unchecking the reaction on all others.\nTournament 1, Tournament 2"
-		);
+		const expectedResponse =
+			"You are registering in multiple tournaments. Please register in one at a time by unchecking the reaction on all others.\nTournament 1, Tournament 2";
+		const testReponse = (response as string).slice(0, expectedResponse.length);
+		expect(testReponse).to.equal(expectedResponse);
 	});
 	it("No tournaments", async function () {
 		let response: DiscordMessageOut | undefined;
