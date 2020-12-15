@@ -156,13 +156,51 @@ describe("Tournament flow", function () {
 });
 
 describe("Misc functions", function () {
-	it("authenticateHost");
+	it("authenticateHost", async function () {
+		await expect(database.authenticateHost("tourn1", "testHost")).to.not.be.rejected;
+	});
 
-	it("authenticatePlayer");
+	it("authenticatePlayer", async function () {
+		await expect(database.authenticatePlayer("tourn1", "player1")).to.not.be.rejected;
+	});
 
-	it("listTournaments");
+	it("listTournaments", async function () {
+		const tournaments = await database.listTournaments();
+		expect(tournaments.length).to.equal(2);
+		const tournament = tournaments[0];
+		expect(tournament?.id).to.equal("tourn1");
+		expect(tournament?.name).to.equal("Tournament 1");
+		expect(tournament?.description).to.equal("The first tournament");
+		expect(tournament?.status).to.equal("preparing");
+		expect(tournament?.players).to.deep.equal(["player1", "player2", "sJustRight", "sTooMany"]);
+		expect(tournament?.publicChannels[0]).to.equal("channel1");
+		expect(tournament?.privateChannels[0]).to.equal("channel2");
+		expect(tournament?.hosts[0]).to.equal("host1");
+		expect(tournament?.server).to.equal("testServer");
+		expect(tournament?.byes[0]).to.equal("player1");
+	});
 
-	it("getTournament");
+	it("getTournament", async function () {
+		const tournament = await database.getTournament("tourn1");
+		expect(tournament?.id).to.equal("tourn1");
+		expect(tournament?.name).to.equal("Tournament 1");
+		expect(tournament?.description).to.equal("The first tournament");
+		expect(tournament?.status).to.equal("preparing");
+		expect(tournament?.players).to.deep.equal(["player1", "player2", "sJustRight", "sTooMany"]);
+		expect(tournament?.publicChannels[0]).to.equal("channel1");
+		expect(tournament?.privateChannels[0]).to.equal("channel2");
+		expect(tournament?.hosts[0]).to.equal("host1");
+		expect(tournament?.server).to.equal("testServer");
+		expect(tournament?.byes[0]).to.equal("player1");
+	});
 
-	it("synchronise");
+	it("synchronise", async function () {
+		await expect(
+			database.synchronise("mc_test", {
+				name: "newName",
+				description: "newDesc",
+				players: [1]
+			})
+		).to.not.be.rejected;
+	});
 });
