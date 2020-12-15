@@ -154,6 +154,10 @@ describe("Tournament flow commands", function () {
 			"Score of 2-1 submitted in favour of <@player1> (player1) in Tournament mc_name!"
 		);
 	});
+	it("Submit score - by host bad input", async function () {
+		await discord.simMessage("mc!forcescore mc_name|john won|<@john>", "forcescore2");
+		expect(discord.getResponse("forcescore2")).to.equal("Must provide score in format `#-#` e.g. `2-1`.");
+	});
 	it("Next round - normal", async function () {
 		await discord.simMessage("mc!round mc_name", "round1");
 		expect(discord.getResponse("round1")).to.equal("Tournament mc_name successfully progressed to round 2.");

@@ -184,9 +184,7 @@ export class CommandHandler {
 		const [id, score] = this.validateArgs(args, 2);
 		await this.tournamentManager.authenticateHost(id, msg.author);
 		const player = this.discord.getMentionedUser(msg);
-		if (!player) {
-			throw new UserError("Must specify the winner of the match to report a score!");
-		}
+		// player is guaranteed, throws if not found
 		const scores = score.split("-");
 		const scoreNums = scores.map(s => parseInt(s, 10));
 		if (scoreNums.length < 2) {
