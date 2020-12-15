@@ -5,7 +5,6 @@ import logger from "../src/logger";
 import { DiscordWrapperMock } from "./mocks/discord";
 import { TournamentMock } from "./mocks/tournament";
 import chaiAsPromised from "chai-as-promised";
-import { UserError } from "../src/errors";
 
 chai.use(chaiAsPromised);
 // this will be the centre of the test, simulating input commands to stimulate output
@@ -146,8 +145,14 @@ describe("Tournament flow commands", function () {
 		expect(discord.getResponse("score")).to.equal("For more detail, test the tournament handler!");
 	});
 	it("Submit score - bad input", async function () {
-		await discord.simMessage("mc!score mc_name|i won", "score");
-		expect(discord.getResponse("score")).to.equal("Must provide score in format `#-#` e.g. `2-1`.");
+		await discord.simMessage("mc!score mc_name|i won", "score2");
+		expect(discord.getResponse("score2")).to.equal("Must provide score in format `#-#` e.g. `2-1`.");
+	});
+	it("Submit score - by host", async function () {
+		await discord.simMessage("mc!forcescore mc_name|2-1|<@player1>", "forcescore");
+		expect(discord.getResponse("forcescore")).to.equal(
+			"Score of 2-1 submitted in favour of <@player1> (player1) in Tournament mc_name!"
+		);
 	});
 	it("Next round - normal", async function () {
 		await discord.simMessage("mc!round mc_name", "round1");
