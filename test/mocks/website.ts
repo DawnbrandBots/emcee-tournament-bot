@@ -19,7 +19,7 @@ export class WebsiteWrapperMock implements WebsiteWrapper {
 			id: tournamentId,
 			name: "name",
 			desc: "desc",
-			url: "https://example.com/url",
+			url: `https://example.com/url`,
 			players: [],
 			rounds: 3
 		};
