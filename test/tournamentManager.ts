@@ -66,8 +66,32 @@ describe("Tournament flow commands", function () {
 			"Tournament 1 has been cancelled. Thank you all for playing! <@&role>\nResults: https://example.com/url"
 		);
 	});
-	it("Submit score");
-	// TODO: test multiple cases
+	it("Submit score", async function () {
+		const response1 = await tournament.submitScore("tourn1", "player1", 2, 1);
+		expect(response1).to.equal(
+			"You have reported a score of 2-1, <@player1>. Your opponent still needs to confirm this score."
+		);
+		const response2 = await tournament.submitScore("tourn1", "player1", 2, 1);
+		expect(response2).to.equal(
+			`You have already reported your score for this match, <@player1>. Please have your opponent confirm the score.`
+		);
+		const response3 = await tournament.submitScore("tourn1", "player2", 2, 1);
+		expect(response3).to.equal(
+			"Your score does not match your opponent's reported score of 1-2. Both you and them will need to report again, <@player2>."
+		);
+		const response4 = await tournament.submitScore("tourn1", "player2", 2, 1);
+		expect(response4).to.equal(
+			"You have reported a score of 2-1, <@player2>. Your opponent still needs to confirm this score."
+		);
+		const response5 = await tournament.submitScore("tourn1", "player1", 1, 2);
+		expect(response5).to.equal(
+			"You have successfully reported a score of 1-2, and it matches your opponent's report, so the score has been saved. Thank you, <@player1>."
+		);
+	});
+	it("Submit score - host", async function () {
+		const response = await tournament.submitScore("tourn1", "player1", 2, 1, true);
+		expect(response).to.equal("");
+	});
 	it("Next round", async function () {
 		const round = await tournament.nextRound("tourn1");
 		expect(round).to.equal(2);
