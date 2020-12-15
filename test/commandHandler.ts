@@ -1,10 +1,13 @@
-import { expect } from "chai";
+import chai, { expect } from "chai";
 import { CommandHandler } from "../src/CommandHandler";
 import { DiscordInterface } from "../src/discord/interface";
 import logger from "../src/logger";
 import { DiscordWrapperMock } from "./mocks/discord";
 import { TournamentMock } from "./mocks/tournament";
+import chaiAsPromised from "chai-as-promised";
+import { UserError } from "../src/errors";
 
+chai.use(chaiAsPromised);
 // this will be the centre of the test, simulating input commands to stimulate output
 const discord = new DiscordWrapperMock();
 
@@ -27,6 +30,11 @@ describe("Basic test", function () {
 		expect(response).to.equal(
 			"Emcee's documentation can be found at https://github.com/AlphaKretin/emcee-tournament-bot/wiki."
 		);
+	});
+	it("Argument validation", async function () {
+		await discord.simMessage("mc!create", "error");
+		const response = discord.getResponse("error");
+		expect(response).to.equal("Missing parameter number 0!");
 	});
 });
 describe("Tournament creation commands", function () {
