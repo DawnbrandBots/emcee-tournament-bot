@@ -3,7 +3,7 @@ import { WebsiteMatch, WebsitePlayer, WebsiteTournament, WebsiteWrapper } from "
 export class WebsiteWrapperMock implements WebsiteWrapper {
 	async createTournament(name: string, desc: string, url: string): Promise<WebsiteTournament> {
 		return {
-			id: `mc_${name}`,
+			id: url,
 			name: name,
 			desc: desc,
 			url: `https://example.com/${url}`,
