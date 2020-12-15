@@ -175,6 +175,9 @@ export class WebsiteInterface {
 			// could assert non-null here cuz we made these players
 			// but this is simple enough and handles them being manually dropped
 			if (player) {
+				const match = await this.api.getMatchWithPlayer(tournamentId, player.challongeId);
+				const winner = match.player1 === player.challongeId ? match.player2 : match.player1;
+				await this.api.submitScore(tournamentId, winner, 2, 0);
 				await this.removePlayer(tournamentId, player.challongeId);
 			}
 		}

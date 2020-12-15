@@ -382,6 +382,8 @@ export class TournamentManager implements TournamentInterface {
 		await this.website.assignByes(tournamentId, tournament.players.length, tournament.byes);
 		await this.website.startTournament(tournamentId);
 		await this.startNewRound(tournament, webTourn.url, 1);
+		// drop dummy players once the tournament has started to give players with byes the win
+		await this.website.dropByes(tournamentId, tournament.byes.length);
 	}
 
 	public async finishTournament(tournamentId: string, cancel = false): Promise<void> {
@@ -499,10 +501,6 @@ export class TournamentManager implements TournamentInterface {
 			return round;
 		}
 		const tournament = await this.database.getTournament(tournamentId);
-		// drop byes after the first round
-		if (round === 2) {
-			await this.website.dropByes(tournamentId, tournament.byes.length);
-		}
 		const webTourn = await this.website.getTournament(tournamentId);
 		await this.startNewRound(tournament, webTourn.url, round);
 		return round;
