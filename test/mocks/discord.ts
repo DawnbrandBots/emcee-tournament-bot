@@ -160,7 +160,7 @@ export class DiscordWrapperMock implements DiscordWrapper {
 	}
 
 	public getMentionedUser(m: DiscordMessageIn): string {
-		const mentionReg = /<@(.+)>/;
+		const mentionReg = /<@(.+?)>/;
 		const result = mentionReg.exec(m.content);
 		if (!result) {
 			throw new UserError("User not found in message!");
