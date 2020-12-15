@@ -91,11 +91,27 @@ describe("Callback setups", function () {
 });
 
 describe("Messages", function () {
-	it("sendMessage");
+	it("sendMessage", async function () {
+		const msg = await discord.sendMessage("sentChannel", "test message", {
+			filename: "file.txt",
+			contents: "file contents"
+		});
+		expect(msg.content).to.equal("test message");
+		expect(discordMock.getResponse("sentChannel")).to.equal("test message");
+		expect(discordMock.getFile("sentChannel")).to.deep.equal({
+			filename: "file.txt",
+			contents: "file contents"
+		});
+	});
 
-	it("deleteMessage");
+	it("deleteMessage", async function () {
+		await expect(discord.deleteMessage("delChannel", "delMessage")).to.not.be.rejected;
+	});
 
-	it("sendDirectMessage");
+	it("sendDirectMessage", async function () {
+		await discord.sendDirectMessage("sentUser", "test message");
+		expect(discordMock.getResponse("sentUser")).to.equal("test message");
+	});
 });
 
 describe("Roles", function () {
