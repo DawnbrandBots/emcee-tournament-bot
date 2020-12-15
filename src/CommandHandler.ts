@@ -279,7 +279,7 @@ export class CommandHandler {
 		const byes = await this.tournamentManager.removeBye(id, player);
 		const names = byes.map(b => `${this.discord.mentionUser(b)} (${this.discord.getUsername(b)})`);
 		await msg.reply(
-			`Bye registered for Player ${this.discord.mentionUser(player)} (${this.discord.getUsername(
+			`Bye removed for Player ${this.discord.mentionUser(player)} (${this.discord.getUsername(
 				player
 			)}) in Tournament ${id}!\nAll byes: ${names.join(", ")}`
 		);

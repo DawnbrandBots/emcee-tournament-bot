@@ -214,4 +214,16 @@ describe("Misc tournament commands", function () {
 				"#created by YDeck\n#main\n99249638\n99249638\n46659709\n46659709\n46659709\n65367484\n65367484\n65367484\n43147039\n30012506\n30012506\n30012506\n77411244\n77411244\n77411244\n3405259\n3405259\n3405259\n89132148\n39890958\n14558127\n14558127\n14558127\n32807846\n73628505\n12524259\n12524259\n12524259\n24224830\n80352158\n80352158\n80352158\n66399653\n66399653\n66399653\n10045474\n10045474\n10045474\n55784832\n55784832\n#extra\n1561110\n10443957\n10443957\n58069384\n58069384\n73289035\n581014\n21887175\n4280258\n38342335\n2857636\n75452921\n50588353\n83152482\n65741786\n!side\n43147039\n"
 		});
 	});
+	it("Register bye", async function () {
+		await discord.simMessage("mc!addbye mc_name|<@player1>", "bye");
+		expect(discord.getResponse("bye")).to.equal(
+			"Bye registered for Player <@player1> (player1) in Tournament mc_name!\nAll byes: <@bye1> (bye1)"
+		);
+	});
+	it("Remove bye", async function () {
+		await discord.simMessage("mc!removebye mc_name|<@player1>", "rbye");
+		expect(discord.getResponse("rbye")).to.equal(
+			"Bye removed for Player <@player1> (player1) in Tournament mc_name!\nAll byes: <@bye1> (bye1)"
+		);
+	});
 });
