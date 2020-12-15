@@ -7,7 +7,7 @@ import {
 	DiscordMessageSent,
 	DiscordWrapper
 } from "../../src/discord/interface";
-import { UserError } from "../../src/util/errors";
+import { BlockedDMsError, UserError } from "../../src/util/errors";
 
 export class DiscordWrapperMock implements DiscordWrapper {
 	private messageHandlers: DiscordMessageHandler[];
@@ -175,6 +175,9 @@ export class DiscordWrapperMock implements DiscordWrapper {
 	}
 
 	public async sendDirectMessage(userId: string, content: DiscordMessageOut): Promise<void> {
+		if (userId.startsWith("block")) {
+			throw new BlockedDMsError(userId);
+		}
 		this.messages[userId] = content;
 	}
 }
