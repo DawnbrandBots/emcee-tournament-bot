@@ -256,7 +256,8 @@ export class TournamentManager implements TournamentInterface {
 				return;
 			}
 			// already registered on website
-			const player = tournament.findPlayer(msg.author);
+			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+			const player = tournament.findPlayer(msg.author)!;
 			// running for a confirmed player updates the deck
 			await this.database.confirmPlayer(tournament.id, msg.author, player.challongeId, deck.url);
 			const channels = tournament.privateChannels;
@@ -421,7 +422,8 @@ export class TournamentManager implements TournamentInterface {
 					this.discord.getUsername(player.discordId),
 					player.discordId
 				);
-				const deck = tournament.findPlayer(player.discordId).deck;
+				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+				const deck = tournament.findPlayer(player.discordId)!.deck;
 				await this.database.confirmPlayer(tournament.id, player.discordId, challongeId, deck);
 			}
 			for (const channel of tournament.publicChannels) {
@@ -446,7 +448,8 @@ export class TournamentManager implements TournamentInterface {
 		host = false
 	): Promise<string> {
 		const tournament = await this.database.getTournament(tournamentId);
-		const player = tournament.findPlayer(playerId);
+		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+		const player = tournament.findPlayer(playerId)!;
 		const match = await this.website.findMatch(tournamentId, player.challongeId);
 		// if a host is submitting, skip straight to trusting the score
 		if (host) {
@@ -507,7 +510,8 @@ export class TournamentManager implements TournamentInterface {
 		const tournament = await this.database.getTournament(tournamentId);
 		const rows = await Promise.all(
 			tournament.players.map(async p => {
-				const player = tournament.findPlayer(p);
+				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+				const player = tournament.findPlayer(p)!;
 				const name = this.discord.getUsername(player.discordId);
 				const deck = await getDeck(player.deck);
 				const themes = deck.themes.length > 0 ? deck.themes.join("/") : "No themes";
@@ -524,7 +528,8 @@ export class TournamentManager implements TournamentInterface {
 
 	public async getPlayerDeck(tournamentId: string, playerId: string): Promise<Deck> {
 		const tourn = await this.database.getTournament(tournamentId);
-		const player = tourn.findPlayer(playerId);
+		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+		const player = tourn.findPlayer(playerId)!;
 		return await getDeck(player.deck);
 	}
 
@@ -538,7 +543,8 @@ export class TournamentManager implements TournamentInterface {
 		// if wasn't found pending, try to remove confirmed
 		const tournament = await this.database.removeConfirmedPlayerReaction(msg.channelId, msg.id, playerId);
 		if (tournament) {
-			const player = tournament.findPlayer(playerId);
+			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+			const player = tournament.findPlayer(playerId)!;
 			await this.website.removePlayer(tournament.id, player.challongeId);
 			await this.discord.removePlayerRole(playerId, await this.discord.getPlayerRole(tournament));
 			this.logger.verbose(`User ${playerId} dropped from tournament ${tournament.id}.`);
@@ -564,7 +570,8 @@ export class TournamentManager implements TournamentInterface {
 	public async dropPlayer(tournamentId: string, playerId: string): Promise<void> {
 		const tournament = await this.database.removeConfirmedPlayerForce(tournamentId, playerId);
 		if (tournament) {
-			const player = tournament.findPlayer(playerId);
+			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+			const player = tournament.findPlayer(playerId)!;
 			await this.website.removePlayer(tournament.id, player.challongeId);
 			await this.discord.removePlayerRole(playerId, await this.discord.getPlayerRole(tournament));
 			this.logger.verbose(`User ${playerId} dropped from tournament ${tournament.id} by host.`);
@@ -609,7 +616,8 @@ export class TournamentManager implements TournamentInterface {
 		const tournament = await this.database.getTournament(tournamentId);
 		const themes = await Promise.all(
 			tournament.players.map(async p => {
-				const player = tournament.findPlayer(p);
+				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+				const player = tournament.findPlayer(p)!;
 				const deck = await getDeck(player.deck);
 				return deck.themes.length > 0 ? deck.themes.join("/") : "No themes";
 			})

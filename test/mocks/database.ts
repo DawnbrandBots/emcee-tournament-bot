@@ -16,10 +16,13 @@ export class DatabaseWrapperMock implements DatabaseWrapper {
 				privateChannels: ["channel2"],
 				server: "testServer",
 				byes: ["player1"],
-				findHost(): boolean {
-					return true;
+				findHost(id: string): boolean {
+					return !id.startsWith("not");
 				},
-				findPlayer(id: string): DatabasePlayer {
+				findPlayer(id: string): DatabasePlayer | undefined {
+					if (id.startsWith("not")) {
+						return;
+					}
 					return {
 						discordId: id,
 						challongeId: parseInt(id.slice(id.length - 1), 10), // will turn player1 into 1

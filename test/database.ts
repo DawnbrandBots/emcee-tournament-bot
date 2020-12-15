@@ -2,6 +2,7 @@ import chai, { expect } from "chai";
 import { DatabaseInterface } from "../src/database/interface";
 import { DatabaseWrapperMock } from "./mocks/database";
 import chaiAsPromised from "chai-as-promised";
+import { UnauthorisedHostError, UnauthorisedPlayerError } from "../src/util/errors";
 
 chai.use(chaiAsPromised);
 
@@ -160,8 +161,16 @@ describe("Misc functions", function () {
 		await expect(database.authenticateHost("tourn1", "testHost")).to.not.be.rejected;
 	});
 
+	it("authenticateHost - failed", async function () {
+		await expect(database.authenticateHost("tourn1", "notHost")).to.be.rejectedWith(UnauthorisedHostError);
+	});
+
 	it("authenticatePlayer", async function () {
 		await expect(database.authenticatePlayer("tourn1", "player1")).to.not.be.rejected;
+	});
+
+	it("authenticatePlayer - failed", async function () {
+		await expect(database.authenticatePlayer("tourn1", "notPlayer")).to.be.rejectedWith(UnauthorisedPlayerError);
 	});
 
 	it("listTournaments", async function () {
