@@ -171,7 +171,7 @@ export class TournamentManager implements TournamentInterface {
 			try {
 				await this.discord.sendDirectMessage(
 					playerId,
-					`You registering for ${tournament.name}. ` +
+					`You are registering for ${tournament.name}. ` +
 						"Please submit a deck to complete your registration, by uploading a YDK file or sending a message with a YDKE URL."
 				);
 				this.logger.verbose(`User ${playerId} registered for tournament ${tournament.id}.`);

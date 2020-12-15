@@ -22,6 +22,10 @@ export class TournamentMock implements TournamentInterface {
 		return [`mc_${name}`, `https://example.com/${name}`];
 	}
 
+	public async registerPlayer(): Promise<void> {
+		return;
+	}
+
 	public async updateTournament(): Promise<void> {
 		return;
 	}

@@ -283,6 +283,25 @@ describe("Confirm player", function () {
 	});
 });
 describe("Misc functions", function () {
+	it("Register player", async function () {
+		await tournament.registerPlayer(
+			{
+				id: "testMsg",
+				content: "React here to sign up",
+				author: "testHost",
+				channelId: "testChannel",
+				serverId: "testServer",
+				attachments: [],
+				reply: noop,
+				react: noop,
+				edit: noop
+			},
+			"testPlayer"
+		);
+		expect(discord.getResponse("testPlayer")).to.equal(
+			"You are registering for Tournament 1. Please submit a deck to complete your registration, by uploading a YDK file or sending a message with a YDKE URL."
+		);
+	});
 	it("Clean registration", async function () {
 		await expect(
 			tournament.cleanRegistration({
