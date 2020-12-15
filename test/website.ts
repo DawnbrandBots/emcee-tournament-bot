@@ -47,9 +47,14 @@ describe("Tournament flow commands", function () {
 		await expect(website.startTournament("mc_test")).to.not.be.rejected;
 	});
 
-	it("getBye", async function () {
+	it("getBye - no bye", async function () {
 		const bye = await website.getBye("mc_test");
 		expect(bye).to.be.undefined;
+	});
+
+	it("getBye - there is a bye", async function () {
+		const bye = await website.getBye("mc_bye");
+		expect(bye).to.equal("bye");
 	});
 
 	it("findMatch", async function () {
@@ -92,11 +97,19 @@ describe("Misc functions", function () {
 		expect(top.length).to.equal(0);
 	});
 
-	it("assignByes", async function () {
+	it("assignByes - no byes", async function () {
 		await expect(website.assignByes("mc_test", 0, [])).to.not.be.rejected;
 	});
 
-	it("dropByes", async function () {
+	it("assignByes - natural bye", async function () {
+		await expect(website.assignByes("mc_bye", 1, ["player1"])).to.not.be.rejected;
+	});
+
+	it("dropByes - no byes", async function () {
 		await expect(website.dropByes("mc_test", 0)).to.not.be.rejected;
+	});
+
+	it("dropByes - there is a bye", async function () {
+		await expect(website.dropByes("mc_dummy", 1)).to.not.be.rejected;
 	});
 });
