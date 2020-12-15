@@ -62,6 +62,10 @@ export class TournamentMock implements TournamentInterface {
 		return;
 	}
 
+	public async finishTournament(): Promise<void> {
+		return;
+	}
+
 	public async cancelTournament(): Promise<void> {
 		return;
 	}

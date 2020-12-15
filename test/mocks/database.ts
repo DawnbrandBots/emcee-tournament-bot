@@ -139,6 +139,22 @@ export class DatabaseWrapperMock implements DatabaseWrapper {
 				findPlayer: (): undefined => undefined
 			};
 		}
+		if (tournamentId.startsWith("big")) {
+			return {
+				id: tournamentId,
+				name: "Big tournament",
+				description: "A tournament with a lot of players",
+				status: "in progress",
+				hosts: ["testHost"],
+				players: ["a", "b", "c", "d", "e", "f", "g", "h", "i"],
+				server: "testServer",
+				publicChannels: ["topChannel"],
+				privateChannels: ["channel2"],
+				byes: [],
+				findHost: (): boolean => true,
+				findPlayer: (): undefined => undefined
+			};
+		}
 		const tournament = this.tournaments.find(t => t.id === tournamentId);
 		if (!tournament) {
 			throw new TournamentNotFoundError(tournamentId);

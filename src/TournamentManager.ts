@@ -31,6 +31,7 @@ export interface TournamentInterface {
 	openTournament(tournamentId: string): Promise<void>;
 	startTournament(tournamentId: string): Promise<void>;
 	cancelTournament(tournamentId: string): Promise<void>;
+	finishTournament(tournamentId: string, cancel: boolean | undefined): Promise<void>;
 	submitScore(
 		tournamentId: string,
 		playerId: string,
@@ -383,7 +384,7 @@ export class TournamentManager implements TournamentInterface {
 		await this.startNewRound(tournament, webTourn.url, 1);
 	}
 
-	private async finishTournament(tournamentId: string, cancel = false): Promise<void> {
+	public async finishTournament(tournamentId: string, cancel = false): Promise<void> {
 		const tournament = await this.database.getTournament(tournamentId);
 		const channels = tournament.publicChannels;
 		const webTourn = await this.website.finishTournament(tournamentId);
