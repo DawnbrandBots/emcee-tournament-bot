@@ -77,7 +77,7 @@ describe("Tournament flow commands", function () {
 		);
 		const response3 = await tournament.submitScore("tourn1", "player2", 2, 1);
 		expect(response3).to.equal(
-			"Your score does not match your opponent's reported score of 1-2. Both you and them will need to report again, <@player2>."
+			"Your score does not match your opponent's reported score of 1-2. Both you and they will need to report again, <@player2>."
 		);
 		const response4 = await tournament.submitScore("tourn1", "player2", 2, 1);
 		expect(response4).to.equal(

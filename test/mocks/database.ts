@@ -22,7 +22,7 @@ export class DatabaseWrapperMock implements DatabaseWrapper {
 				findPlayer(id: string): DatabasePlayer {
 					return {
 						discordId: id,
-						challongeId: parseInt(id, 10), // will turn player1 into 1
+						challongeId: parseInt(id.slice(id.length - 1), 10), // will turn player1 into 1
 						deck:
 							"ydke://5m3qBeZt6gV9+McCffjHAn34xwK8beUDvG3lA7xt5QMfX5ICWvTJAVr0yQFa9MkBrDOdBKwznQSsM50Ey/UzAMv1MwDL9TMAdAxQBQ6wYAKvI94AryPeAK8j3gCmm/QBWXtjBOMavwDjGr8A4xq/AD6kcQGeE8oEnhPKBJ4TygSlLfUDpS31A6Ut9QMiSJkAIkiZACJImQCANVMDgDVTAw==!FtIXALVcnwC1XJ8AiBF2A4gRdgNLTV4Elt0IAMf4TQHCT0EAvw5JAqSaKwD5UX8EweoDA2LO9ATaI+sD!H1+SAg==!"
 					};

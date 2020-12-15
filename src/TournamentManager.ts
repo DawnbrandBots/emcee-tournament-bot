@@ -461,7 +461,7 @@ export class TournamentManager implements TournamentInterface {
 			const score = this.matchScores[match.matchId];
 			// player double reporting
 			if (score.playerId === player.challongeId) {
-				return `You have already reported your score for this match ${mention}, please have your opponent confirm the score.`;
+				return `You have already reported your score for this match, ${mention}. Please have your opponent confirm the score.`;
 			}
 			// player correctly confirming
 			if (scorePlayer === score.oppScore && scoreOpp === score.playerScore) {
@@ -474,8 +474,14 @@ export class TournamentManager implements TournamentInterface {
 				return `You have successfully reported a score of ${scorePlayer}-${scoreOpp}, and it matches your opponent's report, so the score has been saved. Thank you, ${mention}.`;
 			}
 			// player mismatched confirming
-			return `Your score does not match your opponent's reported score of ${score.oppScore}-${score.playerScore}. Both you and them will need to report again. ${mention}`;
+			delete this.matchScores[match.matchId];
+			return `Your score does not match your opponent's reported score of ${score.oppScore}-${score.playerScore}. Both you and they will need to report again, ${mention}.`;
 		}
+		this.matchScores[match.matchId] = {
+			playerId: player.challongeId,
+			playerScore: scorePlayer,
+			oppScore: scoreOpp
+		};
 		return `You have reported a score of ${scorePlayer}-${scoreOpp}, ${mention}. Your opponent still needs to confirm this score.`;
 	}
 
