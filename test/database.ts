@@ -107,7 +107,7 @@ describe("Player registration", function () {
 	});
 
 	it("confirmPlayer", async function () {
-		await expect(database.confirmPlayer("testTournament", "testPlayer", 1, "")).to.not.be.rejected;
+		await expect(database.confirmPlayer("mc_test", "testPlayer", 1, "")).to.not.be.rejected;
 	});
 
 	it("removeConfirmedPlayerReaction", async function () {
@@ -140,11 +140,19 @@ describe("Player registration", function () {
 });
 
 describe("Tournament flow", function () {
-	it("startTournament");
+	it("startTournament", async function () {
+		const droppedPlayers = await database.startTournament("mc_test", 3);
+		expect(droppedPlayers.length).to.equal(0);
+	});
 
-	it("nextRound");
+	it("nextRound", async function () {
+		const round = await database.nextRound("mc_test");
+		expect(round).to.equal(2);
+	});
 
-	it("finishTournament");
+	it("finishTournament", async function () {
+		await expect(database.finishTournament("mc_test")).to.not.be.rejected;
+	});
 });
 
 describe("Misc functions", function () {
