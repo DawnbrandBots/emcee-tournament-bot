@@ -108,6 +108,14 @@ describe("Misc commands", function () {
 		expect(file.filename).to.equal("Tournament 1.csv");
 		// TODO: test file contents? sounds scary
 	});
+	it("Register bye", async function () {
+		const byes = await tournament.registerBye("tourn1", "bye1");
+		expect(byes).to.deep.equal(["player1"]);
+	});
+	it("Remove bye", async function () {
+		const byes = await tournament.removeBye("tourn1", "bye1");
+		expect(byes).to.deep.equal(["player1"]);
+	});
 });
 
 describe("Misc functions", function () {
