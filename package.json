@@ -16,7 +16,7 @@
 		"@fast-csv/format": "^4.3.5",
 		"dotenv": "^8.2.0",
 		"eris": "^0.13.3",
-		"mongoose": "^5.9.24",
+		"mongoose": "^5.11.8",
 		"node-fetch": "^2.6.1",
 		"winston": "^3.3.3",
 		"ydeck": "0.0.2",
