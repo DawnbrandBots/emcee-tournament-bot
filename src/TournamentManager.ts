@@ -392,7 +392,6 @@ export class TournamentManager implements TournamentInterface {
 		const channels = tournament.publicChannels;
 		const webTourn = await this.website.finishTournament(tournamentId);
 		await this.database.finishTournament(tournamentId);
-		await this.discord.deletePlayerRole(tournament);
 		await Promise.all(
 			channels.map(async c => {
 				const role = await this.discord.getPlayerRole(tournament);
@@ -404,6 +403,7 @@ export class TournamentManager implements TournamentInterface {
 				);
 			})
 		);
+		await this.discord.deletePlayerRole(tournament);
 		// this condition both prevents errors with small tournaments
 		// and ensures top cuts don't get their own top cuts
 		if (!cancel && tournament.players.length > 8) {
