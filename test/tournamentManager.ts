@@ -1,15 +1,15 @@
-import { DiscordAttachmentOut, DiscordEmbed, DiscordInterface, DiscordMessageOut } from "../src/discord/interface";
-import logger from "../src/util/logger";
-import { TournamentManager } from "../src/TournamentManager";
-import { WebsiteInterface } from "../src/website/interface";
-import { DiscordWrapperMock } from "./mocks/discord";
-import { WebsiteWrapperMock } from "./mocks/website";
-import { DatabaseWrapperMock } from "./mocks/database";
-import { DatabaseInterface } from "../src/database/interface";
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
+import { DatabaseInterface } from "../src/database/interface";
+import { DiscordAttachmentOut, DiscordEmbed, DiscordInterface, DiscordMessageOut } from "../src/discord/interface";
 import { TimerInterface } from "../src/timer/interface";
+import { TournamentManager } from "../src/TournamentManager";
 import { UserError } from "../src/util/errors";
+import logger from "../src/util/logger";
+import { WebsiteInterface } from "../src/website/interface";
+import { DatabaseWrapperMock } from "./mocks/database";
+import { DiscordWrapperMock } from "./mocks/discord";
+import { WebsiteWrapperMock } from "./mocks/website";
 
 chai.use(chaiAsPromised);
 
@@ -107,7 +107,7 @@ describe("Tournament flow commands", function () {
 		);
 		const response3 = await tournament.submitScore("mc_tourn1", "player2", 2, 1);
 		expect(response3).to.equal(
-			"Your score does not match your opponent's reported score of 1-2. Both you and they will need to report again, <@player2>."
+			"Your score does not match your opponent's reported score of 1-2. Both of you will need to report again, <@player2>."
 		);
 		const response4 = await tournament.submitScore("mc_tourn1", "player2", 2, 1);
 		expect(response4).to.equal(

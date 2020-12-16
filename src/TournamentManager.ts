@@ -1,13 +1,13 @@
+import * as csv from "@fast-csv/format";
+import { Logger } from "winston";
 import { Deck } from "ydeck";
 import { DatabaseInterface, DatabaseTournament } from "./database/interface";
-import { DiscordAttachmentOut, DiscordInterface, DiscordMessageIn, DiscordMessageLimited } from "./discord/interface";
-import { WebsiteInterface } from "./website/interface";
-import { BlockedDMsError, TournamentNotFoundError, UserError } from "./util/errors";
 import { getDeck } from "./deck/deck";
 import { getDeckFromMessage, prettyPrint } from "./deck/discordDeck";
-import { Logger } from "winston";
-import * as csv from "@fast-csv/format";
+import { DiscordAttachmentOut, DiscordInterface, DiscordMessageIn, DiscordMessageLimited } from "./discord/interface";
 import { TimerInterface } from "./timer/interface";
+import { BlockedDMsError, TournamentNotFoundError, UserError } from "./util/errors";
+import { WebsiteInterface } from "./website/interface";
 
 interface MatchScore {
 	playerId: number;
@@ -483,7 +483,7 @@ export class TournamentManager implements TournamentInterface {
 			}
 			// player mismatched confirming
 			delete this.matchScores[match.matchId];
-			return `Your score does not match your opponent's reported score of ${score.oppScore}-${score.playerScore}. Both you and they will need to report again, ${mention}.`;
+			return `Your score does not match your opponent's reported score of ${score.oppScore}-${score.playerScore}. Both of you will need to report again, ${mention}.`;
 		}
 		this.matchScores[match.matchId] = {
 			playerId: player.challongeId,
