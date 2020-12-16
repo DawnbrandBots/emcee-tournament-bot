@@ -110,6 +110,13 @@ export class TournamentMock implements TournamentInterface {
 		};
 	}
 
+	public async generateDeckDump(tournamentId: string): Promise<DiscordAttachmentOut> {
+		return {
+			filename: `${tournamentId}.csv`,
+			contents: tournamentId
+		};
+	}
+
 	public async registerBye(): Promise<string[]> {
 		return ["bye1"];
 	}

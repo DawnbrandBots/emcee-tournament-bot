@@ -160,7 +160,12 @@ describe("Misc commands", function () {
 	});
 	it("Generate pie chart", async function () {
 		const file = await tournament.generatePieChart("mc_tourn1");
-		expect(file.filename).to.equal("Tournament 1.csv");
+		expect(file.filename).to.equal("Tournament 1 Pie.csv");
+		// TODO: test file contents? sounds scary
+	});
+	it("Generate deck dump", async function () {
+		const file = await tournament.generateDeckDump("mc_tourn1");
+		expect(file.filename).to.equal("Tournament 1 Decks.csv");
 		// TODO: test file contents? sounds scary
 	});
 	it("Register bye", async function () {

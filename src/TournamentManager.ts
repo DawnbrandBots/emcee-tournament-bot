@@ -45,6 +45,7 @@ export interface TournamentInterface {
 	dropPlayer(tournamentId: string, playerId: string): Promise<void>;
 	syncTournament(tournamentId: string): Promise<void>;
 	generatePieChart(tournamentId: string): Promise<DiscordAttachmentOut>;
+	generateDeckDump(tournamentId: string): Promise<DiscordAttachmentOut>;
 	registerBye(tournamentId: string, playerId: string): Promise<string[]>;
 	removeBye(tournamentId: string, playerId: string): Promise<string[]>;
 }
@@ -627,7 +628,28 @@ export class TournamentManager implements TournamentInterface {
 		rows.unshift(["Theme", "Count"]);
 		const contents = await csv.writeToString(rows);
 		return {
-			filename: `${tournament.name}.csv`,
+			filename: `${tournament.name} Pie.csv`,
+			contents
+		};
+	}
+
+	public async generateDeckDump(tournamentId: string): Promise<DiscordAttachmentOut> {
+		const tournament = await this.database.getTournament(tournamentId);
+		const rows = await Promise.all(
+			tournament.players.map(async p => {
+				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+				const player = tournament.findPlayer(p)!;
+				const deck = await getDeck(player.deck);
+				return [
+					this.discord.getUsername(p),
+					`Main: ${deck.mainText}, Extra: ${deck.extraText}, Side: ${deck.sideText}`.replace(/\n/, ", ")
+				];
+			})
+		);
+		rows.unshift(["Player", "Deck"]);
+		const contents = await csv.writeToString(rows);
+		return {
+			filename: `${tournament.name} Decks.csv`,
 			contents
 		};
 	}

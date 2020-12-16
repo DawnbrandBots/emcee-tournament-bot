@@ -34,6 +34,7 @@ export class CommandHandler {
 		this.discord.registerCommand("forcedrop", this.commandDropPlayerByHost.bind(this));
 		this.discord.registerCommand("sync", this.commandSyncTournament.bind(this));
 		this.discord.registerCommand("pie", this.commandPieChart.bind(this));
+		this.discord.registerCommand("dump", this.commandDumpDecks.bind(this));
 		this.discord.registerCommand("addbye", this.commandRegisterBye.bind(this));
 		this.discord.registerCommand("removebye", this.commandRemoveBye.bind(this));
 
@@ -255,6 +256,13 @@ export class CommandHandler {
 		await this.tournamentManager.authenticateHost(id, msg.author);
 		const csv = await this.tournamentManager.generatePieChart(id);
 		await msg.reply(`Archetype counts for Tournament ${id} are attached.`, csv);
+	}
+
+	private async commandDumpDecks(msg: DiscordMessageIn, args: string[]): Promise<void> {
+		const [id] = this.validateArgs(args, 1);
+		await this.tournamentManager.authenticateHost(id, msg.author);
+		const csv = await this.tournamentManager.generateDeckDump(id);
+		await msg.reply(`Player decklists for Tournament ${id} is attached.`, csv);
 	}
 
 	private async commandRegisterBye(msg: DiscordMessageIn, args: string[]): Promise<void> {
