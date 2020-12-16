@@ -14,7 +14,7 @@ This README file details the source code of this bot. For information on how to 
 ## Development
 
 Emcee is written in TypeScript and uses Eris to talk to Discord and MongoDB for persistence.
-It targets Node.js 12+ and can be run with or without Docker.
+It targets Node.js 14+ and can be run with or without Docker.
 
 1. Install Docker with Docker Compose or MongoDB.
 1. Start MongoDB. You can start up just the Mongo container with `docker-compose up -d mongo`.
