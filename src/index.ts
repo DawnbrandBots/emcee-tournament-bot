@@ -1,20 +1,16 @@
 import { CommandHandler } from "./CommandHandler";
-import logger from "./util/logger";
-
-import { DiscordWrapperEris } from "./discord/eris";
-import { DiscordInterface } from "./discord/interface";
 import { prefix } from "./config/config.json";
-
+import { challongeToken, challongeUsername } from "./config/env";
 import { DatabaseInterface } from "./database/interface";
 import { DatabaseWrapperMongoose } from "./database/mongoose";
-
-import { WebsiteInterface } from "./website/interface";
-import { WebsiteWrapperChallonge } from "./website/challonge";
-import { challongeUsername, challongeToken } from "./config/env";
-
-import { TournamentManager } from "./TournamentManager";
-
+import { getCardArray } from "./deck/deck";
+import { DiscordWrapperEris } from "./discord/eris";
+import { DiscordInterface } from "./discord/interface";
 import { Timer } from "./timer/Timer";
+import { TournamentManager } from "./TournamentManager";
+import logger from "./util/logger";
+import { WebsiteWrapperChallonge } from "./website/challonge";
+import { WebsiteInterface } from "./website/interface";
 
 const eris = new DiscordWrapperEris(logger);
 const discord = new DiscordInterface(eris, prefix, logger);
@@ -27,4 +23,7 @@ const website = new WebsiteInterface(challonge);
 
 const tournamentManager = new TournamentManager(discord, database, website, logger, Timer);
 
-new CommandHandler(discord, tournamentManager, logger);
+getCardArray().then(() => {
+	logger.info("ygo-data preload for ydeck complete");
+	new CommandHandler(discord, tournamentManager, logger);
+});

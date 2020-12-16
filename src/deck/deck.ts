@@ -1,10 +1,9 @@
-import { YgoData, Card as DataCard } from "ygopro-data";
+import { Card, CardArray, Deck } from "ydeck";
+import { Card as DataCard, YgoData } from "ygopro-data";
 import cardOpts from "../config/cardOpts.json";
 import dataOpts from "../config/dataOpts.json";
-import transOpts from "../config/transOpts.json";
 import { octokitToken } from "../config/env";
-
-import { Deck, Card, CardArray } from "ydeck";
+import transOpts from "../config/transOpts.json";
 
 const data = new YgoData(cardOpts, transOpts, dataOpts, "./dbs", octokitToken);
 
@@ -32,7 +31,7 @@ async function convertCard(card: DataCard): Promise<Card> {
 	return new Card(card.text.en.name, card.data.ot, card.data.type, card.data.setcode, statusMap);
 }
 
-async function getCardArray(): Promise<CardArray> {
+export async function getCardArray(): Promise<CardArray> {
 	if (!cardArray) {
 		const dataArray = await data.getCardList();
 		const promArray: { [code: number]: Promise<Card> } = {};
