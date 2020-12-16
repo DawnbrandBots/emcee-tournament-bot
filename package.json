@@ -5,7 +5,7 @@
 	"private": true,
 	"main": "dist/index.js",
 	"scripts": {
-		"test": "nyc mocha test/*.ts --require ts-node/register --timeout 20000 --check-leaks --enable-source-maps",
+		"test": "nyc mocha --config test/.mocharc.yml test/*.ts",
 		"cover": "nyc report",
 		"lint": "eslint . --ext .js,.jsx,.ts,.tsx",
 		"build": "tsc"
