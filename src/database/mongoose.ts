@@ -47,7 +47,7 @@ export class DatabaseWrapperMongoose implements DatabaseWrapper {
 		return (id: string): DatabasePlayer => {
 			const p = tournament.confirmedParticipants.find(p => p.discordId === id);
 			if (!p) {
-				throw new UnauthorisedPlayerError(id, tournament.id);
+				throw new UnauthorisedPlayerError(id, tournament.tournamentId);
 			}
 			return this.wrapPlayer(p);
 		};
