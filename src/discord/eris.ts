@@ -59,6 +59,11 @@ export class DiscordWrapperEris implements DiscordWrapper {
 		this.bot.on("messageReactionAdd", this.handleReaction.bind(this));
 		this.bot.on("messageReactionRemove", this.handleReactionRemove.bind(this));
 		this.bot.on("messageDelete", this.handleDelete.bind(this));
+		this.bot.on("guildCreate", async guild => {
+			// TODO: Make this more exposed in the main bot files
+			// but this whole module system is getting overhauled later anyway
+			await this.createTORole(guild);
+		});
 		this.bot.connect().catch(this.logger.error);
 	}
 
