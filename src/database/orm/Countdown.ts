@@ -8,10 +8,10 @@ export class Countdown {
 	@Column("timestamptz")
 	end!: Date;
 
-	@Column()
+	@Column({ length: 20 })
 	channelId!: string;
 
-	@Column()
+	@Column({ length: 20 })
 	messageId!: string;
 
 	@Column("text")

@@ -4,14 +4,10 @@ import { Participant } from "./Participant";
 
 @Entity()
 export class ConfirmedParticipant {
-	@ManyToOne(() => ChallongeTournament, tournament => tournament.confirmed, { primary: true })
-	tournament!: ChallongeTournament;
-
-	@OneToOne(() => Participant, participant => participant.confirmed)
-	@JoinColumn()
-	participant!: Participant;
-
 	@PrimaryColumn()
+	tournamentId!: string;
+
+	@PrimaryColumn({ length: 20 })
 	discordId!: string;
 
 	@Column("text")
@@ -19,4 +15,11 @@ export class ConfirmedParticipant {
 
 	@Column()
 	hasBye!: boolean;
+
+	@ManyToOne(() => ChallongeTournament, tournament => tournament.confirmed, { primary: true })
+	@JoinColumn({ name: "tournamentId" })
+	tournament!: ChallongeTournament;
+
+	@OneToOne(() => Participant, participant => participant.confirmed)
+	participant!: Participant;
 }

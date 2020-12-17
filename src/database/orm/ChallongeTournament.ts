@@ -20,16 +20,16 @@ export class ChallongeTournament {
 	@Column("text")
 	description!: string;
 
-	@Column()
+	@Column({ length: 20 })
 	owningDiscordServer!: string;
 
-	@Column({ array: true, default: "{}" })
+	@Column("varchar", { length: 20, array: true, default: "{}" })
 	hosts!: string[];
 
-	@Column({ array: true, default: "{}" })
+	@Column("varchar", { length: 20, array: true, default: "{}" })
 	publicChannels!: string[];
 
-	@Column({ array: true, default: "{}" })
+	@Column("varchar", { length: 20, array: true, default: "{}" })
 	privateChannels!: string[];
 
 	@Column({ type: "enum", enum: TournamentStatus, default: TournamentStatus.PREPARING })
@@ -44,12 +44,12 @@ export class ChallongeTournament {
 	@Column({ default: 0 })
 	totalRounds!: number;
 
-	@OneToMany(() => RegisterMessage, rm => rm.tournament)
+	@OneToMany(() => RegisterMessage, rm => rm.tournament, { cascade: true })
 	registerMessages!: RegisterMessage[];
 
-	@OneToMany(() => Participant, participant => participant.tournament)
+	@OneToMany(() => Participant, participant => participant.tournament, { cascade: true })
 	participants!: Participant[];
 
-	@OneToMany(() => ConfirmedParticipant, participant => participant.tournament)
+	@OneToMany(() => ConfirmedParticipant, participant => participant.tournament, { cascade: true })
 	confirmed!: ConfirmedParticipant[];
 }

@@ -1,14 +1,18 @@
-import { Entity, ManyToOne, PrimaryColumn } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from "typeorm";
 import { ChallongeTournament } from "./ChallongeTournament";
 
 @Entity()
 export class RegisterMessage {
-	@ManyToOne(() => ChallongeTournament, tournament => tournament.registerMessages)
-	tournament!: ChallongeTournament;
+	@Column()
+	tournamentId!: string;
 
-	@PrimaryColumn()
+	@PrimaryColumn({ length: 20 })
 	channelId!: string;
 
-	@PrimaryColumn()
+	@PrimaryColumn({ length: 20 })
 	messageId!: string;
+
+	@ManyToOne(() => ChallongeTournament, tournament => tournament.registerMessages, { nullable: false })
+	@JoinColumn({ name: "tournamentId" })
+	tournament!: ChallongeTournament;
 }
