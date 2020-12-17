@@ -1,4 +1,4 @@
-version: "3"
+version: "3.8"
 services:
   mongo:
     image: mongo:latest
@@ -6,6 +6,20 @@ services:
       - "27017:27017"
     volumes:
       - tournamentdb:/data/db
+    restart: unless-stopped
+  postgres:
+    image: postgres:alpine
+    user: postgres
+    environment:
+      POSTGRES_DB: "${POSTGRES_DB}"
+      POSTGRES_USER: "${POSTGRES_USER}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
+    ports:
+      - "${POSTGRES_HOST_PORT}:5432"
+    volumes:
+      # Any SQL scripts in this directory are executed on first run
+      # - ./db/init:/docker-entrypoint-initdb.d
+      - database:/var/lib/postgresql/data
     restart: unless-stopped
   bot:
     build: .
@@ -22,3 +36,4 @@ services:
 
 volumes:
   tournamentdb:
+  database:

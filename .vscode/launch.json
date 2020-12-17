@@ -10,7 +10,7 @@
 			"name": "Launch Emcee",
 			"skipFiles": ["<node_internals>/**"],
 			"program": "${workspaceFolder}/dist",
-			"args": ["-enable-source-maps"],
+			"args": ["--enable-source-maps"],
 			"preLaunchTask": "npm: build",
 			"outFiles": ["${workspaceFolder}/dist/**/*.js"]
 		},
