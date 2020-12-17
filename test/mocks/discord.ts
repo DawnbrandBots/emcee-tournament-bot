@@ -155,6 +155,10 @@ export class DiscordWrapperMock implements DiscordWrapper {
 		return; // out of scope for these tests
 	}
 
+	public async removeUserReaction(): Promise<void> {
+		return;
+	}
+
 	public async authenticateTO(): Promise<void> {
 		// if implemented properly would throw error if not authenticated
 		// but for these unit tests we will assume authentication

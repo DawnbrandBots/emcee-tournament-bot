@@ -285,6 +285,16 @@ export class DiscordWrapperEris implements DiscordWrapper {
 		this.reactionRemoveHandlers.push(handler);
 	}
 
+	public async removeUserReaction(
+		channelId: string,
+		messageId: string,
+		emoji: string,
+		userId: string
+	): Promise<void> {
+		const msg = await this.bot.getMessage(channelId, messageId);
+		await msg.removeReaction(emoji, userId);
+	}
+
 	public async authenticateTO(m: DiscordMessageIn): Promise<void> {
 		const msg = this.wrappedMessages[m.id];
 		if (!(msg.channel instanceof GuildChannel)) {

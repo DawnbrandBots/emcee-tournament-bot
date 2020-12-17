@@ -168,6 +168,13 @@ export class TournamentManager implements TournamentInterface {
 	}
 
 	public async registerPlayer(msg: DiscordMessageIn, playerId: string): Promise<void> {
+		const tournaments = await this.database.getPendingTournaments(playerId);
+		if (tournaments.length > 0) {
+			await this.discord.removeUserReaction(msg.channelId, msg.id, this.CHECK_EMOJI, playerId);
+			throw new UserError(
+				`You can only sign up for 1 Tournament at a time! Please either drop from or complete your registration for ${tournaments[0].name}!`
+			);
+		}
 		const tournament = await this.database.addPendingPlayer(msg.channelId, msg.id, playerId);
 		if (tournament) {
 			try {
@@ -308,7 +315,6 @@ export class TournamentManager implements TournamentInterface {
 					this.registerPlayer.bind(this),
 					this.dropPlayerReaction.bind(this)
 				);
-				// TODO: add handler for removing the reaction too, to drop
 				await this.database.openRegistration(tournamentId, msg.channelId, msg.id);
 			})
 		);
