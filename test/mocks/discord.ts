@@ -155,8 +155,8 @@ export class DiscordWrapperMock implements DiscordWrapper {
 		return; // out of scope for these tests
 	}
 
-	public async removeUserReaction(): Promise<void> {
-		return;
+	public async removeUserReaction(): Promise<boolean> {
+		return true;
 	}
 
 	public async authenticateTO(): Promise<void> {

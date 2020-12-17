@@ -63,7 +63,7 @@ export interface DiscordWrapper {
 	onPing: (hander: DiscordMessageHandler) => void;
 	onReaction: (handler: DiscordReactionHandler) => void;
 	onReactionRemove: (handler: DiscordReactionHandler) => void;
-	removeUserReaction: (channelId: string, messageId: string, emoji: string, userId: string) => Promise<void>;
+	removeUserReaction: (channelId: string, messageId: string, emoji: string, userId: string) => Promise<boolean>;
 	sendMessage(channelId: string, msg: DiscordMessageOut, file?: DiscordAttachmentOut): Promise<DiscordMessageSent>;
 	deleteMessage(channelId: string, messageId: string): Promise<void>;
 	authenticateTO(msg: DiscordMessageIn): Promise<void>;
@@ -149,8 +149,8 @@ export class DiscordInterface {
 		messageId: string,
 		emoji: string,
 		userId: string
-	): Promise<void> {
-		await this.removeUserReaction(channelId, messageId, emoji, userId);
+	): Promise<boolean> {
+		return await this.removeUserReaction(channelId, messageId, emoji, userId);
 	}
 
 	public async authenticateTO(msg: DiscordMessageIn): Promise<void> {

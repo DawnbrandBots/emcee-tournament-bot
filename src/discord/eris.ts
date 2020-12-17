@@ -290,9 +290,15 @@ export class DiscordWrapperEris implements DiscordWrapper {
 		messageId: string,
 		emoji: string,
 		userId: string
-	): Promise<void> {
+	): Promise<boolean> {
 		const msg = await this.bot.getMessage(channelId, messageId);
-		await msg.removeReaction(emoji, userId);
+		try {
+			await msg.removeReaction(emoji, userId);
+			return true;
+		} catch (e) {
+			// TODO: check for specific error for message not having the specified reaction/user
+			return false;
+		}
 	}
 
 	public async authenticateTO(m: DiscordMessageIn): Promise<void> {

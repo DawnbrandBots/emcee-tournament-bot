@@ -598,6 +598,10 @@ export class TournamentManager implements TournamentInterface {
 						)
 				)
 			);
+			const messages = await this.database.getRegisterMessages(tournamentId);
+			for (const m of messages) {
+				await this.discord.removeUserReaction(m.channelId, m.messageId, this.CHECK_EMOJI, playerId);
+			}
 		}
 	}
 
