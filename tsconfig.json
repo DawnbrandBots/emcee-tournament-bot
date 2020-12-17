@@ -10,9 +10,11 @@
 		"allowSyntheticDefaultImports": true,
 		"esModuleInterop": true,
 		"resolveJsonModule": true,
+		"emitDecoratorMetadata": true,
+		"experimentalDecorators": true,
 		"rootDir": "./src",
 		"outDir": "./dist"
 	},
-	"include": ["src/*.ts"],
+	"include": ["src/**/*.ts"],
 	"compileOnSave": true
 }
