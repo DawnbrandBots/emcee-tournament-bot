@@ -29,6 +29,7 @@ services:
       MONGODB_URL: mongodb://mongo:27017/tournamentdb
       CHALLONGE_USERNAME: ${CHALLONGE_USERNAME}
       CHALLONGE_TOKEN: ${CHALLONGE_TOKEN}
+      POSTGRESQL_URL: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres/${POSTGRES_DB}"
     volumes:
       - ./dbs:/app/dbs
       - ./logs:/app/logs
