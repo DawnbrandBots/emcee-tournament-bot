@@ -150,7 +150,7 @@ export class DiscordInterface {
 		emoji: string,
 		userId: string
 	): Promise<boolean> {
-		return await this.removeUserReaction(channelId, messageId, emoji, userId);
+		return await this.api.removeUserReaction(channelId, messageId, emoji, userId);
 	}
 
 	public async authenticateTO(msg: DiscordMessageIn): Promise<void> {

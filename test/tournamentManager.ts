@@ -361,9 +361,9 @@ describe("Misc functions", function () {
 				react: noop,
 				edit: noop
 			},
-			"testPlayer"
+			"stestPlayer1"
 		);
-		expect(discord.getResponse("testPlayer")).to.equal(
+		expect(discord.getResponse("stestPlayer1")).to.equal(
 			"You are registering for Tournament 1. Please submit a deck to complete your registration, by uploading a YDK file or sending a message with a YDKE URL."
 		);
 	});
@@ -380,11 +380,11 @@ describe("Misc functions", function () {
 				react: noop,
 				edit: noop
 			},
-			"blockedPlayer"
+			"sblockedPlayer"
 		);
-		expect(discord.getResponse("blockedPlayer")).to.be.undefined;
+		expect(discord.getResponse("sblockedPlayer")).to.be.undefined;
 		expect(discord.getResponse("channel2")).to.equal(
-			"Player <@blockedPlayer> (blockedPlayer) is trying to sign up for Tournament Tournament 1 (mc_tourn1), but I cannot send them DMs. Please ask them to allow DMs from this server."
+			"Player <@sblockedPlayer> (sblockedPlayer) is trying to sign up for Tournament Tournament 1 (mc_tourn1), but I cannot send them DMs. Please ask them to allow DMs from this server."
 		);
 	});
 	it("Register player - no tournament", async function () {
@@ -400,9 +400,9 @@ describe("Misc functions", function () {
 				react: noop,
 				edit: noop
 			},
-			"testPlayer2"
+			"stestPlayer2"
 		);
-		expect(discord.getResponse("testPlayer2")).to.be.undefined;
+		expect(discord.getResponse("stestPlayer2")).to.be.undefined;
 	});
 	it("Clean registration", async function () {
 		await expect(

@@ -179,7 +179,7 @@ export class DiscordWrapperMock implements DiscordWrapper {
 	}
 
 	public async sendDirectMessage(userId: string, content: DiscordMessageOut): Promise<void> {
-		if (userId.startsWith("block")) {
+		if (userId.includes("block")) {
 			throw new BlockedDMsError(userId);
 		}
 		this.messages[userId] = content;
