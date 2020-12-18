@@ -19,7 +19,7 @@ export class RegisterMessage extends BaseEntity {
 	messageId!: string;
 
 	/// The ORM relationship for the above foreign key. Must always exist or this entity is meaningless.
-	@ManyToOne(() => ChallongeTournament, tournament => tournament.registerMessages, { nullable: false })
+	@ManyToOne(() => ChallongeTournament, tournament => tournament.registerMessages, { eager: true, nullable: false })
 	@JoinColumn({ name: "tournamentId" })
 	tournament!: ChallongeTournament;
 }
