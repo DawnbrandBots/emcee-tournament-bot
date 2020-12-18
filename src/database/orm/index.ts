@@ -15,7 +15,7 @@ createConnection({
 	logging: true,
 	synchronize: process.env.NODE_ENV === "development"
 })
-	.then(() => logger.info(`Connected to PostgreSQL at ${postgresqlUrl} via TypeORM`))
+	.then(() => logger.info(`Connected to PostgreSQL via TypeORM`))
 	.catch(logger.error);
 
 export { ChallongeTournament, ConfirmedParticipant, Countdown, Participant, RegisterMessage };
