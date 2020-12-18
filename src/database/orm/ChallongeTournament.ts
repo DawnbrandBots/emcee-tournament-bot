@@ -68,6 +68,6 @@ export class ChallongeTournament extends BaseEntity {
 	participants!: Participant[];
 
 	/// The ORM relationship for just the confirmed participants.
-	@OneToMany(() => ConfirmedParticipant, participant => participant.tournament, { cascade: true })
+	@OneToMany(() => ConfirmedParticipant, participant => participant.tournament, { cascade: true, eager: true })
 	confirmed!: ConfirmedParticipant[];
 }

@@ -1,4 +1,4 @@
-import { UnauthorisedPlayerError, UserError } from "../util/errors";
+import { TournamentNotFoundError, UnauthorisedPlayerError, UserError } from "../util/errors";
 import {
 	DatabaseMessage,
 	DatabasePlayer,
@@ -50,16 +50,28 @@ export class DatabaseWrapperPostgres implements DatabaseWrapper {
 		tournament.description = description;
 		tournament.owningDiscordServer = serverId;
 		tournament.hosts = [hostId];
+		// This is known but TypeORM won't populate it as it wasn't part of the original query,
+		// which means wrap would break since it assumes not null.
+		tournament.confirmed = [];
 		await tournament.save();
 		return this.wrap(tournament);
 	}
 
+	// This wrapper is only needed because the exception class is part of the call signature
+	private async findTournament(tournamentId: string, relations: string[] = []): Promise<ChallongeTournament> {
+		try {
+			return await ChallongeTournament.findOneOrFail(tournamentId, { relations });
+		} catch (err) {
+			throw new TournamentNotFoundError(tournamentId);
+		}
+	}
+
 	async getTournament(tournamentId: string): Promise<DatabaseTournament> {
-		return this.wrap(await ChallongeTournament.findOneOrFail(tournamentId));
+		return this.wrap(await this.findTournament(tournamentId));
 	}
 
 	async updateTournament(tournamentId: string, name: string, desc: string): Promise<void> {
-		const tournament = await ChallongeTournament.findOneOrFail(tournamentId);
+		const tournament = await this.findTournament(tournamentId);
 		if (tournament.status !== TournamentStatus.PREPARING) {
 			throw new UserError(`It's too late to update the information for ${tournament.name}.`);
 		}
@@ -69,7 +81,7 @@ export class DatabaseWrapperPostgres implements DatabaseWrapper {
 	}
 
 	async addAnnouncementChannel(tournamentId: string, channelId: string, type: "public" | "private"): Promise<void> {
-		const tournament = await ChallongeTournament.findOneOrFail(tournamentId);
+		const tournament = await this.findTournament(tournamentId);
 		const channels = type === "public" ? tournament.publicChannels : tournament.privateChannels;
 		if (channels.includes(channelId)) {
 			throw new UserError(`Tournament ${tournamentId} already has Channel ${channelId} as a ${type} channel!`);
@@ -83,7 +95,7 @@ export class DatabaseWrapperPostgres implements DatabaseWrapper {
 		channelId: string,
 		type: "public" | "private"
 	): Promise<void> {
-		const tournament = await ChallongeTournament.findOneOrFail(tournamentId);
+		const tournament = await this.findTournament(tournamentId);
 		const channels = type === "public" ? tournament.publicChannels : tournament.privateChannels;
 		const i = channels.indexOf(channelId);
 		if (i < 0) {
@@ -96,7 +108,7 @@ export class DatabaseWrapperPostgres implements DatabaseWrapper {
 	}
 
 	async addHost(tournamentId: string, newHost: string): Promise<void> {
-		const tournament = await ChallongeTournament.findOneOrFail(tournamentId);
+		const tournament = await this.findTournament(tournamentId);
 		if (tournament.hosts.includes(newHost)) {
 			throw new UserError(`Tournament ${tournamentId} already includes user ${newHost} as a host!`);
 		}
@@ -105,7 +117,7 @@ export class DatabaseWrapperPostgres implements DatabaseWrapper {
 	}
 
 	async removeHost(tournamentId: string, newHost: string): Promise<void> {
-		const tournament = await ChallongeTournament.findOneOrFail(tournamentId);
+		const tournament = await this.findTournament(tournamentId);
 		if (tournament.hosts.length < 2) {
 			throw new UserError(`Tournament ${tournamentId} has too few hosts to remove one!`);
 		}
@@ -127,7 +139,7 @@ export class DatabaseWrapperPostgres implements DatabaseWrapper {
 	}
 
 	async getRegisterMessages(tournamentId: string): Promise<DatabaseMessage[]> {
-		const tournament = await ChallongeTournament.findOneOrFail(tournamentId);
+		const tournament = await this.findTournament(tournamentId, ["registerMessages"]);
 		return tournament.registerMessages.map(m => ({
 			channelId: m.channelId,
 			messageId: m.messageId
@@ -203,7 +215,10 @@ export class DatabaseWrapperPostgres implements DatabaseWrapper {
 	}
 
 	async removeConfirmedPlayerForce(tournamentId: string, playerId: string): Promise<DatabaseTournament | undefined> {
-		const participant = await ConfirmedParticipant.findOne({ tournamentId, discordId: playerId });
+		const participant = await ConfirmedParticipant.findOne(
+			{ tournamentId, discordId: playerId },
+			{ relations: ["tournament"] }
+		);
 		if (participant) {
 			const tournament = participant.tournament;
 			const p = participant.participant;
@@ -214,7 +229,7 @@ export class DatabaseWrapperPostgres implements DatabaseWrapper {
 	}
 
 	async startTournament(tournamentId: string, rounds: number): Promise<string[]> {
-		const tournament = await ChallongeTournament.findOneOrFail(tournamentId);
+		const tournament = await this.findTournament(tournamentId, ["participants"]);
 		const ejected = await Promise.all(
 			tournament.participants.filter(p => !p.confirmed).map(async p => await p.remove())
 		);
@@ -226,7 +241,7 @@ export class DatabaseWrapperPostgres implements DatabaseWrapper {
 	}
 
 	async nextRound(tournamentId: string): Promise<number> {
-		const tournament = await ChallongeTournament.findOneOrFail(tournamentId);
+		const tournament = await this.findTournament(tournamentId);
 		if (tournament.status !== TournamentStatus.IPR) {
 			throw new UserError(`Tournament ${tournamentId} is not in progress.`);
 		}
@@ -239,7 +254,7 @@ export class DatabaseWrapperPostgres implements DatabaseWrapper {
 	}
 
 	async finishTournament(tournamentId: string): Promise<void> {
-		const tournament = await ChallongeTournament.findOneOrFail(tournamentId);
+		const tournament = await this.findTournament(tournamentId);
 		tournament.status = TournamentStatus.COMPLETE;
 		await tournament.save();
 	}
@@ -267,7 +282,7 @@ export class DatabaseWrapperPostgres implements DatabaseWrapper {
 	}
 
 	async synchronise(tournamentId: string, newData: SynchroniseTournament): Promise<void> {
-		const tournament = await ChallongeTournament.findOneOrFail(tournamentId);
+		const tournament = await this.findTournament(tournamentId);
 		for (const newPlayer of newData.players) {
 			let player = tournament.confirmed.find(p => p.challongeId === newPlayer);
 			// if a player already exists, Challonge doesn't have any info that should have changed
@@ -285,7 +300,7 @@ export class DatabaseWrapperPostgres implements DatabaseWrapper {
 	}
 
 	async registerBye(tournamentId: string, playerId: string): Promise<void> {
-		const tournament = await ChallongeTournament.findOneOrFail(tournamentId);
+		const tournament = await this.findTournament(tournamentId);
 		if (tournament.status !== TournamentStatus.PREPARING) {
 			throw new UserError(`Tournament ${tournamentId} is not pending.`);
 		}
@@ -298,7 +313,7 @@ export class DatabaseWrapperPostgres implements DatabaseWrapper {
 	}
 
 	async removeBye(tournamentId: string, playerId: string): Promise<void> {
-		const tournament = await ChallongeTournament.findOneOrFail(tournamentId);
+		const tournament = await this.findTournament(tournamentId);
 		if (tournament.status !== TournamentStatus.PREPARING) {
 			throw new UserError(`Tournament ${tournamentId} is not pending.`);
 		}

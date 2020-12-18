@@ -3,7 +3,7 @@ import { prefix } from "./config/config.json";
 import { challongeToken, challongeUsername } from "./config/env";
 import { DatabaseInterface } from "./database/interface";
 import { DatabaseWrapperMongoose } from "./database/mongoose";
-import "./database/orm";
+import { DatabaseWrapperPostgres } from "./database/postgres";
 import { getCardArray } from "./deck/deck";
 import { DiscordWrapperEris } from "./discord/eris";
 import { DiscordInterface } from "./discord/interface";
@@ -16,8 +16,8 @@ import { WebsiteInterface } from "./website/interface";
 const eris = new DiscordWrapperEris(logger);
 const discord = new DiscordInterface(eris, prefix, logger);
 
-const mongoose = new DatabaseWrapperMongoose();
-const database = new DatabaseInterface(mongoose);
+const wrapper = process.env.EMCEE_USE_POSTGRES ? new DatabaseWrapperPostgres() : new DatabaseWrapperMongoose();
+const database = new DatabaseInterface(wrapper);
 
 const challonge = new WebsiteWrapperChallonge(challongeUsername, challongeToken);
 const website = new WebsiteInterface(challonge);
