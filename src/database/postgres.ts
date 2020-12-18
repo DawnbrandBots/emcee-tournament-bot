@@ -1,0 +1,312 @@
+import { UnauthorisedPlayerError, UserError } from "../util/errors";
+import {
+	DatabaseMessage,
+	DatabasePlayer,
+	DatabaseTournament,
+	DatabaseWrapper,
+	SynchroniseTournament
+} from "./interface";
+import { ChallongeTournament, ConfirmedParticipant, Participant, RegisterMessage } from "./orm";
+import { TournamentStatus } from "./orm/ChallongeTournament";
+
+export class DatabaseWrapperPostgres implements DatabaseWrapper {
+	private wrap(tournament: ChallongeTournament): DatabaseTournament {
+		return {
+			id: tournament.tournamentId,
+			name: tournament.name,
+			description: tournament.description,
+			status: tournament.status,
+			hosts: tournament.hosts.slice(),
+			players: tournament.confirmed.map(p => p.discordId),
+			publicChannels: tournament.publicChannels.slice(),
+			privateChannels: tournament.privateChannels.slice(),
+			server: tournament.owningDiscordServer,
+			byes: tournament.confirmed.filter(p => p.hasBye).map(p => p.discordId),
+			findHost: (id: string): boolean => tournament.hosts.includes(id),
+			findPlayer: (id: string): DatabasePlayer => {
+				const p = tournament.confirmed.find(p => p.discordId === id);
+				if (!p) {
+					throw new UnauthorisedPlayerError(id, tournament.tournamentId);
+				}
+				return {
+					discordId: p.discordId,
+					challongeId: p.challongeId,
+					deck: p.deck
+				};
+			}
+		};
+	}
+
+	async createTournament(
+		hostId: string,
+		serverId: string,
+		tournamentId: string,
+		name: string,
+		description: string
+	): Promise<DatabaseTournament> {
+		const tournament = new ChallongeTournament();
+		tournament.tournamentId = tournamentId;
+		tournament.name = name;
+		tournament.description = description;
+		tournament.owningDiscordServer = serverId;
+		tournament.hosts = [hostId];
+		await tournament.save();
+		return this.wrap(tournament);
+	}
+
+	async getTournament(tournamentId: string): Promise<DatabaseTournament> {
+		return this.wrap(await ChallongeTournament.findOneOrFail(tournamentId));
+	}
+
+	async updateTournament(tournamentId: string, name: string, desc: string): Promise<void> {
+		const tournament = await ChallongeTournament.findOneOrFail(tournamentId);
+		if (tournament.status !== TournamentStatus.PREPARING) {
+			throw new UserError(`It's too late to update the information for ${tournament.name}.`);
+		}
+		tournament.name = name;
+		tournament.description = desc;
+		await tournament.save();
+	}
+
+	async addAnnouncementChannel(tournamentId: string, channelId: string, type: "public" | "private"): Promise<void> {
+		const tournament = await ChallongeTournament.findOneOrFail(tournamentId);
+		const channels = type === "public" ? tournament.publicChannels : tournament.privateChannels;
+		if (channels.includes(channelId)) {
+			throw new UserError(`Tournament ${tournamentId} already has Channel ${channelId} as a ${type} channel!`);
+		}
+		channels.push(channelId);
+		await tournament.save();
+	}
+
+	async removeAnnouncementChannel(
+		tournamentId: string,
+		channelId: string,
+		type: "public" | "private"
+	): Promise<void> {
+		const tournament = await ChallongeTournament.findOneOrFail(tournamentId);
+		const channels = type === "public" ? tournament.publicChannels : tournament.privateChannels;
+		const i = channels.indexOf(channelId);
+		if (i < 0) {
+			throw new UserError(
+				`Channel ${channelId} is not a ${type} announcement channel for Tournament ${tournamentId}!`
+			);
+		}
+		channels.splice(i, 1);
+		await tournament.save();
+	}
+
+	async addHost(tournamentId: string, newHost: string): Promise<void> {
+		const tournament = await ChallongeTournament.findOneOrFail(tournamentId);
+		if (tournament.hosts.includes(newHost)) {
+			throw new UserError(`Tournament ${tournamentId} already includes user ${newHost} as a host!`);
+		}
+		tournament.hosts.push(newHost);
+		await tournament.save();
+	}
+
+	async removeHost(tournamentId: string, newHost: string): Promise<void> {
+		const tournament = await ChallongeTournament.findOneOrFail(tournamentId);
+		if (tournament.hosts.length < 2) {
+			throw new UserError(`Tournament ${tournamentId} has too few hosts to remove one!`);
+		}
+		if (!tournament.hosts.includes(newHost)) {
+			throw new UserError(`Tournament ${tournamentId} doesn't include user ${newHost} as a host!`);
+		}
+		const i = tournament.hosts.indexOf(newHost);
+		// i < 0 is impossible by precondition
+		tournament.hosts.splice(i, 1);
+		await tournament.save();
+	}
+
+	async openRegistration(tournamentId: string, channelId: string, messageId: string): Promise<void> {
+		const message = new RegisterMessage();
+		message.tournamentId = tournamentId;
+		message.channelId = channelId;
+		message.messageId = messageId;
+		await message.save();
+	}
+
+	async getRegisterMessages(tournamentId: string): Promise<DatabaseMessage[]> {
+		const tournament = await ChallongeTournament.findOneOrFail(tournamentId);
+		return tournament.registerMessages.map(m => ({
+			channelId: m.channelId,
+			messageId: m.messageId
+		}));
+	}
+
+	async cleanRegistration(channelId: string, messageId: string): Promise<void> {
+		const message = await RegisterMessage.findOne({ channelId, messageId });
+		if (!message) {
+			return; // failure is OK
+		}
+		await message.remove();
+	}
+
+	async getPendingTournaments(playerId: string): Promise<DatabaseTournament[]> {
+		const list = await Participant.find({ discordId: playerId });
+		return list.filter(p => !p.confirmed).map(p => this.wrap(p.tournament));
+	}
+
+	async addPendingPlayer(
+		channelId: string,
+		messageId: string,
+		playerId: string
+	): Promise<DatabaseTournament | undefined> {
+		const message = await RegisterMessage.findOne({ channelId, messageId });
+		if (!message) {
+			return;
+		}
+		if (!(await Participant.findOne({ tournamentId: message.tournamentId, discordId: playerId }))) {
+			const participant = new Participant();
+			participant.tournamentId = message.tournamentId;
+			participant.discordId = playerId;
+			await participant.save();
+			return this.wrap(message.tournament);
+		}
+	}
+
+	async removePendingPlayer(
+		channelId: string,
+		messageId: string,
+		playerId: string
+	): Promise<DatabaseTournament | undefined> {
+		const message = await RegisterMessage.findOne({ channelId, messageId });
+		if (!message) {
+			return;
+		}
+		const participant = await Participant.findOne({ tournamentId: message.tournamentId, discordId: playerId });
+		if (participant && !participant.confirmed) {
+			await participant.remove();
+			return this.wrap(message.tournament);
+		}
+	}
+
+	async removeConfirmedPlayerReaction(
+		channelId: string,
+		messageId: string,
+		playerId: string
+	): Promise<DatabaseTournament | undefined> {
+		const message = await RegisterMessage.findOne({ channelId, messageId });
+		if (!message) {
+			return;
+		}
+		const participant = await ConfirmedParticipant.findOne({
+			tournamentId: message.tournamentId,
+			discordId: playerId
+		});
+		if (participant) {
+			const p = participant.participant;
+			await participant.remove();
+			await p.remove();
+			return this.wrap(message.tournament);
+		}
+	}
+
+	async removeConfirmedPlayerForce(tournamentId: string, playerId: string): Promise<DatabaseTournament | undefined> {
+		const participant = await ConfirmedParticipant.findOne({ tournamentId, discordId: playerId });
+		if (participant) {
+			const tournament = participant.tournament;
+			const p = participant.participant;
+			await participant.remove();
+			await p.remove();
+			return this.wrap(tournament);
+		}
+	}
+
+	async startTournament(tournamentId: string, rounds: number): Promise<string[]> {
+		const tournament = await ChallongeTournament.findOneOrFail(tournamentId);
+		const ejected = await Promise.all(
+			tournament.participants.filter(p => !p.confirmed).map(async p => await p.remove())
+		);
+		tournament.status = TournamentStatus.IPR;
+		tournament.currentRound = 1;
+		tournament.totalRounds = rounds;
+		await tournament.save();
+		return ejected.map(p => p.discordId);
+	}
+
+	async nextRound(tournamentId: string): Promise<number> {
+		const tournament = await ChallongeTournament.findOneOrFail(tournamentId);
+		if (tournament.status !== TournamentStatus.IPR) {
+			throw new UserError(`Tournament ${tournamentId} is not in progress.`);
+		}
+		if (tournament.currentRound < tournament.totalRounds) {
+			++tournament.currentRound;
+			await tournament.save();
+			return tournament.currentRound;
+		}
+		return -1;
+	}
+
+	async finishTournament(tournamentId: string): Promise<void> {
+		const tournament = await ChallongeTournament.findOneOrFail(tournamentId);
+		tournament.status = TournamentStatus.COMPLETE;
+		await tournament.save();
+	}
+
+	async confirmPlayer(tournamentId: string, playerId: string, challongeId: number, deck: string): Promise<void> {
+		let participant = await Participant.findOne({ tournamentId, discordId: playerId });
+		if (!participant) {
+			participant = new Participant();
+			participant.tournamentId = tournamentId;
+			participant.discordId = playerId;
+		}
+		if (!participant.confirmed) {
+			participant.confirmed = new ConfirmedParticipant();
+			participant.confirmed.tournamentId = tournamentId;
+			participant.confirmed.discordId = playerId;
+			participant.confirmed.challongeId = challongeId;
+		}
+		participant.confirmed.deck = deck;
+		await participant.save();
+	}
+
+	async getActiveTournaments(): Promise<DatabaseTournament[]> {
+		const tournaments = await ChallongeTournament.find({ status: TournamentStatus.IPR });
+		return tournaments.map(t => this.wrap(t));
+	}
+
+	async synchronise(tournamentId: string, newData: SynchroniseTournament): Promise<void> {
+		const tournament = await ChallongeTournament.findOneOrFail(tournamentId);
+		for (const newPlayer of newData.players) {
+			let player = tournament.confirmed.find(p => p.challongeId === newPlayer);
+			// if a player already exists, Challonge doesn't have any info that should have changed
+			if (!player) {
+				player = new ConfirmedParticipant();
+				player.challongeId = newPlayer;
+				player.discordId = "DUMMY";
+				player.deck = "ydke://!!!";
+				tournament.confirmed.push(player);
+			}
+		}
+		tournament.name = newData.name;
+		tournament.description = newData.description;
+		await tournament.save();
+	}
+
+	async registerBye(tournamentId: string, playerId: string): Promise<void> {
+		const tournament = await ChallongeTournament.findOneOrFail(tournamentId);
+		if (tournament.status !== TournamentStatus.PREPARING) {
+			throw new UserError(`Tournament ${tournamentId} is not pending.`);
+		}
+		const participant = await ConfirmedParticipant.findOneOrFail({ tournamentId, discordId: playerId });
+		if (participant.hasBye) {
+			throw new UserError(`Player ${playerId} already has a bye in Tournament ${tournament}`);
+		}
+		participant.hasBye = true;
+		await participant.save();
+	}
+
+	async removeBye(tournamentId: string, playerId: string): Promise<void> {
+		const tournament = await ChallongeTournament.findOneOrFail(tournamentId);
+		if (tournament.status !== TournamentStatus.PREPARING) {
+			throw new UserError(`Tournament ${tournamentId} is not pending.`);
+		}
+		const participant = await ConfirmedParticipant.findOneOrFail({ tournamentId, discordId: playerId });
+		if (!participant.hasBye) {
+			throw new UserError(`Player ${playerId} does not have a bye in Tournament ${tournament}`);
+		}
+		participant.hasBye = true;
+		await participant.save();
+	}
+}
