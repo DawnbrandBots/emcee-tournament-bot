@@ -34,6 +34,7 @@ jobs:
           MONGODB_URL: mongodb://localhost:27017/tournamentdb,
           CHALLONGE_USERNAME: ${{ secrets.CHALLONGE_USERNAME }},
           CHALLONGE_TOKEN: ${{ secrets.CHALLONGE_TOKEN }},
+          POSTGRESQL_URL: postgresql://localhost/nonexistent
       - run: npm run cover
       - name: Coveralls
         uses: coverallsapp/github-action@master
