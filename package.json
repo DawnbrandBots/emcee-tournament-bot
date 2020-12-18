@@ -46,6 +46,33 @@
 		"ts-node": "^9.1.1",
 		"typescript": "^3.9.7"
 	},
+	"eslintConfig": {
+		"root": true,
+		"parser": "@typescript-eslint/parser",
+		"plugins": [
+			"@typescript-eslint"
+		],
+		"extends": [
+			"eslint:recommended",
+			"plugin:@typescript-eslint/eslint-recommended",
+			"plugin:@typescript-eslint/recommended",
+			"prettier",
+			"prettier/@typescript-eslint"
+		],
+		"rules": {
+			"@typescript-eslint/explicit-function-return-type": [
+				"warn",
+				{
+					"allowExpressions": true,
+					"allowTypedFunctionExpressions": true,
+					"allowHigherOrderFunctions": true,
+					"allowDirectConstAssertionInArrowFunctions": true,
+					"allowConciseArrowFunctionExpressionsStartingWithVoid": true
+				}
+			],
+			"prefer-template": "error"
+		}
+	},
 	"prettier": {
 		"printWidth": 120,
 		"useTabs": true,
