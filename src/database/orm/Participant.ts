@@ -1,4 +1,4 @@
-import { Entity, JoinColumn, ManyToOne, OneToOne, PrimaryColumn } from "typeorm";
+import { BaseEntity, Entity, JoinColumn, ManyToOne, OneToOne, PrimaryColumn } from "typeorm";
 import { ChallongeTournament } from "./ChallongeTournament";
 import { ConfirmedParticipant } from "./ConfirmedParticipant";
 
@@ -7,7 +7,7 @@ import { ConfirmedParticipant } from "./ConfirmedParticipant";
  * same tournament so a primary key is declared across the first two columns.
  */
 @Entity()
-export class Participant {
+export class Participant extends BaseEntity {
 	/// Explicitly specify the foreign key for the below relation to avoid jank ORM naming.
 	@PrimaryColumn()
 	tournamentId!: string;
@@ -22,7 +22,7 @@ export class Participant {
 	tournament!: ChallongeTournament;
 
 	/// Extra information if this participant is confirmed for this tournament.
-	@OneToOne(() => ConfirmedParticipant, confirmed => confirmed.participant)
+	@OneToOne(() => ConfirmedParticipant, confirmed => confirmed.participant, { cascade: true })
 	@JoinColumn()
 	confirmed?: ConfirmedParticipant;
 }
