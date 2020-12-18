@@ -1,11 +1,11 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 
 /**
  * Represents a persistent scheduled timer that will update a Discord message
  * on a given interval and send out a final message.
  */
 @Entity()
-export class Countdown {
+export class Countdown extends BaseEntity {
 	/// No user-provided identifier, so we use the default autoincrement.
 	@PrimaryGeneratedColumn()
 	id!: number;

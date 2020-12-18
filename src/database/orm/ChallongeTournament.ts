@@ -1,4 +1,4 @@
-import { Column, Entity, OneToMany, PrimaryColumn } from "typeorm";
+import { BaseEntity, Column, Entity, OneToMany, PrimaryColumn } from "typeorm";
 import { ConfirmedParticipant } from "./ConfirmedParticipant";
 import { Participant } from "./Participant";
 import { RegisterMessage } from "./RegisterMessage";
@@ -13,7 +13,7 @@ export enum TournamentStatus {
  * The main entity for all information related to one tournament.
  */
 @Entity()
-export class ChallongeTournament {
+export class ChallongeTournament extends BaseEntity {
 	/// Challonge ID. Guaranteed to be unique on Challonge and meaningful.
 	@PrimaryColumn()
 	tournamentId!: string;
