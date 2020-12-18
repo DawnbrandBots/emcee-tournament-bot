@@ -60,14 +60,18 @@ export class ChallongeTournament extends BaseEntity {
 	totalRounds!: number;
 
 	/// The ORM relationship to the registration messages that identify this tournament.
-	@OneToMany(() => RegisterMessage, rm => rm.tournament, { cascade: true })
+	@OneToMany(() => RegisterMessage, rm => rm.tournament, { cascade: true, onDelete: "CASCADE" })
 	registerMessages!: RegisterMessage[];
 
 	/// The ORM relationship for all participants, pending and confirmed.
-	@OneToMany(() => Participant, participant => participant.tournament, { cascade: true })
+	@OneToMany(() => Participant, participant => participant.tournament, { cascade: true, onDelete: "CASCADE" })
 	participants!: Participant[];
 
 	/// The ORM relationship for just the confirmed participants.
-	@OneToMany(() => ConfirmedParticipant, participant => participant.tournament, { cascade: true, eager: true })
+	@OneToMany(() => ConfirmedParticipant, participant => participant.tournament, {
+		cascade: true,
+		eager: true,
+		onDelete: "CASCADE"
+	})
 	confirmed!: ConfirmedParticipant[];
 }

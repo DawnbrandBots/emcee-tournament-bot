@@ -1,3 +1,4 @@
+import { getConnection } from "typeorm";
 import { TournamentNotFoundError, UnauthorisedPlayerError, UserError } from "../util/errors";
 import {
 	DatabaseMessage,
@@ -6,8 +7,7 @@ import {
 	DatabaseWrapper,
 	SynchroniseTournament
 } from "./interface";
-import { ChallongeTournament, ConfirmedParticipant, Participant, RegisterMessage } from "./orm";
-import { TournamentStatus } from "./orm/ChallongeTournament";
+import { ChallongeTournament, ConfirmedParticipant, Participant, RegisterMessage, TournamentStatus } from "./orm";
 
 export class DatabaseWrapperPostgres implements DatabaseWrapper {
 	private wrap(tournament: ChallongeTournament): DatabaseTournament {
@@ -202,41 +202,36 @@ export class DatabaseWrapperPostgres implements DatabaseWrapper {
 		if (!message) {
 			return;
 		}
-		const participant = await ConfirmedParticipant.findOne({
+		const participant = await Participant.findOne({
 			tournamentId: message.tournamentId,
 			discordId: playerId
 		});
-		if (participant) {
-			const p = participant.participant;
+		if (participant?.confirmed) {
 			await participant.remove();
-			await p.remove();
 			return this.wrap(message.tournament);
 		}
 	}
 
 	async removeConfirmedPlayerForce(tournamentId: string, playerId: string): Promise<DatabaseTournament | undefined> {
-		const participant = await ConfirmedParticipant.findOne(
-			{ tournamentId, discordId: playerId },
-			{ relations: ["tournament"] }
-		);
-		if (participant) {
+		const participant = await Participant.findOne({ tournamentId, discordId: playerId });
+		if (participant?.confirmed) {
 			const tournament = participant.tournament;
-			const p = participant.participant;
 			await participant.remove();
-			await p.remove();
 			return this.wrap(tournament);
 		}
 	}
 
 	async startTournament(tournamentId: string, rounds: number): Promise<string[]> {
 		const tournament = await this.findTournament(tournamentId, ["participants"]);
-		const ejected = await Promise.all(
-			tournament.participants.filter(p => !p.confirmed).map(async p => await p.remove())
-		);
-		tournament.status = TournamentStatus.IPR;
-		tournament.currentRound = 1;
-		tournament.totalRounds = rounds;
-		await tournament.save();
+		const ejected = tournament.participants.filter(p => !p.confirmed);
+		await getConnection().transaction(async entityManager => {
+			// return await improves async stack traces
+			await Promise.all(ejected.map(async p => await entityManager.remove(p)));
+			tournament.status = TournamentStatus.IPR;
+			tournament.currentRound = 1;
+			tournament.totalRounds = rounds;
+			await tournament.save();
+		});
 		return ejected.map(p => p.discordId);
 	}
 
@@ -277,7 +272,9 @@ export class DatabaseWrapperPostgres implements DatabaseWrapper {
 	}
 
 	async getActiveTournaments(): Promise<DatabaseTournament[]> {
-		const tournaments = await ChallongeTournament.find({ status: TournamentStatus.IPR });
+		const tournaments = await ChallongeTournament.find({
+			where: [{ status: TournamentStatus.IPR }, { status: TournamentStatus.PREPARING }]
+		});
 		return tournaments.map(t => this.wrap(t));
 	}
 
