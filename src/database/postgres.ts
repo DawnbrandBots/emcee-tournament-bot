@@ -7,7 +7,14 @@ import {
 	DatabaseWrapper,
 	SynchroniseTournament
 } from "./interface";
-import { ChallongeTournament, ConfirmedParticipant, Participant, RegisterMessage, TournamentStatus } from "./orm";
+import {
+	ChallongeTournament,
+	ConfirmedParticipant,
+	initializeConnection,
+	Participant,
+	RegisterMessage,
+	TournamentStatus
+} from "./orm";
 
 export class DatabaseWrapperPostgres implements DatabaseWrapper {
 	private wrap(tournament: ChallongeTournament): DatabaseTournament {
@@ -321,4 +328,9 @@ export class DatabaseWrapperPostgres implements DatabaseWrapper {
 		participant.hasBye = true;
 		await participant.save();
 	}
+}
+
+export async function initializeDatabase(postgresqlUrl: string): Promise<DatabaseWrapperPostgres> {
+	await initializeConnection(postgresqlUrl);
+	return new DatabaseWrapperPostgres();
 }

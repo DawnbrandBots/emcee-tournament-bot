@@ -1,12 +1,12 @@
+import { TournamentNotFoundError, UnauthorisedPlayerError, UserError } from "../util/errors";
 import {
+	DatabaseMessage,
+	DatabasePlayer,
 	DatabaseTournament,
 	DatabaseWrapper,
-	DatabasePlayer,
-	SynchroniseTournament,
-	DatabaseMessage
+	SynchroniseTournament
 } from "./interface";
-import { TournamentModel, TournamentDoc } from "./models";
-import { TournamentNotFoundError, UnauthorisedPlayerError, UserError } from "../util/errors";
+import { initializeConnection, TournamentDoc, TournamentModel } from "./models";
 
 type DiscordID = string;
 type TournamentID = string; // from Challonge
@@ -375,4 +375,9 @@ export class DatabaseWrapperMongoose implements DatabaseWrapper {
 		tournament.byeParticipants.splice(i, 1); // consider $pullAll
 		await tournament.save();
 	}
+}
+
+export async function initializeDatabase(mongoDbUrl: string): Promise<DatabaseWrapperMongoose> {
+	await initializeConnection(mongoDbUrl);
+	return new DatabaseWrapperMongoose();
 }
