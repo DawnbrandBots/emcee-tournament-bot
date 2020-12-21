@@ -228,7 +228,6 @@ export class WebsiteWrapperChallonge implements WebsiteWrapper {
 			name,
 			description: desc,
 			url,
-			// eslint-disable-next-line @typescript-eslint/camelcase
 			tournament_type: topCut ? "single elimination" : "swiss"
 		};
 		const response = await fetch(`${this.baseUrl}tournaments.json`, {
@@ -280,7 +279,6 @@ export class WebsiteWrapperChallonge implements WebsiteWrapper {
 	}
 
 	public async startTournament(tournamentId: string): Promise<void> {
-		// eslint-disable-next-line @typescript-eslint/camelcase
 		await this.startTournamentRemote(tournamentId, { include_matches: 0, include_participants: 0 });
 	}
 
@@ -371,9 +369,7 @@ export class WebsiteWrapperChallonge implements WebsiteWrapper {
 		const match = webMatch[0].match;
 		const score = match.player1_id === winner ? `${winnerScore}-${loserScore}` : `${loserScore}-${winnerScore}`;
 		await this.updateMatch(tournamentId, match.id, {
-			// eslint-disable-next-line @typescript-eslint/camelcase
 			winner_id: winnerScore === loserScore ? "tie" : winner,
-			// eslint-disable-next-line @typescript-eslint/camelcase
 			scores_csv: score
 		});
 	}
@@ -409,7 +405,6 @@ export class WebsiteWrapperChallonge implements WebsiteWrapper {
 	}
 
 	public async finishTournament(tournamentId: string): Promise<void> {
-		// eslint-disable-next-line @typescript-eslint/camelcase
 		await this.finaliseTournament(tournamentId, { include_matches: 0, include_participants: 0 });
 	}
 
