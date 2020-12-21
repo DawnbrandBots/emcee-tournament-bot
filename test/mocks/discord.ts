@@ -85,7 +85,7 @@ export class DiscordWrapperMock implements DiscordWrapper {
 	}
 
 	public getMessage(): Promise<DiscordMessageIn> {
-		return;
+		throw new Error("Not implemented");
 	}
 
 	public async sendMessage(
