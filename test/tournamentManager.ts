@@ -148,11 +148,20 @@ describe("Misc commands", function () {
 			"ydke://5m3qBeZt6gV9+McCffjHAn34xwK8beUDvG3lA7xt5QMfX5ICWvTJAVr0yQFa9MkBrDOdBKwznQSsM50Ey/UzAMv1MwDL9TMAdAxQBQ6wYAKvI94AryPeAK8j3gCmm/QBWXtjBOMavwDjGr8A4xq/AD6kcQGeE8oEnhPKBJ4TygSlLfUDpS31A6Ut9QMiSJkAIkiZACJImQCANVMDgDVTAw==!FtIXALVcnwC1XJ8AiBF2A4gRdgNLTV4Elt0IAMf4TQHCT0EAvw5JAqSaKwD5UX8EweoDA2LO9ATaI+sD!H1+SAg==!"
 		);
 	});
-	it("Drop player", async function () {
+	it("Drop player - choose", async function () {
 		await tournament.dropPlayer("mc_tourn1", "player1");
-		expect(discord.getResponse("player1")).to.equal("You have dropped from Tournament Tournament 1 by the hosts.");
+		expect(discord.getResponse("player1")).to.equal("You have successfully dropped from Tournament Tournament 1.");
 		expect(discord.getResponse("channel2")).to.equal(
-			"Player <@player1> (player1) forcefully dropped from Tournament Tournament 1 (mc_tourn1)."
+			"Player <@player1> (player1) has chosen to drop from Tournament Tournament 1 (mc_tourn1)."
+		);
+	});
+	it("Drop player - force", async function () {
+		await tournament.dropPlayer("mc_tourn1", "player1", true);
+		expect(discord.getResponse("player1")).to.equal(
+			"You have been dropped from Tournament Tournament 1 by the hosts."
+		);
+		expect(discord.getResponse("channel2")).to.equal(
+			"Player <@player1> (player1) has been forcefully dropped from Tournament Tournament 1 (mc_tourn1)."
 		);
 	});
 	it("Sync tournament", async function () {

@@ -239,7 +239,7 @@ export class CommandHandler {
 		const [id] = this.validateArgs(args, 1);
 		await this.tournamentManager.authenticateHost(id, msg.author);
 		const player = this.discord.getMentionedUser(msg);
-		await this.tournamentManager.dropPlayer(id, player);
+		await this.tournamentManager.dropPlayer(id, player, true);
 		const name = this.discord.getUsername(player);
 		await msg.reply(`Player ${name} successfully dropped from Tournament ${id}.`);
 	}
