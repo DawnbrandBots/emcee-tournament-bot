@@ -541,8 +541,9 @@ export class TournamentManager implements TournamentInterface {
 		return `You have reported a score of ${scorePlayer}-${scoreOpp}, ${mention}. Your opponent still needs to confirm this score.`;
 	}
 
+	// specifically only handles telling participants about a new round
+	// hosts should handle outstanding scores individually with forcescore
 	public async nextRound(tournamentId: string): Promise<number> {
-		await this.website.tieMatches(tournamentId);
 		const round = await this.database.nextRound(tournamentId);
 		// finalise tournament
 		if (round === -1) {
