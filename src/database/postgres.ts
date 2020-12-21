@@ -228,7 +228,7 @@ export class DatabaseWrapperPostgres implements DatabaseWrapper {
 		}
 	}
 
-	async startTournament(tournamentId: string, rounds: number): Promise<string[]> {
+	async startTournament(tournamentId: string): Promise<string[]> {
 		const tournament = await this.findTournament(tournamentId, ["participants"]);
 		const ejected = tournament.participants.filter(p => !p.confirmed);
 		await getConnection().transaction(async entityManager => {
@@ -236,23 +236,10 @@ export class DatabaseWrapperPostgres implements DatabaseWrapper {
 			await Promise.all(ejected.map(async p => await entityManager.remove(p)));
 			tournament.status = TournamentStatus.IPR;
 			tournament.currentRound = 1;
-			tournament.totalRounds = rounds;
+			tournament.totalRounds = 0; // TODO: Remove from database entirely
 			await tournament.save();
 		});
 		return ejected.map(p => p.discordId);
-	}
-
-	async nextRound(tournamentId: string): Promise<number> {
-		const tournament = await this.findTournament(tournamentId);
-		if (tournament.status !== TournamentStatus.IPR) {
-			throw new UserError(`Tournament ${tournamentId} is not in progress.`);
-		}
-		if (tournament.currentRound < tournament.totalRounds) {
-			++tournament.currentRound;
-			await tournament.save();
-			return tournament.currentRound;
-		}
-		return -1;
 	}
 
 	async finishTournament(tournamentId: string): Promise<void> {
