@@ -74,10 +74,6 @@ describe("Tournament flow commands", function () {
 		await expect(website.submitScore("mc_test", 1, 2, 1)).to.not.be.rejected;
 	});
 
-	it("tieMatches", async function () {
-		await expect(website.tieMatches("mc_test")).to.not.be.rejected;
-	});
-
 	it("finishTournament", async function () {
 		const tournament = await website.finishTournament("mc_test");
 		expect(tournament).to.deep.equal({

@@ -92,12 +92,6 @@ export class WebsiteInterface {
 		await this.api.submitScore(tournamentId, winner, winnerScore, loserScore);
 	}
 
-	public async tieMatches(tournamentId: string): Promise<void> {
-		const matches = await this.api.getMatches(tournamentId);
-		// we can use either player to report a tie, the submitScore logic will make it a tie
-		await Promise.all(matches.map(async m => await this.submitScore(tournamentId, m.player1, 0, 0)));
-	}
-
 	public async finishTournament(tournamentId: string): Promise<WebsiteTournament> {
 		const tournament = await this.api.getTournament(tournamentId);
 		await this.api.finishTournament(tournamentId);
