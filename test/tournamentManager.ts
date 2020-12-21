@@ -117,6 +117,14 @@ describe("Tournament flow commands", function () {
 		expect(response5).to.equal(
 			"You have successfully reported a score of 1-2, and it matches your opponent's report, so the score has been saved. Thank you, <@player1>."
 		);
+		const response6 = discord.getResponse("player2");
+		expect(response6).to.equal(
+			"Your opponent has successfully confirmed your score of 2-1 for Tournament Tournament 1, so the score has been saved. Thank you."
+		);
+		const response7 = discord.getResponse("channel2");
+		expect(response7).to.equal(
+			"<@player1> (player1) and <@player2> (player2) have reported their score of 1-2 for Tournament Tournament 1 (mc_tourn1)."
+		);
 	});
 	it("Submit score - host", async function () {
 		const response = await tournament.submitScore("mc_tourn1", "player1", 2, 1, true);
