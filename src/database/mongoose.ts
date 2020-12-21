@@ -267,29 +267,15 @@ export class DatabaseWrapperMongoose implements DatabaseWrapper {
 	}
 
 	// Remove all pending participants and start the tournament
-	public async startTournament(tournamentId: TournamentID, rounds: number): Promise<string[]> {
+	public async startTournament(tournamentId: TournamentID): Promise<string[]> {
 		const tournament = await this.findTournament(tournamentId);
 		const removedIDs = tournament.pendingParticipants.slice(); // clone values
 		tournament.pendingParticipants = [];
 		tournament.status = "in progress";
 		tournament.currentRound = 1;
-		tournament.totalRounds = rounds;
+		tournament.totalRounds = 0; // TODO: remove totalRounds from database entirely
 		await tournament.save();
 		return removedIDs;
-	}
-
-	// Progresses tournament to the next round or returns -1 if it was already the final round
-	public async nextRound(tournamentId: TournamentID): Promise<number> {
-		const tournament = await this.findTournament(tournamentId);
-		if (tournament.status !== "in progress") {
-			throw new UserError(`Tournament ${tournamentId} is not in progress.`);
-		}
-		if (tournament.currentRound < tournament.totalRounds) {
-			++tournament.currentRound;
-			await tournament.save();
-			return tournament.currentRound;
-		}
-		return -1;
 	}
 
 	// Sets tournament status to completed

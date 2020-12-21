@@ -210,12 +210,8 @@ export class CommandHandler {
 	private async commandNextRound(msg: DiscordMessageIn, args: string[]): Promise<void> {
 		const [id] = this.validateArgs(args, 1);
 		await this.tournamentManager.authenticateHost(id, msg.author);
-		const round = await this.tournamentManager.nextRound(id);
-		if (round === -1) {
-			await msg.reply(`Tournament ${id} successfully progressed past final round and completed.`);
-			return;
-		}
-		await msg.reply(`Tournament ${id} successfully progressed to round ${round}.`);
+		await this.tournamentManager.nextRound(id);
+		await msg.reply(`New round successfully started for Tournament ${id}.`);
 	}
 
 	private async commandListPlayers(msg: DiscordMessageIn, args: string[]): Promise<void> {

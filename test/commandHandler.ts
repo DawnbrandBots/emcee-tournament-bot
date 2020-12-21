@@ -156,15 +156,9 @@ describe("Tournament flow commands", function () {
 		await discord.simMessage("mc!forcescore mc_name|john won|<@john>", "forcescore2");
 		expect(discord.getResponse("forcescore2")).to.equal("Must provide score in format `#-#` e.g. `2-1`.");
 	});
-	it("Next round - normal", async function () {
+	it("Next round", async function () {
 		await discord.simMessage("mc!round mc_name", "round1");
-		expect(discord.getResponse("round1")).to.equal("Tournament mc_name successfully progressed to round 2.");
-	});
-	it("Next round - final", async function () {
-		await discord.simMessage("mc!round mc_final", "round2");
-		expect(discord.getResponse("round2")).to.equal(
-			"Tournament mc_final successfully progressed past final round and completed."
-		);
+		expect(discord.getResponse("round1")).to.equal("New round successfully started for Tournament mc_name.");
 	});
 });
 describe("Misc tournament commands", function () {

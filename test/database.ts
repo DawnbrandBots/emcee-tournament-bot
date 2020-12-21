@@ -142,13 +142,8 @@ describe("Player registration", function () {
 
 describe("Tournament flow", function () {
 	it("startTournament", async function () {
-		const droppedPlayers = await database.startTournament("mc_test", 3);
+		const droppedPlayers = await database.startTournament("mc_test");
 		expect(droppedPlayers.length).to.equal(0);
-	});
-
-	it("nextRound", async function () {
-		const round = await database.nextRound("mc_test");
-		expect(round).to.equal(2);
 	});
 
 	it("finishTournament", async function () {
