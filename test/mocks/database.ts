@@ -63,7 +63,7 @@ export class DatabaseWrapperMock implements DatabaseWrapper {
 		name: string,
 		description: string
 	): Promise<DatabaseTournament> {
-		const status = "preparing";
+		const status = "preparing" as const;
 		const newTournament = {
 			id: tournamentId,
 			name: name,
