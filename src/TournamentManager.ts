@@ -42,7 +42,7 @@ export interface TournamentInterface {
 	nextRound(tournamentId: string): Promise<number>;
 	listPlayers(tournamentId: string): Promise<DiscordAttachmentOut>;
 	getPlayerDeck(tournamentId: string, playerId: string): Promise<Deck>;
-	dropPlayer(tournamentId: string, playerId: string): Promise<void>;
+	dropPlayer(tournamentId: string, playerId: string, force?: boolean): Promise<void>;
 	syncTournament(tournamentId: string): Promise<void>;
 	generatePieChart(tournamentId: string): Promise<DiscordAttachmentOut>;
 	generateDeckDump(tournamentId: string): Promise<DiscordAttachmentOut>;
@@ -550,58 +550,49 @@ export class TournamentManager implements TournamentInterface {
 		// if wasn't found pending, try to remove confirmed
 		const tournament = await this.database.removeConfirmedPlayerReaction(msg.channelId, msg.id, playerId);
 		if (tournament) {
-			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-			const player = tournament.findPlayer(playerId)!;
-			await this.website.removePlayer(tournament.id, player.challongeId);
-			await this.discord.removePlayerRole(playerId, await this.discord.getPlayerRole(tournament));
-			this.logger.verbose(`User ${playerId} dropped from tournament ${tournament.id}.`);
-			await this.discord.sendDirectMessage(
-				playerId,
-				`You have successfully dropped from Tournament ${tournament.name}.`
-			);
-			const channels = tournament.privateChannels;
-			await Promise.all(
-				channels.map(
-					async c =>
-						await this.discord.sendMessage(
-							c,
-							`Player ${this.discord.mentionUser(playerId)} (${this.discord.getUsername(
-								playerId
-							)}) has chosen to drop from Tournament ${tournament.name} (${tournament.id}).`
-						)
-				)
-			);
+			await this.sendDropMessage(tournament, playerId, tournament.id);
 		}
 	}
 
-	public async dropPlayer(tournamentId: string, playerId: string): Promise<void> {
+	public async dropPlayer(tournamentId: string, playerId: string, force = false): Promise<void> {
 		const tournament = await this.database.removeConfirmedPlayerForce(tournamentId, playerId);
 		if (tournament) {
-			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-			const player = tournament.findPlayer(playerId)!;
-			await this.website.removePlayer(tournament.id, player.challongeId);
-			await this.discord.removePlayerRole(playerId, await this.discord.getPlayerRole(tournament));
-			this.logger.verbose(`User ${playerId} dropped from tournament ${tournament.id} by host.`);
-			await this.discord.sendDirectMessage(
-				playerId,
-				`You have dropped from Tournament ${tournament.name} by the hosts.`
-			);
-			const channels = tournament.privateChannels;
-			await Promise.all(
-				channels.map(
-					async c =>
-						await this.discord.sendMessage(
-							c,
-							`Player ${this.discord.mentionUser(playerId)} (${this.discord.getUsername(
-								playerId
-							)}) forcefully dropped from Tournament ${tournament.name} (${tournament.id}).`
-						)
-				)
-			);
-			const messages = await this.database.getRegisterMessages(tournamentId);
-			for (const m of messages) {
-				await this.discord.removeUserReaction(m.channelId, m.messageId, this.CHECK_EMOJI, playerId);
-			}
+			await this.sendDropMessage(tournament, playerId, tournamentId, force);
+		}
+	}
+
+	private async sendDropMessage(
+		tournament: DatabaseTournament,
+		playerId: string,
+		tournamentId: string,
+		force = false
+	): Promise<void> {
+		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+		const player = tournament.findPlayer(playerId)!;
+		await this.website.removePlayer(tournament.id, player.challongeId);
+		await this.discord.removePlayerRole(playerId, await this.discord.getPlayerRole(tournament));
+		this.logger.verbose(`User ${playerId} dropped from tournament ${tournament.id}${force ? " by host" : ""}.`);
+		await this.discord.sendDirectMessage(
+			playerId,
+			force
+				? `You have been dropped from Tournament ${tournament.name} by the hosts.`
+				: `You have successfully dropped from Tournament ${tournament.name}.`
+		);
+		const channels = tournament.privateChannels;
+		await Promise.all(
+			channels.map(
+				async c =>
+					await this.discord.sendMessage(
+						c,
+						`Player ${this.discord.mentionUser(playerId)} (${this.discord.getUsername(playerId)}) has ${
+							force ? "been forcefully dropped" : "chosen to drop"
+						} from Tournament ${tournament.name} (${tournament.id}).`
+					)
+			)
+		);
+		const messages = await this.database.getRegisterMessages(tournamentId);
+		for (const m of messages) {
+			await this.discord.removeUserReaction(m.channelId, m.messageId, this.CHECK_EMOJI, playerId);
 		}
 	}
 
