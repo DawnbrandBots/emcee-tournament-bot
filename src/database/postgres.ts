@@ -235,8 +235,6 @@ export class DatabaseWrapperPostgres implements DatabaseWrapper {
 			// return await improves async stack traces
 			await Promise.all(ejected.map(async p => await entityManager.remove(p)));
 			tournament.status = TournamentStatus.IPR;
-			tournament.currentRound = 1;
-			tournament.totalRounds = 0; // TODO: Remove from database entirely
 			await tournament.save();
 		});
 		return ejected.map(p => p.discordId);

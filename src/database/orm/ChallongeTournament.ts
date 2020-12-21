@@ -51,14 +51,6 @@ export class ChallongeTournament extends BaseEntity {
 	@Column({ default: 0 })
 	participantLimit!: number;
 
-	/// Current round of a running tournament. Should be zero if preparing. Negatives invalid.
-	@Column({ default: 0 })
-	currentRound!: number;
-
-	/// Total rounds of Swiss. Negatives invalid.
-	@Column({ default: 0 })
-	totalRounds!: number;
-
 	/// The ORM relationship to the registration messages that identify this tournament.
 	@OneToMany(() => RegisterMessage, rm => rm.tournament, { cascade: true, onDelete: "CASCADE" })
 	registerMessages!: RegisterMessage[];

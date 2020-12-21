@@ -272,8 +272,6 @@ export class DatabaseWrapperMongoose implements DatabaseWrapper {
 		const removedIDs = tournament.pendingParticipants.slice(); // clone values
 		tournament.pendingParticipants = [];
 		tournament.status = "in progress";
-		tournament.currentRound = 1;
-		tournament.totalRounds = 0; // TODO: remove totalRounds from database entirely
 		await tournament.save();
 		return removedIDs;
 	}

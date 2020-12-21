@@ -23,8 +23,6 @@ export interface TournamentDoc extends Document {
 	}[];
 	pendingParticipants: DiscordID[];
 	byeParticipants: DiscordID[];
-	currentRound: number;
-	totalRounds: number;
 }
 
 export const TournamentSchema = new Schema({
