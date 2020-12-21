@@ -92,6 +92,11 @@ export class WebsiteInterface {
 		await this.api.submitScore(tournamentId, winner, winnerScore, loserScore);
 	}
 
+	public async getOpenMatchCount(tournamentId: string): Promise<number> {
+		const matches = await this.api.getMatches(tournamentId);
+		return matches.length;
+	}
+
 	public async tieMatches(tournamentId: string): Promise<void> {
 		const matches = await this.api.getMatches(tournamentId);
 		// we can use either player to report a tie, the submitScore logic will make it a tie

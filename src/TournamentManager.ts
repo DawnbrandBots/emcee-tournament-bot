@@ -542,14 +542,19 @@ export class TournamentManager implements TournamentInterface {
 	}
 
 	public async nextRound(tournamentId: string): Promise<number> {
-		await this.website.tieMatches(tournamentId);
+		const tournament = await this.database.getTournament(tournamentId);
+		// If there are as many matches as players/2, we're at the start of a new round and there
+		// are no matches to clean up. If hosts do want to skip a round, they can just tie up one match.
+		const openMatches = await this.website.getOpenMatchCount(tournamentId);
+		if (openMatches < Math.floor(tournament.players.length / 2)) {
+			await this.website.tieMatches(tournamentId);
+		}
 		const round = await this.database.nextRound(tournamentId);
 		// finalise tournament
 		if (round === -1) {
 			await this.finishTournament(tournamentId);
 			return round;
 		}
-		const tournament = await this.database.getTournament(tournamentId);
 		const webTourn = await this.website.getTournament(tournamentId);
 		await this.startNewRound(tournament, webTourn.url, round);
 		return round;
