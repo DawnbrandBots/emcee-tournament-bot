@@ -170,6 +170,10 @@ export class DiscordInterface {
 		return `<@&${roleId}>`;
 	}
 
+	public async getMessage(channelId: string, messageId: string): Promise<DiscordMessageIn> {
+		return await this.api.getMessage(channelId, messageId);
+	}
+
 	public async sendMessage(
 		channelId: string,
 		msg: DiscordMessageOut,

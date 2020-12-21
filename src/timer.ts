@@ -92,8 +92,12 @@ export class PersistentTimer {
 			await this.abort();
 		}
 		const left = PersistentTimer.formatTime(this.entity.end.getTime() - Date.now());
-		// TODO: get Discord message by id and update
-		// await message.edit(`**Time left in the round**: \`${left}\``);
+		try {
+			const message = await this.discord.getMessage(this.entity.channelId, this.entity.messageId);
+			message.edit(`**Time left in the round**: \`${left}\``);
+		} catch (err) {
+			logger.warn(`${this.entity.channelId} ${this.entity.messageId} was removed`);
+		}
 	}
 
 	public static formatTime(milli: number): string {
