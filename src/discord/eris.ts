@@ -3,6 +3,7 @@ import {
 	Emoji,
 	Guild,
 	GuildChannel,
+	Member,
 	Message,
 	MessageContent,
 	MessageFile,
@@ -152,14 +153,14 @@ export class DiscordWrapperEris implements DiscordWrapper {
 		}
 	}
 
-	private async handleReaction(msg: PossiblyUncachedMessage, emoji: Emoji, userId: string): Promise<void> {
-		if (userId === this.bot.user.id) {
+	private async handleReaction(msg: PossiblyUncachedMessage, emoji: Emoji, member: Member): Promise<void> {
+		if (member.id === this.bot.user.id) {
 			return;
 		}
 		const fullMsg = await this.bot.getMessage(msg.channel.id, msg.id);
 		const handlers = this.reactionHandlers.filter(h => h.msg === msg.id && h.emoji === emoji.name);
 		for (const handler of handlers) {
-			await handler.response(this.wrapMessageIn(fullMsg), userId);
+			await handler.response(this.wrapMessageIn(fullMsg), member.id);
 		}
 	}
 
