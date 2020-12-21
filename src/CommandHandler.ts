@@ -24,6 +24,7 @@ export class CommandHandler {
 		this.discord.registerCommand("removehost", this.commandRemoveHost.bind(this));
 		this.discord.registerCommand("open", this.commandOpenTournament.bind(this));
 		this.discord.registerCommand("start", this.commandStartTournament.bind(this));
+		this.discord.registerCommand("finish", this.commandFinishTournament.bind(this));
 		this.discord.registerCommand("cancel", this.commandCancelTournament.bind(this));
 		this.discord.registerCommand("score", this.commandSubmitScore.bind(this));
 		this.discord.registerCommand("forcescore", this.commandSubmitScoreHost.bind(this));
@@ -161,10 +162,17 @@ export class CommandHandler {
 		await msg.reply(`Tournament ${id} successfully commenced!`);
 	}
 
+	private async commandFinishTournament(msg: DiscordMessageIn, args: string[]): Promise<void> {
+		const [id] = this.validateArgs(args, 1);
+		await this.tournamentManager.authenticateHost(id, msg.author);
+		await this.tournamentManager.finishTournament(id, false);
+		await msg.reply(`Tournament ${id} successfully canceled.`);
+	}
+
 	private async commandCancelTournament(msg: DiscordMessageIn, args: string[]): Promise<void> {
 		const [id] = this.validateArgs(args, 1);
 		await this.tournamentManager.authenticateHost(id, msg.author);
-		await this.tournamentManager.cancelTournament(id);
+		await this.tournamentManager.finishTournament(id, true);
 		await msg.reply(`Tournament ${id} successfully canceled.`);
 	}
 

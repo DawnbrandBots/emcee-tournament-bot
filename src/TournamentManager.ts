@@ -31,7 +31,6 @@ export interface TournamentInterface {
 	removeHost(tournamentId: string, newHost: string): Promise<void>;
 	openTournament(tournamentId: string): Promise<void>;
 	startTournament(tournamentId: string): Promise<void>;
-	cancelTournament(tournamentId: string): Promise<void>;
 	finishTournament(tournamentId: string, cancel: boolean | undefined): Promise<void>;
 	submitScore(
 		tournamentId: string,
@@ -468,10 +467,6 @@ export class TournamentManager implements TournamentInterface {
 		}
 	}
 
-	public async cancelTournament(tournamentId: string): Promise<void> {
-		await this.finishTournament(tournamentId, true);
-	}
-
 	public async submitScore(
 		tournamentId: string,
 		playerId: string,
@@ -545,11 +540,6 @@ export class TournamentManager implements TournamentInterface {
 	// hosts should handle outstanding scores individually with forcescore
 	public async nextRound(tournamentId: string): Promise<number> {
 		const round = await this.database.nextRound(tournamentId);
-		// finalise tournament
-		if (round === -1) {
-			await this.finishTournament(tournamentId);
-			return round;
-		}
 		const tournament = await this.database.getTournament(tournamentId);
 		const webTourn = await this.website.getTournament(tournamentId);
 		await this.startNewRound(tournament, webTourn.url, round);

@@ -87,7 +87,7 @@ describe("Tournament flow commands", function () {
 		await expect(tournament.startTournament("smallTournament")).to.be.rejectedWith(UserError);
 	});
 	it("Cancel tournament", async function () {
-		await tournament.cancelTournament("mc_tourn1");
+		await tournament.finishTournament("mc_tourn1", true);
 		expect(discord.getResponse("channel1")).to.equal(
 			"Tournament 1 has been cancelled. Thank you all for playing! <@&role>\nResults: https://example.com/url"
 		);
