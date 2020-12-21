@@ -1,12 +1,5 @@
 version: "3.8"
 services:
-  mongo:
-    image: mongo:latest
-    ports:
-      - "27017:27017"
-    volumes:
-      - tournamentdb:/data/db
-    restart: unless-stopped
   postgres:
     image: postgres:alpine
     user: postgres
@@ -26,15 +19,16 @@ services:
     environment:
       DISCORD_TOKEN: ${DISCORD_TOKEN}
       OCTOKIT_TOKEN: ${OCTOKIT_TOKEN}
-      MONGODB_URL: mongodb://mongo:27017/tournamentdb
+      MONGODB_URL: UNUSED
       CHALLONGE_USERNAME: ${CHALLONGE_USERNAME}
       CHALLONGE_TOKEN: ${CHALLONGE_TOKEN}
       POSTGRESQL_URL: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres/${POSTGRES_DB}"
+      EMCEE_USE_POSTGRES: 1
     volumes:
       - ./dbs:/app/dbs
       - ./logs:/app/logs
+      - ./ormlogs.log:/app/ormlogs.log
     restart: unless-stopped
 
 volumes:
-  tournamentdb:
   database:
