@@ -11,6 +11,7 @@ import { WebsiteInterface } from "./website/interface";
 
 interface MatchScore {
 	playerId: number;
+	playerDiscord: string;
 	playerScore: number;
 	oppScore: number;
 }
@@ -485,6 +486,26 @@ export class TournamentManager implements TournamentInterface {
 				const winnerScore = weWon ? scorePlayer : scoreOpp;
 				const loserScore = weWon ? scoreOpp : scorePlayer;
 				await this.website.submitScore(tournamentId, winner, winnerScore, loserScore);
+				// send DM to opponent
+				const opponent = score.playerDiscord;
+				await this.discord.sendDirectMessage(
+					opponent,
+					`Your opponent has successfully confirmed your score of ${scoreOpp}-${scorePlayer} for Tournament ${tournament.name}, so the score has been saved. Thank you.`
+				);
+				// report confirmation to hosts
+				const channels = tournament.privateChannels;
+				const username = this.discord.getUsername(playerId);
+				const oppMention = this.discord.mentionUser(opponent);
+				const oppName = this.discord.getUsername(opponent);
+				await Promise.all(
+					channels.map(async c => {
+						this.discord.sendMessage(
+							c,
+							`${mention} (${username}) and ${oppMention} (${oppName}) have reported their score of ${scorePlayer}-${scoreOpp} for Tournament ${tournament.name} (${tournamentId}).`
+						);
+					})
+				);
+
 				return `You have successfully reported a score of ${scorePlayer}-${scoreOpp}, and it matches your opponent's report, so the score has been saved. Thank you, ${mention}.`;
 			}
 			// player mismatched confirming
@@ -493,6 +514,7 @@ export class TournamentManager implements TournamentInterface {
 		}
 		this.matchScores[match.matchId] = {
 			playerId: player.challongeId,
+			playerDiscord: player.discordId,
 			playerScore: scorePlayer,
 			oppScore: scoreOpp
 		};
