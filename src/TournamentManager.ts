@@ -402,12 +402,12 @@ export class TournamentManager implements TournamentInterface {
 			})
 		);
 		// start tournament on challonge
-		await this.website.assignByes(tournamentId, tournament.players.length, tournament.byes);
+		const oldRounds = await this.website.assignByes(tournamentId, tournament.players.length, tournament.byes);
 		await this.website.startTournament(tournamentId);
 		const webTourn = await this.website.getTournament(tournamentId);
 		await this.startNewRound(tournament, webTourn.url);
 		// drop dummy players once the tournament has started to give players with byes the win
-		await this.website.dropByes(tournamentId, tournament.byes.length);
+		await this.website.dropByes(tournamentId, tournament.byes.length, oldRounds);
 	}
 
 	public async finishTournament(tournamentId: string, cancel = false): Promise<void> {

@@ -11,6 +11,7 @@ export interface WebsiteWrapper {
 	finishTournament(tournamentId: string): Promise<void>;
 	getPlayers(tournamentId: string): Promise<WebsitePlayer[]>;
 	setSeed(tournamentId: string, playerId: number, newSeed: number): Promise<void>;
+	setRounds(tournamentId: string, numRounds: number): Promise<void>;
 }
 
 export interface WebsitePlayer {
@@ -107,9 +108,12 @@ export class WebsiteInterface {
 		await this.api.setSeed(tournamentId, playerId, seed);
 	}
 
-	public async assignByes(tournamentId: string, numPlayers: number, playersToBye: string[]): Promise<void> {
+	// returns number of rounds before byes were added, to be restored later
+	public async assignByes(tournamentId: string, numPlayers: number, playersToBye: string[]): Promise<number> {
+		const tournament = await this.getTournament(tournamentId);
+		const rounds = tournament.rounds;
 		if (playersToBye.length < 1) {
-			return;
+			return rounds;
 		}
 
 		// Add bye dummy players and rearrange seeds
@@ -130,7 +134,7 @@ export class WebsiteInterface {
 			await this.setSeed(tournamentId, lastPlayer.challongeId, maxSeed);
 			// this may have been the only bye, in which case we're mercifully done
 			if (playersToBye.length < 1) {
-				return;
+				return rounds;
 			}
 		}
 
@@ -160,9 +164,11 @@ export class WebsiteInterface {
 			// we've set discord IDs to this
 			await this.setSeed(tournamentId, byePlayers[i], oppSeed);
 		}
+		return rounds;
 	}
 
-	public async dropByes(tournamentId: string, numByes: number): Promise<void> {
+	// also restores number of rounds to pre-bye state
+	public async dropByes(tournamentId: string, numByes: number, numRounds: number): Promise<void> {
 		const players = await this.api.getPlayers(tournamentId);
 		for (let i = 0; i < numByes; i++) {
 			const player = players.find(p => p.discordId === `BYE${i}`);
@@ -175,5 +181,6 @@ export class WebsiteInterface {
 				await this.removePlayer(tournamentId, player.challongeId);
 			}
 		}
+		await this.api.setRounds(tournamentId, numRounds);
 	}
 }

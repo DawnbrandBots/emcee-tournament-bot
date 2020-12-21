@@ -459,4 +459,17 @@ export class WebsiteWrapperChallonge implements WebsiteWrapper {
 		});
 		await this.validateResponse(response);
 	}
+
+	public async setRounds(tournamentId: string, newRounds: number): Promise<void> {
+		const settings: ChallongeTournamentSettings = {
+			// eslint-disable-next-line @typescript-eslint/camelcase
+			swiss_rounds: newRounds
+		};
+		const response = await fetch(`${this.baseUrl}tournaments/${tournamentId}.json`, {
+			method: "PUT",
+			body: JSON.stringify({ tournament: settings }),
+			headers: { "Content-Type": "application/json" }
+		});
+		await this.validateResponse(response);
+	}
 }

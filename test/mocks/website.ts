@@ -153,4 +153,7 @@ export class WebsiteWrapperMock implements WebsiteWrapper {
 	async setSeed(): Promise<void> {
 		return;
 	}
+	async setRounds(): Promise<void> {
+		return;
+	}
 }

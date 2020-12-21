@@ -102,10 +102,10 @@ describe("Misc functions", function () {
 	});
 
 	it("dropByes - no byes", async function () {
-		await expect(website.dropByes("mc_test", 0)).to.not.be.rejected;
+		await expect(website.dropByes("mc_test", 0, 0)).to.not.be.rejected;
 	});
 
 	it("dropByes - there is a bye", async function () {
-		await expect(website.dropByes("mc_dummy", 1)).to.not.be.rejected;
+		await expect(website.dropByes("mc_dummy", 1, 0)).to.not.be.rejected;
 	});
 });
