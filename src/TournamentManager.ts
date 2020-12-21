@@ -494,17 +494,14 @@ export class TournamentManager implements TournamentInterface {
 				);
 				// report confirmation to hosts
 				const channels = tournament.privateChannels;
+				const username = this.discord.getUsername(playerId);
+				const oppMention = this.discord.mentionUser(opponent);
+				const oppName = this.discord.getUsername(opponent);
 				await Promise.all(
 					channels.map(async c => {
 						this.discord.sendMessage(
 							c,
-							`${mention} (${this.discord.getUsername(playerId)}) and ${this.discord.mentionUser(
-								opponent
-							)} (${this.discord.getUsername(
-								opponent
-							)}) have reported their score of ${scorePlayer}-${scoreOpp} for Tournament ${
-								tournament.name
-							} (${tournamentId}).`
+							`${mention} (${username}) and ${oppMention} (${oppName}) have reported their score of ${scorePlayer}-${scoreOpp} for Tournament ${tournament.name} (${tournamentId}).`
 						);
 					})
 				);
