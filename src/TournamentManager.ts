@@ -360,6 +360,20 @@ export class TournamentManager implements TournamentInterface {
 		);
 	}
 
+	private async sendPlayerGuide(channelId: string, tournamentId: string): Promise<void> {
+		await this.discord.sendMessage(
+			channelId,
+			"This tournament uses player score reporting. At the end of a match, both you and your opponent will have to submit your score.\n" +
+				`If you won 2-0, copy and paste this command:\n\`mc!score ${tournamentId}|2-0\`\n` +
+				`If you won 2-1, copy and paste this command:\n\`mc!score ${tournamentId}|2-1\`\n` +
+				`If you lose 0-2, copy and paste this command:\n\`mc!score ${tournamentId}|0-2\`\n` +
+				`If you lose 1-2, copy and paste this command:\n\`mc!score ${tournamentId}|0-2\`\n` +
+				"If your scores don't match, both of you will need to try again. If you can't agree on what the score was, ask a host to intervene. You will need to send them replays of the games.\n" +
+				`If you want to drop from the tournament and stop playing, copy and paste this command:\n\`mc!drop ${tournamentId}\`\n` +
+				"Please be careful, as using this command will __drop you from the tournament permanently__!"
+		);
+	}
+
 	public async startTournament(tournamentId: string): Promise<void> {
 		const tournament = await this.database.getTournament(tournamentId);
 		if (tournament.players.length < 2) {
@@ -385,7 +399,13 @@ export class TournamentManager implements TournamentInterface {
 				);
 			})
 		);
-
+		// send command guide to players
+		const channels = tournament.publicChannels;
+		await Promise.all(
+			channels.map(async c => {
+				await this.sendPlayerGuide(c, tournamentId);
+			})
+		);
 		// start tournament on challonge
 		await this.website.assignByes(tournamentId, tournament.players.length, tournament.byes);
 		await this.website.startTournament(tournamentId);
