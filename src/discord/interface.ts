@@ -64,6 +64,7 @@ export interface DiscordWrapper {
 	onReaction: (handler: DiscordReactionHandler) => void;
 	onReactionRemove: (handler: DiscordReactionHandler) => void;
 	removeUserReaction: (channelId: string, messageId: string, emoji: string, userId: string) => Promise<boolean>;
+	getMessage(channelId: string, messageId: string): Promise<DiscordMessageIn>;
 	sendMessage(channelId: string, msg: DiscordMessageOut, file?: DiscordAttachmentOut): Promise<DiscordMessageSent>;
 	deleteMessage(channelId: string, messageId: string): Promise<void>;
 	authenticateTO(msg: DiscordMessageIn): Promise<void>;
