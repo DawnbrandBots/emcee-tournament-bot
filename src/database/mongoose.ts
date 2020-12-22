@@ -319,12 +319,12 @@ export class DatabaseWrapperMongoose implements DatabaseWrapper {
 		const tournament = await this.findTournament(tournamentId);
 		// insert new players
 		for (const newPlayer of newDoc.players) {
-			const player = tournament.confirmedParticipants.find(p => p.challongeId === newPlayer);
+			const player = tournament.confirmedParticipants.find(p => p.challongeId === newPlayer.challongeId);
 			// if a player already exist, challonge doesn't have any info that should have changed
 			if (!player) {
 				tournament.confirmedParticipants.push({
-					challongeId: newPlayer,
-					discordId: "DUMMY",
+					challongeId: newPlayer.challongeId,
+					discordId: newPlayer.discordId,
 					deck: "ydke://!!!" // blank deck
 				});
 			}

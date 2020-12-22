@@ -70,7 +70,7 @@ export interface DatabaseTournament {
 export interface SynchroniseTournament {
 	name: string;
 	description: string;
-	players: number[];
+	players: { challongeId: number; discordId: string }[];
 }
 
 export class DatabaseInterface {
