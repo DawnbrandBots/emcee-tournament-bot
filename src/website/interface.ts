@@ -100,7 +100,7 @@ export class WebsiteInterface {
 
 	public async getTopCut(tournamentId: string, cut = 8): Promise<WebsitePlayer[]> {
 		const players = await this.api.getPlayers(tournamentId);
-		return players.sort((p1, p2) => p2.rank - p1.rank).slice(0, cut); // descending order
+		return players.sort((p1, p2) => p1.rank - p2.rank).slice(0, cut); // descending order
 	}
 
 	private async setSeed(tournamentId: string, playerId: number, seed: number): Promise<void> {
