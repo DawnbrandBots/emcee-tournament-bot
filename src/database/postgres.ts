@@ -232,8 +232,9 @@ export class DatabaseWrapperPostgres implements DatabaseWrapper {
 		const tournament = await this.findTournament(tournamentId, ["participants"]);
 		const ejected = tournament.participants.filter(p => !p.confirmed);
 		await getConnection().transaction(async entityManager => {
-			// return await improves async stack traces
-			await Promise.all(ejected.map(async p => await entityManager.remove(p)));
+			for (const p of ejected) {
+				await entityManager.remove(p);
+			}
 			tournament.status = TournamentStatus.IPR;
 			await tournament.save();
 		});
