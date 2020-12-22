@@ -629,7 +629,9 @@ export class TournamentManager implements TournamentInterface {
 		await this.database.synchronise(tournamentId, {
 			name: tournamentData.name,
 			description: tournamentData.desc,
-			players: tournamentData.players.map(p => p.challongeId)
+			players: tournamentData.players.map(p => {
+				return { challongeId: p.challongeId, discordId: p.discordId };
+			})
 		});
 	}
 

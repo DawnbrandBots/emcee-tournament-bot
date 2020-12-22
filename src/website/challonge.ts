@@ -265,8 +265,47 @@ export class WebsiteWrapperChallonge implements WebsiteWrapper {
 		return (await this.validateResponse(response)) as ChallongeTournament;
 	}
 
+	private async setDiscordId(tournamentId: string, playerId: number, newId: string): Promise<void> {
+		const response = await fetch(`${this.baseUrl}tournaments/${tournamentId}/participants/${playerId}.json`, {
+			method: "PUT",
+			body: JSON.stringify({
+				participant: {
+					misc: newId
+				}
+			}),
+			headers: { "Content-Type": "application/json" }
+		});
+		await this.validateResponse(response);
+	}
+
 	public async getTournament(tournamentId: string): Promise<WebsiteTournament> {
-		return this.wrapTournament(await this.showTournament(tournamentId, true, true));
+		const tournament = await this.showTournament(tournamentId, true, true);
+		// this function is called when synchronising the database with challonge
+		// so we have to handle dummy players here
+		if (tournament.tournament.participants) {
+			// find players w/o saved discordId
+			const dummies = tournament.tournament.participants.filter(p => p.participant.misc === null);
+			let i = 0;
+			for (const dummy of dummies) {
+				// increment ID to ensure unique IDs
+				while (tournament.tournament.participants.find(p => p.participant.misc === `DUMMY${i}`)) {
+					i++;
+				}
+				// update ID on remote
+				await this.setDiscordId(tournamentId, dummy.participant.id, `DUMMY${i}`);
+				// update ID on local copy for synchronisation
+				const index = tournament.tournament.participants.findIndex(
+					p => p.participant.id === dummy.participant.id
+				);
+				if (index > -1) {
+					tournament.tournament.participants[index].participant.misc = `DUMMY${i}`;
+				}
+				// increment ID again because we know this one is taken now
+				i++;
+			}
+		}
+
+		return this.wrapTournament(tournament);
 	}
 
 	private async startTournamentRemote(tournamentId: string, settings: StartTournamentSettings): Promise<void> {
@@ -384,7 +423,7 @@ export class WebsiteWrapperChallonge implements WebsiteWrapper {
 		const player = p.participant;
 		return {
 			challongeId: player.id,
-			discordId: player.misc || "DUMMY",
+			discordId: player.misc || "DUMMY", // Dummy players should have already been given an enumerated ID
 			rank: player.final_rank || -1,
 			seed: player.seed
 		};
