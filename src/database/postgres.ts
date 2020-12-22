@@ -232,8 +232,9 @@ export class DatabaseWrapperPostgres implements DatabaseWrapper {
 		const tournament = await this.findTournament(tournamentId, ["participants"]);
 		const ejected = tournament.participants.filter(p => !p.confirmed);
 		await getConnection().transaction(async entityManager => {
-			// return await improves async stack traces
-			await Promise.all(ejected.map(async p => await entityManager.remove(p)));
+			for (const p of ejected) {
+				await entityManager.remove(p);
+			}
 			tournament.status = TournamentStatus.IPR;
 			await tournament.save();
 		});
@@ -248,19 +249,23 @@ export class DatabaseWrapperPostgres implements DatabaseWrapper {
 
 	async confirmPlayer(tournamentId: string, playerId: string, challongeId: number, deck: string): Promise<void> {
 		let participant = await Participant.findOne({ tournamentId, discordId: playerId });
-		if (!participant) {
-			participant = new Participant();
-			participant.tournamentId = tournamentId;
-			participant.discordId = playerId;
-		}
-		if (!participant.confirmed) {
-			participant.confirmed = new ConfirmedParticipant();
-			participant.confirmed.tournamentId = tournamentId;
-			participant.confirmed.discordId = playerId;
-			participant.confirmed.challongeId = challongeId;
-		}
-		participant.confirmed.deck = deck;
-		await participant.save();
+		await getConnection().transaction(async entityManager => {
+			if (!participant) {
+				participant = new Participant();
+				participant.tournamentId = tournamentId;
+				participant.discordId = playerId;
+				await entityManager.save(participant);
+			}
+			if (!participant.confirmed) {
+				participant.confirmed = new ConfirmedParticipant();
+				participant.confirmed.tournamentId = tournamentId;
+				participant.confirmed.discordId = playerId;
+				participant.confirmed.challongeId = challongeId;
+			}
+			participant.confirmed.deck = deck;
+			await entityManager.save(participant.confirmed);
+			await entityManager.save(participant);
+		});
 	}
 
 	async getActiveTournaments(): Promise<DatabaseTournament[]> {
@@ -272,20 +277,27 @@ export class DatabaseWrapperPostgres implements DatabaseWrapper {
 
 	async synchronise(tournamentId: string, newData: SynchroniseTournament): Promise<void> {
 		const tournament = await this.findTournament(tournamentId);
-		for (const newPlayer of newData.players) {
-			let player = tournament.confirmed.find(p => p.challongeId === newPlayer.challongeId);
-			// if a player already exists, Challonge doesn't have any info that should have changed
-			if (!player) {
-				player = new ConfirmedParticipant();
-				player.challongeId = newPlayer.challongeId;
-				player.discordId = newPlayer.discordId;
-				player.deck = "ydke://!!!";
-				tournament.confirmed.push(player);
+		await getConnection().transaction(async entityManager => {
+			tournament.name = newData.name;
+			tournament.description = newData.description;
+			await entityManager.save(tournament);
+
+			for (const newPlayer of newData.players) {
+				if (!tournament.confirmed.find(p => p.challongeId === newPlayer.challongeId)) {
+					const participant = new Participant();
+					participant.tournamentId = tournamentId;
+					participant.discordId = newPlayer.discordId;
+					await entityManager.save(participant);
+					participant.confirmed = new ConfirmedParticipant();
+					participant.confirmed.tournamentId = tournamentId;
+					participant.confirmed.discordId = newPlayer.discordId;
+					participant.confirmed.challongeId = newPlayer.challongeId;
+					participant.confirmed.deck = "ydke://!!!";
+					await entityManager.save(participant.confirmed);
+					await entityManager.save(participant);
+				}
 			}
-		}
-		tournament.name = newData.name;
-		tournament.description = newData.description;
-		await tournament.save();
+		});
 	}
 
 	async registerBye(tournamentId: string, playerId: string): Promise<void> {
