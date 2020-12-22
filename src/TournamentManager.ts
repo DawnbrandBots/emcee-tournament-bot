@@ -104,7 +104,8 @@ export class TournamentManager implements TournamentInterface {
 		hostId: string,
 		serverId: string,
 		name: string,
-		desc: string
+		desc: string,
+		topCut = false
 	): Promise<[string, string]> {
 		// generate a URL based on the name, with added numbers to prevent conflicts
 		const baseUrl = name.toLowerCase().replace(/[^a-zA-Z0-9_]/g, "");
@@ -116,7 +117,7 @@ export class TournamentManager implements TournamentInterface {
 			i++;
 		}
 
-		const web = await this.website.createTournament(name, desc, candidateUrl);
+		const web = await this.website.createTournament(name, desc, candidateUrl, topCut);
 		await this.database.createTournament(hostId, serverId, web);
 		return [web.id, web.url];
 	}
@@ -435,7 +436,8 @@ export class TournamentManager implements TournamentInterface {
 				tournament.hosts[0],
 				tournament.server,
 				`${tournament.name} Top Cut`,
-				`Top Cut for ${tournament.name}`
+				`Top Cut for ${tournament.name}`,
+				true
 			);
 
 			if (tournament.hosts.length > 1) {
