@@ -261,9 +261,9 @@ export class DatabaseWrapperPostgres implements DatabaseWrapper {
 				participant.confirmed.tournamentId = tournamentId;
 				participant.confirmed.discordId = playerId;
 				participant.confirmed.challongeId = challongeId;
-				await entityManager.save(participant.confirmed);
 			}
 			participant.confirmed.deck = deck;
+			await entityManager.save(participant.confirmed);
 			await entityManager.save(participant);
 		});
 	}
@@ -277,20 +277,27 @@ export class DatabaseWrapperPostgres implements DatabaseWrapper {
 
 	async synchronise(tournamentId: string, newData: SynchroniseTournament): Promise<void> {
 		const tournament = await this.findTournament(tournamentId);
-		for (const newPlayer of newData.players) {
-			let player = tournament.confirmed.find(p => p.challongeId === newPlayer.challongeId);
-			// if a player already exists, Challonge doesn't have any info that should have changed
-			if (!player) {
-				player = new ConfirmedParticipant();
-				player.challongeId = newPlayer.challongeId;
-				player.discordId = newPlayer.discordId;
-				player.deck = "ydke://!!!";
-				tournament.confirmed.push(player);
+		await getConnection().transaction(async entityManager => {
+			tournament.name = newData.name;
+			tournament.description = newData.description;
+			await entityManager.save(tournament);
+
+			for (const newPlayer of newData.players) {
+				if (!tournament.confirmed.find(p => p.challongeId === newPlayer.challongeId)) {
+					const participant = new Participant();
+					participant.tournamentId = tournamentId;
+					participant.discordId = newPlayer.discordId;
+					await entityManager.save(participant);
+					participant.confirmed = new ConfirmedParticipant();
+					participant.confirmed.tournamentId = tournamentId;
+					participant.confirmed.discordId = newPlayer.discordId;
+					participant.confirmed.challongeId = newPlayer.challongeId;
+					participant.confirmed.deck = "ydke://!!!";
+					await entityManager.save(participant.confirmed);
+					await entityManager.save(participant);
+				}
 			}
-		}
-		tournament.name = newData.name;
-		tournament.description = newData.description;
-		await tournament.save();
+		});
 	}
 
 	async registerBye(tournamentId: string, playerId: string): Promise<void> {
