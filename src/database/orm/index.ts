@@ -12,7 +12,7 @@ export async function initializeConnection(postgresqlUrl: string): Promise<void>
 		type: "postgres",
 		url: postgresqlUrl,
 		entities: [ChallongeTournament, ConfirmedParticipant, Countdown, Participant, RegisterMessage],
-		logging: true,
+		logging: "all",
 		logger: "file", // TODO: not ideal, synchronous, file location cannot be changed, but custom logger is broken
 		synchronize: true // TODO: process.env.NODE_ENV === "development" and investigate migrations
 	});
