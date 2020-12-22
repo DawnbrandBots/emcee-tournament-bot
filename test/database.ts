@@ -202,7 +202,7 @@ describe("Misc functions", function () {
 			database.synchronise("mc_test", {
 				name: "newName",
 				description: "newDesc",
-				players: [1]
+				players: [{ challongeId: 1, discordId: "DUMMY0" }]
 			})
 		).to.not.be.rejected;
 	});
