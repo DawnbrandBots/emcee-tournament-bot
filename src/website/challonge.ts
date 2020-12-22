@@ -209,10 +209,10 @@ export class WebsiteWrapperChallonge implements WebsiteWrapper {
 		return body;
 	}
 
-	private wrapTournament(t: ChallongeTournament): WebsiteTournament {
+	private async wrapTournament(t: ChallongeTournament, tournamentId: string): Promise<WebsiteTournament> {
 		const tournament = t.tournament;
 		const p = tournament.participants;
-		const participants = p ? p.map(this.wrapPlayer) : [];
+		const participants = p ? await Promise.all(p.map(async pl => this.wrapPlayer(pl, tournamentId, p))) : [];
 		return {
 			id: tournament.url,
 			name: tournament.name,
@@ -236,7 +236,7 @@ export class WebsiteWrapperChallonge implements WebsiteWrapper {
 			headers: { "Content-Type": "application/json" }
 		});
 		const tournament = (await this.validateResponse(response)) as ChallongeTournament;
-		return this.wrapTournament(tournament);
+		return this.wrapTournament(tournament, url);
 	}
 
 	public async updateTournament(tournamentId: string, name: string, desc: string): Promise<void> {
@@ -266,7 +266,7 @@ export class WebsiteWrapperChallonge implements WebsiteWrapper {
 	}
 
 	public async getTournament(tournamentId: string): Promise<WebsiteTournament> {
-		return this.wrapTournament(await this.showTournament(tournamentId, true, true));
+		return this.wrapTournament(await this.showTournament(tournamentId, true, true), tournamentId);
 	}
 
 	private async startTournamentRemote(tournamentId: string, settings: StartTournamentSettings): Promise<void> {
@@ -380,11 +380,46 @@ export class WebsiteWrapperChallonge implements WebsiteWrapper {
 		return (await this.validateResponse(response)) as ChallongeParticipant[];
 	}
 
-	private wrapPlayer(p: ChallongeParticipant): WebsitePlayer {
+	private async setDiscordId(tournamentId: string, playerId: number, newId: string): Promise<void> {
+		const response = await fetch(`${this.baseUrl}tournaments/${tournamentId}/participants/${playerId}.json`, {
+			method: "PUT",
+			body: JSON.stringify({
+				participant: {
+					misc: newId
+				}
+			}),
+			headers: { "Content-Type": "application/json" }
+		});
+		await this.validateResponse(response);
+	}
+
+	private async getDummyId(
+		player: ChallongeParticipant,
+		tournamentId: string,
+		players?: ChallongeParticipant[]
+	): Promise<string> {
+		if (!players) {
+			players = await this.indexPlayers(tournamentId);
+		}
+		let i = 0;
+		let candidateId = `DUMMY${i}`;
+		while (players.find(p => p.participant.misc === candidateId)) {
+			i++;
+			candidateId = `DUMMY${i}`;
+		}
+		await this.setDiscordId(tournamentId, player.participant.id, candidateId);
+		return candidateId;
+	}
+
+	private async wrapPlayer(
+		p: ChallongeParticipant,
+		tournamentId: string,
+		players?: ChallongeParticipant[]
+	): Promise<WebsitePlayer> {
 		const player = p.participant;
 		return {
 			challongeId: player.id,
-			discordId: player.misc || "DUMMY",
+			discordId: player.misc || (await this.getDummyId(p, tournamentId, players)),
 			rank: player.final_rank || -1,
 			seed: player.seed
 		};
@@ -392,7 +427,7 @@ export class WebsiteWrapperChallonge implements WebsiteWrapper {
 
 	public async getPlayers(tournamentId: string): Promise<WebsitePlayer[]> {
 		const players = await this.indexPlayers(tournamentId);
-		return players.map(this.wrapPlayer);
+		return await Promise.all(players.map(async p => await this.wrapPlayer(p, tournamentId, players)));
 	}
 
 	private async finaliseTournament(tournamentId: string, settings: StartTournamentSettings): Promise<void> {
