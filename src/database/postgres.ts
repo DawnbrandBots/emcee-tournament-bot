@@ -249,19 +249,23 @@ export class DatabaseWrapperPostgres implements DatabaseWrapper {
 
 	async confirmPlayer(tournamentId: string, playerId: string, challongeId: number, deck: string): Promise<void> {
 		let participant = await Participant.findOne({ tournamentId, discordId: playerId });
-		if (!participant) {
-			participant = new Participant();
-			participant.tournamentId = tournamentId;
-			participant.discordId = playerId;
-		}
-		if (!participant.confirmed) {
-			participant.confirmed = new ConfirmedParticipant();
-			participant.confirmed.tournamentId = tournamentId;
-			participant.confirmed.discordId = playerId;
-			participant.confirmed.challongeId = challongeId;
-		}
-		participant.confirmed.deck = deck;
-		await participant.save();
+		await getConnection().transaction(async entityManager => {
+			if (!participant) {
+				participant = new Participant();
+				participant.tournamentId = tournamentId;
+				participant.discordId = playerId;
+				await entityManager.save(participant);
+			}
+			if (!participant.confirmed) {
+				participant.confirmed = new ConfirmedParticipant();
+				participant.confirmed.tournamentId = tournamentId;
+				participant.confirmed.discordId = playerId;
+				participant.confirmed.challongeId = challongeId;
+				await entityManager.save(participant.confirmed);
+			}
+			participant.confirmed.deck = deck;
+			await entityManager.save(participant);
+		});
 	}
 
 	async getActiveTournaments(): Promise<DatabaseTournament[]> {
