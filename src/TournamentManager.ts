@@ -446,6 +446,8 @@ export class TournamentManager implements TournamentInterface {
 				}
 			}
 
+			const newTournament = await this.database.getTournament(newId);
+			const newRole = await this.discord.getPlayerRole(newTournament);
 			for (const player of top) {
 				const challongeId = await this.website.registerPlayer(
 					newId,
@@ -455,6 +457,7 @@ export class TournamentManager implements TournamentInterface {
 				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 				const deck = tournament.findPlayer(player.discordId)!.deck;
 				await this.database.confirmPlayer(newId, player.discordId, challongeId, deck);
+				await this.discord.grantPlayerRole(player.discordId, newRole);
 			}
 			for (const channel of tournament.publicChannels) {
 				await this.database.addAnnouncementChannel(newId, channel, "public");
