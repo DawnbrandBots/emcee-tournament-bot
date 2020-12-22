@@ -166,7 +166,7 @@ export class CommandHandler {
 		const [id] = this.validateArgs(args, 1);
 		await this.tournamentManager.authenticateHost(id, msg.author);
 		await this.tournamentManager.finishTournament(id, false);
-		await msg.reply(`Tournament ${id} successfully canceled.`);
+		await msg.reply(`Tournament ${id} successfully finished.`);
 	}
 
 	private async commandCancelTournament(msg: DiscordMessageIn, args: string[]): Promise<void> {
