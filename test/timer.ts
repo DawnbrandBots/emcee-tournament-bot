@@ -14,7 +14,6 @@ proxyquire.noPreserveCache();
 const discordMock = new DiscordWrapperMock();
 const discord = new DiscordInterface(discordMock, "mc!", logger);
 
-// This could also be in a before call as needed
 const countdownEntityStub = {
 	save: sinon.stub(),
 	remove: sinon.stub()
@@ -24,8 +23,11 @@ const { PersistentTimer } = proxyquire("../src/timer", {
 	"./database/orm": { Countdown }
 });
 
-const gsi = setInterval;
 describe("PersistentTimer is a timer", function () {
+	beforeEach(function () {
+		sinon.resetHistory();
+	});
+
 	it(
 		"initializes correctly",
 		test(async function (this: SinonSandbox) {
@@ -70,33 +72,69 @@ describe("PersistentTimer is a timer", function () {
 				"Test timer done",
 				1000
 			);
+			// Tick should be every second
 			await this.clock.tickAsync(500);
 			expect(edit).to.not.have.been.called;
+			// First tick
 			await this.clock.tickAsync(500);
 			expect(edit).to.have.been.calledOnceWith("Time left in the round: `00:02`");
+			// Second tick
 			await this.clock.tickAsync(1000);
 			expect(edit).to.have.been.calledTwice;
 			expect(edit).to.have.been.calledWith("Time left in the round: `00:01`");
+			// Third tick, we should be finished
 			await this.clock.tickAsync(1000);
 			expect(edit).to.have.been.calledThrice;
 			expect(edit).to.have.been.calledWith("Time left in the round: `00:00`");
 			expect(sendMessageSpy).to.have.been.calledWith("1234567890", "Test timer done");
 			expect(countdownEntityStub.remove).to.have.been.called;
+			// Nothing else should happen now
 			await this.clock.runAllAsync();
 			expect(edit).to.have.been.calledThrice;
-			expect(countdownEntityStub.remove).to.have.been.calledOn(countdownEntityStub).calledOnce;
+			expect(countdownEntityStub.remove).to.have.been.calledOnce.and.calledOn(countdownEntityStub);
 			// This message id is from the "mock" DiscordWrapper. We would use a stub otherwise.
 			expect(getMessageStub).to.have.been.calledWithExactly("1234567890", "testId");
 		})
 	);
 
-	it("can be aborted");
-
-	after(() => {
-		if (gsi !== setInterval) {
-			throw setInterval;
-		}
-	});
+	it(
+		"can be aborted",
+		test(async function (this: SinonSandbox) {
+			const sendMessageSpy = this.spy(discord, "sendMessage"); // TODO: replace when we mock Discord the same way
+			const edit = this.stub();
+			const getMessageStub = this.stub(discord, "getMessage").returns(
+				Promise.resolve({
+					id: "",
+					content: "",
+					attachments: [],
+					author: "",
+					channelId: "",
+					serverId: "",
+					reply: this.stub(),
+					react: this.stub(),
+					edit
+				})
+			);
+			const timer = await PersistentTimer.create(
+				discord,
+				new Date(Date.now() + 3000),
+				"1234567890",
+				"Test timer done",
+				1000
+			);
+			// First tick
+			await this.clock.tickAsync(1000);
+			expect(edit).to.have.been.calledOnce;
+			// Abort
+			await timer.abort();
+			expect(countdownEntityStub.remove).to.have.been.calledOnce.and.calledOn(countdownEntityStub);
+			// Nothing else should happen
+			await this.clock.runAllAsync();
+			expect(edit).to.have.been.calledOnce;
+			// No final message sent
+			expect(sendMessageSpy).to.have.been.calledOnce;
+		})
+	);
 });
 
 describe("PersistentTimer is persisted", function () {
