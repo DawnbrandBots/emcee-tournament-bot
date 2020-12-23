@@ -74,11 +74,8 @@ export class TournamentMock implements TournamentInterface {
 		return "For more detail, test the tournament handler!";
 	}
 
-	public async nextRound(tournamentId: string): Promise<number> {
-		if (tournamentId === "mc_final") {
-			return -1;
-		}
-		return 2;
+	public async nextRound(): Promise<void> {
+		return;
 	}
 
 	public async listPlayers(tournamentId: string): Promise<DiscordAttachmentOut> {

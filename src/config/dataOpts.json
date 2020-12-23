@@ -86,9 +86,9 @@
 		"def": ["def", "defense", "defence"]
 	},
 	"banlist": {
-		"owner": "AlphaKretin",
-		"repo": "AlphaKretin.github.io",
-		"path": "data/list"
+		"owner": "ProjectIgnis",
+		"repo": "LFLists",
+		"path": ""
 	},
 	"imageLink": "https://pics.alphakretin.fail/",
 	"imageExt": "png"

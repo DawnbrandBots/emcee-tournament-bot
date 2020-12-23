@@ -33,8 +33,7 @@ export interface DatabaseWrapper {
 		playerId: string
 	): Promise<DatabaseTournament | undefined>;
 	removeConfirmedPlayerForce(tournamentId: string, playerId: string): Promise<DatabaseTournament | undefined>;
-	startTournament(tournamentId: string, rounds: number): Promise<string[]>;
-	nextRound(tournamentId: string): Promise<number>;
+	startTournament(tournamentId: string): Promise<string[]>;
 	finishTournament(tournamentId: string): Promise<void>;
 	synchronise(tournamentId: string, newData: SynchroniseTournament): Promise<void>;
 	registerBye(tournamentId: string, playerId: string): Promise<void>;
@@ -71,7 +70,7 @@ export interface DatabaseTournament {
 export interface SynchroniseTournament {
 	name: string;
 	description: string;
-	players: number[];
+	players: { challongeId: number; discordId: string }[];
 }
 
 export class DatabaseInterface {
@@ -196,12 +195,8 @@ export class DatabaseInterface {
 		return await this.db.removeConfirmedPlayerForce(tournamentId, playerId);
 	}
 
-	public async startTournament(tournamentId: string, rounds: number): Promise<string[]> {
-		return this.db.startTournament(tournamentId, rounds);
-	}
-
-	public async nextRound(tournamentId: string): Promise<number> {
-		return await this.db.nextRound(tournamentId);
+	public async startTournament(tournamentId: string): Promise<string[]> {
+		return this.db.startTournament(tournamentId);
 	}
 
 	public async finishTournament(tournamentId: string): Promise<void> {

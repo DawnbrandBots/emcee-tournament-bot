@@ -11,6 +11,7 @@ import { WebsiteInterface } from "./website/interface";
 
 interface MatchScore {
 	playerId: number;
+	playerDiscord: string;
 	playerScore: number;
 	oppScore: number;
 }
@@ -30,7 +31,6 @@ export interface TournamentInterface {
 	removeHost(tournamentId: string, newHost: string): Promise<void>;
 	openTournament(tournamentId: string): Promise<void>;
 	startTournament(tournamentId: string): Promise<void>;
-	cancelTournament(tournamentId: string): Promise<void>;
 	finishTournament(tournamentId: string, cancel: boolean | undefined): Promise<void>;
 	submitScore(
 		tournamentId: string,
@@ -39,10 +39,10 @@ export interface TournamentInterface {
 		scoreOpp: number,
 		host?: boolean
 	): Promise<string>;
-	nextRound(tournamentId: string): Promise<number>;
+	nextRound(tournamentId: string): Promise<void>;
 	listPlayers(tournamentId: string): Promise<DiscordAttachmentOut>;
 	getPlayerDeck(tournamentId: string, playerId: string): Promise<Deck>;
-	dropPlayer(tournamentId: string, playerId: string): Promise<void>;
+	dropPlayer(tournamentId: string, playerId: string, force?: boolean): Promise<void>;
 	syncTournament(tournamentId: string): Promise<void>;
 	generatePieChart(tournamentId: string): Promise<DiscordAttachmentOut>;
 	generateDeckDump(tournamentId: string): Promise<DiscordAttachmentOut>;
@@ -104,7 +104,8 @@ export class TournamentManager implements TournamentInterface {
 		hostId: string,
 		serverId: string,
 		name: string,
-		desc: string
+		desc: string,
+		topCut = false
 	): Promise<[string, string]> {
 		// generate a URL based on the name, with added numbers to prevent conflicts
 		const baseUrl = name.toLowerCase().replace(/[^a-zA-Z0-9_]/g, "");
@@ -116,7 +117,7 @@ export class TournamentManager implements TournamentInterface {
 			i++;
 		}
 
-		const web = await this.website.createTournament(name, desc, candidateUrl);
+		const web = await this.website.createTournament(name, desc, candidateUrl, topCut);
 		await this.database.createTournament(hostId, serverId, web);
 		return [web.id, web.url];
 	}
@@ -322,13 +323,12 @@ export class TournamentManager implements TournamentInterface {
 
 	private async sendNewRoundMessage(
 		channelId: string,
-		round: number,
 		tournament: DatabaseTournament,
 		url: string,
 		bye?: string
 	): Promise<void> {
 		const role = await this.discord.getPlayerRole(tournament);
-		let message = `Round ${round} of ${tournament.name} has begun! ${this.discord.mentionRole(
+		let message = `A new round of ${tournament.name} has begun! ${this.discord.mentionRole(
 			role
 		)}\nPairings: ${url}`;
 		if (bye) {
@@ -337,16 +337,15 @@ export class TournamentManager implements TournamentInterface {
 		await this.discord.sendMessage(channelId, message);
 	}
 
-	private async startNewRound(tournament: DatabaseTournament, url: string, round: number): Promise<void> {
+	private async startNewRound(tournament: DatabaseTournament, url: string): Promise<void> {
 		const bye = await this.website.getBye(tournament.id);
-		// send round 1 message
 		const channels = tournament.publicChannels;
 		await Promise.all(
 			channels.map(async c => {
 				if (c in this.timers) {
 					await this.timers[c].abort();
 				}
-				await this.sendNewRoundMessage(c, round, tournament, url, bye);
+				await this.sendNewRoundMessage(c, tournament, url, bye);
 				this.timers[c] = await this.timer.create(
 					50,
 					c,
@@ -356,6 +355,20 @@ export class TournamentManager implements TournamentInterface {
 					)}! Please end the current phase, then the player with the lower LP must forfeit!`
 				);
 			})
+		);
+	}
+
+	private async sendPlayerGuide(channelId: string, tournamentId: string): Promise<void> {
+		await this.discord.sendMessage(
+			channelId,
+			"This tournament uses player score reporting. At the end of a match, both you and your opponent will have to submit your score.\n" +
+				`If you won 2-0, copy and paste this command:\n\`mc!score ${tournamentId}|2-0\`\n` +
+				`If you won 2-1, copy and paste this command:\n\`mc!score ${tournamentId}|2-1\`\n` +
+				`If you lose 0-2, copy and paste this command:\n\`mc!score ${tournamentId}|0-2\`\n` +
+				`If you lose 1-2, copy and paste this command:\n\`mc!score ${tournamentId}|0-2\`\n` +
+				"If your scores don't match, both of you will need to try again. If you can't agree on what the score was, ask a host to intervene. You will need to send them replays of the games.\n" +
+				`If you want to drop from the tournament and stop playing, copy and paste this command:\n\`mc!drop ${tournamentId}\`\n` +
+				"Please be careful, as using this command will __drop you from the tournament permanently__!"
 		);
 	}
 
@@ -372,10 +385,8 @@ export class TournamentManager implements TournamentInterface {
 				await this.discord.deleteMessage(m.channelId, m.messageId);
 			})
 		);
-		// get challonge rounds with current player pool
-		const webTourn = await this.website.getTournament(tournamentId);
 		// drop pending participants
-		const droppedPlayers = await this.database.startTournament(tournamentId, webTourn.rounds);
+		const droppedPlayers = await this.database.startTournament(tournamentId);
 		await Promise.all(
 			droppedPlayers.map(async p => {
 				await this.discord.sendDirectMessage(
@@ -384,11 +395,18 @@ export class TournamentManager implements TournamentInterface {
 				);
 			})
 		);
-
+		// send command guide to players
+		const channels = tournament.publicChannels;
+		await Promise.all(
+			channels.map(async c => {
+				await this.sendPlayerGuide(c, tournamentId);
+			})
+		);
 		// start tournament on challonge
 		await this.website.assignByes(tournamentId, tournament.players.length, tournament.byes);
 		await this.website.startTournament(tournamentId);
-		await this.startNewRound(tournament, webTourn.url, 1);
+		const webTourn = await this.website.getTournament(tournamentId);
+		await this.startNewRound(tournament, webTourn.url);
 		// drop dummy players once the tournament has started to give players with byes the win
 		await this.website.dropByes(tournamentId, tournament.byes.length);
 	}
@@ -418,7 +436,8 @@ export class TournamentManager implements TournamentInterface {
 				tournament.hosts[0],
 				tournament.server,
 				`${tournament.name} Top Cut`,
-				`Top Cut for ${tournament.name}`
+				`Top Cut for ${tournament.name}`,
+				true
 			);
 
 			if (tournament.hosts.length > 1) {
@@ -427,6 +446,8 @@ export class TournamentManager implements TournamentInterface {
 				}
 			}
 
+			const newTournament = await this.database.getTournament(newId);
+			const newRole = await this.discord.getPlayerRole(newTournament);
 			for (const player of top) {
 				const challongeId = await this.website.registerPlayer(
 					newId,
@@ -436,6 +457,7 @@ export class TournamentManager implements TournamentInterface {
 				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 				const deck = tournament.findPlayer(player.discordId)!.deck;
 				await this.database.confirmPlayer(newId, player.discordId, challongeId, deck);
+				await this.discord.grantPlayerRole(player.discordId, newRole);
 			}
 			for (const channel of tournament.publicChannels) {
 				await this.database.addAnnouncementChannel(newId, channel, "public");
@@ -445,10 +467,6 @@ export class TournamentManager implements TournamentInterface {
 			}
 			await this.startTournament(newId);
 		}
-	}
-
-	public async cancelTournament(tournamentId: string): Promise<void> {
-		await this.finishTournament(tournamentId, true);
 	}
 
 	public async submitScore(
@@ -485,6 +503,26 @@ export class TournamentManager implements TournamentInterface {
 				const winnerScore = weWon ? scorePlayer : scoreOpp;
 				const loserScore = weWon ? scoreOpp : scorePlayer;
 				await this.website.submitScore(tournamentId, winner, winnerScore, loserScore);
+				// send DM to opponent
+				const opponent = score.playerDiscord;
+				await this.discord.sendDirectMessage(
+					opponent,
+					`Your opponent has successfully confirmed your score of ${scoreOpp}-${scorePlayer} for Tournament ${tournament.name}, so the score has been saved. Thank you.`
+				);
+				// report confirmation to hosts
+				const channels = tournament.privateChannels;
+				const username = this.discord.getUsername(playerId);
+				const oppMention = this.discord.mentionUser(opponent);
+				const oppName = this.discord.getUsername(opponent);
+				await Promise.all(
+					channels.map(async c => {
+						this.discord.sendMessage(
+							c,
+							`${mention} (${username}) and ${oppMention} (${oppName}) have reported their score of ${scorePlayer}-${scoreOpp} for Tournament ${tournament.name} (${tournamentId}).`
+						);
+					})
+				);
+
 				return `You have successfully reported a score of ${scorePlayer}-${scoreOpp}, and it matches your opponent's report, so the score has been saved. Thank you, ${mention}.`;
 			}
 			// player mismatched confirming
@@ -493,24 +531,19 @@ export class TournamentManager implements TournamentInterface {
 		}
 		this.matchScores[match.matchId] = {
 			playerId: player.challongeId,
+			playerDiscord: player.discordId,
 			playerScore: scorePlayer,
 			oppScore: scoreOpp
 		};
 		return `You have reported a score of ${scorePlayer}-${scoreOpp}, ${mention}. Your opponent still needs to confirm this score.`;
 	}
 
-	public async nextRound(tournamentId: string): Promise<number> {
-		await this.website.tieMatches(tournamentId);
-		const round = await this.database.nextRound(tournamentId);
-		// finalise tournament
-		if (round === -1) {
-			await this.finishTournament(tournamentId);
-			return round;
-		}
+	// specifically only handles telling participants about a new round
+	// hosts should handle outstanding scores individually with forcescore
+	public async nextRound(tournamentId: string): Promise<void> {
 		const tournament = await this.database.getTournament(tournamentId);
 		const webTourn = await this.website.getTournament(tournamentId);
-		await this.startNewRound(tournament, webTourn.url, round);
-		return round;
+		await this.startNewRound(tournament, webTourn.url);
 	}
 
 	public async listPlayers(tournamentId: string): Promise<DiscordAttachmentOut> {
@@ -550,58 +583,49 @@ export class TournamentManager implements TournamentInterface {
 		// if wasn't found pending, try to remove confirmed
 		const tournament = await this.database.removeConfirmedPlayerReaction(msg.channelId, msg.id, playerId);
 		if (tournament) {
-			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-			const player = tournament.findPlayer(playerId)!;
-			await this.website.removePlayer(tournament.id, player.challongeId);
-			await this.discord.removePlayerRole(playerId, await this.discord.getPlayerRole(tournament));
-			this.logger.verbose(`User ${playerId} dropped from tournament ${tournament.id}.`);
-			await this.discord.sendDirectMessage(
-				playerId,
-				`You have successfully dropped from Tournament ${tournament.name}.`
-			);
-			const channels = tournament.privateChannels;
-			await Promise.all(
-				channels.map(
-					async c =>
-						await this.discord.sendMessage(
-							c,
-							`Player ${this.discord.mentionUser(playerId)} (${this.discord.getUsername(
-								playerId
-							)}) has chosen to drop from Tournament ${tournament.name} (${tournament.id}).`
-						)
-				)
-			);
+			await this.sendDropMessage(tournament, playerId, tournament.id);
 		}
 	}
 
-	public async dropPlayer(tournamentId: string, playerId: string): Promise<void> {
+	public async dropPlayer(tournamentId: string, playerId: string, force = false): Promise<void> {
 		const tournament = await this.database.removeConfirmedPlayerForce(tournamentId, playerId);
 		if (tournament) {
-			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-			const player = tournament.findPlayer(playerId)!;
-			await this.website.removePlayer(tournament.id, player.challongeId);
-			await this.discord.removePlayerRole(playerId, await this.discord.getPlayerRole(tournament));
-			this.logger.verbose(`User ${playerId} dropped from tournament ${tournament.id} by host.`);
-			await this.discord.sendDirectMessage(
-				playerId,
-				`You have dropped from Tournament ${tournament.name} by the hosts.`
-			);
-			const channels = tournament.privateChannels;
-			await Promise.all(
-				channels.map(
-					async c =>
-						await this.discord.sendMessage(
-							c,
-							`Player ${this.discord.mentionUser(playerId)} (${this.discord.getUsername(
-								playerId
-							)}) forcefully dropped from Tournament ${tournament.name} (${tournament.id}).`
-						)
-				)
-			);
-			const messages = await this.database.getRegisterMessages(tournamentId);
-			for (const m of messages) {
-				await this.discord.removeUserReaction(m.channelId, m.messageId, this.CHECK_EMOJI, playerId);
-			}
+			await this.sendDropMessage(tournament, playerId, tournamentId, force);
+		}
+	}
+
+	private async sendDropMessage(
+		tournament: DatabaseTournament,
+		playerId: string,
+		tournamentId: string,
+		force = false
+	): Promise<void> {
+		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+		const player = tournament.findPlayer(playerId)!;
+		await this.website.removePlayer(tournament.id, player.challongeId);
+		await this.discord.removePlayerRole(playerId, await this.discord.getPlayerRole(tournament));
+		this.logger.verbose(`User ${playerId} dropped from tournament ${tournament.id}${force ? " by host" : ""}.`);
+		await this.discord.sendDirectMessage(
+			playerId,
+			force
+				? `You have been dropped from Tournament ${tournament.name} by the hosts.`
+				: `You have successfully dropped from Tournament ${tournament.name}.`
+		);
+		const channels = tournament.privateChannels;
+		await Promise.all(
+			channels.map(
+				async c =>
+					await this.discord.sendMessage(
+						c,
+						`Player ${this.discord.mentionUser(playerId)} (${this.discord.getUsername(playerId)}) has ${
+							force ? "been forcefully dropped" : "chosen to drop"
+						} from Tournament ${tournament.name} (${tournament.id}).`
+					)
+			)
+		);
+		const messages = await this.database.getRegisterMessages(tournamentId);
+		for (const m of messages) {
+			await this.discord.removeUserReaction(m.channelId, m.messageId, this.CHECK_EMOJI, playerId);
 		}
 	}
 
@@ -610,7 +634,9 @@ export class TournamentManager implements TournamentInterface {
 		await this.database.synchronise(tournamentId, {
 			name: tournamentData.name,
 			description: tournamentData.desc,
-			players: tournamentData.players.map(p => p.challongeId)
+			players: tournamentData.players.map(p => {
+				return { challongeId: p.challongeId, discordId: p.discordId };
+			})
 		});
 	}
 

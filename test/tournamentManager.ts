@@ -87,7 +87,7 @@ describe("Tournament flow commands", function () {
 		await expect(tournament.startTournament("smallTournament")).to.be.rejectedWith(UserError);
 	});
 	it("Cancel tournament", async function () {
-		await tournament.cancelTournament("mc_tourn1");
+		await tournament.finishTournament("mc_tourn1", true);
 		expect(discord.getResponse("channel1")).to.equal(
 			"Tournament 1 has been cancelled. Thank you all for playing! <@&role>\nResults: https://example.com/url"
 		);
@@ -117,14 +117,21 @@ describe("Tournament flow commands", function () {
 		expect(response5).to.equal(
 			"You have successfully reported a score of 1-2, and it matches your opponent's report, so the score has been saved. Thank you, <@player1>."
 		);
+		const response6 = discord.getResponse("player2");
+		expect(response6).to.equal(
+			"Your opponent has successfully confirmed your score of 2-1 for Tournament Tournament 1, so the score has been saved. Thank you."
+		);
+		const response7 = discord.getResponse("channel2");
+		expect(response7).to.equal(
+			"<@player1> (player1) and <@player2> (player2) have reported their score of 1-2 for Tournament Tournament 1 (mc_tourn1)."
+		);
 	});
 	it("Submit score - host", async function () {
 		const response = await tournament.submitScore("mc_tourn1", "player1", 2, 1, true);
 		expect(response).to.equal("");
 	});
 	it("Next round", async function () {
-		const round = await tournament.nextRound("mc_tourn1");
-		expect(round).to.equal(2);
+		await tournament.nextRound("mc_tourn1");
 		expect(discord.getResponse("channel1")).to.equal("Time left in the round: `50:00`"); // new round means new timer
 	});
 });
@@ -148,11 +155,20 @@ describe("Misc commands", function () {
 			"ydke://5m3qBeZt6gV9+McCffjHAn34xwK8beUDvG3lA7xt5QMfX5ICWvTJAVr0yQFa9MkBrDOdBKwznQSsM50Ey/UzAMv1MwDL9TMAdAxQBQ6wYAKvI94AryPeAK8j3gCmm/QBWXtjBOMavwDjGr8A4xq/AD6kcQGeE8oEnhPKBJ4TygSlLfUDpS31A6Ut9QMiSJkAIkiZACJImQCANVMDgDVTAw==!FtIXALVcnwC1XJ8AiBF2A4gRdgNLTV4Elt0IAMf4TQHCT0EAvw5JAqSaKwD5UX8EweoDA2LO9ATaI+sD!H1+SAg==!"
 		);
 	});
-	it("Drop player", async function () {
+	it("Drop player - choose", async function () {
 		await tournament.dropPlayer("mc_tourn1", "player1");
-		expect(discord.getResponse("player1")).to.equal("You have dropped from Tournament Tournament 1 by the hosts.");
+		expect(discord.getResponse("player1")).to.equal("You have successfully dropped from Tournament Tournament 1.");
 		expect(discord.getResponse("channel2")).to.equal(
-			"Player <@player1> (player1) forcefully dropped from Tournament Tournament 1 (mc_tourn1)."
+			"Player <@player1> (player1) has chosen to drop from Tournament Tournament 1 (mc_tourn1)."
+		);
+	});
+	it("Drop player - force", async function () {
+		await tournament.dropPlayer("mc_tourn1", "player1", true);
+		expect(discord.getResponse("player1")).to.equal(
+			"You have been dropped from Tournament Tournament 1 by the hosts."
+		);
+		expect(discord.getResponse("channel2")).to.equal(
+			"Player <@player1> (player1) has been forcefully dropped from Tournament Tournament 1 (mc_tourn1)."
 		);
 	});
 	it("Sync tournament", async function () {

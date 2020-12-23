@@ -92,12 +92,6 @@ export class WebsiteInterface {
 		await this.api.submitScore(tournamentId, winner, winnerScore, loserScore);
 	}
 
-	public async tieMatches(tournamentId: string): Promise<void> {
-		const matches = await this.api.getMatches(tournamentId);
-		// we can use either player to report a tie, the submitScore logic will make it a tie
-		await Promise.all(matches.map(async m => await this.submitScore(tournamentId, m.player1, 0, 0)));
-	}
-
 	public async finishTournament(tournamentId: string): Promise<WebsiteTournament> {
 		const tournament = await this.api.getTournament(tournamentId);
 		await this.api.finishTournament(tournamentId);
@@ -106,7 +100,7 @@ export class WebsiteInterface {
 
 	public async getTopCut(tournamentId: string, cut = 8): Promise<WebsitePlayer[]> {
 		const players = await this.api.getPlayers(tournamentId);
-		return players.sort((p1, p2) => p2.rank - p1.rank).slice(0, cut); // descending order
+		return players.sort((p1, p2) => p1.rank - p2.rank).slice(0, cut); // descending order
 	}
 
 	private async setSeed(tournamentId: string, playerId: number, seed: number): Promise<void> {
@@ -122,7 +116,7 @@ export class WebsiteInterface {
 		const numByes = playersToBye.length - (numPlayers % 2); // if odd no. of players, 1 can get the natural bye
 		const byePlayers = [];
 		for (let i = 0; i < numByes; i++) {
-			byePlayers.push(await this.registerPlayer(tournamentId, `Round 1 Bye #${i + 1}`, `DUMMY${i}`));
+			byePlayers.push(await this.registerPlayer(tournamentId, `Round 1 Bye #${i + 1}`, `BYE${i}`));
 		}
 		const maxSeed = numPlayers + numByes; // new no. of players
 		const players = await this.api.getPlayers(tournamentId);
@@ -171,7 +165,7 @@ export class WebsiteInterface {
 	public async dropByes(tournamentId: string, numByes: number): Promise<void> {
 		const players = await this.api.getPlayers(tournamentId);
 		for (let i = 0; i < numByes; i++) {
-			const player = players.find(p => p.discordId === `DUMMY${i}`);
+			const player = players.find(p => p.discordId === `BYE${i}`);
 			// could assert non-null here cuz we made these players
 			// but this is simple enough and handles them being manually dropped
 			if (player) {

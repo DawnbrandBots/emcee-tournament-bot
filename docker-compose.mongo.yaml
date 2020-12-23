@@ -1,0 +1,25 @@
+version: "3.8"
+services:
+  mongo:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    volumes:
+      - tournamentdb:/data/db
+    restart: unless-stopped
+  bot:
+    build: .
+    environment:
+      DISCORD_TOKEN: ${DISCORD_TOKEN}
+      OCTOKIT_TOKEN: ${OCTOKIT_TOKEN}
+      MONGODB_URL: mongodb://mongo:27017/tournamentdb
+      CHALLONGE_USERNAME: ${CHALLONGE_USERNAME}
+      CHALLONGE_TOKEN: ${CHALLONGE_TOKEN}
+      POSTGRESQL_URL: UNUSED
+    volumes:
+      - ./dbs:/app/dbs
+      - ./logs:/app/logs
+    restart: unless-stopped
+
+volumes:
+  tournamentdb:

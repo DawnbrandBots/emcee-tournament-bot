@@ -32,15 +32,19 @@ export class ChallongeTournament extends BaseEntity {
 
 	/// An array of Discord user snowflakes. Whenever hosts are queried, the rest
 	/// of the tournament information is wanted anyway. Should be distinct.
-	@Column("varchar", { length: 20, array: true, default: "{}" })
+	// @Column("varchar", { length: 20, array: true, default: "{}" })
+	// https://github.com/typeorm/typeorm/issues/6990
+	@Column("json", { default: [] })
 	hosts!: string[];
 
 	/// An array of Discord channel snowflakes. Should be distinct.
-	@Column("varchar", { length: 20, array: true, default: "{}" })
+	// @Column("varchar", { length: 20, array: true, default: "{}" })
+	@Column("json", { default: [] })
 	publicChannels!: string[];
 
 	/// An array of Discord channel snowflakes. Should be distinct.
-	@Column("varchar", { length: 20, array: true, default: "{}" })
+	// @Column("varchar", { length: 20, array: true, default: "{}" })
+	@Column("json", { default: [] })
 	privateChannels!: string[];
 
 	/// Simple state progression in the listed order above.
@@ -50,14 +54,6 @@ export class ChallongeTournament extends BaseEntity {
 	/// Optional maximum capacity of this tournament. 0 indicates no limit. Negatives invalid.
 	@Column({ default: 0 })
 	participantLimit!: number;
-
-	/// Current round of a running tournament. Should be zero if preparing. Negatives invalid.
-	@Column({ default: 0 })
-	currentRound!: number;
-
-	/// Total rounds of Swiss. Negatives invalid.
-	@Column({ default: 0 })
-	totalRounds!: number;
 
 	/// The ORM relationship to the registration messages that identify this tournament.
 	@OneToMany(() => RegisterMessage, rm => rm.tournament, { cascade: true, onDelete: "CASCADE" })

@@ -12,8 +12,9 @@ export async function initializeConnection(postgresqlUrl: string): Promise<void>
 		type: "postgres",
 		url: postgresqlUrl,
 		entities: [ChallongeTournament, ConfirmedParticipant, Countdown, Participant, RegisterMessage],
-		logging: true,
-		synchronize: process.env.NODE_ENV === "development"
+		logging: "all",
+		logger: "file", // TODO: not ideal, synchronous, file location cannot be changed, but custom logger is broken
+		synchronize: true // TODO: process.env.NODE_ENV === "development" and investigate migrations
 	});
 	logger.info(`Connected to PostgreSQL via TypeORM`);
 }
