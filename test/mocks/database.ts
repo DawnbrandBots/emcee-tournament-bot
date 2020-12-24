@@ -6,7 +6,7 @@ export class DatabaseWrapperMock implements DatabaseWrapper {
 	constructor() {
 		this.tournaments = [
 			{
-				id: "mc_tourn1",
+				id: "tourn1",
 				name: "Tournament 1",
 				description: "The first tournament",
 				status: "preparing",
@@ -95,6 +95,22 @@ export class DatabaseWrapperMock implements DatabaseWrapper {
 	}
 	async getTournament(tournamentId: string): Promise<DatabaseTournament> {
 		if (tournamentId.startsWith("small")) {
+			return {
+				id: tournamentId,
+				name: "Small tournament",
+				description: "A Small Tournament",
+				status: "preparing",
+				hosts: ["testHost"],
+				players: [],
+				server: "testServer",
+				publicChannels: [],
+				privateChannels: [],
+				byes: [],
+				findHost: (): boolean => true,
+				findPlayer: (): undefined => undefined
+			};
+		}
+		if (tournamentId === "create1") {
 			return {
 				id: tournamentId,
 				name: "Small tournament",

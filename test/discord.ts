@@ -127,7 +127,7 @@ describe("Messages", function () {
 });
 
 const sampleTournament: DatabaseTournament = {
-	id: "mc_test",
+	id: "test",
 	name: "Test tournament",
 	description: "A sample tournament",
 	status: "preparing",
