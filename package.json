@@ -22,7 +22,7 @@
 		"reflect-metadata": "^0.1.13",
 		"typeorm": "^0.2.29",
 		"winston": "^3.3.3",
-		"ydeck": "^0.1.1",
+		"ydeck": "^0.1.2",
 		"ydke": "^1.1.0",
 		"ygopro-data": "^1.3.3"
 	},
