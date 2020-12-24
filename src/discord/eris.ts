@@ -329,6 +329,9 @@ export class DiscordWrapperEris implements DiscordWrapper {
 
 	public getMentionedUser(m: DiscordMessageIn): string {
 		const msg = this.wrappedMessages[m.id];
+		if (msg.mentions.length < 1) {
+			throw new UserError(`Message does not mention a user!\n\`${msg.content}\``);
+		}
 		return msg.mentions[0].id;
 	}
 
