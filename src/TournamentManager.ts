@@ -119,11 +119,11 @@ export class TournamentManager implements TournamentInterface {
 	): Promise<[string, string]> {
 		// generate a URL based on the name, with added numbers to prevent conflicts
 		const baseUrl = name.toLowerCase().replace(/[^a-zA-Z0-9_]/g, "");
-		let candidateUrl = `mc_${baseUrl}`;
+		let candidateUrl = `${baseUrl}`;
 		let i = 0;
 		// while a tournament with that ID exists, the URL is taken
 		while (await this.checkUrlTaken(candidateUrl)) {
-			candidateUrl = `mc_${baseUrl}${i}`;
+			candidateUrl = `${baseUrl}${i}`;
 			i++;
 		}
 
