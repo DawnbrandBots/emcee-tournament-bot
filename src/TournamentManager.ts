@@ -6,7 +6,7 @@ import { getDeck } from "./deck/deck";
 import { getDeckFromMessage, prettyPrint } from "./deck/discordDeck";
 import { DiscordAttachmentOut, DiscordInterface, DiscordMessageIn, DiscordMessageLimited } from "./discord/interface";
 import { TimerInterface } from "./timer/interface";
-import { BlockedDMsError, TournamentNotFoundError, UserError } from "./util/errors";
+import { BlockedDMsError, ChallongeAPIError, TournamentNotFoundError, UserError } from "./util/errors";
 import { WebsiteInterface } from "./website/interface";
 
 interface MatchScore {
@@ -90,10 +90,11 @@ export class TournamentManager implements TournamentInterface {
 
 	private async checkUrlTaken(url: string): Promise<boolean> {
 		try {
+			await this.website.getTournament(url);
 			await this.database.getTournament(url);
 			return true;
 		} catch (e) {
-			if (e instanceof TournamentNotFoundError) {
+			if (e instanceof TournamentNotFoundError || e instanceof ChallongeAPIError) {
 				return false;
 			}
 			throw e;
