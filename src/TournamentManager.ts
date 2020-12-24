@@ -91,10 +91,19 @@ export class TournamentManager implements TournamentInterface {
 	private async checkUrlTaken(url: string): Promise<boolean> {
 		try {
 			await this.website.getTournament(url);
+			return true;
+		} catch (e) {
+			// if the error is it not being found on website
+			// we should continue to the database check
+			if (!(e instanceof ChallongeAPIError)) {
+				throw e;
+			}
+		}
+		try {
 			await this.database.getTournament(url);
 			return true;
 		} catch (e) {
-			if (e instanceof TournamentNotFoundError || e instanceof ChallongeAPIError) {
+			if (e instanceof TournamentNotFoundError) {
 				return false;
 			}
 			throw e;
