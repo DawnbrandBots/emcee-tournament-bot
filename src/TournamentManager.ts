@@ -678,7 +678,7 @@ export class TournamentManager implements TournamentInterface {
 				const deck = await getDeck(player.deck);
 				return [
 					this.discord.getUsername(p),
-					`Main: ${deck.mainText}, Extra: ${deck.extraText}, Side: ${deck.sideText}`.replace(/\n/, ", ")
+					`Main: ${deck.mainText}, Extra: ${deck.extraText}, Side: ${deck.sideText}`.replace(/\n/g, ", ")
 				];
 			})
 		);
