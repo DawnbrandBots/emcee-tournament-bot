@@ -11,8 +11,16 @@ import {
 	Role,
 	TextChannel
 } from "eris";
-import { discordToken } from "../config/env";
+import { Logger } from "winston";
 import { toRole } from "../config/config.json";
+import { discordToken } from "../config/env";
+import {
+	AssertTextChannelError,
+	BlockedDMsError,
+	MiscInternalError,
+	UnauthorisedTOError,
+	UserError
+} from "../util/errors";
 import {
 	DiscordAttachmentOut,
 	DiscordDeleteHandler,
@@ -24,14 +32,6 @@ import {
 	DiscordReactionHandler,
 	DiscordWrapper
 } from "./interface";
-import {
-	AssertTextChannelError,
-	BlockedDMsError,
-	MiscInternalError,
-	UnauthorisedTOError,
-	UserError
-} from "../util/errors";
-import { Logger } from "winston";
 
 export class DiscordWrapperEris implements DiscordWrapper {
 	private messageHandlers: DiscordMessageHandler[];
@@ -101,6 +101,10 @@ export class DiscordWrapperEris implements DiscordWrapper {
 
 	private unwrapFileOut(file?: DiscordAttachmentOut): MessageFile | undefined {
 		return file ? { file: file.contents, name: file.filename } : undefined;
+	}
+
+	public async getMessage(channelId: string, messageId: string): Promise<DiscordMessageIn> {
+		return this.wrapMessageIn(await this.bot.getMessage(channelId, messageId));
 	}
 
 	public async sendMessage(

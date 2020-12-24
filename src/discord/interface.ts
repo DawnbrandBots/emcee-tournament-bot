@@ -64,6 +64,7 @@ export interface DiscordWrapper {
 	onReaction: (handler: DiscordReactionHandler) => void;
 	onReactionRemove: (handler: DiscordReactionHandler) => void;
 	removeUserReaction: (channelId: string, messageId: string, emoji: string, userId: string) => Promise<boolean>;
+	getMessage(channelId: string, messageId: string): Promise<DiscordMessageIn>;
 	sendMessage(channelId: string, msg: DiscordMessageOut, file?: DiscordAttachmentOut): Promise<DiscordMessageSent>;
 	deleteMessage(channelId: string, messageId: string): Promise<void>;
 	authenticateTO(msg: DiscordMessageIn): Promise<void>;
@@ -167,6 +168,10 @@ export class DiscordInterface {
 
 	public mentionRole(roleId: string): string {
 		return `<@&${roleId}>`;
+	}
+
+	public async getMessage(channelId: string, messageId: string): Promise<DiscordMessageIn> {
+		return await this.api.getMessage(channelId, messageId);
 	}
 
 	public async sendMessage(

@@ -84,6 +84,10 @@ export class DiscordWrapperMock implements DiscordWrapper {
 		return this.emoji[testCode];
 	}
 
+	public getMessage(): Promise<DiscordMessageIn> {
+		throw new Error("Not implemented");
+	}
+
 	public async sendMessage(
 		channelId: string,
 		msg: DiscordMessageOut,
