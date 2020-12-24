@@ -72,6 +72,7 @@ describe("PersistentTimer is a timer", function () {
 				"Test timer done",
 				1000
 			);
+			void timer;
 			// Tick should be every second
 			await this.clock.tickAsync(500);
 			expect(edit).to.not.have.been.called;
@@ -115,6 +116,7 @@ describe("PersistentTimer is a timer", function () {
 					edit
 				})
 			);
+			void getMessageStub;
 			const timer = await PersistentTimer.create(
 				discord,
 				new Date(Date.now() + 3000),
