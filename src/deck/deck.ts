@@ -16,7 +16,7 @@ async function convertCard(card: DataCard): Promise<Card> {
 	let result = scopeReg.exec(status);
 	while (result !== null) {
 		const scope = result[1];
-		const count = parseInt(result[2], 10);
+		const count = parseInt(result[2], 10); // 2 capture groups ensured by regex
 		// 3 copies is the default fallback
 		if (count < 3) {
 			// TODO: Less hardcode

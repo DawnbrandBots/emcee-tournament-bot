@@ -201,6 +201,8 @@ export class WebsiteWrapperChallonge implements WebsiteWrapper {
 		this.baseUrl = `https://${user}:${token}@api.challonge.com/v1/`;
 	}
 
+	// this whole function sucks for typechecking because of the uncertaintly of parsing arbitrary JSON
+	// TODO: document assumptions made based on challonge API documentation
 	private async validateResponse(response: Response): Promise<unknown> {
 		const body = await response.json();
 		if (body.errors) {

@@ -97,7 +97,7 @@ export class DiscordInterface {
 		const terms = msg.content.split(" ");
 		const cmdName = terms[0].slice(this.prefix.length).toLowerCase();
 		const args = terms
-			.slice(1)
+			.slice(1) // this works fine and returns an empty array if there's only 1 element in terms
 			.join(" ")
 			.split("|")
 			.map(s => s.trim());
@@ -217,7 +217,7 @@ export class DiscordInterface {
 	public getChannel(query: string): string | undefined {
 		const channelRegex = /<#(\d+?)>/g;
 		const channelMatch = channelRegex.exec(query);
-		return channelMatch ? channelMatch[1] : undefined;
+		return channelMatch ? channelMatch[1] : undefined; // capture group ensured by regex
 	}
 }
 

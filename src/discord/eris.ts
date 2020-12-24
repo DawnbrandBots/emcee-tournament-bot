@@ -313,7 +313,7 @@ export class DiscordWrapperEris implements DiscordWrapper {
 
 	public async authenticateTO(m: DiscordMessageIn): Promise<void> {
 		const msg = this.wrappedMessages[m.id];
-		if (!(msg.channel instanceof GuildChannel)) {
+		if (!(msg && msg.channel instanceof GuildChannel)) {
 			throw new UnauthorisedTOError(msg.author.id);
 		}
 		const guild = msg.channel.guild;

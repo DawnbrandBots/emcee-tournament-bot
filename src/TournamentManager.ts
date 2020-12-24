@@ -433,7 +433,7 @@ export class TournamentManager implements TournamentInterface {
 		if (!cancel && tournament.players.length > 8) {
 			const top = await this.website.getTopCut(tournamentId, 8);
 			const [newId] = await this.createTournament(
-				tournament.hosts[0],
+				tournament.hosts[0], // tournament cannot have 0 hosts by addition on creation and guard on removal
 				tournament.server,
 				`${tournament.name} Top Cut`,
 				`Top Cut for ${tournament.name}`,

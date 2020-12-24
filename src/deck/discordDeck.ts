@@ -7,7 +7,7 @@ import { DeckError } from "ydeck/dist/validation";
 import { splitText } from "../discord/interface";
 
 async function extractYdk(msg: DiscordMessageIn): Promise<string> {
-	const attach = msg.attachments[0];
+	const attach = msg.attachments[0]; // msg having attachments is checked before this function is called
 	const file = await fetch(attach.url);
 	const ydk = await file.text();
 	return ydk;
