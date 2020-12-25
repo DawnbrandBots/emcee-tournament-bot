@@ -30,7 +30,7 @@ describe("Basic test", function () {
 	it("Argument validation", async function () {
 		await discord.simMessage("mc!create", "error");
 		const response = discord.getResponse("error");
-		expect(response).to.equal("Missing parameter number 0!");
+		expect(response).to.equal("Usage: create name|description");
 	});
 });
 describe("Tournament creation commands", function () {
