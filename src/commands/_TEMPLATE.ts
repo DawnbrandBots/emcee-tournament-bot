@@ -3,8 +3,8 @@ import { CommandDefinition } from "../Command";
 const command: CommandDefinition = {
 	name: "",
 	requiredArgs: [],
-	executor: async (message, args, support) => {
-		void message, args, support;
+	executor: async (msg, args, support) => {
+		void msg, args, support;
 	}
 };
 
