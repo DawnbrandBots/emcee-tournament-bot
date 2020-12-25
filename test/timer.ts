@@ -4,7 +4,6 @@ import sinon, { SinonSandbox } from "sinon";
 import sinonChai from "sinon-chai";
 import sinonTest from "sinon-test";
 import { DiscordInterface } from "../src/discord/interface";
-import logger from "../src/util/logger";
 import { DiscordWrapperMock } from "./mocks/discord";
 
 chai.use(sinonChai);
@@ -12,7 +11,7 @@ const test = sinonTest(sinon);
 proxyquire.noPreserveCache();
 
 const discordMock = new DiscordWrapperMock();
-const discord = new DiscordInterface(discordMock, "mc!", logger);
+const discord = new DiscordInterface(discordMock);
 
 const countdownEntityStub = {
 	save: sinon.stub(),

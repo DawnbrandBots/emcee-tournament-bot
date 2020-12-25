@@ -1,19 +1,12 @@
-import {
-	DiscordCommand,
-	DiscordInterface,
-	DiscordMessageHandler,
-	DiscordMessageIn,
-	splitText
-} from "../src/discord/interface";
-import { DiscordWrapperMock } from "./mocks/discord";
-import logger from "../src/util/logger";
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { DatabaseTournament } from "../src/database/interface";
+import { DiscordInterface, DiscordMessageHandler, DiscordMessageIn, splitText } from "../src/discord/interface";
+import { DiscordWrapperMock } from "./mocks/discord";
 chai.use(chaiAsPromised);
 
 const discordMock = new DiscordWrapperMock();
-const discord = new DiscordInterface(discordMock, "mc!", logger);
+const discord = new DiscordInterface(discordMock);
 
 async function noop(): Promise<void> {
 	return;
@@ -62,13 +55,6 @@ describe("Simple helpers", function () {
 });
 
 describe("Callback setups", function () {
-	it("registerCommand", async function () {
-		const command: DiscordCommand = async msg => msg.reply("pong");
-		discord.registerCommand("ping", command);
-		await discordMock.simMessage("mc!ping", "ping");
-		expect(discordMock.getResponse("ping")).to.equal("pong");
-	});
-
 	it("Ignore non-command message", async function () {
 		await discordMock.sendMessage("mc!pong", "pong");
 		expect(discordMock.getResponse("pong")).to.be.undefined;
