@@ -1,3 +1,4 @@
+import { ChallongeAPIError } from "../../src/util/errors";
 import { WebsiteMatch, WebsitePlayer, WebsiteTournament, WebsiteWrapper } from "../../src/website/interface";
 
 export class WebsiteWrapperMock implements WebsiteWrapper {
@@ -15,7 +16,7 @@ export class WebsiteWrapperMock implements WebsiteWrapper {
 		return;
 	}
 	async getTournament(tournamentId: string): Promise<WebsiteTournament> {
-		if (tournamentId === "mc_bye") {
+		if (tournamentId === "bye") {
 			return {
 				id: tournamentId,
 				name: "name",
@@ -31,6 +32,9 @@ export class WebsiteWrapperMock implements WebsiteWrapper {
 				],
 				rounds: 3
 			};
+		}
+		if (tournamentId.includes("create") || tournamentId.includes("topcut")) {
+			throw new ChallongeAPIError("URL not found.");
 		}
 		return {
 			id: tournamentId,
@@ -125,7 +129,7 @@ export class WebsiteWrapperMock implements WebsiteWrapper {
 				}
 			];
 		}
-		if (tournamentId === "mc_dummy") {
+		if (tournamentId === "dummy") {
 			return [
 				{
 					challongeId: 1,

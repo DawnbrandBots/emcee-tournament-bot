@@ -9,11 +9,11 @@ const website = new WebsiteInterface(websiteMock);
 
 describe("Tournament creation commands", function () {
 	it("createTournament", async function () {
-		const tournament = await website.createTournament("Test Tournament", "Tournament description.", "mc_test");
+		const tournament = await website.createTournament("Test Tournament", "Tournament description.", "test");
 		expect(tournament).to.deep.equal({
 			rounds: 3,
-			url: "https://example.com/mc_test",
-			id: "mc_test",
+			url: "https://example.com/test",
+			id: "test",
 			players: [],
 			desc: "Tournament description.",
 			name: "Test Tournament"
@@ -21,13 +21,13 @@ describe("Tournament creation commands", function () {
 	});
 
 	it("updateTournament", async function () {
-		await expect(website.updateTournament("mc_test", "New name", "New descriptoin")).to.not.be.rejected;
+		await expect(website.updateTournament("test", "New name", "New descriptoin")).to.not.be.rejected;
 	});
 
 	it("getTournament", async function () {
-		const tournament = await website.getTournament("mc_test");
+		const tournament = await website.getTournament("test");
 		expect(tournament).to.deep.equal({
-			id: "mc_test",
+			id: "test",
 			name: "name",
 			desc: "desc",
 			url: `https://example.com/url`,
@@ -37,28 +37,28 @@ describe("Tournament creation commands", function () {
 	});
 
 	it("registerPlayer", async function () {
-		const id = await website.registerPlayer("mc_test", "Player 1", "player1");
+		const id = await website.registerPlayer("test", "Player 1", "player1");
 		expect(id).to.equal(1);
 	});
 });
 
 describe("Tournament flow commands", function () {
 	it("startTournament", async function () {
-		await expect(website.startTournament("mc_test")).to.not.be.rejected;
+		await expect(website.startTournament("test")).to.not.be.rejected;
 	});
 
 	it("getBye - no bye", async function () {
-		const bye = await website.getBye("mc_test");
+		const bye = await website.getBye("test");
 		expect(bye).to.be.undefined;
 	});
 
 	it("getBye - there is a bye", async function () {
-		const bye = await website.getBye("mc_bye");
+		const bye = await website.getBye("bye");
 		expect(bye).to.equal("bye");
 	});
 
 	it("findMatch", async function () {
-		const match = await website.findMatch("mc_test", 1);
+		const match = await website.findMatch("test", 1);
 		expect(match).to.deep.equal({
 			player1: 1,
 			player2: 2,
@@ -67,17 +67,17 @@ describe("Tournament flow commands", function () {
 	});
 
 	it("removePlayer", async function () {
-		await expect(website.removePlayer("mc_test", 1)).to.not.be.rejected;
+		await expect(website.removePlayer("test", 1)).to.not.be.rejected;
 	});
 
 	it("submitScore", async function () {
-		await expect(website.submitScore("mc_test", 1, 2, 1)).to.not.be.rejected;
+		await expect(website.submitScore("test", 1, 2, 1)).to.not.be.rejected;
 	});
 
 	it("finishTournament", async function () {
-		const tournament = await website.finishTournament("mc_test");
+		const tournament = await website.finishTournament("test");
 		expect(tournament).to.deep.equal({
-			id: "mc_test",
+			id: "test",
 			name: "name",
 			desc: "desc",
 			url: `https://example.com/url`,
@@ -89,23 +89,23 @@ describe("Tournament flow commands", function () {
 
 describe("Misc functions", function () {
 	it("getTopCut", async function () {
-		const top = await website.getTopCut("mc_test", 0);
+		const top = await website.getTopCut("test", 0);
 		expect(top.length).to.equal(0);
 	});
 
 	it("assignByes - no byes", async function () {
-		await expect(website.assignByes("mc_test", 0, [])).to.not.be.rejected;
+		await expect(website.assignByes("test", 0, [])).to.not.be.rejected;
 	});
 
 	it("assignByes - natural bye", async function () {
-		await expect(website.assignByes("mc_bye", 1, ["player1"])).to.not.be.rejected;
+		await expect(website.assignByes("bye", 1, ["player1"])).to.not.be.rejected;
 	});
 
 	it("dropByes - no byes", async function () {
-		await expect(website.dropByes("mc_test", 0)).to.not.be.rejected;
+		await expect(website.dropByes("test", 0)).to.not.be.rejected;
 	});
 
 	it("dropByes - there is a bye", async function () {
-		await expect(website.dropByes("mc_dummy", 1)).to.not.be.rejected;
+		await expect(website.dropByes("dummy", 1)).to.not.be.rejected;
 	});
 });

@@ -12,14 +12,14 @@ const database = new DatabaseInterface(databaseMock);
 describe("Tournament creation", function () {
 	it("createTournament", async function () {
 		const tournament = await database.createTournament("testHost", "testServer", {
-			id: "mc_test",
+			id: "test",
 			name: "Test tournament",
 			desc: "A sample tournament",
-			url: "https://example.com/mc_test",
+			url: "https://example.com/test",
 			players: [],
 			rounds: 3
 		});
-		expect(tournament.id).to.equal("mc_test");
+		expect(tournament.id).to.equal("test");
 		expect(tournament.name).to.equal("Test tournament");
 		expect(tournament.description).to.equal("A sample tournament");
 		expect(tournament.status).to.equal("preparing");
@@ -32,41 +32,41 @@ describe("Tournament creation", function () {
 	});
 
 	it("updateTournament", async function () {
-		await expect(database.updateTournament("mc_test", "newName", "new desc")).to.not.be.rejected;
+		await expect(database.updateTournament("test", "newName", "new desc")).to.not.be.rejected;
 	});
 
 	it("addAnnouncementChannel", async function () {
-		await expect(database.addAnnouncementChannel("mc_test", "testChannel", "public")).to.not.be.rejected;
+		await expect(database.addAnnouncementChannel("test", "testChannel", "public")).to.not.be.rejected;
 	});
 
 	it("removeAnnouncementChannel", async function () {
-		await expect(database.removeAnnouncementChannel("mc_test", "testChannel", "public")).to.not.be.rejected;
+		await expect(database.removeAnnouncementChannel("test", "testChannel", "public")).to.not.be.rejected;
 	});
 
 	it("addHost", async function () {
-		await expect(database.addHost("mc_test", "testHost")).to.not.be.rejected;
+		await expect(database.addHost("test", "testHost")).to.not.be.rejected;
 	});
 
 	it("removeHost", async function () {
-		await expect(database.removeHost("mc_test", "testHost")).to.not.be.rejected;
+		await expect(database.removeHost("test", "testHost")).to.not.be.rejected;
 	});
 
 	it("registerBye", async function () {
-		await expect(database.registerBye("mc_test", "testPlayer")).to.not.be.rejected;
+		await expect(database.registerBye("test", "testPlayer")).to.not.be.rejected;
 	});
 
 	it("removeBye", async function () {
-		await expect(database.removeBye("mc_test", "testPlayer")).to.not.be.rejected;
+		await expect(database.removeBye("test", "testPlayer")).to.not.be.rejected;
 	});
 });
 
 describe("Player registration", function () {
 	it("openRegistration", async function () {
-		await expect(database.openRegistration("mc_test", "testChannel", "testMessage")).to.not.be.rejected;
+		await expect(database.openRegistration("test", "testChannel", "testMessage")).to.not.be.rejected;
 	});
 
 	it("getRegisterMessages", async function () {
-		const messages = await database.getRegisterMessages("mc_test");
+		const messages = await database.getRegisterMessages("test");
 		expect(messages.length).to.equal(0);
 	});
 
@@ -81,7 +81,7 @@ describe("Player registration", function () {
 
 	it("addPendingPlayer", async function () {
 		const tournament = await database.addPendingPlayer("testChannel", "testMessage", "testPlayer");
-		expect(tournament?.id).to.equal("mc_tourn1");
+		expect(tournament?.id).to.equal("tourn1");
 		expect(tournament?.name).to.equal("Tournament 1");
 		expect(tournament?.description).to.equal("The first tournament");
 		expect(tournament?.status).to.equal("preparing");
@@ -95,7 +95,7 @@ describe("Player registration", function () {
 
 	it("removePendingPlayer", async function () {
 		const tournament = await database.removePendingPlayer("testChannel", "testMessage", "testPlayer");
-		expect(tournament?.id).to.equal("mc_tourn1");
+		expect(tournament?.id).to.equal("tourn1");
 		expect(tournament?.name).to.equal("Tournament 1");
 		expect(tournament?.description).to.equal("The first tournament");
 		expect(tournament?.status).to.equal("preparing");
@@ -108,12 +108,12 @@ describe("Player registration", function () {
 	});
 
 	it("confirmPlayer", async function () {
-		await expect(database.confirmPlayer("mc_test", "testPlayer", 1, "")).to.not.be.rejected;
+		await expect(database.confirmPlayer("test", "testPlayer", 1, "")).to.not.be.rejected;
 	});
 
 	it("removeConfirmedPlayerReaction", async function () {
 		const tournament = await database.removeConfirmedPlayerReaction("testChannel", "testMessage", "testPlayer");
-		expect(tournament?.id).to.equal("mc_tourn1");
+		expect(tournament?.id).to.equal("tourn1");
 		expect(tournament?.name).to.equal("Tournament 1");
 		expect(tournament?.description).to.equal("The first tournament");
 		expect(tournament?.status).to.equal("preparing");
@@ -126,8 +126,8 @@ describe("Player registration", function () {
 	});
 
 	it("removeConfirmedPlayerForce", async function () {
-		const tournament = await database.removeConfirmedPlayerForce("mc_tourn1", "testPlayer");
-		expect(tournament?.id).to.equal("mc_tourn1");
+		const tournament = await database.removeConfirmedPlayerForce("tourn1", "testPlayer");
+		expect(tournament?.id).to.equal("tourn1");
 		expect(tournament?.name).to.equal("Tournament 1");
 		expect(tournament?.description).to.equal("The first tournament");
 		expect(tournament?.status).to.equal("preparing");
@@ -142,36 +142,36 @@ describe("Player registration", function () {
 
 describe("Tournament flow", function () {
 	it("startTournament", async function () {
-		const droppedPlayers = await database.startTournament("mc_test");
+		const droppedPlayers = await database.startTournament("test");
 		expect(droppedPlayers.length).to.equal(0);
 	});
 
 	it("finishTournament", async function () {
-		await expect(database.finishTournament("mc_test")).to.not.be.rejected;
+		await expect(database.finishTournament("test")).to.not.be.rejected;
 	});
 });
 
 describe("Misc functions", function () {
 	it("authenticateHost", async function () {
-		await expect(database.authenticateHost("mc_tourn1", "testHost")).to.not.be.rejected;
+		await expect(database.authenticateHost("tourn1", "testHost")).to.not.be.rejected;
 	});
 
 	it("authenticateHost - failed", async function () {
-		await expect(database.authenticateHost("mc_tourn1", "notHost")).to.be.rejectedWith(UnauthorisedHostError);
+		await expect(database.authenticateHost("tourn1", "notHost")).to.be.rejectedWith(UnauthorisedHostError);
 	});
 
 	it("authenticatePlayer", async function () {
-		await expect(database.authenticatePlayer("mc_tourn1", "player1")).to.not.be.rejected;
+		await expect(database.authenticatePlayer("tourn1", "player1")).to.not.be.rejected;
 	});
 
 	it("authenticatePlayer - failed", async function () {
-		await expect(database.authenticatePlayer("mc_tourn1", "notPlayer")).to.be.rejectedWith(UnauthorisedPlayerError);
+		await expect(database.authenticatePlayer("tourn1", "notPlayer")).to.be.rejectedWith(UnauthorisedPlayerError);
 	});
 
 	it("listTournaments", async function () {
 		const tournaments = await database.listTournaments();
 		const tournament = tournaments[0];
-		expect(tournament?.id).to.equal("mc_tourn1");
+		expect(tournament?.id).to.equal("tourn1");
 		expect(tournament?.name).to.equal("Tournament 1");
 		expect(tournament?.description).to.equal("The first tournament");
 		expect(tournament?.status).to.equal("preparing");
@@ -184,8 +184,8 @@ describe("Misc functions", function () {
 	});
 
 	it("getTournament", async function () {
-		const tournament = await database.getTournament("mc_tourn1");
-		expect(tournament?.id).to.equal("mc_tourn1");
+		const tournament = await database.getTournament("tourn1");
+		expect(tournament?.id).to.equal("tourn1");
 		expect(tournament?.name).to.equal("Tournament 1");
 		expect(tournament?.description).to.equal("The first tournament");
 		expect(tournament?.status).to.equal("preparing");
@@ -199,7 +199,7 @@ describe("Misc functions", function () {
 
 	it("synchronise", async function () {
 		await expect(
-			database.synchronise("mc_test", {
+			database.synchronise("test", {
 				name: "newName",
 				description: "newDesc",
 				players: [{ challongeId: 1, discordId: "DUMMY0" }]

@@ -6,7 +6,7 @@ import { getDeck } from "./deck/deck";
 import { getDeckFromMessage, prettyPrint } from "./deck/discordDeck";
 import { DiscordAttachmentOut, DiscordInterface, DiscordMessageIn, DiscordMessageLimited } from "./discord/interface";
 import { TimerInterface } from "./timer/interface";
-import { BlockedDMsError, TournamentNotFoundError, UserError } from "./util/errors";
+import { BlockedDMsError, ChallongeAPIError, TournamentNotFoundError, UserError } from "./util/errors";
 import { WebsiteInterface } from "./website/interface";
 
 interface MatchScore {
@@ -90,6 +90,16 @@ export class TournamentManager implements TournamentInterface {
 
 	private async checkUrlTaken(url: string): Promise<boolean> {
 		try {
+			await this.website.getTournament(url);
+			return true;
+		} catch (e) {
+			// if the error is it not being found on website
+			// we should continue to the database check
+			if (!(e instanceof ChallongeAPIError)) {
+				throw e;
+			}
+		}
+		try {
 			await this.database.getTournament(url);
 			return true;
 		} catch (e) {
@@ -109,11 +119,11 @@ export class TournamentManager implements TournamentInterface {
 	): Promise<[string, string]> {
 		// generate a URL based on the name, with added numbers to prevent conflicts
 		const baseUrl = name.toLowerCase().replace(/[^a-zA-Z0-9_]/g, "");
-		let candidateUrl = `mc_${baseUrl}`;
+		let candidateUrl = `${baseUrl}`;
 		let i = 0;
 		// while a tournament with that ID exists, the URL is taken
 		while (await this.checkUrlTaken(candidateUrl)) {
-			candidateUrl = `mc_${baseUrl}${i}`;
+			candidateUrl = `${baseUrl}${i}`;
 			i++;
 		}
 
