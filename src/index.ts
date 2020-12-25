@@ -14,7 +14,9 @@ import { WebsiteWrapperChallonge } from "./website/challonge";
 import { WebsiteInterface } from "./website/interface";
 
 (async () => {
-	const wrapper = await (process.env.EMCEE_USE_POSTGRES ? initializePostgres(postgresqlUrl) : initializeMongo(mongoDbUrl));
+	const wrapper = await (process.env.EMCEE_USE_POSTGRES
+		? initializePostgres(postgresqlUrl)
+		: initializeMongo(mongoDbUrl));
 	const database = new DatabaseInterface(wrapper);
 
 	const eris = new DiscordWrapperEris(logger);
