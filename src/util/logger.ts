@@ -10,27 +10,21 @@ const consoleFormat = format.printf(info => {
 
 const logger = createLogger({
 	level: "verbose",
-	format: format.combine(
-		format.errors({ stack: true }),
-		format.timestamp()
-	),
+	format: format.combine(format.errors({ stack: true }), format.timestamp()),
 	transports: [
 		new transports.Console({
 			level: "info",
-			format: format.combine(
-				format.colorize(),
-				consoleFormat
-			),
+			format: format.combine(format.colorize(), consoleFormat)
 		}),
 		new transports.File({
 			filename: "logs/error.log",
 			level: "error",
-			format: format.json(),
+			format: format.json()
 		}),
 		new transports.File({
 			filename: "logs/verbose.log",
-			format: format.json(),
-		}),
+			format: format.json()
+		})
 	]
 });
 

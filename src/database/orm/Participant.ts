@@ -17,11 +17,19 @@ export class Participant extends BaseEntity {
 	discordId!: string;
 
 	/// The ORM relationship for the above foreign key. Must always exist or this entity is meaningless.
-	@ManyToOne(() => ChallongeTournament, tournament => tournament.participants, { primary: true, eager: true, onDelete: "CASCADE" })
+	@ManyToOne(() => ChallongeTournament, tournament => tournament.participants, {
+		primary: true,
+		eager: true,
+		onDelete: "CASCADE"
+	})
 	@JoinColumn({ name: "tournamentId" })
 	tournament!: ChallongeTournament;
 
 	/// Extra information if this participant is confirmed for this tournament.
-	@OneToOne(() => ConfirmedParticipant, confirmed => confirmed.participant, { cascade: true, eager: true, onDelete: "CASCADE" })
+	@OneToOne(() => ConfirmedParticipant, confirmed => confirmed.participant, {
+		cascade: true,
+		eager: true,
+		onDelete: "CASCADE"
+	})
 	confirmed?: ConfirmedParticipant;
 }
