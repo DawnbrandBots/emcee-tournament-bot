@@ -14,7 +14,7 @@ import { WebsiteWrapperMock } from "./mocks/website";
 chai.use(chaiAsPromised);
 
 const discord = new DiscordWrapperMock(); // will be used to fetch responses in some cases
-const mockDiscord = new DiscordInterface(discord, "mc!", logger);
+const mockDiscord = new DiscordInterface(discord);
 
 const mockDbWrapper = new DatabaseWrapperMock();
 const mockDb = new DatabaseInterface(mockDbWrapper);

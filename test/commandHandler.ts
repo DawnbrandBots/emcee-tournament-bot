@@ -1,17 +1,16 @@
 import { expect } from "chai";
-import { CommandHandler } from "../src/CommandHandler";
+import { initializeBehaviours } from "../src/CommandHandler";
 import { DiscordInterface } from "../src/discord/interface";
-import logger from "../src/util/logger";
 import { DiscordWrapperMock } from "./mocks/discord";
 import { TournamentMock } from "./mocks/tournament";
 
 // this will be the centre of the test, simulating input commands to stimulate output
 const discord = new DiscordWrapperMock();
 
-const mockDiscord = new DiscordInterface(discord, "mc!", logger);
+const mockDiscord = new DiscordInterface(discord);
 const mockTournament = new TournamentMock();
 
-new CommandHandler(mockDiscord, mockTournament, logger);
+initializeBehaviours("mc!", mockDiscord, mockTournament);
 
 describe("Basic test", function () {
 	it("Help", async function () {

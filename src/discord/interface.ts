@@ -1,6 +1,4 @@
-import { Logger } from "winston";
 import { DatabaseTournament } from "../database/interface";
-import { UserError } from "../util/errors";
 
 export interface DiscordAttachmentIn {
 	filename: string;
@@ -78,45 +76,9 @@ export interface DiscordWrapper {
 }
 
 export class DiscordInterface {
-	private commands: { [name: string]: DiscordCommand } = {};
 	private api: DiscordWrapper;
-	private prefix: string;
-	private logger: Logger;
-	constructor(api: DiscordWrapper, prefix: string, logger: Logger) {
-		this.commands = {};
+	constructor(api: DiscordWrapper) {
 		this.api = api;
-		this.prefix = prefix;
-		this.logger = logger;
-		this.api.onMessage(this.handleMessage.bind(this));
-	}
-
-	private async handleMessage(msg: DiscordMessageIn): Promise<void> {
-		if (!msg.content.startsWith(this.prefix)) {
-			return;
-		}
-		const terms = msg.content.split(" ");
-		const cmdName = terms[0].slice(this.prefix.length).toLowerCase();
-		const args = terms
-			.slice(1) // this works fine and returns an empty array if there's only 1 element in terms
-			.join(" ")
-			.split("|")
-			.map(s => s.trim());
-		if (cmdName in this.commands) {
-			try {
-				await this.commands[cmdName](msg, args);
-			} catch (e) {
-				if (e instanceof UserError) {
-					await msg.reply(e.message);
-					return;
-				}
-				// internal error
-				this.logger.error(e);
-			}
-		}
-	}
-
-	public registerCommand(name: string, func: DiscordCommand): void {
-		this.commands[name] = func;
 	}
 
 	public onMessage(func: DiscordMessageHandler): void {

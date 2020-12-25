@@ -1,4 +1,4 @@
-import { CommandHandler } from "./CommandHandler";
+import { initializeBehaviours } from "./CommandHandler";
 import { prefix } from "./config/config.json";
 import { challongeToken, challongeUsername, mongoDbUrl, postgresqlUrl } from "./config/env";
 import { DatabaseInterface } from "./database/interface";
@@ -20,7 +20,7 @@ import { WebsiteInterface } from "./website/interface";
 	const database = new DatabaseInterface(wrapper);
 
 	const eris = new DiscordWrapperEris(logger);
-	const discord = new DiscordInterface(eris, prefix, logger);
+	const discord = new DiscordInterface(eris);
 
 	const challonge = new WebsiteWrapperChallonge(challongeUsername, challongeToken);
 	const website = new WebsiteInterface(challonge);
@@ -29,5 +29,5 @@ import { WebsiteInterface } from "./website/interface";
 
 	await getCardArray();
 	logger.info("ygo-data preload for ydeck complete");
-	new CommandHandler(discord, tournamentManager, logger);
+	initializeBehaviours(prefix, discord, tournamentManager);
 })().catch(logger.error);
