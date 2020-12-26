@@ -24,7 +24,7 @@ export class Command {
 		this.definition = definition; // copy?
 	}
 
-	protected validate(args: string[]): string {
+	protected checkUsage(args: string[]): string {
 		// If not enough arguments are provided or some of them are falsy
 		if (this.definition.requiredArgs.length > args.length || args.find(value => !value)) {
 			return `Usage: ${this.definition.name} ${this.definition.requiredArgs.join("|")}`;
@@ -33,7 +33,7 @@ export class Command {
 	}
 
 	public async run(msg: DiscordMessageIn, args: string[], support: CommandSupport): Promise<void> {
-		const error = this.validate(args);
+		const error = this.checkUsage(args);
 		if (error) {
 			await msg.reply(error).catch(logger.error);
 			return;
