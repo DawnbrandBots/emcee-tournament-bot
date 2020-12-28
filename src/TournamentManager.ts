@@ -1,5 +1,4 @@
 import * as csv from "@fast-csv/format";
-import { Logger } from "winston";
 import { Deck } from "ydeck";
 import { DatabaseInterface, DatabaseTournament } from "./database/interface";
 import { getDeck } from "./deck/deck";
@@ -7,6 +6,7 @@ import { getDeckFromMessage, prettyPrint } from "./deck/discordDeck";
 import { DiscordAttachmentOut, DiscordInterface, DiscordMessageIn, DiscordMessageLimited } from "./discord/interface";
 import { TimerInterface } from "./timer/interface";
 import { BlockedDMsError, ChallongeAPIError, TournamentNotFoundError, UserError } from "./util/errors";
+import logger from "./util/logger";
 import { WebsiteInterface } from "./website/interface";
 
 interface MatchScore {
@@ -54,7 +54,6 @@ export class TournamentManager implements TournamentInterface {
 	private discord: DiscordInterface;
 	private database: DatabaseInterface;
 	private website: WebsiteInterface;
-	private logger: Logger;
 	private timer: typeof TimerInterface;
 	private matchScores: { [matchId: number]: MatchScore };
 	private timers: { [channelId: string]: TimerInterface };
@@ -62,13 +61,11 @@ export class TournamentManager implements TournamentInterface {
 		discord: DiscordInterface,
 		database: DatabaseInterface,
 		website: WebsiteInterface,
-		logger: Logger,
 		timer: typeof TimerInterface
 	) {
 		this.discord = discord;
 		this.database = database;
 		this.website = website;
-		this.logger = logger;
 		this.timer = timer;
 		this.matchScores = {};
 		this.timers = {};
@@ -194,7 +191,7 @@ export class TournamentManager implements TournamentInterface {
 					`You are registering for ${tournament.name}. ` +
 						"Please submit a deck to complete your registration, by uploading a YDK file or sending a message with a YDKE URL."
 				);
-				this.logger.verbose(`User ${playerId} registered for tournament ${tournament.id}.`);
+				logger.verbose(`User ${playerId} registered for tournament ${tournament.id}.`);
 			} catch (e) {
 				if (e instanceof BlockedDMsError) {
 					await this.handleDmFailure(playerId, tournament);
@@ -248,7 +245,7 @@ export class TournamentManager implements TournamentInterface {
 					await this.discord.sendMessage(c, content, file);
 				})
 			);
-			this.logger.verbose(`User ${msg.author} confirmed for tournament ${tournament.id}.`);
+			logger.verbose(`User ${msg.author} confirmed for tournament ${tournament.id}.`);
 			await msg.reply(
 				`You have successfully signed up for Tournament ${tournament.name}! Your deck is below to double-check.`
 			);
@@ -295,7 +292,7 @@ export class TournamentManager implements TournamentInterface {
 					await this.discord.sendMessage(c, content, file);
 				})
 			);
-			this.logger.verbose(`User ${msg.author} updated deck for tournament ${tournament.id}.`);
+			logger.verbose(`User ${msg.author} updated deck for tournament ${tournament.id}.`);
 			await msg.reply(
 				`You have successfully changed your deck for Tournament ${tournament.name}! Your deck is below to double-check.`
 			);
@@ -614,7 +611,7 @@ export class TournamentManager implements TournamentInterface {
 		const player = tournament.findPlayer(playerId)!;
 		await this.website.removePlayer(tournament.id, player.challongeId);
 		await this.discord.removePlayerRole(playerId, await this.discord.getPlayerRole(tournament));
-		this.logger.verbose(`User ${playerId} dropped from tournament ${tournament.id}${force ? " by host" : ""}.`);
+		logger.verbose(`User ${playerId} dropped from tournament ${tournament.id}${force ? " by host" : ""}.`);
 		await this.discord.sendDirectMessage(
 			playerId,
 			force

@@ -11,7 +11,6 @@ import {
 	Role,
 	TextChannel
 } from "eris";
-import { Logger } from "winston";
 import { toRole } from "../config/config.json";
 import { discordToken } from "../config/env";
 import {
@@ -21,6 +20,7 @@ import {
 	UnauthorisedTOError,
 	UserError
 } from "../util/errors";
+import logger from "../util/logger";
 import {
 	DiscordAttachmentOut,
 	DiscordDeleteHandler,
@@ -43,9 +43,8 @@ export class DiscordWrapperEris implements DiscordWrapper {
 	private toRoles: { [guild: string]: string };
 	private playerRoles: { [tournamentId: string]: string };
 	private bot: Client;
-	private logger: Logger;
-	constructor(logger: Logger) {
-		this.logger = logger;
+
+	constructor() {
 		this.messageHandlers = [];
 		this.deleteHandlers = [];
 		this.pingHandlers = [];
@@ -55,7 +54,7 @@ export class DiscordWrapperEris implements DiscordWrapper {
 		this.toRoles = {};
 		this.playerRoles = {};
 		this.bot = new Client(discordToken);
-		this.bot.on("ready", () => this.logger.info(`Logged in as ${this.bot.user.username} - ${this.bot.user.id}`));
+		this.bot.on("ready", () => logger.info(`Logged in as ${this.bot.user.username} - ${this.bot.user.id}`));
 		this.bot.on("messageCreate", this.handleMessage.bind(this));
 		this.bot.on("messageReactionAdd", this.handleReaction.bind(this));
 		this.bot.on("messageReactionRemove", this.handleReactionRemove.bind(this));
@@ -65,7 +64,7 @@ export class DiscordWrapperEris implements DiscordWrapper {
 			// but this whole module system is getting overhauled later anyway
 			await this.createTORole(guild);
 		});
-		this.bot.connect().catch(this.logger.error);
+		this.bot.connect().catch(logger.error);
 	}
 
 	private wrapMessageIn(msg: Message): DiscordMessageIn {
@@ -172,7 +171,7 @@ export class DiscordWrapperEris implements DiscordWrapper {
 				if (e instanceof UserError) {
 					await this.sendDirectMessage(member.id, e.message);
 				}
-				this.logger.error(e);
+				logger.error(e);
 			}
 		}
 	}
@@ -192,7 +191,7 @@ export class DiscordWrapperEris implements DiscordWrapper {
 				if (e instanceof UserError) {
 					await this.sendDirectMessage(userId, e.message);
 				}
-				this.logger.error(e);
+				logger.error(e);
 			}
 		}
 	}
@@ -206,7 +205,7 @@ export class DiscordWrapperEris implements DiscordWrapper {
 			"Auto-created by Emcee bot."
 		);
 		this.toRoles[guild.id] = newRole.id;
-		this.logger.verbose(`TO role ${newRole.id} re-created in ${guild.id}.`);
+		logger.verbose(`TO role ${newRole.id} re-created in ${guild.id}.`);
 		return newRole;
 	}
 
@@ -232,7 +231,7 @@ export class DiscordWrapperEris implements DiscordWrapper {
 			"Auto-created by Emcee bot."
 		);
 		this.toRoles[guild.id] = newRole.id;
-		this.logger.verbose(`Player role ${newRole.id} created in ${guild.id}.`);
+		logger.verbose(`Player role ${newRole.id} created in ${guild.id}.`);
 		return newRole;
 	}
 
@@ -372,7 +371,7 @@ export class DiscordWrapperEris implements DiscordWrapper {
 			if (e.code === 50007) {
 				throw new BlockedDMsError(userId);
 			}
-			this.logger.error(e);
+			logger.error(e);
 		}
 	}
 }

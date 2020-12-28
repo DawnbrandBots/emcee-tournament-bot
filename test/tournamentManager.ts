@@ -5,7 +5,6 @@ import { DiscordAttachmentOut, DiscordEmbed, DiscordInterface, DiscordMessageOut
 import { TimerInterface } from "../src/timer/interface";
 import { TournamentManager } from "../src/TournamentManager";
 import { UserError } from "../src/util/errors";
-import logger from "../src/util/logger";
 import { WebsiteInterface } from "../src/website/interface";
 import { DatabaseWrapperMock } from "./mocks/database";
 import { DiscordWrapperMock } from "./mocks/discord";
@@ -24,7 +23,7 @@ const mockWebsite = new WebsiteInterface(mockWebsiteWrapper);
 
 const mockTimer = TimerInterface;
 
-const tournament = new TournamentManager(mockDiscord, mockDb, mockWebsite, logger, mockTimer);
+const tournament = new TournamentManager(mockDiscord, mockDb, mockWebsite, mockTimer);
 
 async function noop(): Promise<void> {
 	return;
