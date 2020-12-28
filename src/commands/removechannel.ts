@@ -6,7 +6,7 @@ const command: CommandDefinition = {
 	requiredArgs: ["id"],
 	executor: async (msg, args, support) => {
 		const [id, baseType, channelMention] = args;
-		await support.tournamentManager.authenticateHost(id, msg.author);
+		await support.tournamentManager.authenticateHost(id, msg);
 		let type = baseType ? baseType.toLowerCase().trim() : "public";
 		if (!(type === "private")) {
 			type = "public";

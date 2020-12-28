@@ -6,7 +6,7 @@ const command: CommandDefinition = {
 	requiredArgs: ["id", "score"],
 	executor: async (msg, args, support) => {
 		const [id, score] = args;
-		await support.tournamentManager.authenticateHost(id, msg.author);
+		await support.tournamentManager.authenticateHost(id, msg);
 		const player = support.discord.getMentionedUser(msg);
 		// player is guaranteed, throws if not found
 		const scores = score.split("-");

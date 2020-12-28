@@ -6,7 +6,7 @@ const command: CommandDefinition = {
 	requiredArgs: ["id", "name", "description"],
 	executor: async (msg, args, support) => {
 		const [id, name, desc] = args;
-		await support.tournamentManager.authenticateHost(id, msg.author);
+		await support.tournamentManager.authenticateHost(id, msg);
 		await support.tournamentManager.updateTournament(id, name, desc);
 		// TODO: missing failure path
 		logger.verbose(`Tournament ${id} updated with name ${name} and description ${desc} by ${msg.author}.`);

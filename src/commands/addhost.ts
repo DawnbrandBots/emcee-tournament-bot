@@ -6,7 +6,7 @@ const command: CommandDefinition = {
 	requiredArgs: ["id"],
 	executor: async (msg, args, support) => {
 		const [id] = args;
-		await support.tournamentManager.authenticateHost(id, msg.author);
+		await support.tournamentManager.authenticateHost(id, msg);
 		const newHost = support.discord.getMentionedUser(msg);
 		await support.tournamentManager.addHost(id, newHost);
 		logger.verbose(`Tournament ${id} added new host ${newHost} by ${msg.author}.`);

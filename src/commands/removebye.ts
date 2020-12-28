@@ -5,7 +5,7 @@ const command: CommandDefinition = {
 	requiredArgs: ["id"],
 	executor: async (msg, args, support) => {
 		const [id] = args;
-		await support.tournamentManager.authenticateHost(id, msg.author);
+		await support.tournamentManager.authenticateHost(id, msg);
 		const player = support.discord.getMentionedUser(msg);
 		const byes = await support.tournamentManager.removeBye(id, player);
 		const names = byes.map(b => `${support.discord.mentionUser(b)} (${support.discord.getUsername(b)})`);

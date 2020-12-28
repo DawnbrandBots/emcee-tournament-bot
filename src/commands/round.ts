@@ -5,7 +5,7 @@ const command: CommandDefinition = {
 	requiredArgs: ["id"],
 	executor: async (msg, args, support) => {
 		const [id] = args;
-		await support.tournamentManager.authenticateHost(id, msg.author);
+		await support.tournamentManager.authenticateHost(id, msg);
 		await support.tournamentManager.nextRound(id);
 		await msg.reply(`New round successfully started for Tournament ${id}.`);
 	}

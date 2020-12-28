@@ -5,7 +5,7 @@ const command: CommandDefinition = {
 	requiredArgs: ["id"],
 	executor: async (msg, args, support) => {
 		const [id] = args;
-		await support.tournamentManager.authenticateHost(id, msg.author);
+		await support.tournamentManager.authenticateHost(id, msg);
 		const csv = await support.tournamentManager.generatePieChart(id);
 		await msg.reply(`Archetype counts for Tournament ${id} are attached.`, csv);
 	}

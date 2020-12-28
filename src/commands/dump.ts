@@ -5,7 +5,7 @@ const command: CommandDefinition = {
 	requiredArgs: ["id"],
 	executor: async (msg, args, support) => {
 		const [id] = args;
-		await support.tournamentManager.authenticateHost(id, msg.author);
+		await support.tournamentManager.authenticateHost(id, msg);
 		const csv = await support.tournamentManager.generateDeckDump(id);
 		await msg.reply(`Player decklists for Tournament ${id} is attached.`, csv);
 	}
