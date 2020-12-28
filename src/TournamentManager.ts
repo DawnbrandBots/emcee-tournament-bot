@@ -20,7 +20,7 @@ export interface TournamentInterface {
 	registerPlayer(msg: DiscordMessageIn, playerId: string): Promise<void>;
 	confirmPlayer(msg: DiscordMessageIn): Promise<void>;
 	cleanRegistration(msg: DiscordMessageLimited): Promise<void>;
-	authenticateHost(tournamentId: string, hostId: string): Promise<void>;
+	authenticateHost(tournamentId: string, message: DiscordMessageIn): Promise<void>;
 	authenticatePlayer(tournamentId: string, playerId: string): Promise<void>;
 	listTournaments(): Promise<string>;
 	createTournament(hostId: string, serverId: string, name: string, desc: string): Promise<[string, string]>;
@@ -71,8 +71,17 @@ export class TournamentManager implements TournamentInterface {
 		this.timers = {};
 	}
 
-	public async authenticateHost(tournamentId: string, hostId: string): Promise<void> {
-		await this.database.authenticateHost(tournamentId, hostId);
+	public async authenticateHost(tournamentId: string, message: DiscordMessageIn): Promise<void> {
+		await this.database.authenticateHost(tournamentId, message.author);
+		logger.verbose(
+			JSON.stringify({
+				channel: message.channelId,
+				message: message.id,
+				user: message.author,
+				tournament: tournamentId,
+				event: `Host authorized`
+			})
+		);
 	}
 
 	public async authenticatePlayer(tournamentId: string, playerId: string): Promise<void> {
