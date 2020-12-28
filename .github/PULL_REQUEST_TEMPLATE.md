@@ -8,4 +8,4 @@ Fixes issue #
 
 ## Checklist
 
--   [ ] I am following the [contributing guidelines](https://github.com/AlphaKretin/emcee-tournament-bot/master/.github/CONTRIBUTING.md).
+- [ ] I am following the [contributing guidelines](https://github.com/AlphaKretin/emcee-tournament-bot/master/.github/CONTRIBUTING.md).
