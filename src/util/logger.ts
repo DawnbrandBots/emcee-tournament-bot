@@ -19,11 +19,11 @@ const logger = createLogger({
 		new transports.File({
 			filename: "logs/error.log",
 			level: "error",
-			format: format.json()
+			format: consoleFormat
 		}),
 		new transports.File({
 			filename: "logs/verbose.log",
-			format: format.json()
+			format: consoleFormat
 		})
 	]
 });
