@@ -19,13 +19,13 @@ import { WebsiteInterface } from "./website/interface";
 		: initializeMongo(mongoDbUrl));
 	const database = new DatabaseInterface(wrapper);
 
-	const eris = new DiscordWrapperEris(logger);
+	const eris = new DiscordWrapperEris();
 	const discord = new DiscordInterface(eris);
 
 	const challonge = new WebsiteWrapperChallonge(challongeUsername, challongeToken);
 	const website = new WebsiteInterface(challonge);
 
-	const tournamentManager = new TournamentManager(discord, database, website, logger, Timer);
+	const tournamentManager = new TournamentManager(discord, database, website, Timer);
 
 	await getCardArray();
 	logger.info("ygo-data preload for ydeck complete");
