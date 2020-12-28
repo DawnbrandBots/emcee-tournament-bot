@@ -433,7 +433,19 @@ describe("Misc functions", function () {
 		).to.not.be.rejected;
 	});
 	it("Authenticate host", async function () {
-		await expect(tournament.authenticateHost("tourn1", "testUser")).to.not.be.rejected;
+		await expect(
+			tournament.authenticateHost("tourn1", {
+				id: "",
+				content: "",
+				attachments: [],
+				author: "testUser",
+				channelId: "",
+				serverId: "",
+				reply: async () => undefined,
+				react: async () => undefined,
+				edit: async () => undefined
+			})
+		).to.not.be.rejected;
 	});
 	it("Authenticate player", async function () {
 		await expect(tournament.authenticatePlayer("tourn1", "player1")).to.not.be.rejected;
