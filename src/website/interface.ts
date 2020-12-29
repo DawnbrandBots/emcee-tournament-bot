@@ -1,3 +1,5 @@
+import { ChallongeIDConflictError } from "../util/errors";
+
 export interface WebsiteWrapper {
 	createTournament(name: string, desc: string, url: string, topCut?: boolean): Promise<WebsiteTournament>;
 	updateTournament(tournamentId: string, name: string, desc: string): Promise<void>;
@@ -43,7 +45,15 @@ export class WebsiteInterface {
 	}
 
 	public async createTournament(name: string, desc: string, url: string, topCut = false): Promise<WebsiteTournament> {
-		return await this.api.createTournament(name, desc, url, topCut);
+		try {
+			return await this.api.createTournament(name, desc, url, topCut);
+		} catch (e) {
+			// challonge API error message
+			if (e.message === "URL is already taken") {
+				throw new ChallongeIDConflictError(url);
+			}
+			throw e;
+		}
 	}
 
 	public async updateTournament(tournamentId: string, name: string, desc: string): Promise<void> {

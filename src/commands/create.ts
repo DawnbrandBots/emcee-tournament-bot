@@ -1,4 +1,5 @@
 import { CommandDefinition } from "../Command";
+import { ChallongeIDConflictError } from "../util/errors";
 import { getLogger } from "../util/logger";
 
 const logger = getLogger("command:create");
@@ -20,22 +21,32 @@ const command: CommandDefinition = {
 				event: "attempt"
 			})
 		);
-		const [id, url] = await support.tournamentManager.createTournament(msg.author, msg.serverId, name, desc);
-		// TODO: missing failure path
-		logger.verbose(
-			JSON.stringify({
-				channel: msg.channelId,
-				message: msg.id,
-				user: msg.author,
-				command: "create",
-				id,
-				url,
-				event: "success"
-			})
-		);
-		await msg.reply(
-			`Tournament ${name} created! You can find it at ${url}. For future commands, refer to this tournament by the id \`${id}\`.`
-		);
+		try {
+			const [id, url] = await support.tournamentManager.createTournament(msg.author, msg.serverId, name, desc);
+			// TODO: missing failure path
+			logger.verbose(
+				JSON.stringify({
+					channel: msg.channelId,
+					message: msg.id,
+					user: msg.author,
+					command: "create",
+					id,
+					url,
+					event: "success"
+				})
+			);
+			await msg.reply(
+				`Tournament ${name} created! You can find it at ${url}. For future commands, refer to this tournament by the id \`${id}\`.`
+			);
+		} catch (e) {
+			if (e instanceof ChallongeIDConflictError) {
+				await msg.reply(
+					`Tournament ID ${e.tournamentId} already taken on Challonge. This is an error with Emcee, so please report it, but in the meantime, try using a different tournament name.`
+				);
+			}
+			// throwing the error will pass it on to be logged
+			throw e;
+		}
 	}
 };
 

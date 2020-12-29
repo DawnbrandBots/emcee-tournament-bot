@@ -2,6 +2,14 @@ export class UserError extends Error {}
 
 export class ChallongeAPIError extends Error {}
 
+export class ChallongeIDConflictError extends ChallongeAPIError {
+	tournamentId: string;
+	constructor(tournamentId: string) {
+		super(`Tournament ID ${tournamentId} already taken.`);
+		this.tournamentId = tournamentId;
+	}
+}
+
 export class TournamentNotFoundError extends UserError {
 	tournamentId: string;
 
