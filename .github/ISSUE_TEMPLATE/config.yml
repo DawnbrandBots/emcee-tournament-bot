@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 🔓 Potential security flaw
+    url: https://github.com/AlphaKretin/emcee-tournament-bot/blob/master/.github/SECURITY.md
+    about: Please do not open a public issue. Instead, report it according to the security policy.
+  - name: ❓ Help and support, feature requests
+    url: https://discord.gg/GrMGspZ
+    about: Please ask questions on our Discord server. This issue tracker is only for formatted reports.
