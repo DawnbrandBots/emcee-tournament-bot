@@ -8,9 +8,9 @@ export function initializeBehaviours(prefix: string, discord: DiscordInterface, 
 	discord.onMessage(tm.confirmPlayer.bind(tm));
 	discord.onDelete(tm.cleanRegistration.bind(tm));
 
-	const handlers: { [key: string]: Command } = {};
+	const handlers: Record<string, Command> = {};
 	for (const name in commands) {
-		handlers[name] = new Command((commands as { [key: string]: CommandDefinition })[name]);
+		handlers[name] = new Command((commands as Record<string, CommandDefinition>)[name]);
 	}
 	const support = { discord, tournamentManager: tm };
 	discord.onPing(msg => handlers["help"]?.run(msg, [], support));
