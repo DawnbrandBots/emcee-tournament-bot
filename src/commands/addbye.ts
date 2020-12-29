@@ -16,7 +16,9 @@ const command: CommandDefinition = {
 				message: msg.id,
 				user: msg.author,
 				command: "addbye",
-				mention: player
+				tournament: id,
+				mention: player,
+				event: "attempt"
 			})
 		);
 		const byes = await support.tournamentManager.registerBye(id, player);
@@ -26,8 +28,9 @@ const command: CommandDefinition = {
 				message: msg.id,
 				user: msg.author,
 				command: "addbye",
+				tournament: id,
 				mention: player,
-				event: "bye added"
+				event: "success"
 			})
 		);
 		const tag = (id: string): string => `${support.discord.mentionUser(id)} (${support.discord.getUsername(id)})`;

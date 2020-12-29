@@ -10,8 +10,29 @@ const command: CommandDefinition = {
 		const [id] = args;
 		await support.tournamentManager.authenticateHost(id, msg);
 		const newHost = support.discord.getMentionedUser(msg);
+		logger.verbose(
+			JSON.stringify({
+				channel: msg.channelId,
+				message: msg.id,
+				user: msg.author,
+				tournament: id,
+				command: "addhost",
+				mention: newHost,
+				event: "attempt"
+			})
+		);
 		await support.tournamentManager.addHost(id, newHost);
-		logger.verbose(`Tournament ${id} added new host ${newHost} by ${msg.author}.`);
+		logger.verbose(
+			JSON.stringify({
+				channel: msg.channelId,
+				message: msg.id,
+				user: msg.author,
+				tournament: id,
+				command: "addhost",
+				mention: newHost,
+				event: "success"
+			})
+		);
 		await msg.reply(`${support.discord.mentionUser(newHost)} added as a host for Tournament ${id}!`);
 	}
 };

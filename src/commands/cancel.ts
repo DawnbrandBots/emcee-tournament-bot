@@ -10,10 +10,28 @@ const command: CommandDefinition = {
 		// This executor's logic is now surprisingly similar to finish
 		const [id] = args;
 		await support.tournamentManager.authenticateHost(id, msg);
-		logger.verbose(`Attempting to cancel tournament ${id}`);
-		// TODO: error path
+		logger.verbose(
+			JSON.stringify({
+				channel: msg.channelId,
+				message: msg.id,
+				user: msg.author,
+				command: "cancel",
+				tournament: id,
+				event: "attempt"
+			})
+		);
+		// TODO: error path, and apparently the Discord logic is in this function
 		await support.tournamentManager.finishTournament(id, true);
-		await msg.reply(`Tournament ${id} successfully canceled.`);
+		logger.verbose(
+			JSON.stringify({
+				channel: msg.channelId,
+				message: msg.id,
+				user: msg.author,
+				command: "cancel",
+				tournament: id,
+				event: "success"
+			})
+		);
 	}
 };
 

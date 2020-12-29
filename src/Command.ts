@@ -65,10 +65,21 @@ export class Command {
 					message: msg.id,
 					user: msg.author,
 					command: this.definition.name,
-					args
+					args,
+					event: "execute"
 				})
 			);
 			await this.definition.executor(msg, args, support);
+			logger.info(
+				JSON.stringify({
+					channel: msg.channelId,
+					message: msg.id,
+					user: msg.author,
+					command: this.definition.name,
+					args,
+					event: "success"
+				})
+			);
 		} catch (e) {
 			if (e instanceof UserError) {
 				logger.verbose(
