@@ -1,5 +1,7 @@
 import { DatabaseTournament } from "../database/interface";
-import logger from "../util/logger";
+import { getLogger } from "../util/logger";
+
+const logger = getLogger("discord");
 
 export interface DiscordAttachmentIn {
 	filename: string;

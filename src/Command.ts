@@ -1,7 +1,9 @@
 import { DiscordInterface, DiscordMessageIn } from "./discord/interface";
 import { TournamentInterface } from "./TournamentManager";
 import { UserError } from "./util/errors";
-import logger from "./util/logger";
+import { getLogger } from "./util/logger";
+
+const logger = getLogger("command");
 
 export interface CommandSupport {
 	discord: DiscordInterface;

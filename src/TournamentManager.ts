@@ -6,8 +6,10 @@ import { getDeckFromMessage, prettyPrint } from "./deck/discordDeck";
 import { DiscordAttachmentOut, DiscordInterface, DiscordMessageIn, DiscordMessageLimited } from "./discord/interface";
 import { TimerInterface } from "./timer/interface";
 import { BlockedDMsError, ChallongeAPIError, TournamentNotFoundError, UserError } from "./util/errors";
-import logger from "./util/logger";
+import { getLogger } from "./util/logger";
 import { WebsiteInterface } from "./website/interface";
+
+const logger = getLogger("tournament");
 
 interface MatchScore {
 	playerId: number;

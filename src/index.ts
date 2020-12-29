@@ -1,6 +1,6 @@
-import { initializeBehaviours } from "./CommandHandler";
 import { prefix } from "./config/config.json";
 import { challongeToken, challongeUsername, mongoDbUrl, postgresqlUrl } from "./config/env";
+import { initializeBehaviours } from "./CommandHandler";
 import { DatabaseInterface } from "./database/interface";
 import { initializeDatabase as initializeMongo } from "./database/mongoose";
 import { initializeDatabase as initializePostgres } from "./database/postgres";
@@ -9,9 +9,11 @@ import { DiscordWrapperEris } from "./discord/eris";
 import { DiscordInterface } from "./discord/interface";
 import { Timer } from "./timer/Timer";
 import { TournamentManager } from "./TournamentManager";
-import logger from "./util/logger";
+import { getLogger } from "./util/logger";
 import { WebsiteWrapperChallonge } from "./website/challonge";
 import { WebsiteInterface } from "./website/interface";
+
+const logger = getLogger("");
 
 (async () => {
 	const wrapper = await (process.env.EMCEE_USE_POSTGRES

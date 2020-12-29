@@ -20,7 +20,7 @@ import {
 	UnauthorisedTOError,
 	UserError
 } from "../util/errors";
-import logger from "../util/logger";
+import { getLogger } from "../util/logger";
 import {
 	DiscordAttachmentOut,
 	DiscordDeleteHandler,
@@ -32,6 +32,8 @@ import {
 	DiscordReactionHandler,
 	DiscordWrapper
 } from "./interface";
+
+const logger = getLogger("eris");
 
 export class DiscordWrapperEris implements DiscordWrapper {
 	private messageHandlers: DiscordMessageHandler[];

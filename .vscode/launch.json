@@ -13,7 +13,10 @@
 			"runtimeArgs": ["--enable-source-maps"],
 			"preLaunchTask": "npm: build",
 			"outFiles": ["${workspaceFolder}/dist/**/*.js"],
-			"outputCapture": "std"
+			"outputCapture": "std",
+			"env": {
+				"DEBUG_COLORS": "1"
+			}
 		},
 		{
 			"type": "node",

@@ -1,7 +1,9 @@
 import { getConnection } from "typeorm";
 import { Countdown } from "./database/orm";
 import { DiscordInterface } from "./discord/interface";
-import logger from "./util/logger";
+import { getLogger } from "./util/logger";
+
+const logger = getLogger("timer");
 
 /**
  * Because this timer is not considered ready until the corresponding Discord

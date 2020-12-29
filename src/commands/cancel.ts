@@ -1,5 +1,7 @@
 import { CommandDefinition } from "../Command";
-import logger from "../util/logger";
+import { getLogger } from "../util/logger";
+
+const logger = getLogger("command:cancel");
 
 const command: CommandDefinition = {
 	name: "cancel",
