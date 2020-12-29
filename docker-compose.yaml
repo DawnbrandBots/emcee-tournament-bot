@@ -14,6 +14,13 @@ services:
       # - ./db/init:/docker-entrypoint-initdb.d
       - database:/var/lib/postgresql/data
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "pg_isready"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    logging:
+      driver: "${COMPOSE_LOG_DRIVER}"
   bot:
     build: .
     environment:
@@ -24,11 +31,14 @@ services:
       CHALLONGE_TOKEN: ${CHALLONGE_TOKEN}
       POSTGRESQL_URL: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres/${POSTGRES_DB}"
       EMCEE_USE_POSTGRES: 1
+      DEBUG: "emcee:*"
     volumes:
       - ./dbs:/app/dbs
       - ./logs:/app/logs
       - ./ormlogs.log:/app/ormlogs.log
     restart: unless-stopped
+    logging:
+      driver: "${COMPOSE_LOG_DRIVER}"
 
 volumes:
   database:
