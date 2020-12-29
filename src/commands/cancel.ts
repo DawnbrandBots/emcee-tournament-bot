@@ -32,6 +32,7 @@ const command: CommandDefinition = {
 				event: "success"
 			})
 		);
+		await msg.reply(`Tournament ${id} successfully canceled.`);
 	}
 };
 
