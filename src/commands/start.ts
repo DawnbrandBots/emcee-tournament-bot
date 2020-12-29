@@ -9,8 +9,27 @@ const command: CommandDefinition = {
 	executor: async (msg, args, support) => {
 		const [id] = args;
 		await support.tournamentManager.authenticateHost(id, msg);
+		logger.verbose(
+			JSON.stringify({
+				channel: msg.channelId,
+				message: msg.id,
+				user: msg.author,
+				tournament: id,
+				command: "start",
+				event: "attempt"
+			})
+		);
 		await support.tournamentManager.startTournament(id);
-		logger.verbose(`Tournament ${id} commenced by ${msg.author}.`);
+		logger.verbose(
+			JSON.stringify({
+				channel: msg.channelId,
+				message: msg.id,
+				user: msg.author,
+				tournament: id,
+				command: "start",
+				event: "success"
+			})
+		);
 		await msg.reply(`Tournament ${id} successfully commenced!`);
 	}
 };

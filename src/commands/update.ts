@@ -9,9 +9,32 @@ const command: CommandDefinition = {
 	executor: async (msg, args, support) => {
 		const [id, name, desc] = args;
 		await support.tournamentManager.authenticateHost(id, msg);
+		logger.verbose(
+			JSON.stringify({
+				channel: msg.channelId,
+				message: msg.id,
+				user: msg.author,
+				tournament: id,
+				command: "update",
+				name,
+				desc,
+				event: "attempt"
+			})
+		);
 		await support.tournamentManager.updateTournament(id, name, desc);
 		// TODO: missing failure path
-		logger.verbose(`Tournament ${id} updated with name ${name} and description ${desc} by ${msg.author}.`);
+		logger.verbose(
+			JSON.stringify({
+				channel: msg.channelId,
+				message: msg.id,
+				user: msg.author,
+				tournament: id,
+				command: "update",
+				name,
+				desc,
+				event: "success"
+			})
+		);
 		await msg.reply(`Tournament \`${id}\` updated! It now has the name ${name} and the given description.`);
 	}
 };
