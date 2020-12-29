@@ -15,8 +15,8 @@ const command: CommandDefinition = {
 				channel: msg.channelId,
 				message: msg.id,
 				user: msg.author,
-				command: "cancel",
 				tournament: id,
+				command: "cancel",
 				event: "attempt"
 			})
 		);
@@ -27,8 +27,8 @@ const command: CommandDefinition = {
 				channel: msg.channelId,
 				message: msg.id,
 				user: msg.author,
-				command: "cancel",
 				tournament: id,
+				command: "cancel",
 				event: "success"
 			})
 		);

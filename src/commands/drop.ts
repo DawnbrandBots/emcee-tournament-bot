@@ -15,6 +15,7 @@ const command: CommandDefinition = {
 				channel: msg.channelId,
 				message: msg.id,
 				user: msg.author,
+				tournament: id,
 				command: "drop",
 				event: "attempt"
 			})
@@ -25,6 +26,7 @@ const command: CommandDefinition = {
 				channel: msg.channelId,
 				message: msg.id,
 				user: msg.author,
+				tournament: id,
 				command: "drop",
 				event: "success"
 			})
