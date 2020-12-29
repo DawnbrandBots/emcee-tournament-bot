@@ -5,7 +5,6 @@ import { DiscordAttachmentOut, DiscordEmbed, DiscordInterface, DiscordMessageOut
 import { TimerInterface } from "../src/timer/interface";
 import { TournamentManager } from "../src/TournamentManager";
 import { UserError } from "../src/util/errors";
-import logger from "../src/util/logger";
 import { WebsiteInterface } from "../src/website/interface";
 import { DatabaseWrapperMock } from "./mocks/database";
 import { DiscordWrapperMock } from "./mocks/discord";
@@ -24,7 +23,7 @@ const mockWebsite = new WebsiteInterface(mockWebsiteWrapper);
 
 const mockTimer = TimerInterface;
 
-const tournament = new TournamentManager(mockDiscord, mockDb, mockWebsite, logger, mockTimer);
+const tournament = new TournamentManager(mockDiscord, mockDb, mockWebsite, mockTimer);
 
 async function noop(): Promise<void> {
 	return;
@@ -434,9 +433,33 @@ describe("Misc functions", function () {
 		).to.not.be.rejected;
 	});
 	it("Authenticate host", async function () {
-		await expect(tournament.authenticateHost("tourn1", "testUser")).to.not.be.rejected;
+		await expect(
+			tournament.authenticateHost("tourn1", {
+				id: "",
+				content: "",
+				attachments: [],
+				author: "testUser",
+				channelId: "",
+				serverId: "",
+				reply: async () => undefined,
+				react: async () => undefined,
+				edit: async () => undefined
+			})
+		).to.not.be.rejected;
 	});
 	it("Authenticate player", async function () {
-		await expect(tournament.authenticatePlayer("tourn1", "player1")).to.not.be.rejected;
+		await expect(
+			tournament.authenticatePlayer("tourn1", {
+				id: "",
+				content: "",
+				attachments: [],
+				author: "player1",
+				channelId: "",
+				serverId: "",
+				reply: async () => undefined,
+				react: async () => undefined,
+				edit: async () => undefined
+			})
+		).to.not.be.rejected;
 	});
 });

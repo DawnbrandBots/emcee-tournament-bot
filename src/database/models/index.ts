@@ -1,5 +1,7 @@
 import { connect } from "mongoose";
-import logger from "../../util/logger";
+import { getLogger } from "../../util/logger";
+
+const logger = getLogger("mongoose");
 
 export async function initializeConnection(mongoDbUrl: string): Promise<void> {
 	await connect(mongoDbUrl, {

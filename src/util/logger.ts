@@ -1,31 +1,19 @@
-import { createLogger, format, transports } from "winston";
+import debug from "debug";
 
-const consoleFormat = format.printf(info => {
-	if (info.stack) {
-		return `${info.timestamp} ${info.level}: ${info.message}\n${info.stack}`;
-	} else {
-		return `${info.timestamp} ${info.level}: ${info.message}`;
-	}
-});
+const global = debug("emcee");
 
-const logger = createLogger({
-	level: "verbose",
-	format: format.combine(format.errors({ stack: true }), format.timestamp()),
-	transports: [
-		new transports.Console({
-			level: "info",
-			format: format.combine(format.colorize(), consoleFormat)
-		}),
-		new transports.File({
-			filename: "logs/error.log",
-			level: "error",
-			format: format.json()
-		}),
-		new transports.File({
-			filename: "logs/verbose.log",
-			format: format.json()
-		})
-	]
-});
+export interface Logger {
+	error: debug.Debugger;
+	warn: debug.Debugger;
+	info: debug.Debugger;
+	verbose: debug.Debugger;
+}
 
-export default logger;
+export function getLogger(namespace: string): Logger {
+	return {
+		error: global.extend(`error:${namespace}`),
+		warn: global.extend(`warn:${namespace}:`),
+		info: global.extend(`info:${namespace}`),
+		verbose: global.extend(`verbose:${namespace}`)
+	};
+}

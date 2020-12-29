@@ -1,16 +1,36 @@
 import { CommandDefinition } from "../Command";
-import logger from "../util/logger";
+import { getLogger } from "../util/logger";
+
+const logger = getLogger("command:finish");
 
 const command: CommandDefinition = {
 	name: "finish",
 	requiredArgs: ["id"],
 	executor: async (msg, args, support) => {
 		const [id] = args;
-		await support.tournamentManager.authenticateHost(id, msg.author);
-		logger.verbose(`Attempting to finish tournament ${id}`);
+		await support.tournamentManager.authenticateHost(id, msg);
+		logger.verbose(
+			JSON.stringify({
+				channel: msg.channelId,
+				message: msg.id,
+				user: msg.author,
+				tournament: id,
+				command: "finish",
+				event: "attempt"
+			})
+		);
 		// TODO: error path
 		await support.tournamentManager.finishTournament(id, false);
-		logger.verbose(`Tournament ${id} finished.`);
+		logger.verbose(
+			JSON.stringify({
+				channel: msg.channelId,
+				message: msg.id,
+				user: msg.author,
+				tournament: id,
+				command: "finish",
+				event: "success"
+			})
+		);
 		await msg.reply(`Tournament ${id} successfully finished.`);
 	}
 };

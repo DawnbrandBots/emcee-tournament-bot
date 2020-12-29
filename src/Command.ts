@@ -1,7 +1,9 @@
 import { DiscordInterface, DiscordMessageIn } from "./discord/interface";
 import { TournamentInterface } from "./TournamentManager";
 import { UserError } from "./util/errors";
-import logger from "./util/logger";
+import { getLogger } from "./util/logger";
+
+const logger = getLogger("command");
 
 export interface CommandSupport {
 	discord: DiscordInterface;
@@ -33,20 +35,66 @@ export class Command {
 	}
 
 	public async run(msg: DiscordMessageIn, args: string[], support: CommandSupport): Promise<void> {
+		logger.verbose(
+			JSON.stringify({
+				channel: msg.channelId,
+				message: msg.id,
+				user: msg.author,
+				command: this.definition.name,
+				event: "attempt"
+			})
+		);
 		const error = this.checkUsage(args);
 		if (error) {
+			logger.verbose(
+				JSON.stringify({
+					channel: msg.channelId,
+					message: msg.id,
+					user: msg.author,
+					command: this.definition.name,
+					error
+				})
+			);
 			await msg.reply(error).catch(logger.error);
 			return;
 		}
 		try {
+			logger.info(
+				JSON.stringify({
+					channel: msg.channelId,
+					message: msg.id,
+					user: msg.author,
+					command: this.definition.name,
+					args,
+					event: "execute"
+				})
+			);
 			await this.definition.executor(msg, args, support);
+			logger.info(
+				JSON.stringify({
+					channel: msg.channelId,
+					message: msg.id,
+					user: msg.author,
+					command: this.definition.name,
+					args,
+					event: "success"
+				})
+			);
 		} catch (e) {
 			if (e instanceof UserError) {
+				logger.verbose(
+					JSON.stringify({
+						channel: msg.channelId,
+						message: msg.id,
+						user: msg.author,
+						command: this.definition.name,
+						error: e.message
+					})
+				);
 				await msg.reply(e.message).catch(logger.error);
 				return;
 			}
-			// internal error
-			logger.error(e);
+			logger.error(e); // internal error
 		}
 	}
 }

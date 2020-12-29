@@ -1,4 +1,7 @@
 import { DatabaseTournament } from "../database/interface";
+import { getLogger } from "../util/logger";
+
+const logger = getLogger("discord");
 
 export interface DiscordAttachmentIn {
 	filename: string;
@@ -117,7 +120,15 @@ export class DiscordInterface {
 	}
 
 	public async authenticateTO(msg: DiscordMessageIn): Promise<void> {
-		return await this.api.authenticateTO(msg);
+		await this.api.authenticateTO(msg);
+		logger.verbose(
+			JSON.stringify({
+				channel: msg.channelId,
+				message: msg.id,
+				user: msg.author,
+				event: `TO authorized ${msg.serverId}`
+			})
+		);
 	}
 
 	public mentionChannel(channelId: string): string {
