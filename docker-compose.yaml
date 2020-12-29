@@ -34,8 +34,6 @@ services:
       DEBUG: "emcee:*"
     volumes:
       - ./dbs:/app/dbs
-      - ./logs:/app/logs
-      - ./ormlogs.log:/app/ormlogs.log
     restart: unless-stopped
     logging:
       driver: "${COMPOSE_LOG_DRIVER}"
