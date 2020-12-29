@@ -7,9 +7,9 @@ const command: CommandDefinition = {
 	name: "addchannel",
 	requiredArgs: ["id"],
 	executor: async (msg, args, support) => {
-		const [id, baseType, channelMention] = args; // 2 optional
+		const [id, baseType, channelMention] = args; // 2 optional and thus potentially undefined
 		await support.tournamentManager.authenticateHost(id, msg);
-		const type = baseType.toLowerCase() === "private" ? "private" : "public";
+		const type = baseType?.toLowerCase() === "private" ? "private" : "public";
 		const channelId = support.discord.getChannel(channelMention) || msg.channelId;
 		logger.verbose(
 			JSON.stringify({
