@@ -23,7 +23,7 @@ export interface TournamentInterface {
 	confirmPlayer(msg: DiscordMessageIn): Promise<void>;
 	cleanRegistration(msg: DiscordMessageLimited): Promise<void>;
 	authenticateHost(tournamentId: string, message: DiscordMessageIn): Promise<void>;
-	authenticatePlayer(tournamentId: string, playerId: string): Promise<void>;
+	authenticatePlayer(tournamentId: string, message: DiscordMessageIn): Promise<void>;
 	listTournaments(): Promise<string>;
 	createTournament(hostId: string, serverId: string, name: string, desc: string): Promise<[string, string]>;
 	updateTournament(tournamentId: string, name: string, desc: string): Promise<void>;
@@ -81,13 +81,22 @@ export class TournamentManager implements TournamentInterface {
 				message: message.id,
 				user: message.author,
 				tournament: tournamentId,
-				event: `Host authorized`
+				event: "host authorized"
 			})
 		);
 	}
 
-	public async authenticatePlayer(tournamentId: string, playerId: string): Promise<void> {
-		await this.database.authenticatePlayer(tournamentId, playerId);
+	public async authenticatePlayer(tournamentId: string, message: DiscordMessageIn): Promise<void> {
+		await this.database.authenticatePlayer(tournamentId, message.author);
+		logger.verbose(
+			JSON.stringify({
+				channel: message.channelId,
+				message: message.id,
+				user: message.author,
+				tournament: tournamentId,
+				event: "player authorized"
+			})
+		);
 	}
 
 	public async listTournaments(): Promise<string> {
