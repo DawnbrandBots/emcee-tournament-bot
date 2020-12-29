@@ -25,9 +25,9 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: 14
-      - run: npm ci
-      - run: npm run build --if-present
-      - run: npm run test
+      - run: yarn
+      - run: yarn build
+      - run: yarn test
         env:
           DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN }},
           OCTOKIT_TOKEN: ${{ secrets.OCTOKIT_TOKEN }},
@@ -35,9 +35,9 @@ jobs:
           CHALLONGE_USERNAME: ${{ secrets.CHALLONGE_USERNAME }},
           CHALLONGE_TOKEN: ${{ secrets.CHALLONGE_TOKEN }},
           POSTGRESQL_URL: postgresql://localhost/nonexistent
-      - run: npm run cover
+      - run: yarn cover
       - name: Coveralls
         uses: coverallsapp/github-action@master
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-      - run: npm run lint
+      - run: yarn lint
