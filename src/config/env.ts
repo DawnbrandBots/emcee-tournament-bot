@@ -10,7 +10,6 @@ function assertEnv(envvar: string): string {
 
 export const discordToken: string      = assertEnv("DISCORD_TOKEN");
 export const octokitToken: string      = assertEnv("OCTOKIT_TOKEN");
-export const mongoDbUrl: string        = assertEnv("MONGODB_URL");
 export const challongeUsername: string = assertEnv("CHALLONGE_USERNAME");
 export const challongeToken: string    = assertEnv("CHALLONGE_TOKEN");
 export const postgresqlUrl: string     = assertEnv("POSTGRESQL_URL");

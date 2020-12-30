@@ -1,8 +1,7 @@
 import { prefix } from "./config/config.json";
-import { challongeToken, challongeUsername, mongoDbUrl, postgresqlUrl } from "./config/env";
+import { challongeToken, challongeUsername, postgresqlUrl } from "./config/env";
 import { initializeBehaviours } from "./CommandHandler";
 import { DatabaseInterface } from "./database/interface";
-import { initializeDatabase as initializeMongo } from "./database/mongoose";
 import { initializeDatabase as initializePostgres } from "./database/postgres";
 import { getCardArray } from "./deck/deck";
 import { DiscordWrapperEris } from "./discord/eris";
@@ -16,9 +15,7 @@ import { WebsiteInterface } from "./website/interface";
 const logger = getLogger("");
 
 (async () => {
-	const wrapper = await (process.env.EMCEE_USE_POSTGRES
-		? initializePostgres(postgresqlUrl)
-		: initializeMongo(mongoDbUrl));
+	const wrapper = await initializePostgres(postgresqlUrl);
 	const database = new DatabaseInterface(wrapper);
 
 	const eris = new DiscordWrapperEris();
