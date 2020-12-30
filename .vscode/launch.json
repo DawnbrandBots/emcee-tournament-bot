@@ -34,7 +34,7 @@
 			"request": "launch",
 			"name": "Mocha All",
 			"program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
-			"args": ["--config", "test/.mocharc.yml", "--timeout", "0", "${workspaceFolder}/test/*.ts"],
+			"args": ["--config", "test/.mocharc.yml", "--timeout", "0", "${workspaceFolder}/test/*.ts", "${workspaceFolder}/test/**/*.unit.ts"],
 			"skipFiles": ["<node_internals>/**/*.js"]
 		},
 		{
