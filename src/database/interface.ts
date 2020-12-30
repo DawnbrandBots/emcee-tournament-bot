@@ -11,7 +11,7 @@ export interface DatabaseWrapper {
 	): Promise<DatabaseTournament>;
 	updateTournament(tournamentId: string, name: string, desc: string): Promise<void>;
 	getTournament(tournamentId: string): Promise<DatabaseTournament>;
-	getActiveTournaments(): Promise<DatabaseTournament[]>;
+	getActiveTournaments(server?: string): Promise<DatabaseTournament[]>;
 	addAnnouncementChannel(tournamentId: string, channelId: string, type: "public" | "private"): Promise<void>;
 	removeAnnouncementChannel(tournamentId: string, channelId: string, type: "public" | "private"): Promise<void>;
 	addHost(tournamentId: string, newHost: string): Promise<void>;
@@ -95,8 +95,8 @@ export class DatabaseInterface {
 		}
 	}
 
-	public async listTournaments(): Promise<DatabaseTournament[]> {
-		return await this.db.getActiveTournaments();
+	public async listTournaments(server?: string): Promise<DatabaseTournament[]> {
+		return await this.db.getActiveTournaments(server);
 	}
 
 	public async createTournament(
