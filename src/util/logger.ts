@@ -12,7 +12,7 @@ export interface Logger {
 export function getLogger(namespace: string): Logger {
 	return {
 		error: global.extend(`error:${namespace}`),
-		warn: global.extend(`warn:${namespace}:`),
+		warn: global.extend(`warn:${namespace}`),
 		info: global.extend(`info:${namespace}`),
 		verbose: global.extend(`verbose:${namespace}`)
 	};

@@ -28,7 +28,7 @@ export class Command {
 
 	protected checkUsage(args: string[]): string {
 		// If not enough arguments are provided or some of them are falsy
-		if (this.definition.requiredArgs.length > args.length || args.find(value => !value)) {
+		if (this.definition.requiredArgs.length > args.length || args.findIndex(value => !value) !== -1) {
 			return `Usage: ${this.definition.name} ${this.definition.requiredArgs.join("|")}`;
 		}
 		return "";
