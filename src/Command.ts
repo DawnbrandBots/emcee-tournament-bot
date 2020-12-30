@@ -34,63 +34,31 @@ export class Command {
 		return "";
 	}
 
+	protected log(msg: DiscordMessageIn, extra: Record<string, unknown>): string {
+		return JSON.stringify({
+			channel: msg.channelId,
+			message: msg.id,
+			user: msg.author,
+			command: this.definition.name,
+			...extra
+		});
+	}
+
 	public async run(msg: DiscordMessageIn, args: string[], support: CommandSupport): Promise<void> {
-		logger.verbose(
-			JSON.stringify({
-				channel: msg.channelId,
-				message: msg.id,
-				user: msg.author,
-				command: this.definition.name,
-				event: "attempt"
-			})
-		);
+		logger.verbose(this.log(msg, { event: "attempt" }));
 		const error = this.checkUsage(args);
 		if (error) {
-			logger.verbose(
-				JSON.stringify({
-					channel: msg.channelId,
-					message: msg.id,
-					user: msg.author,
-					command: this.definition.name,
-					error
-				})
-			);
+			logger.verbose(this.log(msg, { error }));
 			await msg.reply(error).catch(logger.error);
 			return;
 		}
 		try {
-			logger.info(
-				JSON.stringify({
-					channel: msg.channelId,
-					message: msg.id,
-					user: msg.author,
-					command: this.definition.name,
-					args,
-					event: "execute"
-				})
-			);
+			logger.info(this.log(msg, { args, event: "execute" }));
 			await this.definition.executor(msg, args, support);
-			logger.info(
-				JSON.stringify({
-					channel: msg.channelId,
-					message: msg.id,
-					user: msg.author,
-					command: this.definition.name,
-					args,
-					event: "success"
-				})
-			);
+			logger.info(this.log(msg, { args, event: "success" }));
 		} catch (e) {
 			if (e instanceof UserError) {
-				logger.verbose(
-					JSON.stringify({
-						channel: msg.channelId,
-						message: msg.id,
-						user: msg.author,
-						command: this.definition.name,
-						error: e.message
-					})
-				);
+				logger.verbose(this.log(msg, { error: e.message }));
 				await msg.reply(e.message).catch(logger.error);
 				return;
 			}
