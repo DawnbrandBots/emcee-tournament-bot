@@ -24,13 +24,11 @@ services:
   bot:
     build: .
     environment:
-      DISCORD_TOKEN: ${DISCORD_TOKEN}
-      OCTOKIT_TOKEN: ${OCTOKIT_TOKEN}
-      MONGODB_URL: UNUSED
-      CHALLONGE_USERNAME: ${CHALLONGE_USERNAME}
-      CHALLONGE_TOKEN: ${CHALLONGE_TOKEN}
+      DISCORD_TOKEN: "${DISCORD_TOKEN}"
+      OCTOKIT_TOKEN: "${OCTOKIT_TOKEN}"
+      CHALLONGE_USERNAME: "${CHALLONGE_USERNAME}"
+      CHALLONGE_TOKEN: "${CHALLONGE_TOKEN}"
       POSTGRESQL_URL: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres/${POSTGRES_DB}"
-      EMCEE_USE_POSTGRES: 1
       DEBUG: "emcee:*"
     volumes:
       - ./dbs:/app/dbs

@@ -10,14 +10,16 @@
 		"lint": "eslint . --ext .js,.jsx,.ts,.tsx",
 		"build": "tsc"
 	},
-	"author": "AlphaKretin",
+	"author": "Luna Brand",
+	"contributors": [
+		"Kevin Lu"
+	],
 	"license": "AGPL-3.0-or-later",
 	"dependencies": {
 		"@fast-csv/format": "^4.3.5",
 		"debug": "^4.3.1",
 		"dotenv": "^8.2.0",
 		"eris": "^0.14.0",
-		"mongoose": "^5.11.8",
 		"node-fetch": "^2.6.1",
 		"pg": "^8.5.1",
 		"reflect-metadata": "^0.1.13",
