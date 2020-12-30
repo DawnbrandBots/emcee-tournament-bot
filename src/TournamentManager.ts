@@ -24,7 +24,7 @@ export interface TournamentInterface {
 	cleanRegistration(msg: DiscordMessageLimited): Promise<void>;
 	authenticateHost(tournamentId: string, message: DiscordMessageIn): Promise<void>;
 	authenticatePlayer(tournamentId: string, message: DiscordMessageIn): Promise<void>;
-	listTournaments(): Promise<string>;
+	listTournaments(server?: string): Promise<string>;
 	createTournament(hostId: string, serverId: string, name: string, desc: string): Promise<[string, string]>;
 	updateTournament(tournamentId: string, name: string, desc: string): Promise<void>;
 	addAnnouncementChannel(tournamentId: string, channelId: string, type: "public" | "private"): Promise<void>;
@@ -99,8 +99,8 @@ export class TournamentManager implements TournamentInterface {
 		);
 	}
 
-	public async listTournaments(): Promise<string> {
-		const list = await this.database.listTournaments();
+	public async listTournaments(server?: string): Promise<string> {
+		const list = await this.database.listTournaments(server);
 		const text = list.map(t => `ID: ${t.id}|Name: ${t.name}|Status: ${t.status}|Players: ${t.players.length}`);
 		return text.join("\n");
 	}

@@ -1,8 +1,8 @@
 import chai, { expect } from "chai";
-import { DatabaseInterface } from "../src/database/interface";
-import { DatabaseWrapperMock } from "./mocks/database";
 import chaiAsPromised from "chai-as-promised";
+import { DatabaseInterface } from "../src/database/interface";
 import { UnauthorisedHostError, UnauthorisedPlayerError } from "../src/util/errors";
+import { DatabaseWrapperMock } from "./mocks/database";
 
 chai.use(chaiAsPromised);
 

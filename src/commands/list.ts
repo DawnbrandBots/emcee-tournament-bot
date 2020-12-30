@@ -21,7 +21,7 @@ const command: CommandDefinition = {
 				event: "attempt"
 			})
 		);
-		const list = await support.tournamentManager.listTournaments();
+		const list = await support.tournamentManager.listTournaments(msg.serverId);
 		logger.verbose(
 			JSON.stringify({
 				channel: msg.channelId,

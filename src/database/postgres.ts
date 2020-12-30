@@ -268,9 +268,12 @@ export class DatabaseWrapperPostgres implements DatabaseWrapper {
 		});
 	}
 
-	async getActiveTournaments(): Promise<DatabaseTournament[]> {
+	async getActiveTournaments(owningDiscordServer?: string): Promise<DatabaseTournament[]> {
 		const tournaments = await ChallongeTournament.find({
-			where: [{ status: TournamentStatus.IPR }, { status: TournamentStatus.PREPARING }]
+			where: [
+				{ owningDiscordServer, status: TournamentStatus.IPR },
+				{ owningDiscordServer, status: TournamentStatus.PREPARING }
+			]
 		});
 		return tournaments.map(t => this.wrap(t));
 	}
