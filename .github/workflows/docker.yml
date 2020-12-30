@@ -1,0 +1,37 @@
+name: Build and push Docker image
+
+on:
+  push:
+    branches: ["master"] # Publish as Docker "latest"
+    tags: ["*"]
+  pull_request:
+    # Only rebuild Docker images if a PR affects it specifically to avoid
+    # redundant work since the main workflow already deals with testing builds
+    paths:
+      - Dockerfile
+      - docker-compose.yaml
+      - .github/workflows/docker.yml
+
+jobs:
+  build-push:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Infer image tag
+        if: github.event_name == 'push'
+        run: |
+          # Strip git ref prefix from version
+          VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
+          # Use Docker `latest` tag convention
+          [[ "$VERSION" == "master" ]] && VERSION=latest
+          echo "EMCEE_VERSION=$VERSION" >> $GITHUB_ENV
+      - name: Build image
+        run: |
+          echo "POSTGRES_HOST_PORT=127.0.0.1:5432" > .env
+          docker-compose build
+      - name: Log into registry and push image
+        # See also https://docs.docker.com/docker-hub/builds/
+        if: github.event_name == 'push'
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login docker.pkg.github.com -u ${{ github.actor }} --password-stdin
+          docker-compose push

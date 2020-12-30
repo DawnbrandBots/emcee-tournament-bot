@@ -23,6 +23,7 @@ services:
       driver: "${COMPOSE_LOG_DRIVER}"
   bot:
     build: .
+    image: "docker.pkg.github.com/alphakretin/emcee-tournament-bot/bot:${EMCEE_VERSION:-latest}"
     environment:
       DISCORD_TOKEN: "${DISCORD_TOKEN}"
       OCTOKIT_TOKEN: "${OCTOKIT_TOKEN}"
