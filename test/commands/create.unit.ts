@@ -58,7 +58,7 @@ describe("command:create", function () {
 			await command.executor(msg, args, support);
 			expect(authStub).to.have.been.called;
 			expect(createStub).to.have.been.calledOnce;
-			expect(replyStub).to.have.been.calledOnceWith(
+			expect(replyStub).to.have.been.calledOnceWithExactly(
 				"Tournament battlecity created! You can find it at https://example.com/battlecity. For future commands, refer to this tournament by the id `battlecity`."
 			);
 		})
@@ -77,7 +77,7 @@ describe("command:create", function () {
 				expect(e).to.equal(error);
 				expect(authStub).to.have.been.called;
 				expect(createStub).to.have.been.calledOnce;
-				expect(replyStub).to.have.been.calledOnceWith(
+				expect(replyStub).to.have.been.calledOnceWithExactly(
 					"Tournament ID battlecity already taken on Challonge. This is an error with Emcee, so please report it, but in the meantime, try using a different tournament name."
 				);
 			}
