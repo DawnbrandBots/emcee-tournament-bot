@@ -5,7 +5,7 @@
 	"private": true,
 	"main": "dist/index.js",
 	"scripts": {
-		"test": "nyc mocha --config test/.mocharc.yml test/*.ts",
+		"test": "nyc mocha --config test/.mocharc.yml test/*.ts test/**/*.unit.ts",
 		"cover": "nyc report",
 		"lint": "eslint . --ext .js,.jsx,.ts,.tsx",
 		"build": "tsc"
