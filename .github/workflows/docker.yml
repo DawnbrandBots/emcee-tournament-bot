@@ -18,7 +18,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Infer image tag
-        if: github.event_name == "push"
+        if: github.event_name == 'push'
         run: |
           # Strip git ref prefix from version
           VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
@@ -28,7 +28,7 @@ jobs:
       - run: docker-compose build
       - name: Log into registry and push image
         # See also https://docs.docker.com/docker-hub/builds/
-        if: github.event_name == "push"
+        if: github.event_name == 'push'
         run: |
           echo "${{ secrets.GITHUB_TOKEN }}" | docker login docker.pkg.github.com -u ${{ github.actor }} --password-stdin
           docker-compose push
