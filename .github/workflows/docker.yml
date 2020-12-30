@@ -25,7 +25,7 @@ jobs:
           # Use Docker `latest` tag convention
           [[ "$VERSION" == "master" ]] && VERSION=latest
           echo "EMCEE_VERSION=$VERSION" >> $GITHUB_ENV
-      - run: docker-compose build
+      - run: docker-compose build bot
       - name: Log into registry and push image
         # See also https://docs.docker.com/docker-hub/builds/
         if: github.event_name == 'push'
