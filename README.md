@@ -13,23 +13,47 @@ This README file details the source code of this bot. For information on how to 
 
 ## Development
 
-Emcee is written in TypeScript and uses Eris to talk to Discord and MongoDB for persistence.
-It targets Node.js 14+ and can be run with or without Docker.
+Emcee is written in TypeScript. It targets Node.js 14+ and can be run with or without Docker.
+It uses Eris to talk to Discord and PostgreSQL for persistence.
 
-1. Install Docker with Docker Compose or MongoDB.
-1. Start MongoDB. You can start up just the Mongo container with `docker-compose up -d mongo`.
-1. Create a `.env` file with the required environment variables defined in `/src/config/env.ts`.
-    - If Emcee is in Docker, `MONGODB_URL` is not required.
-    - If Emcee is outside Docker, use `MONGODB_URL=mongodb://localhost:27017/tournamentdb` or similar.
+
+1. Install Docker with Docker Compose, or install PostgreSQL.
+1. Start Postgres. You can start up just the Postgres container with `docker-compose up -d postgres`.
+1. Create a `.env` file with the required credentials and configuration. Examples below:
+    - In Docker:
+
+        ```
+        POSTGRES_HOST_PORT=127.0.0.1:5432
+        POSTGRES_USER=
+        POSTGRES_PASSWORD=
+        POSTGRES_DB=
+        DISCORD_TOKEN=
+        CHALLONGE_USERNAME=
+        CHALLONGE_TOKEN=
+        OCTOKIT_TOKEN=
+        ```
+
+    - Outside Docker:
+
+        ```
+        NODE_ENV=development
+        DEBUG=emcee:*
+        POSTGRESQL_URL=postgresql://USER:PASSWORD@localhost:5432/DBNAME
+        DISCORD_TOKEN=
+        CHALLONGE_USERNAME=
+        CHALLONGE_TOKEN=
+        OCTOKIT_TOKEN=
+        ```
+
 1. Start Emcee.
-    - In Docker: `docker-compose up` and wait for the image to build.
-    - Outside Docker: `npm ci && npm build && node dist/index.js`.
+    - In Docker: `docker-compose up --build` and wait for the image to build.
+    - Outside Docker: `yarn && yarn build && node --enable-source-maps dist`.
 
 Please use Australian English spellings.
 
 ## Licence
 
-Copyright © 2020 AlphaKretin, Kevin Lu. See COPYING for more details.
+Copyright © 2020 Luna Brand, Kevin Lu. See COPYING for more details.
 
 ```
 This program is free software: you can redistribute it and/or modify
