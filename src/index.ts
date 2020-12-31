@@ -1,9 +1,9 @@
+import { initializeBehaviours } from "./CommandHandler";
 import { prefix } from "./config/config.json";
 import { challongeToken, challongeUsername, postgresqlUrl } from "./config/env";
-import { initializeBehaviours } from "./CommandHandler";
 import { DatabaseInterface } from "./database/interface";
 import { initializeDatabase as initializePostgres } from "./database/postgres";
-import { getCardArray } from "./deck/deck";
+import { initializeCardArray } from "./deck/deck";
 import { DiscordWrapperEris } from "./discord/eris";
 import { DiscordInterface } from "./discord/interface";
 import { Timer } from "./timer/Timer";
@@ -26,7 +26,7 @@ const logger = getLogger("");
 
 	const tournamentManager = new TournamentManager(discord, database, website, Timer);
 
-	await getCardArray();
+	await initializeCardArray();
 	logger.info("ygo-data preload for ydeck complete");
 	initializeBehaviours(prefix, discord, tournamentManager);
 })().catch(logger.error);

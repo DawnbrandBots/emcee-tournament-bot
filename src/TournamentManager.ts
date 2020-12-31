@@ -580,7 +580,7 @@ export class TournamentManager implements TournamentInterface {
 				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 				const player = tournament.findPlayer(p)!;
 				const name = this.discord.getUsername(player.discordId);
-				const deck = await getDeck(player.deck);
+				const deck = getDeck(player.deck);
 				const themes = deck.themes.length > 0 ? deck.themes.join("/") : "No themes";
 				return [name, themes];
 			})
@@ -597,7 +597,7 @@ export class TournamentManager implements TournamentInterface {
 		const tourn = await this.database.getTournament(tournamentId);
 		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 		const player = tourn.findPlayer(playerId)!;
-		return await getDeck(player.deck);
+		return getDeck(player.deck);
 	}
 
 	private async dropPlayerReaction(msg: DiscordMessageLimited, playerId: string): Promise<void> {
@@ -682,7 +682,7 @@ export class TournamentManager implements TournamentInterface {
 			tournament.players.map(async p => {
 				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 				const player = tournament.findPlayer(p)!;
-				const deck = await getDeck(player.deck);
+				const deck = getDeck(player.deck);
 				return deck.themes.length > 0 ? deck.themes.join("/") : "No themes";
 			})
 		);
@@ -702,7 +702,7 @@ export class TournamentManager implements TournamentInterface {
 			tournament.players.map(async p => {
 				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 				const player = tournament.findPlayer(p)!;
-				const deck = await getDeck(player.deck);
+				const deck = getDeck(player.deck);
 				return [
 					this.discord.getUsername(p),
 					`Main: ${deck.mainText}, Extra: ${deck.extraText}, Side: ${deck.sideText}`.replace(/\n/g, ", ")
