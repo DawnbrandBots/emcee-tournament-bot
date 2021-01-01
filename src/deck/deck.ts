@@ -4,6 +4,9 @@ import cardOpts from "../config/cardOpts.json";
 import dataOpts from "../config/dataOpts.json";
 import { octokitToken } from "../config/env";
 import transOpts from "../config/transOpts.json";
+import { getLogger } from "../util/logger";
+
+const logger = getLogger("deck");
 
 const data = new YgoData(cardOpts, transOpts, dataOpts, "./dbs", octokitToken);
 
@@ -31,29 +34,26 @@ async function convertCard(card: DataCard): Promise<Card> {
 	return new Card(card.text.en.name, card.data.ot, card.data.type, card.data.setcode, statusMap);
 }
 
-export async function getCardArray(): Promise<CardArray> {
+export async function initializeCardArray(): Promise<void> {
 	if (!cardArray) {
 		const dataArray = await data.getCardList();
-		const promArray: { [code: number]: Promise<Card> } = {};
+		cardArray = {};
 		for (const code in dataArray) {
-			promArray[code] = convertCard(dataArray[code]);
+			cardArray[code] = await convertCard(dataArray[code]);
 		}
-		await Promise.all(Object.values(promArray));
-		const tempArray: CardArray = {};
-		for (const code in promArray) {
-			tempArray[code] = await promArray[code];
-		}
-		cardArray = tempArray;
+	} else {
+		logger.warn(new Error("initializeCardArray called multiple times"));
 	}
-	return cardArray;
 }
 
 const deckCache: { [url: string]: Deck } = {};
 
-export async function getDeck(url: string, limiter?: string): Promise<Deck> {
+export function getDeck(url: string, limiter?: string): Deck {
+	if (!cardArray) {
+		throw new Error("getDeck called before initializeCardArray");
+	}
 	if (!deckCache[url]) {
-		const array = await getCardArray();
-		deckCache[url] = new Deck(url, array, limiter);
+		deckCache[url] = new Deck(url, cardArray, limiter);
 	}
 	return deckCache[url];
 }

@@ -586,16 +586,14 @@ export class TournamentManager implements TournamentInterface {
 
 	public async listPlayers(tournamentId: string): Promise<DiscordAttachmentOut> {
 		const tournament = await this.database.getTournament(tournamentId);
-		const rows = await Promise.all(
-			tournament.players.map(async p => {
-				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-				const player = tournament.findPlayer(p)!;
-				const name = this.discord.getUsername(player.discordId);
-				const deck = await getDeck(player.deck);
-				const themes = deck.themes.length > 0 ? deck.themes.join("/") : "No themes";
-				return [name, themes];
-			})
-		);
+		const rows = tournament.players.map(p => {
+			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+			const player = tournament.findPlayer(p)!;
+			const name = this.discord.getUsername(player.discordId);
+			const deck = getDeck(player.deck);
+			const themes = deck.themes.length > 0 ? deck.themes.join("/") : "No themes";
+			return [name, themes];
+		});
 		rows.unshift(["Player", "Theme"]);
 		const contents = await csv.writeToString(rows);
 		return {
@@ -608,7 +606,7 @@ export class TournamentManager implements TournamentInterface {
 		const tourn = await this.database.getTournament(tournamentId);
 		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 		const player = tourn.findPlayer(playerId)!;
-		return await getDeck(player.deck);
+		return getDeck(player.deck);
 	}
 
 	private async dropPlayerReaction(msg: DiscordMessageLimited, playerId: string): Promise<void> {
@@ -689,14 +687,12 @@ export class TournamentManager implements TournamentInterface {
 
 	public async generatePieChart(tournamentId: string): Promise<DiscordAttachmentOut> {
 		const tournament = await this.database.getTournament(tournamentId);
-		const themes = await Promise.all(
-			tournament.players.map(async p => {
-				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-				const player = tournament.findPlayer(p)!;
-				const deck = await getDeck(player.deck);
-				return deck.themes.length > 0 ? deck.themes.join("/") : "No themes";
-			})
-		);
+		const themes = tournament.players.map(p => {
+			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+			const player = tournament.findPlayer(p)!;
+			const deck = getDeck(player.deck);
+			return deck.themes.length > 0 ? deck.themes.join("/") : "No themes";
+		});
 		const counts = this.countStrings(themes);
 		const rows = Object.entries(counts).map(e => [e[0], e[1].toString()]);
 		rows.unshift(["Theme", "Count"]);
@@ -709,17 +705,15 @@ export class TournamentManager implements TournamentInterface {
 
 	public async generateDeckDump(tournamentId: string): Promise<DiscordAttachmentOut> {
 		const tournament = await this.database.getTournament(tournamentId);
-		const rows = await Promise.all(
-			tournament.players.map(async p => {
-				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-				const player = tournament.findPlayer(p)!;
-				const deck = await getDeck(player.deck);
-				return [
-					this.discord.getUsername(p),
-					`Main: ${deck.mainText}, Extra: ${deck.extraText}, Side: ${deck.sideText}`.replace(/\n/g, ", ")
-				];
-			})
-		);
+		const rows = tournament.players.map(p => {
+			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+			const player = tournament.findPlayer(p)!;
+			const deck = getDeck(player.deck);
+			return [
+				this.discord.getUsername(p),
+				`Main: ${deck.mainText}, Extra: ${deck.extraText}, Side: ${deck.sideText}`.replace(/\n/g, ", ")
+			];
+		});
 		rows.unshift(["Player", "Deck"]);
 		const contents = await csv.writeToString(rows);
 		return {
