@@ -93,7 +93,13 @@ export class PersistentTimer {
 		if (this.interval) {
 			clearInterval(this.interval);
 			this.interval === undefined;
-			await this.entity.remove();
+			try {
+				await this.entity.remove();
+			} catch (error) {
+				// The interval is already cleared so there will be no visible side effects
+				// in this bot process or thread.
+				logger.warn(error);
+			}
 		}
 	}
 
