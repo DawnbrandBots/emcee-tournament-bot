@@ -85,6 +85,10 @@ export class PersistentTimer {
 		return active;
 	}
 
+	public get tournament(): string | undefined {
+		return this.entity.tournamentId;
+	}
+
 	public isActive(): boolean {
 		return this.interval !== undefined;
 	}

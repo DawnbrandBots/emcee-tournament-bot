@@ -23,5 +23,6 @@ import { WebsiteInterface } from "./website/interface";
 	const tournamentManager = new TournamentManager(discord, database, website);
 
 	await initializeCardArray();
+	await tournamentManager.loadTimers();
 	initializeBehaviours(prefix, discord, tournamentManager);
 })();

@@ -66,6 +66,26 @@ export class TournamentManager implements TournamentInterface {
 		this.timers = {};
 	}
 
+	public async loadTimers(): Promise<void> {
+		if (Object.keys(this.timers).length) {
+			logger.warn(new Error("loadTimers called multiple times"));
+		} else {
+			const timers = await PersistentTimer.loadAll(this.discord);
+			let count = 0;
+			for (const timer of timers) {
+				if (timer.tournament) {
+					this.timers[timer.tournament] = (this.timers[timer.tournament] || []).concat(timer);
+					count++;
+				} else {
+					logger.warn(new Error("Aborting orphaned timer"));
+					await timer.abort();
+				}
+			}
+			const tournaments = Object.keys(this.timers).length;
+			logger.info(`Loaded ${count} of ${timers.length} PersistentTimers for ${tournaments} tournaments.`);
+		}
+	}
+
 	public async authenticateHost(tournamentId: string, message: DiscordMessageIn): Promise<void> {
 		await this.database.authenticateHost(tournamentId, message.author);
 		logger.verbose(
