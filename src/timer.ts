@@ -24,7 +24,7 @@ export class PersistentTimer {
 	protected constructor(discord: DiscordInterface, entity: Countdown) {
 		this.discord = discord;
 		this.entity = entity;
-		this.interval = setInterval(() => this.tick(), this.entity.updateIntervalMilli);
+		this.interval = setInterval(() => this.tick(), 1000);
 	}
 
 	public static async create(
@@ -32,7 +32,7 @@ export class PersistentTimer {
 		end: Date,
 		channelId: string,
 		finalMessage: string,
-		updateIntervalMilli: number
+		cronIntervalSeconds: number
 	): Promise<PersistentTimer> {
 		// TODO: check for end <= now
 		const endMilli = end.getTime();
@@ -45,7 +45,7 @@ export class PersistentTimer {
 		entity.channelId = channelId;
 		entity.messageId = message.id;
 		entity.finalMessage = finalMessage;
-		entity.updateIntervalMilli = updateIntervalMilli;
+		entity.cronIntervalSeconds = cronIntervalSeconds;
 		await entity.save();
 
 		return new PersistentTimer(discord, entity);
@@ -89,16 +89,19 @@ export class PersistentTimer {
 
 	/// Only to be called by setInterval
 	protected async tick(): Promise<void> {
-		if (this.entity.end <= new Date()) {
+		const now = new Date();
+		if (this.entity.end <= now) {
 			await this.discord.sendMessage(this.entity.channelId, this.entity.finalMessage);
 			await this.abort();
 		}
-		const left = PersistentTimer.formatTime(this.entity.end.getTime() - Date.now());
-		try {
-			const message = await this.discord.getMessage(this.entity.channelId, this.entity.messageId);
-			message.edit(`Time left in the round: \`${left}\``);
-		} catch (err) {
-			logger.warn(`${this.entity.channelId} ${this.entity.messageId} was removed`);
+		if (now.getSeconds() % this.entity.cronIntervalSeconds == 0) {
+			const left = PersistentTimer.formatTime(this.entity.end.getTime() - Date.now());
+			try {
+				const message = await this.discord.getMessage(this.entity.channelId, this.entity.messageId);
+				message.edit(`Time left in the round: \`${left}\``);
+			} catch (err) {
+				logger.warn(`${this.entity.channelId} ${this.entity.messageId} was removed`);
+			}
 		}
 	}
 

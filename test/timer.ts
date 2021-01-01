@@ -36,7 +36,7 @@ describe("PersistentTimer is a timer", function () {
 				new Date(Date.now() + 10000),
 				"1234567890",
 				"Test timer done",
-				1000
+				5
 			);
 			expect(timer.isActive()).to.be.true;
 			expect(sendMessageSpy).to.have.been.calledWith("1234567890", "Time left in the round: `00:10`");
@@ -66,24 +66,24 @@ describe("PersistentTimer is a timer", function () {
 			);
 			const timer = await PersistentTimer.create(
 				discord,
-				new Date(Date.now() + 3000),
+				new Date(Date.now() + 15000),
 				"1234567890",
 				"Test timer done",
-				1000
+				5
 			);
 			void timer;
 			// Tick should be every second
 			await this.clock.tickAsync(500);
 			expect(edit).to.not.have.been.called;
 			// First tick
-			await this.clock.tickAsync(500);
-			expect(edit).to.have.been.calledOnceWith("Time left in the round: `00:02`");
+			await this.clock.tickAsync(4500);
+			expect(edit).to.have.been.calledOnceWith("Time left in the round: `00:10`");
 			// Second tick
-			await this.clock.tickAsync(1000);
+			await this.clock.tickAsync(5000);
 			expect(edit).to.have.been.calledTwice;
-			expect(edit).to.have.been.calledWith("Time left in the round: `00:01`");
+			expect(edit).to.have.been.calledWith("Time left in the round: `00:05`");
 			// Third tick, we should be finished
-			await this.clock.tickAsync(1000);
+			await this.clock.tickAsync(5000);
 			expect(edit).to.have.been.calledThrice;
 			expect(edit).to.have.been.calledWith("Time left in the round: `00:00`");
 			expect(sendMessageSpy).to.have.been.calledWith("1234567890", "Test timer done");
@@ -121,7 +121,7 @@ describe("PersistentTimer is a timer", function () {
 				new Date(Date.now() + 3000),
 				"1234567890",
 				"Test timer done",
-				1000
+				1
 			);
 			// First tick
 			await this.clock.tickAsync(1000);

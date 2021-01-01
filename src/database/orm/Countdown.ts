@@ -26,7 +26,7 @@ export class Countdown extends BaseEntity {
 	@Column("text")
 	finalMessage!: string;
 
-	/// For direct use with setInterval.
+	/// Update the Discord message on seconds that are a multiple of this number.
 	@Column()
-	updateIntervalMilli!: number;
+	cronIntervalSeconds!: number;
 }
