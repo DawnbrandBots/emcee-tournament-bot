@@ -364,14 +364,22 @@ export class TournamentManager implements TournamentInterface {
 		await this.discord.sendMessage(channelId, message);
 	}
 
-	private async startNewRound(tournament: DatabaseTournament, url: string): Promise<void> {
-		const bye = await this.website.getBye(tournament.id);
+	private async cancelTimers(tournament: DatabaseTournament): Promise<void> {
 		const channels = tournament.publicChannels;
 		await Promise.all(
 			channels.map(async c => {
 				if (c in this.timers) {
 					await this.timers[c].abort();
 				}
+			})
+		);
+	}
+
+	private async startNewRound(tournament: DatabaseTournament, url: string): Promise<void> {
+		const bye = await this.website.getBye(tournament.id);
+		const channels = tournament.publicChannels;
+		await Promise.all(
+			channels.map(async c => {
 				await this.sendNewRoundMessage(c, tournament, url, bye);
 				this.timers[c] = await this.timer.create(
 					50,
@@ -442,6 +450,7 @@ export class TournamentManager implements TournamentInterface {
 		const tournament = await this.database.getTournament(tournamentId);
 		const channels = tournament.publicChannels;
 		const webTourn = await this.website.finishTournament(tournamentId);
+		await this.cancelTimers(tournament);
 		if (!cancel) {
 			await this.database.finishTournament(tournamentId);
 		} // TODO: else edit description?
