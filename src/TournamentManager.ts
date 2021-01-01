@@ -66,11 +66,23 @@ export class TournamentManager implements TournamentInterface {
 		this.timers = {};
 	}
 
+	/// Link seam to override for testing
+	protected async createPersistentTimer(
+		...args: Parameters<typeof PersistentTimer.create>
+	): ReturnType<typeof PersistentTimer.create> {
+		return await PersistentTimer.create(...args);
+	}
+
+	/// Link seam to override for testing
+	protected async loadPersistentTimers(): ReturnType<typeof PersistentTimer.loadAll> {
+		return await PersistentTimer.loadAll(this.discord);
+	}
+
 	public async loadTimers(): Promise<void> {
 		if (Object.keys(this.timers).length) {
 			logger.warn(new Error("loadTimers called multiple times"));
 		} else {
-			const timers = await PersistentTimer.loadAll(this.discord);
+			const timers = await this.loadPersistentTimers();
 			let count = 0;
 			for (const timer of timers) {
 				if (timer.tournament) {
@@ -391,7 +403,7 @@ export class TournamentManager implements TournamentInterface {
 		this.timers[tournament.id] = await Promise.all(
 			tournament.publicChannels.map(async channelId => {
 				await this.sendNewRoundMessage(channelId, tournament, url, bye);
-				return await PersistentTimer.create(
+				return await this.createPersistentTimer(
 					this.discord,
 					new Date(Date.now() + 50 * 60 * 1000), // 50 minutes
 					channelId,
