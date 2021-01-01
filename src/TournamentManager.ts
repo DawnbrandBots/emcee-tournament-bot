@@ -442,7 +442,9 @@ export class TournamentManager implements TournamentInterface {
 		const tournament = await this.database.getTournament(tournamentId);
 		const channels = tournament.publicChannels;
 		const webTourn = await this.website.finishTournament(tournamentId);
-		await this.database.finishTournament(tournamentId);
+		if (!cancel) {
+			await this.database.finishTournament(tournamentId);
+		} // TODO: else edit description?
 		await Promise.all(
 			channels.map(async c => {
 				const role = await this.discord.getPlayerRole(tournament);
