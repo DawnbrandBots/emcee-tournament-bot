@@ -1,5 +1,6 @@
 import { BaseEntity, Column, Entity, OneToMany, PrimaryColumn } from "typeorm";
 import { ConfirmedParticipant } from "./ConfirmedParticipant";
+import { Countdown } from "./Countdown";
 import { Participant } from "./Participant";
 import { RegisterMessage } from "./RegisterMessage";
 
@@ -70,4 +71,7 @@ export class ChallongeTournament extends BaseEntity {
 		onDelete: "CASCADE"
 	})
 	confirmed!: ConfirmedParticipant[];
+
+	@OneToMany(() => Countdown, countdown => countdown.tournament, { cascade: true, onDelete: "CASCADE" })
+	countdowns!: Countdown[];
 }
