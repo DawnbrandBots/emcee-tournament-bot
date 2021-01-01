@@ -4,6 +4,9 @@ import cardOpts from "../config/cardOpts.json";
 import dataOpts from "../config/dataOpts.json";
 import { octokitToken } from "../config/env";
 import transOpts from "../config/transOpts.json";
+import { getLogger } from "../util/logger";
+
+const logger = getLogger("deck");
 
 const data = new YgoData(cardOpts, transOpts, dataOpts, "./dbs", octokitToken);
 
@@ -44,6 +47,7 @@ export async function getCardArray(): Promise<CardArray> {
 			tempArray[code] = await promArray[code];
 		}
 		cardArray = tempArray;
+		logger.info("ygo-data preload for ydeck complete");
 	}
 	return cardArray;
 }

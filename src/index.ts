@@ -6,13 +6,9 @@ import { initializeDatabase as initializePostgres } from "./database/postgres";
 import { getCardArray } from "./deck/deck";
 import { DiscordWrapperEris } from "./discord/eris";
 import { DiscordInterface } from "./discord/interface";
-import { Timer } from "./timer/Timer";
 import { TournamentManager } from "./TournamentManager";
-import { getLogger } from "./util/logger";
 import { WebsiteWrapperChallonge } from "./website/challonge";
 import { WebsiteInterface } from "./website/interface";
-
-const logger = getLogger("");
 
 (async () => {
 	const wrapper = await initializePostgres(postgresqlUrl);
@@ -24,9 +20,8 @@ const logger = getLogger("");
 	const challonge = new WebsiteWrapperChallonge(challongeUsername, challongeToken);
 	const website = new WebsiteInterface(challonge);
 
-	const tournamentManager = new TournamentManager(discord, database, website, Timer);
+	const tournamentManager = new TournamentManager(discord, database, website);
 
 	await getCardArray();
-	logger.info("ygo-data preload for ydeck complete");
 	initializeBehaviours(prefix, discord, tournamentManager);
-})().catch(logger.error);
+})();
