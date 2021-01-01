@@ -14,15 +14,15 @@ import { WebsiteInterface } from "./website/interface";
 	const wrapper = await initializePostgres(postgresqlUrl);
 	const database = new DatabaseInterface(wrapper);
 
-	const eris = new DiscordWrapperEris();
-	const discord = new DiscordInterface(eris);
+	await initializeCardArray();
 
 	const challonge = new WebsiteWrapperChallonge(challongeUsername, challongeToken);
 	const website = new WebsiteInterface(challonge);
 
-	const tournamentManager = new TournamentManager(discord, database, website);
+	const eris = new DiscordWrapperEris();
+	const discord = new DiscordInterface(eris);
 
-	await initializeCardArray();
+	const tournamentManager = new TournamentManager(discord, database, website);
 	await tournamentManager.loadTimers();
 	initializeBehaviours(prefix, discord, tournamentManager);
 })();
