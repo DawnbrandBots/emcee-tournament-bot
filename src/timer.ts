@@ -24,7 +24,7 @@ export class PersistentTimer {
 	protected constructor(discord: DiscordInterface, entity: Countdown) {
 		this.discord = discord;
 		this.entity = entity;
-		this.interval = setInterval(() => this.tick(), 500);
+		this.interval = setInterval(() => this.tick(), 1000);
 	}
 
 	public static async create(
@@ -100,7 +100,8 @@ export class PersistentTimer {
 			await this.discord.sendMessage(this.entity.channelId, this.entity.finalMessage);
 			await this.abort();
 		}
-		if (now.getSeconds() % this.entity.cronIntervalSeconds == 0) {
+		const secondsRemaining = Math.ceil((now.getTime() - this.entity.end.getTime()) / 1000);
+		if (secondsRemaining % this.entity.cronIntervalSeconds == 0) {
 			const left = PersistentTimer.formatTime(this.entity.end.getTime() - Date.now());
 			try {
 				const message = await this.discord.getMessage(this.entity.channelId, this.entity.messageId);

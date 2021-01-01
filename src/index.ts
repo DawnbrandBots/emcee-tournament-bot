@@ -1,6 +1,6 @@
-import { initializeBehaviours } from "./CommandHandler";
 import { prefix } from "./config/config.json";
 import { challongeToken, challongeUsername, postgresqlUrl } from "./config/env";
+import { initializeBehaviours } from "./CommandHandler";
 import { DatabaseInterface } from "./database/interface";
 import { initializeDatabase as initializePostgres } from "./database/postgres";
 import { initializeCardArray } from "./deck/deck";
