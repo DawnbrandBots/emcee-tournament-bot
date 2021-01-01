@@ -1,4 +1,4 @@
-name: Build and push Docker image
+name: Build Docker image
 
 on:
   push:
@@ -13,8 +13,17 @@ on:
       - .github/workflows/docker.yml
 
 jobs:
-  build-push:
+  build:
     runs-on: ubuntu-latest
+    if: >-
+      !(
+        contains(github.event.head_commit.message, '[ci skip]') ||
+        contains(github.event.head_commit.message, '[skip ci]') ||
+        contains(github.event.head_commit.message, '[actions skip]') ||
+        contains(github.event.head_commit.message, '[skip actions]') ||
+        contains(github.event.head_commit.message, '[skip build]') ||
+        contains(github.event.head_commit.message, '[build skip]')
+      )
     steps:
       - uses: actions/checkout@v2
       - name: Infer image tag
