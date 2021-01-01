@@ -3,7 +3,6 @@ import chaiAsPromised from "chai-as-promised";
 import { DatabaseInterface } from "../src/database/interface";
 import { initializeCardArray } from "../src/deck/deck";
 import { DiscordAttachmentOut, DiscordEmbed, DiscordInterface, DiscordMessageOut } from "../src/discord/interface";
-import { TimerInterface } from "../src/timer/interface";
 import { TournamentManager } from "../src/TournamentManager";
 import { UserError } from "../src/util/errors";
 import { WebsiteInterface } from "../src/website/interface";
@@ -22,9 +21,7 @@ const mockDb = new DatabaseInterface(mockDbWrapper);
 const mockWebsiteWrapper = new WebsiteWrapperMock();
 const mockWebsite = new WebsiteInterface(mockWebsiteWrapper);
 
-const mockTimer = TimerInterface;
-
-const tournament = new TournamentManager(mockDiscord, mockDb, mockWebsite, mockTimer);
+const tournament = new TournamentManager(mockDiscord, mockDb, mockWebsite);
 
 before(initializeCardArray);
 
