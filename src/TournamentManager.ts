@@ -357,6 +357,17 @@ export class TournamentManager implements TournamentInterface {
 		await this.discord.sendMessage(channelId, message);
 	}
 
+	private async cancelTimers(tournament: DatabaseTournament): Promise<void> {
+		const channels = tournament.publicChannels;
+		await Promise.all(
+			channels.map(async c => {
+				if (c in this.timers) {
+					await this.timers[c].abort();
+				}
+			})
+		);
+	}
+
 	private async startNewRound(tournament: DatabaseTournament, url: string): Promise<void> {
 		const bye = await this.website.getBye(tournament.id);
 		const participantRole = this.discord.mentionRole(await this.discord.getPlayerRole(tournament));
@@ -430,7 +441,10 @@ export class TournamentManager implements TournamentInterface {
 		const tournament = await this.database.getTournament(tournamentId);
 		const channels = tournament.publicChannels;
 		const webTourn = await this.website.finishTournament(tournamentId);
-		await this.database.finishTournament(tournamentId);
+		await this.cancelTimers(tournament);
+		if (!cancel) {
+			await this.database.finishTournament(tournamentId);
+		} // TODO: else edit description?
 		await Promise.all(
 			channels.map(async c => {
 				const role = await this.discord.getPlayerRole(tournament);
@@ -563,16 +577,14 @@ export class TournamentManager implements TournamentInterface {
 
 	public async listPlayers(tournamentId: string): Promise<DiscordAttachmentOut> {
 		const tournament = await this.database.getTournament(tournamentId);
-		const rows = await Promise.all(
-			tournament.players.map(async p => {
-				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-				const player = tournament.findPlayer(p)!;
-				const name = this.discord.getUsername(player.discordId);
-				const deck = await getDeck(player.deck);
-				const themes = deck.themes.length > 0 ? deck.themes.join("/") : "No themes";
-				return [name, themes];
-			})
-		);
+		const rows = tournament.players.map(p => {
+			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+			const player = tournament.findPlayer(p)!;
+			const name = this.discord.getUsername(player.discordId);
+			const deck = getDeck(player.deck);
+			const themes = deck.themes.length > 0 ? deck.themes.join("/") : "No themes";
+			return [name, themes];
+		});
 		rows.unshift(["Player", "Theme"]);
 		const contents = await csv.writeToString(rows);
 		return {
@@ -585,7 +597,7 @@ export class TournamentManager implements TournamentInterface {
 		const tourn = await this.database.getTournament(tournamentId);
 		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 		const player = tourn.findPlayer(playerId)!;
-		return await getDeck(player.deck);
+		return getDeck(player.deck);
 	}
 
 	private async dropPlayerReaction(msg: DiscordMessageLimited, playerId: string): Promise<void> {
@@ -666,14 +678,12 @@ export class TournamentManager implements TournamentInterface {
 
 	public async generatePieChart(tournamentId: string): Promise<DiscordAttachmentOut> {
 		const tournament = await this.database.getTournament(tournamentId);
-		const themes = await Promise.all(
-			tournament.players.map(async p => {
-				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-				const player = tournament.findPlayer(p)!;
-				const deck = await getDeck(player.deck);
-				return deck.themes.length > 0 ? deck.themes.join("/") : "No themes";
-			})
-		);
+		const themes = tournament.players.map(p => {
+			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+			const player = tournament.findPlayer(p)!;
+			const deck = getDeck(player.deck);
+			return deck.themes.length > 0 ? deck.themes.join("/") : "No themes";
+		});
 		const counts = this.countStrings(themes);
 		const rows = Object.entries(counts).map(e => [e[0], e[1].toString()]);
 		rows.unshift(["Theme", "Count"]);
@@ -686,17 +696,15 @@ export class TournamentManager implements TournamentInterface {
 
 	public async generateDeckDump(tournamentId: string): Promise<DiscordAttachmentOut> {
 		const tournament = await this.database.getTournament(tournamentId);
-		const rows = await Promise.all(
-			tournament.players.map(async p => {
-				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-				const player = tournament.findPlayer(p)!;
-				const deck = await getDeck(player.deck);
-				return [
-					this.discord.getUsername(p),
-					`Main: ${deck.mainText}, Extra: ${deck.extraText}, Side: ${deck.sideText}`.replace(/\n/g, ", ")
-				];
-			})
-		);
+		const rows = tournament.players.map(p => {
+			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+			const player = tournament.findPlayer(p)!;
+			const deck = getDeck(player.deck);
+			return [
+				this.discord.getUsername(p),
+				`Main: ${deck.mainText}, Extra: ${deck.extraText}, Side: ${deck.sideText}`.replace(/\n/g, ", ")
+			];
+		});
 		rows.unshift(["Player", "Deck"]);
 		const contents = await csv.writeToString(rows);
 		return {

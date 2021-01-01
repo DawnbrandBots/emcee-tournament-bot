@@ -1,10 +1,9 @@
-import { getDeck } from "./deck";
 import fetch from "node-fetch";
-import { DeckNotFoundError } from "../util/errors";
-import { DiscordAttachmentOut, DiscordMessageIn, DiscordMessageOut } from "../discord/interface";
 import { Deck, UrlConstructionError } from "ydeck";
 import { DeckError } from "ydeck/dist/validation";
-import { splitText } from "../discord/interface";
+import { DiscordAttachmentOut, DiscordMessageIn, DiscordMessageOut, splitText } from "../discord/interface";
+import { DeckNotFoundError } from "../util/errors";
+import { getDeck } from "./deck";
 
 async function extractYdk(msg: DiscordMessageIn): Promise<string> {
 	const attach = msg.attachments[0]; // msg having attachments is checked before this function is called
@@ -17,10 +16,10 @@ export async function getDeckFromMessage(msg: DiscordMessageIn): Promise<Deck> {
 	if (msg.attachments.length > 0 && msg.attachments[0].filename.endsWith(".ydk")) {
 		const ydk = await extractYdk(msg);
 		const url = Deck.ydkToUrl(ydk);
-		return await getDeck(url);
+		return getDeck(url);
 	}
 	try {
-		return await getDeck(msg.content); // This function will parse out a ydke URL if present
+		return getDeck(msg.content); // This function will parse out a ydke URL if present
 	} catch (e) {
 		if (e instanceof UrlConstructionError) {
 			throw new DeckNotFoundError();

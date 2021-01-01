@@ -1,9 +1,9 @@
+import { initializeBehaviours } from "./CommandHandler";
 import { prefix } from "./config/config.json";
 import { challongeToken, challongeUsername, postgresqlUrl } from "./config/env";
-import { initializeBehaviours } from "./CommandHandler";
 import { DatabaseInterface } from "./database/interface";
 import { initializeDatabase as initializePostgres } from "./database/postgres";
-import { getCardArray } from "./deck/deck";
+import { initializeCardArray } from "./deck/deck";
 import { DiscordWrapperEris } from "./discord/eris";
 import { DiscordInterface } from "./discord/interface";
 import { TournamentManager } from "./TournamentManager";
@@ -22,6 +22,6 @@ import { WebsiteInterface } from "./website/interface";
 
 	const tournamentManager = new TournamentManager(discord, database, website);
 
-	await getCardArray();
+	await initializeCardArray();
 	initializeBehaviours(prefix, discord, tournamentManager);
 })();

@@ -31,7 +31,11 @@ const command: CommandDefinition = {
 				event: "success"
 			})
 		);
-		await msg.reply(`\`\`\`\n${list}\`\`\``);
+		if (list.length === 0) {
+			await msg.reply("There are no open tournaments you have access to!");
+		} else {
+			await msg.reply(`\`\`\`\n${list}\`\`\``);
+		}
 	}
 };
 

@@ -1,6 +1,7 @@
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { DatabaseInterface } from "../src/database/interface";
+import { initializeCardArray } from "../src/deck/deck";
 import { DiscordAttachmentOut, DiscordEmbed, DiscordInterface, DiscordMessageOut } from "../src/discord/interface";
 import { TimerInterface } from "../src/timer/interface";
 import { TournamentManager } from "../src/TournamentManager";
@@ -24,6 +25,8 @@ const mockWebsite = new WebsiteInterface(mockWebsiteWrapper);
 const mockTimer = TimerInterface;
 
 const tournament = new TournamentManager(mockDiscord, mockDb, mockWebsite, mockTimer);
+
+before(initializeCardArray);
 
 async function noop(): Promise<void> {
 	return;
