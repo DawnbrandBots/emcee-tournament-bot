@@ -4,7 +4,7 @@ import { DatabaseInterface, DatabaseTournament } from "./database/interface";
 import { getDeck } from "./deck/deck";
 import { getDeckFromMessage, prettyPrint } from "./deck/discordDeck";
 import { DiscordAttachmentOut, DiscordInterface, DiscordMessageIn, DiscordMessageLimited } from "./discord/interface";
-import { TimerInterface } from "./timer/interface";
+import { PersistentTimer } from "./timer";
 import { BlockedDMsError, ChallongeAPIError, TournamentNotFoundError, UserError } from "./util/errors";
 import { getLogger } from "./util/logger";
 import { WebsiteInterface } from "./website/interface";
@@ -56,19 +56,12 @@ export class TournamentManager implements TournamentInterface {
 	private discord: DiscordInterface;
 	private database: DatabaseInterface;
 	private website: WebsiteInterface;
-	private timer: typeof TimerInterface;
 	private matchScores: { [matchId: number]: MatchScore };
-	private timers: { [channelId: string]: TimerInterface };
-	constructor(
-		discord: DiscordInterface,
-		database: DatabaseInterface,
-		website: WebsiteInterface,
-		timer: typeof TimerInterface
-	) {
+	private timers: { [channelId: string]: PersistentTimer };
+	constructor(discord: DiscordInterface, database: DatabaseInterface, website: WebsiteInterface) {
 		this.discord = discord;
 		this.database = database;
 		this.website = website;
-		this.timer = timer;
 		this.matchScores = {};
 		this.timers = {};
 	}
@@ -366,23 +359,18 @@ export class TournamentManager implements TournamentInterface {
 
 	private async startNewRound(tournament: DatabaseTournament, url: string): Promise<void> {
 		const bye = await this.website.getBye(tournament.id);
-		const channels = tournament.publicChannels;
-		await Promise.all(
-			channels.map(async c => {
-				if (c in this.timers) {
-					await this.timers[c].abort();
-				}
-				await this.sendNewRoundMessage(c, tournament, url, bye);
-				this.timers[c] = await this.timer.create(
-					50,
-					c,
-					this.discord,
-					`That's time in the round, ${this.discord.mentionRole(
-						await this.discord.getPlayerRole(tournament)
-					)}! Please end the current phase, then the player with the lower LP must forfeit!`
-				);
-			})
-		);
+		const participantRole = this.discord.mentionRole(await this.discord.getPlayerRole(tournament));
+		for (const channelId of tournament.publicChannels) {
+			await this.timers[channelId]?.abort();
+			await this.sendNewRoundMessage(channelId, tournament, url, bye);
+			this.timers[channelId] = await PersistentTimer.create(
+				this.discord,
+				new Date(Date.now() + 50 * 60 * 1000), // 50 minutes
+				channelId,
+				`That's time in the round, ${participantRole}! Please end the current phase, then the player with the lower LP must forfeit!`,
+				5 // update every 5 seconds
+			);
+		}
 	}
 
 	private async sendPlayerGuide(channelId: string, tournamentId: string): Promise<void> {

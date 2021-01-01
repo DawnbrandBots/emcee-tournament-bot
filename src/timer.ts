@@ -24,7 +24,7 @@ export class PersistentTimer {
 	protected constructor(discord: DiscordInterface, entity: Countdown) {
 		this.discord = discord;
 		this.entity = entity;
-		this.interval = setInterval(() => this.tick(), 1000);
+		this.interval = setInterval(() => this.tick(), 500);
 	}
 
 	public static async create(
@@ -46,9 +46,15 @@ export class PersistentTimer {
 		entity.messageId = message.id;
 		entity.finalMessage = finalMessage;
 		entity.cronIntervalSeconds = cronIntervalSeconds;
-		await entity.save();
 
-		return new PersistentTimer(discord, entity);
+		const timer = new PersistentTimer(discord, entity);
+
+		try {
+			await entity.save();
+		} catch (error) {
+			logger.warn(error);
+		}
+		return timer;
 	}
 
 	public static async loadAll(discord: DiscordInterface): Promise<PersistentTimer[]> {
