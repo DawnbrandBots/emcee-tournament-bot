@@ -379,7 +379,8 @@ export class TournamentManager implements TournamentInterface {
 				new Date(Date.now() + 50 * 60 * 1000), // 50 minutes
 				channelId,
 				`That's time in the round, ${participantRole}! Please end the current phase, then the player with the lower LP must forfeit!`,
-				5 // update every 5 seconds
+				5, // update every 5 seconds
+				tournament.id
 			);
 		}
 	}

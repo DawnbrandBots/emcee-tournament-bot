@@ -32,7 +32,8 @@ export class PersistentTimer {
 		end: Date,
 		channelId: string,
 		finalMessage: string,
-		cronIntervalSeconds: number
+		cronIntervalSeconds: number,
+		tournamentId?: string
 	): Promise<PersistentTimer> {
 		// TODO: check for end <= now
 		const endMilli = end.getTime();
@@ -46,12 +47,15 @@ export class PersistentTimer {
 		entity.messageId = message.id;
 		entity.finalMessage = finalMessage;
 		entity.cronIntervalSeconds = cronIntervalSeconds;
+		entity.tournamentId = tournamentId;
 
 		const timer = new PersistentTimer(discord, entity);
 
 		try {
 			await entity.save();
 		} catch (error) {
+			// We let the timer run but we log the warning that it won't be persisted.
+			// This probably means we are trying to save invalid values to the database.
 			logger.warn(error);
 		}
 		return timer;

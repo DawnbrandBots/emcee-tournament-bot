@@ -1,4 +1,4 @@
-import { BaseEntity, Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { BaseEntity, Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { ChallongeTournament } from "./ChallongeTournament";
 
 /**
@@ -31,10 +31,15 @@ export class Countdown extends BaseEntity {
 	@Column()
 	cronIntervalSeconds!: number;
 
+	/// Explicitly specify the foreign key for the below relation for code convenience.
+	@Column({ nullable: true })
+	tournamentId?: string;
+
 	/// The associated tournament, if this is meant for a tournament.
 	@ManyToOne(() => ChallongeTournament, tournament => tournament.confirmed, {
 		nullable: true,
 		onDelete: "CASCADE"
 	})
+	@JoinColumn({ name: "tournamentId" })
 	tournament?: ChallongeTournament;
 }
