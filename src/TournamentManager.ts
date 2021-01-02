@@ -366,6 +366,22 @@ export class TournamentManager implements TournamentInterface {
 		await this.database.cleanRegistration(msg.channelId, msg.id);
 	}
 
+	private async sendHostGuideOpen(channelId: string, tournamentId: string): Promise<void> {
+		const message =
+			"Now that you've started your tournaments, players can start signing up.\n" +
+			"If you need to remove a player from the tournament, because they're unwilling or unable to drop themself, you can mention them. So for the player Sample, you'd use this command.\n" +
+			`\`mc!forcedrop ${tournamentId}|@Sample\`\n` +
+			"You can give players round 1 byes, so that they don't duel anyone and automatically get one win in the first round. For this, you mention them. So for the player Sample, you'd use this command.\n" +
+			`\`mc!addbye ${tournamentId}|@Sample\`\n` +
+			`If you made a mistake and need to remove that bye, you can use this command.\n\`mc!removebye ${tournamentId}|@Sample\`\n` +
+			`If you need to see a player's deck, you can mention them. So for the player Sample, you'd use this command.\n\`mc!deck ${tournamentId}|@Sample\`` +
+			"There are three commands that give a breakdown of the players and decks in the tournament, all in CSV format. `players` lists each player and the archetype of their deck, `pie` lists the number of times each archetype has been played, and `dump` lists each player and their decklist.\n" +
+			`These commands are \`mc!players ${tournamentId}\`, \`mc!pie ${tournamentId}\` and \`mc!dump ${tournamentId}\`\n` +
+			"Once all the players you want are signed up, and you're ready to start playing, you can use this command, and after that we'll send more details to private channels on how to proceed.\n" +
+			`\`mc!start ${tournamentId}\``;
+		await this.discord.sendMessage(channelId, message);
+	}
+
 	private CHECK_EMOJI = "✅";
 	public async openTournament(tournamentId: string): Promise<void> {
 		const tournament = await this.database.getTournament(tournamentId);
@@ -388,6 +404,7 @@ export class TournamentManager implements TournamentInterface {
 				await this.database.openRegistration(tournamentId, msg.channelId, msg.id);
 			})
 		);
+		await Promise.all(tournament.privateChannels.map(async c => await this.sendHostGuideOpen(c, tournamentId)));
 	}
 
 	private async sendNewRoundMessage(
