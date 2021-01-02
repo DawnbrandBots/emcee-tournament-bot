@@ -52,7 +52,7 @@ export interface TournamentInterface {
 	removeBye(tournamentId: string, playerId: string): Promise<string[]>;
 }
 
-type Tail<T extends any[]> = T extends [any, ...infer R] ? R : never;
+type Tail<T extends unknown[]> = T extends [unknown, ...infer R] ? R : never;
 
 export class TournamentManager implements TournamentInterface {
 	private discord: DiscordInterface;
