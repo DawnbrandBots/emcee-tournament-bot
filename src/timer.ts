@@ -24,7 +24,7 @@ export class PersistentTimer {
 	protected constructor(discord: DiscordInterface, entity: Countdown) {
 		this.discord = discord;
 		this.entity = entity;
-		this.interval = setInterval(() => this.tick(), this.entity.updateIntervalMilli);
+		this.interval = setInterval(() => this.tick(), 1000);
 	}
 
 	public static async create(
@@ -32,7 +32,8 @@ export class PersistentTimer {
 		end: Date,
 		channelId: string,
 		finalMessage: string,
-		updateIntervalMilli: number
+		cronIntervalSeconds: number,
+		tournamentId?: string
 	): Promise<PersistentTimer> {
 		// TODO: check for end <= now
 		const endMilli = end.getTime();
@@ -45,10 +46,19 @@ export class PersistentTimer {
 		entity.channelId = channelId;
 		entity.messageId = message.id;
 		entity.finalMessage = finalMessage;
-		entity.updateIntervalMilli = updateIntervalMilli;
-		await entity.save();
+		entity.cronIntervalSeconds = cronIntervalSeconds;
+		entity.tournamentId = tournamentId;
 
-		return new PersistentTimer(discord, entity);
+		const timer = new PersistentTimer(discord, entity);
+
+		try {
+			await entity.save();
+		} catch (error) {
+			// We let the timer run but we log the warning that it won't be persisted.
+			// This probably means we are trying to save invalid values to the database.
+			logger.warn(error);
+		}
+		return timer;
 	}
 
 	public static async loadAll(discord: DiscordInterface): Promise<PersistentTimer[]> {
@@ -75,6 +85,10 @@ export class PersistentTimer {
 		return active;
 	}
 
+	public get tournament(): string | undefined {
+		return this.entity.tournamentId;
+	}
+
 	public isActive(): boolean {
 		return this.interval !== undefined;
 	}
@@ -83,22 +97,32 @@ export class PersistentTimer {
 		if (this.interval) {
 			clearInterval(this.interval);
 			this.interval === undefined;
-			await this.entity.remove();
+			try {
+				await this.entity.remove();
+			} catch (error) {
+				// The interval is already cleared so there will be no visible side effects
+				// in this bot process or thread.
+				logger.warn(error);
+			}
 		}
 	}
 
 	/// Only to be called by setInterval
 	protected async tick(): Promise<void> {
-		if (this.entity.end <= new Date()) {
+		const now = new Date();
+		if (this.entity.end <= now) {
 			await this.discord.sendMessage(this.entity.channelId, this.entity.finalMessage);
 			await this.abort();
 		}
-		const left = PersistentTimer.formatTime(this.entity.end.getTime() - Date.now());
-		try {
-			const message = await this.discord.getMessage(this.entity.channelId, this.entity.messageId);
-			message.edit(`Time left in the round: \`${left}\``);
-		} catch (err) {
-			logger.warn(`${this.entity.channelId} ${this.entity.messageId} was removed`);
+		const secondsRemaining = Math.ceil((now.getTime() - this.entity.end.getTime()) / 1000);
+		if (secondsRemaining % this.entity.cronIntervalSeconds == 0) {
+			const left = PersistentTimer.formatTime(this.entity.end.getTime() - Date.now());
+			try {
+				const message = await this.discord.getMessage(this.entity.channelId, this.entity.messageId);
+				message.edit(`Time left in the round: \`${left}\``);
+			} catch (err) {
+				logger.warn(`${this.entity.channelId} ${this.entity.messageId} was removed`);
+			}
 		}
 	}
 

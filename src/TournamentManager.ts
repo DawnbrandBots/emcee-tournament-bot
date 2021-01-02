@@ -4,7 +4,7 @@ import { DatabaseInterface, DatabaseTournament } from "./database/interface";
 import { getDeck } from "./deck/deck";
 import { getDeckFromMessage, prettyPrint } from "./deck/discordDeck";
 import { DiscordAttachmentOut, DiscordInterface, DiscordMessageIn, DiscordMessageLimited } from "./discord/interface";
-import { TimerInterface } from "./timer/interface";
+import { PersistentTimer } from "./timer";
 import { BlockedDMsError, ChallongeAPIError, TournamentNotFoundError, UserError } from "./util/errors";
 import { getLogger } from "./util/logger";
 import { WebsiteInterface } from "./website/interface";
@@ -56,21 +56,46 @@ export class TournamentManager implements TournamentInterface {
 	private discord: DiscordInterface;
 	private database: DatabaseInterface;
 	private website: WebsiteInterface;
-	private timer: typeof TimerInterface;
 	private matchScores: { [matchId: number]: MatchScore };
-	private timers: { [channelId: string]: TimerInterface };
-	constructor(
-		discord: DiscordInterface,
-		database: DatabaseInterface,
-		website: WebsiteInterface,
-		timer: typeof TimerInterface
-	) {
+	private timers: { [tournamentId: string]: PersistentTimer[] };
+	constructor(discord: DiscordInterface, database: DatabaseInterface, website: WebsiteInterface) {
 		this.discord = discord;
 		this.database = database;
 		this.website = website;
-		this.timer = timer;
 		this.matchScores = {};
 		this.timers = {};
+	}
+
+	/// Link seam to override for testing
+	protected async createPersistentTimer(
+		...args: Parameters<typeof PersistentTimer.create>
+	): ReturnType<typeof PersistentTimer.create> {
+		return await PersistentTimer.create(...args);
+	}
+
+	/// Link seam to override for testing
+	protected async loadPersistentTimers(): ReturnType<typeof PersistentTimer.loadAll> {
+		return await PersistentTimer.loadAll(this.discord);
+	}
+
+	public async loadTimers(): Promise<void> {
+		if (Object.keys(this.timers).length) {
+			logger.warn(new Error("loadTimers called multiple times"));
+		} else {
+			const timers = await this.loadPersistentTimers();
+			let count = 0;
+			for (const timer of timers) {
+				if (timer.tournament) {
+					this.timers[timer.tournament] = (this.timers[timer.tournament] || []).concat(timer);
+					count++;
+				} else {
+					logger.warn(new Error("Aborting orphaned timer"));
+					await timer.abort();
+				}
+			}
+			const tournaments = Object.keys(this.timers).length;
+			logger.info(`Loaded ${count} of ${timers.length} PersistentTimers for ${tournaments} tournaments.`);
+		}
 	}
 
 	public async authenticateHost(tournamentId: string, message: DiscordMessageIn): Promise<void> {
@@ -365,29 +390,26 @@ export class TournamentManager implements TournamentInterface {
 	}
 
 	private async cancelTimers(tournament: DatabaseTournament): Promise<void> {
-		const channels = tournament.publicChannels;
-		await Promise.all(
-			channels.map(async c => {
-				if (c in this.timers) {
-					await this.timers[c].abort();
-				}
-			})
-		);
+		for (const timer of this.timers[tournament.id] || []) {
+			await timer.abort();
+		}
+		this.timers[tournament.id] = [];
 	}
 
 	private async startNewRound(tournament: DatabaseTournament, url: string): Promise<void> {
 		const bye = await this.website.getBye(tournament.id);
-		const channels = tournament.publicChannels;
-		await Promise.all(
-			channels.map(async c => {
-				await this.sendNewRoundMessage(c, tournament, url, bye);
-				this.timers[c] = await this.timer.create(
-					50,
-					c,
+		const participantRole = this.discord.mentionRole(await this.discord.getPlayerRole(tournament));
+		await this.cancelTimers(tournament);
+		this.timers[tournament.id] = await Promise.all(
+			tournament.publicChannels.map(async channelId => {
+				await this.sendNewRoundMessage(channelId, tournament, url, bye);
+				return await this.createPersistentTimer(
 					this.discord,
-					`That's time in the round, ${this.discord.mentionRole(
-						await this.discord.getPlayerRole(tournament)
-					)}! Please end the current phase, then the player with the lower LP must forfeit!`
+					new Date(Date.now() + 50 * 60 * 1000), // 50 minutes
+					channelId,
+					`That's time in the round, ${participantRole}! Please end the current phase, then the player with the lower LP must forfeit!`,
+					5, // update every 5 seconds
+					tournament.id
 				);
 			})
 		);

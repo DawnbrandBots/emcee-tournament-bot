@@ -1,4 +1,5 @@
-import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { BaseEntity, Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { ChallongeTournament } from "./ChallongeTournament";
 
 /**
  * Represents a persistent scheduled timer that will update a Discord message
@@ -26,7 +27,19 @@ export class Countdown extends BaseEntity {
 	@Column("text")
 	finalMessage!: string;
 
-	/// For direct use with setInterval.
+	/// Update the Discord message on seconds that are a multiple of this number.
 	@Column()
-	updateIntervalMilli!: number;
+	cronIntervalSeconds!: number;
+
+	/// Explicitly specify the foreign key for the below relation for code convenience.
+	@Column({ nullable: true })
+	tournamentId?: string;
+
+	/// The associated tournament, if this is meant for a tournament.
+	@ManyToOne(() => ChallongeTournament, tournament => tournament.confirmed, {
+		nullable: true,
+		onDelete: "CASCADE"
+	})
+	@JoinColumn({ name: "tournamentId" })
+	tournament?: ChallongeTournament;
 }

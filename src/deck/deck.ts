@@ -41,6 +41,7 @@ export async function initializeCardArray(): Promise<void> {
 		for (const code in dataArray) {
 			cardArray[code] = await convertCard(dataArray[code]);
 		}
+		logger.info("ygo-data preload for ydeck complete");
 	} else {
 		logger.warn(new Error("initializeCardArray called multiple times"));
 	}
