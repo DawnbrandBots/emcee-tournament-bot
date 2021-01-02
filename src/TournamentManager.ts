@@ -25,7 +25,7 @@ export interface TournamentInterface {
 	authenticateHost(tournamentId: string, message: DiscordMessageIn): Promise<void>;
 	authenticatePlayer(tournamentId: string, message: DiscordMessageIn): Promise<void>;
 	listTournaments(server?: string): Promise<string>;
-	createTournament(hostId: string, serverId: string, name: string, desc: string): Promise<[string, string]>;
+	createTournament(hostId: string, serverId: string, name: string, desc: string): Promise<[string, string, string]>;
 	updateTournament(tournamentId: string, name: string, desc: string): Promise<void>;
 	addAnnouncementChannel(tournamentId: string, channelId: string, type: "public" | "private"): Promise<void>;
 	removeAnnouncementChannel(tournamentId: string, channelId: string, type: "public" | "private"): Promise<void>;
@@ -154,13 +154,28 @@ export class TournamentManager implements TournamentInterface {
 		}
 	}
 
+	private generateHostGuideCreate(tournamentId: string): string {
+		return (
+			"Thanks for hosting your tournament with Emcee! To get started, you'll want to add some announcement channels.\n" +
+			`A public announcement channel will be where players in your tournament will see signups and new rounds. To add the current channel as a public channel, use this command.\n\`mc!addchannel ${tournamentId}\`\n` +
+			`To add a different channel as a public announcement channel, mention it. So for a channel called #pairings, use this command.\n\`mc!addchannel ${tournamentId}|public|#pairings\`\n` +
+			`A private announcement channel will be where hosts can see the decks players submit. To add the current channel as a private channel, use this command.\n\`mc!addchannel ${tournamentId}|private\`\n` +
+			`You can also mention private channels. For a channel called #decks, use this command.\n\`mc!addchannel ${tournamentId}|private|#decks\`\n` +
+			`If you want to change the name or description of the tournament, you can use this command.\n\`mc!update ${tournamentId}|New Name|A new description\`\n` +
+			`To add another user as a host so they can manage the tournament, you'll mention them. Be careful, only give this privilege to people you'd trust as moderators. For the user Sample, you'd use this command\n` +
+			`\`mc!addhost ${tournamentId}|@Sample\`\n` +
+			`If you need to take those privileges away, you can use this command.\n\`mc!removehost ${tournamentId}|@Sample\`\n` +
+			`When you're ready to open signups for your tournament, you can use this command, and after that we'll send details to private channels on how to proceed.\n\`mc!open ${tournamentId}\``
+		);
+	}
+
 	public async createTournament(
 		hostId: string,
 		serverId: string,
 		name: string,
 		desc: string,
 		topCut = false
-	): Promise<[string, string]> {
+	): Promise<[string, string, string]> {
 		// generate a URL based on the name, with added numbers to prevent conflicts
 		const baseUrl = name.toLowerCase().replace(/[^a-zA-Z0-9_]/g, "");
 		let candidateUrl = `${baseUrl}`;
@@ -173,7 +188,7 @@ export class TournamentManager implements TournamentInterface {
 
 		const web = await this.website.createTournament(name, desc, candidateUrl, topCut);
 		await this.database.createTournament(hostId, serverId, web);
-		return [web.id, web.url];
+		return [web.id, web.url, this.generateHostGuideCreate(web.id)];
 	}
 
 	public async updateTournament(tournamentId: string, name: string, desc: string): Promise<void> {
