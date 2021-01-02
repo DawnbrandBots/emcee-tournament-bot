@@ -426,25 +426,33 @@ export class TournamentManager implements TournamentInterface {
 				const player1 = players.find(p => p.challongeId === match.player1)?.discordId;
 				const player2 = players.find(p => p.challongeId === match.player2)?.discordId;
 				if (player1 && player2) {
-					await this.discord.sendDirectMessage(
-						player1,
-						`A new round of ${tournament.name} has begun! Your opponent is ${this.discord.mentionUser(
-							player2
-						)} (${this.discord.getUsername(player2)}).`
-					);
-					await this.discord.sendDirectMessage(
-						player2,
-						`A new round of ${tournament.name} has begun! Your opponent is ${this.discord.mentionUser(
-							player1
-						)} (${this.discord.getUsername(player1)}).`
-					);
+					const mention1 = this.discord.mentionUser(player1);
+					const mention2 = this.discord.mentionUser(player2);
+					const isBye1 = player1 === mention1; // if not bye, ID will be valid and resolve to a mention
+					const isBye2 = player2 === mention2;
+					if (!isBye1) {
+						const message = `A new round of ${tournament.name} has begun! ${
+							isBye2
+								? "You have a bye for this round."
+								: `Your opponent is ${mention2} (${this.discord.getUsername(player2)}).`
+						}`;
+						await this.discord.sendDirectMessage(player1, message);
+					}
+					if (!isBye2) {
+						const message = `A new round of ${tournament.name} has begun! ${
+							isBye1
+								? "You have a bye for this round."
+								: `Your opponent is ${mention1} (${this.discord.getUsername(player1)}).`
+						}`;
+						await this.discord.sendDirectMessage(player2, message);
+					}
 				}
 			})
 		);
 		if (bye) {
 			await this.discord.sendDirectMessage(
 				bye,
-				`A new round of ${tournament.name} has begun! You have the bye for this round.`
+				`A new round of ${tournament.name} has begun! You have a bye for this round.`
 			);
 		}
 	}
