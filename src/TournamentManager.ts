@@ -155,7 +155,7 @@ export class TournamentManager implements TournamentInterface {
 	}
 
 	private generateHostGuideCreate(tournamentId: string): string {
-		return (
+		const message =
 			"Thanks for hosting your tournament with Emcee! To get started, you'll want to add some announcement channels.\n" +
 			`A public announcement channel will be where players in your tournament will see signups and new rounds. To add the current channel as a public channel, use this command.\n\`mc!addchannel ${tournamentId}\`\n` +
 			`To add a different channel as a public announcement channel, mention it. So for a channel called #pairings, use this command.\n\`mc!addchannel ${tournamentId}|public|#pairings\`\n` +
@@ -165,8 +165,8 @@ export class TournamentManager implements TournamentInterface {
 			`To add another user as a host so they can manage the tournament, you'll mention them. Be careful, only give this privilege to people you'd trust as moderators. For the user Sample, you'd use this command\n` +
 			`\`mc!addhost ${tournamentId}|@Sample\`\n` +
 			`If you need to take those privileges away, you can use this command.\n\`mc!removehost ${tournamentId}|@Sample\`\n` +
-			`When you're ready to open signups for your tournament, you can use this command, and after that we'll send details to private channels on how to proceed.\n\`mc!open ${tournamentId}\``
-		);
+			`When you're ready to open signups for your tournament, you can use this command, and after that we'll send details to private channels on how to proceed.\n\`mc!open ${tournamentId}\``;
+		return message;
 	}
 
 	public async createTournament(
@@ -449,18 +449,19 @@ export class TournamentManager implements TournamentInterface {
 	}
 
 	private async sendPlayerGuide(channelId: string, tournamentId: string): Promise<void> {
-		await this.discord.sendMessage(
-			channelId,
+		const message =
 			"This tournament uses player score reporting. At the end of a match, both you and your opponent will have to submit your score.\n" +
-				`If you won 2-0, copy and paste this command:\n\`mc!score ${tournamentId}|2-0\`\n` +
-				`If you won 2-1, copy and paste this command:\n\`mc!score ${tournamentId}|2-1\`\n` +
-				`If you lose 0-2, copy and paste this command:\n\`mc!score ${tournamentId}|0-2\`\n` +
-				`If you lose 1-2, copy and paste this command:\n\`mc!score ${tournamentId}|0-2\`\n` +
-				"If your scores don't match, both of you will need to try again. If you can't agree on what the score was, ask a host to intervene. You will need to send them replays of the games.\n" +
-				`If you want to drop from the tournament and stop playing, copy and paste this command:\n\`mc!drop ${tournamentId}\`\n` +
-				"Please be careful, as using this command will __drop you from the tournament permanently__!"
-		);
+			`If you won 2-0, copy and paste this command:\n\`mc!score ${tournamentId}|2-0\`\n` +
+			`If you won 2-1, copy and paste this command:\n\`mc!score ${tournamentId}|2-1\`\n` +
+			`If you lose 0-2, copy and paste this command:\n\`mc!score ${tournamentId}|0-2\`\n` +
+			`If you lose 1-2, copy and paste this command:\n\`mc!score ${tournamentId}|0-2\`\n` +
+			"If your scores don't match, both of you will need to try again. If you can't agree on what the score was, ask a host to intervene. You will need to send them replays of the games.\n" +
+			`If you want to drop from the tournament and stop playing, copy and paste this command:\n\`mc!drop ${tournamentId}\`\n` +
+			"Please be careful, as using this command will __drop you from the tournament permanently__!";
+		await this.discord.sendMessage(channelId, message);
 	}
+
+	private async sendHostGuide(channelId: string, tournamentId: string): Promise<void> {}
 
 	public async startTournament(tournamentId: string): Promise<void> {
 		const tournament = await this.database.getTournament(tournamentId);
