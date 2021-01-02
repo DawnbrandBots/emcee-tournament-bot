@@ -461,7 +461,16 @@ export class TournamentManager implements TournamentInterface {
 		await this.discord.sendMessage(channelId, message);
 	}
 
-	private async sendHostGuide(channelId: string, tournamentId: string): Promise<void> {}
+	private async sendHostGuideStart(channelId: string, tournamentId: string): Promise<void> {
+		const message =
+			"Now that the first round of the tournament has begun, players are responsible for reporting their own scores." +
+			"However, if they can't, because they have trouble with the command or don't agree on who won, you can step in by mentioning the winner. If the player Sample won with a score of 2-1, use this command.\n" +
+			`\`mc!forcescore ${tournamentId}|2-1|@Sample\`\n` +
+			`Once you've got all the scores for the round and Challonge has generated the next pairings, you can start the timer for the next round at your leisure with this command.\n\`mc!round ${tournamentId}\`\n` +
+			`When all the rounds are complete and the tournament is finished, you can end it with this command.\n\`mc!finish ${tournamentId}\`` +
+			`If you need to stop the tournament early, and you can't finish it properly because you don't have all the scores, you can cancel it with this command. Be careful, because this will __end the tournament permanently__.\n\`mc!cancel ${tournamentId}\``;
+		await this.discord.sendMessage(channelId, message);
+	}
 
 	public async startTournament(tournamentId: string): Promise<void> {
 		const tournament = await this.database.getTournament(tournamentId);
@@ -493,6 +502,8 @@ export class TournamentManager implements TournamentInterface {
 				await this.sendPlayerGuide(c, tournamentId);
 			})
 		);
+		// send command guide to hosts
+		await Promise.all(tournament.privateChannels.map(async c => await this.sendHostGuideStart(c, tournamentId)));
 		// start tournament on challonge
 		await this.website.assignByes(tournamentId, tournament.players.length, tournament.byes);
 		await this.website.startTournament(tournamentId);
