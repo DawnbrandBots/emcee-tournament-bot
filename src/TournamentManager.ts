@@ -375,6 +375,8 @@ export class TournamentManager implements TournamentInterface {
 		);
 	}
 
+	// we could have logic for sending matchups in DMs in this function,
+	// but we want this to send first and leave it largely self-contained
 	private async sendNewRoundMessage(
 		channelId: string,
 		tournament: DatabaseTournament,
@@ -384,7 +386,7 @@ export class TournamentManager implements TournamentInterface {
 		const role = await this.discord.getPlayerRole(tournament);
 		let message = `A new round of ${tournament.name} has begun! ${this.discord.mentionRole(
 			role
-		)}\nPairings: ${url}`;
+		)}\nPairings will be send out by Direct Message shortly, or can be found here: ${url}`;
 		if (bye) {
 			message += `\n${this.discord.mentionUser(bye)} has the bye for this round.`;
 		}
@@ -414,6 +416,37 @@ export class TournamentManager implements TournamentInterface {
 				);
 			})
 		);
+		// direct message matchups to players
+		const matches = await this.website.getMatches(tournament.id);
+		const players = await this.website.getPlayers(tournament.id);
+		await Promise.all(
+			matches.map(async match => {
+				// TODO: not finding this player is an error path, but a pretty bad one at this stage
+				// not entirely sure how to handle it
+				const player1 = players.find(p => p.challongeId === match.player1)?.discordId;
+				const player2 = players.find(p => p.challongeId === match.player2)?.discordId;
+				if (player1 && player2) {
+					await this.discord.sendDirectMessage(
+						player1,
+						`A new round of ${tournament.name} has begun! Your opponent is ${this.discord.mentionUser(
+							player2
+						)} (${this.discord.getUsername(player2)}).`
+					);
+					await this.discord.sendDirectMessage(
+						player2,
+						`A new round of ${tournament.name} has begun! Your opponent is ${this.discord.mentionUser(
+							player1
+						)} (${this.discord.getUsername(player1)}).`
+					);
+				}
+			})
+		);
+		if (bye) {
+			await this.discord.sendDirectMessage(
+				bye,
+				`A new round of ${tournament.name} has begun! You have the bye for this round.`
+			);
+		}
 	}
 
 	private async sendPlayerGuide(channelId: string, tournamentId: string): Promise<void> {
