@@ -37,9 +37,8 @@ describe("Tournament creation commands", function () {
 	it("Create tournament", async function () {
 		await discord.simMessage("mc!create name|desc", "create");
 		const response = discord.getResponse("create");
-		expect(response).to.equal(
-			"Tournament name created! You can find it at https://example.com/name. For future commands, refer to this tournament by the id `name`."
-		);
+		// guide message sent after creation response
+		expect(response).to.equal("Guide: mc!help name");
 	});
 	it("Update tournament", async function () {
 		await discord.simMessage("mc!update name|newName|newDesc", "update");

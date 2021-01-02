@@ -56,9 +56,21 @@ async function noop(): Promise<void> {
 
 describe("Tournament creation commands", async function () {
 	it("Create tournament", async function () {
-		const [id, url] = await tournament.createTournament("testUser", "testServer", "create", "desc");
+		const [id, url, guide] = await tournament.createTournament("testUser", "testServer", "create", "desc");
 		expect(id).to.equal("create");
 		expect(url).to.equal("https://example.com/create");
+		expect(guide).to.equal(
+			"Thanks for hosting your tournament with Emcee! To get started, you'll want to add some announcement channels.\n" +
+				`A public announcement channel will be where players in your tournament will see signups and new rounds. To add the current channel as a public channel, use this command.\n\`mc!addchannel ${id}\`\n` +
+				`To add a different channel as a public announcement channel, mention it. So for a channel called #pairings, use this command.\n\`mc!addchannel ${id}|public|#pairings\`\n` +
+				`A private announcement channel will be where hosts can see the decks players submit. To add the current channel as a private channel, use this command.\n\`mc!addchannel ${id}|private\`\n` +
+				`You can also mention private channels. For a channel called #decks, use this command.\n\`mc!addchannel ${id}|private|#decks\`\n` +
+				`If you want to change the name or description of the tournament, you can use this command.\n\`mc!update ${id}|New Name|A new description\`\n` +
+				`To add another user as a host so they can manage the tournament, you'll mention them. Be careful, only give this privilege to people you'd trust as moderators. For the user Sample, you'd use this command\n` +
+				`\`mc!addhost ${id}|@Sample\`\n` +
+				`If you need to take those privileges away, you can use this command.\n\`mc!removehost ${id}|@Sample\`\n` +
+				`When you're ready to open signups for your tournament, you can use this command, and after that we'll send details to private channels on how to proceed.\n\`mc!open ${id}\``
+		);
 	});
 	it("Create tournament - taken URL", async function () {
 		const [id] = await tournament.createTournament("testUser", "testServer", "create1", "desc");
