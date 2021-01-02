@@ -52,6 +52,8 @@ export interface TournamentInterface {
 	removeBye(tournamentId: string, playerId: string): Promise<string[]>;
 }
 
+type Tail<T extends unknown[]> = T extends [unknown, ...infer R] ? R : never;
+
 export class TournamentManager implements TournamentInterface {
 	private discord: DiscordInterface;
 	private database: DatabaseInterface;
@@ -68,9 +70,9 @@ export class TournamentManager implements TournamentInterface {
 
 	/// Link seam to override for testing
 	protected async createPersistentTimer(
-		...args: Parameters<typeof PersistentTimer.create>
+		...args: Tail<Parameters<typeof PersistentTimer.create>>
 	): ReturnType<typeof PersistentTimer.create> {
-		return await PersistentTimer.create(...args);
+		return await PersistentTimer.create(this.discord, ...args);
 	}
 
 	/// Link seam to override for testing
@@ -404,7 +406,6 @@ export class TournamentManager implements TournamentInterface {
 			tournament.publicChannels.map(async channelId => {
 				await this.sendNewRoundMessage(channelId, tournament, url, bye);
 				return await this.createPersistentTimer(
-					this.discord,
 					new Date(Date.now() + 50 * 60 * 1000), // 50 minutes
 					channelId,
 					`That's time in the round, ${participantRole}! Please end the current phase, then the player with the lower LP must forfeit!`,
