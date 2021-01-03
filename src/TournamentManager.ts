@@ -421,8 +421,6 @@ export class TournamentManager implements TournamentInterface {
 		const players = await this.website.getPlayers(tournament.id);
 		await Promise.all(
 			matches.map(async match => {
-				// TODO: not finding this player is an error path, but a pretty bad one at this stage
-				// not entirely sure how to handle it
 				const player1 = players.find(p => p.challongeId === match.player1)?.discordId;
 				const player2 = players.find(p => p.challongeId === match.player2)?.discordId;
 				if (player1 && player2) {
@@ -446,6 +444,13 @@ export class TournamentManager implements TournamentInterface {
 						}`;
 						await this.discord.sendDirectMessage(player2, message);
 					}
+				} else {
+					// This error occuring is an issue on Challonge's end
+					logger.warn(
+						new Error(
+							`Challonge IDs ${player1} and/or ${player2} found in match ${match.matchId} but not the player list.`
+						)
+					);
 				}
 			})
 		);
