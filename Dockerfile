@@ -4,8 +4,10 @@ WORKDIR /app
 COPY package*.json yarn.lock ./
 RUN yarn --prod
 
-FROM base as build
+FROM base as dev
 RUN yarn
+
+FROM dev as build
 COPY . .
 RUN yarn build
 
