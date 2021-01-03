@@ -13,6 +13,7 @@ import { WebsiteInterface } from "../src/website/interface";
 import { DatabaseWrapperMock } from "./mocks/database";
 import { DiscordWrapperMock } from "./mocks/discord";
 import { WebsiteWrapperMock } from "./mocks/website";
+import * as fs from "fs/promises";
 
 chai.use(chaiAsPromised);
 chai.use(sinonChai);
@@ -48,7 +49,10 @@ const mockWebsite = new WebsiteInterface(mockWebsiteWrapper);
 
 const tournament = new TournamentManagerTest(mockDiscord, mockDb, mockWebsite);
 
-before(initializeCardArray);
+before(async () => {
+	await initializeCardArray();
+	await tournament.loadGuides();
+});
 
 async function noop(): Promise<void> {
 	return;
@@ -56,9 +60,11 @@ async function noop(): Promise<void> {
 
 describe("Tournament creation commands", async function () {
 	it("Create tournament", async function () {
-		const [id, url] = await tournament.createTournament("testUser", "testServer", "create", "desc");
+		const [id, url, guide] = await tournament.createTournament("testUser", "testServer", "create", "desc");
+		const baseGuide = await fs.readFile("guides/create.template.md", "utf-8");
 		expect(id).to.equal("create");
 		expect(url).to.equal("https://example.com/create");
+		expect(guide).to.equal(baseGuide.replace(/{}/g, "create"));
 	});
 	it("Create tournament - taken URL", async function () {
 		const [id] = await tournament.createTournament("testUser", "testServer", "create1", "desc");
@@ -84,9 +90,11 @@ describe("Tournament creation commands", async function () {
 describe("Tournament flow commands", function () {
 	it("Open tournament", async function () {
 		await tournament.openTournament("tourn1");
+		const baseGuide = await fs.readFile("guides/open.template.md", "utf-8");
 		expect(discord.getResponse("channel1")).to.equal(
 			"__Registration now open for **Tournament 1**!__\nThe first tournament\n__Click the ✅ below to sign up!__"
 		);
+		expect(discord.getResponse("channel2")).to.equal(baseGuide.replace(/{}/g, "tourn1"));
 		expect(discord.getEmoji("channel1")).to.equal("✅");
 	});
 	it("Open tournament - no channels", async function () {

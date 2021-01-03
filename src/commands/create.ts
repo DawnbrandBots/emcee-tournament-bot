@@ -22,7 +22,12 @@ const command: CommandDefinition = {
 			})
 		);
 		try {
-			const [id, url] = await support.tournamentManager.createTournament(msg.author, msg.serverId, name, desc);
+			const [id, url, guide] = await support.tournamentManager.createTournament(
+				msg.author,
+				msg.serverId,
+				name,
+				desc
+			);
 			// TODO: missing failure path
 			logger.verbose(
 				JSON.stringify({
@@ -38,6 +43,7 @@ const command: CommandDefinition = {
 			await msg.reply(
 				`Tournament ${name} created! You can find it at ${url}. For future commands, refer to this tournament by the id \`${id}\`.`
 			);
+			await msg.reply(guide);
 		} catch (e) {
 			if (e instanceof ChallongeIDConflictError) {
 				await msg.reply(

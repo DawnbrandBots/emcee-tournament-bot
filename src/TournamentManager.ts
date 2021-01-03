@@ -8,6 +8,7 @@ import { PersistentTimer } from "./timer";
 import { BlockedDMsError, ChallongeAPIError, TournamentNotFoundError, UserError } from "./util/errors";
 import { getLogger } from "./util/logger";
 import { WebsiteInterface } from "./website/interface";
+import * as fs from "fs/promises";
 
 const logger = getLogger("tournament");
 
@@ -25,7 +26,7 @@ export interface TournamentInterface {
 	authenticateHost(tournamentId: string, message: DiscordMessageIn): Promise<void>;
 	authenticatePlayer(tournamentId: string, message: DiscordMessageIn): Promise<void>;
 	listTournaments(server?: string): Promise<string>;
-	createTournament(hostId: string, serverId: string, name: string, desc: string): Promise<[string, string]>;
+	createTournament(hostId: string, serverId: string, name: string, desc: string): Promise<[string, string, string]>;
 	updateTournament(tournamentId: string, name: string, desc: string): Promise<void>;
 	addAnnouncementChannel(tournamentId: string, channelId: string, type: "public" | "private"): Promise<void>;
 	removeAnnouncementChannel(tournamentId: string, channelId: string, type: "public" | "private"): Promise<void>;
@@ -60,12 +61,14 @@ export class TournamentManager implements TournamentInterface {
 	private website: WebsiteInterface;
 	private matchScores: { [matchId: number]: MatchScore };
 	private timers: { [tournamentId: string]: PersistentTimer[] };
+	private guides: { [name: string]: string };
 	constructor(discord: DiscordInterface, database: DatabaseInterface, website: WebsiteInterface) {
 		this.discord = discord;
 		this.database = database;
 		this.website = website;
 		this.matchScores = {};
 		this.timers = {};
+		this.guides = {};
 	}
 
 	/// Link seam to override for testing
@@ -97,6 +100,24 @@ export class TournamentManager implements TournamentInterface {
 			}
 			const tournaments = Object.keys(this.timers).length;
 			logger.info(`Loaded ${count} of ${timers.length} PersistentTimers for ${tournaments} tournaments.`);
+		}
+	}
+
+	public async loadGuides(): Promise<void> {
+		if (Object.keys(this.guides).length) {
+			logger.warn(new Error("loadGuides called multiple times"));
+		} else {
+			const files = await fs.readdir("guides");
+			if (files.length < 1) {
+				logger.warn(new Error("No guides loaded!"));
+			} else {
+				for (const file of files.filter(f => f.endsWith(".template.md"))) {
+					const guide = await fs.readFile(`guides/${file}`, "utf-8");
+					const name = file.split(".")[0];
+					this.guides[name] = guide;
+				}
+				logger.info(`Loaded ${files.length} guides.`);
+			}
 		}
 	}
 
@@ -154,13 +175,18 @@ export class TournamentManager implements TournamentInterface {
 		}
 	}
 
+	private generateHostGuideCreate(tournamentId: string): string {
+		const message = this.guides.create.replace(/{}/g, tournamentId);
+		return message;
+	}
+
 	public async createTournament(
 		hostId: string,
 		serverId: string,
 		name: string,
 		desc: string,
 		topCut = false
-	): Promise<[string, string]> {
+	): Promise<[string, string, string]> {
 		// generate a URL based on the name, with added numbers to prevent conflicts
 		const baseUrl = name.toLowerCase().replace(/[^a-zA-Z0-9_]/g, "");
 		let candidateUrl = `${baseUrl}`;
@@ -173,7 +199,7 @@ export class TournamentManager implements TournamentInterface {
 
 		const web = await this.website.createTournament(name, desc, candidateUrl, topCut);
 		await this.database.createTournament(hostId, serverId, web);
-		return [web.id, web.url];
+		return [web.id, web.url, this.generateHostGuideCreate(web.id)];
 	}
 
 	public async updateTournament(tournamentId: string, name: string, desc: string): Promise<void> {
@@ -351,6 +377,11 @@ export class TournamentManager implements TournamentInterface {
 		await this.database.cleanRegistration(msg.channelId, msg.id);
 	}
 
+	private async sendHostGuideOpen(channelId: string, tournamentId: string): Promise<void> {
+		const message = this.guides.open.replace(/{}/g, tournamentId);
+		await this.discord.sendMessage(channelId, message);
+	}
+
 	private CHECK_EMOJI = "✅";
 	public async openTournament(tournamentId: string): Promise<void> {
 		const tournament = await this.database.getTournament(tournamentId);
@@ -373,6 +404,7 @@ export class TournamentManager implements TournamentInterface {
 				await this.database.openRegistration(tournamentId, msg.channelId, msg.id);
 			})
 		);
+		await Promise.all(tournament.privateChannels.map(async c => await this.sendHostGuideOpen(c, tournamentId)));
 	}
 
 	private async sendNewRoundMessage(
@@ -417,17 +449,13 @@ export class TournamentManager implements TournamentInterface {
 	}
 
 	private async sendPlayerGuide(channelId: string, tournamentId: string): Promise<void> {
-		await this.discord.sendMessage(
-			channelId,
-			"This tournament uses player score reporting. At the end of a match, both you and your opponent will have to submit your score.\n" +
-				`If you won 2-0, copy and paste this command:\n\`mc!score ${tournamentId}|2-0\`\n` +
-				`If you won 2-1, copy and paste this command:\n\`mc!score ${tournamentId}|2-1\`\n` +
-				`If you lose 0-2, copy and paste this command:\n\`mc!score ${tournamentId}|0-2\`\n` +
-				`If you lose 1-2, copy and paste this command:\n\`mc!score ${tournamentId}|0-2\`\n` +
-				"If your scores don't match, both of you will need to try again. If you can't agree on what the score was, ask a host to intervene. You will need to send them replays of the games.\n" +
-				`If you want to drop from the tournament and stop playing, copy and paste this command:\n\`mc!drop ${tournamentId}\`\n` +
-				"Please be careful, as using this command will __drop you from the tournament permanently__!"
-		);
+		const message = this.guides.player.replace(/{}/g, tournamentId);
+		await this.discord.sendMessage(channelId, message);
+	}
+
+	private async sendHostGuideStart(channelId: string, tournamentId: string): Promise<void> {
+		const message = this.guides.start.replace(/{}/g, tournamentId);
+		await this.discord.sendMessage(channelId, message);
 	}
 
 	public async startTournament(tournamentId: string): Promise<void> {
@@ -460,6 +488,8 @@ export class TournamentManager implements TournamentInterface {
 				await this.sendPlayerGuide(c, tournamentId);
 			})
 		);
+		// send command guide to hosts
+		await Promise.all(tournament.privateChannels.map(async c => await this.sendHostGuideStart(c, tournamentId)));
 		// start tournament on challonge
 		await this.website.assignByes(tournamentId, tournament.players.length, tournament.byes);
 		await this.website.startTournament(tournamentId);

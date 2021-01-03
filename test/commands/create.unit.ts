@@ -37,7 +37,8 @@ describe("command:create", function () {
 			const authStub = this.stub(support.discord, "authenticateTO").rejects();
 			const createStub = this.stub(support.tournamentManager, "createTournament").resolves([
 				"battlecity",
-				"https://example.com/battlecity"
+				"https://example.com/battlecity",
+				"Guide: mc!help battlecity"
 			]);
 			const replyStub = this.stub(msg, "reply").resolves();
 			expect(command.executor(msg, args, support)).to.be.rejected;
@@ -52,15 +53,18 @@ describe("command:create", function () {
 			const authStub = this.stub(support.discord, "authenticateTO").resolves();
 			const createStub = this.stub(support.tournamentManager, "createTournament").resolves([
 				"battlecity",
-				"https://example.com/battlecity"
+				"https://example.com/battlecity",
+				"Guide: mc!help battlecity"
 			]);
 			const replyStub = this.stub(msg, "reply").resolves();
 			await command.executor(msg, args, support);
 			expect(authStub).to.have.been.called;
 			expect(createStub).to.have.been.calledOnce;
-			expect(replyStub).to.have.been.calledOnceWithExactly(
+			expect(replyStub).to.have.been.calledTwice;
+			expect(replyStub).to.have.been.calledWithExactly(
 				"Tournament battlecity created! You can find it at https://example.com/battlecity. For future commands, refer to this tournament by the id `battlecity`."
 			);
+			expect(replyStub).to.have.been.calledWithExactly("Guide: mc!help battlecity");
 		})
 	);
 	it(
@@ -105,7 +109,8 @@ describe("command:create", function () {
 			const authStub = this.stub(support.discord, "authenticateTO").resolves();
 			const createStub = this.stub(support.tournamentManager, "createTournament").resolves([
 				"battlecity",
-				"https://example.com/battlecity"
+				"https://example.com/battlecity",
+				"Guide: mc!help battlecity"
 			]);
 			const replyStub = this.stub(msg, "reply").rejects();
 			try {
