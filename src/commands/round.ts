@@ -7,7 +7,7 @@ const command: CommandDefinition = {
 	name: "round",
 	requiredArgs: ["id"],
 	executor: async (msg, args, support) => {
-		const [id] = args;
+		const [id, skip] = args; // second is optional and may be undefined
 		await support.tournamentManager.authenticateHost(id, msg);
 		logger.verbose(
 			JSON.stringify({
@@ -19,7 +19,7 @@ const command: CommandDefinition = {
 				event: "attempt"
 			})
 		);
-		await support.tournamentManager.nextRound(id);
+		await support.tournamentManager.nextRound(id, !!skip);
 		logger.verbose(
 			JSON.stringify({
 				channel: msg.channelId,
