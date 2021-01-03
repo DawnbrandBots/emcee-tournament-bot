@@ -36,6 +36,20 @@ services:
     restart: unless-stopped
     logging:
       driver: "${COMPOSE_LOG_DRIVER}"
+  watchtower:
+    image: containrrr/watchtower
+    environment:
+      DOCKER_CONFIG: /etc/docker
+      WATCHTOWER_CLEANUP: 1
+      WATCHTOWER_POLL_INTERVAL: 30
+      WATCHTOWER_NOTIFICATIONS: shoutrrr
+      WATCHTOWER_NOTIFICATION_URL: "${WATCHTOWER_NOTIFICATION_URL}"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - "${DOCKER_CONFIG_DIRECTORY}:/etc/docker:ro"
+    restart: unless-stopped
+    logging:
+      driver: "${COMPOSE_LOG_DRIVER}"
 
 volumes:
   database:
