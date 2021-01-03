@@ -1,4 +1,12 @@
 version: "3.8"
+
+x-common: &common
+  labels:
+    com.centurylinklabs.watchtower.scope: alphakretin/emcee-tournament-bot
+  restart: unless-stopped
+  logging:
+    driver: "${COMPOSE_LOG_DRIVER}"
+
 services:
   postgres:
     image: postgres:alpine
@@ -13,14 +21,12 @@ services:
       # Any SQL scripts in this directory are executed on first run
       # - ./db/init:/docker-entrypoint-initdb.d
       - database:/var/lib/postgresql/data
-    restart: unless-stopped
     healthcheck:
       test: ["CMD", "pg_isready"]
       interval: 10s
       timeout: 5s
       retries: 5
-    logging:
-      driver: "${COMPOSE_LOG_DRIVER}"
+    <<: *common
   bot:
     build: .
     image: "docker.pkg.github.com/alphakretin/emcee-tournament-bot/bot:${EMCEE_VERSION:-latest}"
@@ -33,9 +39,7 @@ services:
       DEBUG: "emcee:*"
     volumes:
       - ./dbs:/app/dbs
-    restart: unless-stopped
-    logging:
-      driver: "${COMPOSE_LOG_DRIVER}"
+    <<: *common
   watchtower:
     image: containrrr/watchtower
     environment:
@@ -44,12 +48,11 @@ services:
       WATCHTOWER_POLL_INTERVAL: 30
       WATCHTOWER_NOTIFICATIONS: shoutrrr
       WATCHTOWER_NOTIFICATION_URL: "${WATCHTOWER_NOTIFICATION_URL}"
+      WATCHTOWER_SCOPE: alphakretin/emcee-tournament-bot
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - "${DOCKER_CONFIG_DIRECTORY}:/etc/docker:ro"
-    restart: unless-stopped
-    logging:
-      driver: "${COMPOSE_LOG_DRIVER}"
+    <<: *common
 
 volumes:
   database:
