@@ -41,7 +41,7 @@ export interface TournamentInterface {
 		scoreOpp: number,
 		host?: boolean
 	): Promise<string>;
-	nextRound(tournamentId: string): Promise<void>;
+	nextRound(tournamentId: string, skip?: boolean): Promise<void>;
 	listPlayers(tournamentId: string): Promise<DiscordAttachmentOut>;
 	getPlayerDeck(tournamentId: string, playerId: string): Promise<Deck>;
 	dropPlayer(tournamentId: string, playerId: string, force?: boolean): Promise<void>;
@@ -392,7 +392,7 @@ export class TournamentManager implements TournamentInterface {
 		this.timers[tournament.id] = [];
 	}
 
-	private async startNewRound(tournament: DatabaseTournament, url: string): Promise<void> {
+	private async startNewRound(tournament: DatabaseTournament, url: string, skip = false): Promise<void> {
 		const participantRole = this.discord.mentionRole(await this.discord.getPlayerRole(tournament));
 		await this.cancelTimers(tournament);
 		this.timers[tournament.id] = await Promise.all(
@@ -407,6 +407,10 @@ export class TournamentManager implements TournamentInterface {
 				);
 			})
 		);
+		// can skip sending DMs
+		if (skip) {
+			return;
+		}
 		// direct message matchups to players
 		const matches = await this.website.getMatches(tournament.id);
 		const players = await this.website.getPlayers(tournament.id);
@@ -639,10 +643,10 @@ export class TournamentManager implements TournamentInterface {
 
 	// specifically only handles telling participants about a new round
 	// hosts should handle outstanding scores individually with forcescore
-	public async nextRound(tournamentId: string): Promise<void> {
+	public async nextRound(tournamentId: string, skip = false): Promise<void> {
 		const tournament = await this.database.getTournament(tournamentId);
 		const webTourn = await this.website.getTournament(tournamentId);
-		await this.startNewRound(tournament, webTourn.url);
+		await this.startNewRound(tournament, webTourn.url, skip);
 	}
 
 	public async listPlayers(tournamentId: string): Promise<DiscordAttachmentOut> {
