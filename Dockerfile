@@ -13,5 +13,6 @@ FROM base
 WORKDIR /app
 COPY --from=build /app/dist .
 COPY --chown=node:node dbs/ ./dbs
+COPY guides/ ./guides
 USER node
 CMD ["node", "--enable-source-maps", "--unhandled-rejections=strict", "."]
