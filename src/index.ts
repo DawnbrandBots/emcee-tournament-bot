@@ -24,5 +24,6 @@ import { WebsiteInterface } from "./website/interface";
 
 	const tournamentManager = new TournamentManager(discord, database, website);
 	await tournamentManager.loadTimers();
+	await tournamentManager.loadGuides();
 	initializeBehaviours(prefix, discord, tournamentManager);
 })();

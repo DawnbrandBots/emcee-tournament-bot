@@ -8,6 +8,7 @@ import { PersistentTimer } from "./timer";
 import { BlockedDMsError, ChallongeAPIError, TournamentNotFoundError, UserError } from "./util/errors";
 import { getLogger } from "./util/logger";
 import { WebsiteInterface } from "./website/interface";
+import * as fs from "fs/promises";
 
 const logger = getLogger("tournament");
 
@@ -60,12 +61,14 @@ export class TournamentManager implements TournamentInterface {
 	private website: WebsiteInterface;
 	private matchScores: { [matchId: number]: MatchScore };
 	private timers: { [tournamentId: string]: PersistentTimer[] };
+	private guides: { [name: string]: string };
 	constructor(discord: DiscordInterface, database: DatabaseInterface, website: WebsiteInterface) {
 		this.discord = discord;
 		this.database = database;
 		this.website = website;
 		this.matchScores = {};
 		this.timers = {};
+		this.guides = {};
 	}
 
 	/// Link seam to override for testing
@@ -97,6 +100,24 @@ export class TournamentManager implements TournamentInterface {
 			}
 			const tournaments = Object.keys(this.timers).length;
 			logger.info(`Loaded ${count} of ${timers.length} PersistentTimers for ${tournaments} tournaments.`);
+		}
+	}
+
+	public async loadGuides(): Promise<void> {
+		if (Object.keys(this.guides).length) {
+			logger.warn(new Error("loadGuides called multiple times"));
+		} else {
+			const files = await fs.readdir("guides");
+			if (files.length < 1) {
+				logger.warn(new Error("No guides loaded!"));
+			} else {
+				for (const file of files.filter(f => f.endsWith(".template.md"))) {
+					const guide = await fs.readFile(`guides/${file}`, "utf-8");
+					const name = file.split(".")[0];
+					this.guides[name] = guide;
+				}
+				logger.info(`Loaded ${files.length} guides.`);
+			}
 		}
 	}
 
@@ -155,17 +176,7 @@ export class TournamentManager implements TournamentInterface {
 	}
 
 	private generateHostGuideCreate(tournamentId: string): string {
-		const message =
-			"Thanks for hosting your tournament with Emcee! To get started, you'll want to add some announcement channels.\n" +
-			`A public announcement channel will be where players in your tournament will see signups and new rounds. To add the current channel as a public channel, use this command.\n\`mc!addchannel ${tournamentId}\`\n` +
-			`To add a different channel as a public announcement channel, mention it. So for a channel called #pairings, use this command.\n\`mc!addchannel ${tournamentId}|public|#pairings\`\n` +
-			`A private announcement channel will be where hosts can see the decks players submit. To add the current channel as a private channel, use this command.\n\`mc!addchannel ${tournamentId}|private\`\n` +
-			`You can also mention private channels. For a channel called #decks, use this command.\n\`mc!addchannel ${tournamentId}|private|#decks\`\n` +
-			`If you want to change the name or description of the tournament, you can use this command.\n\`mc!update ${tournamentId}|New Name|A new description\`\n` +
-			`To add another user as a host so they can manage the tournament, you'll mention them. Be careful, only give this privilege to people you'd trust as moderators. For the user Sample, you'd use this command\n` +
-			`\`mc!addhost ${tournamentId}|@Sample\`\n` +
-			`If you need to take those privileges away, you can use this command.\n\`mc!removehost ${tournamentId}|@Sample\`\n` +
-			`When you're ready to open signups for your tournament, you can use this command, and after that we'll send details to private channels on how to proceed.\n\`mc!open ${tournamentId}\``;
+		const message = this.guides.create.replace(/{}/g, tournamentId);
 		return message;
 	}
 
@@ -367,18 +378,7 @@ export class TournamentManager implements TournamentInterface {
 	}
 
 	private async sendHostGuideOpen(channelId: string, tournamentId: string): Promise<void> {
-		const message =
-			"Now that you've started your tournaments, players can start signing up.\n" +
-			"If you need to remove a player from the tournament, because they're unwilling or unable to drop themself, you can mention them. So for the player Sample, you'd use this command.\n" +
-			`\`mc!forcedrop ${tournamentId}|@Sample\`\n` +
-			"You can give players round 1 byes, so that they don't duel anyone and automatically get one win in the first round. For this, you mention them. So for the player Sample, you'd use this command.\n" +
-			`\`mc!addbye ${tournamentId}|@Sample\`\n` +
-			`If you made a mistake and need to remove that bye, you can use this command.\n\`mc!removebye ${tournamentId}|@Sample\`\n` +
-			`If you need to see a player's deck, you can mention them. So for the player Sample, you'd use this command.\n\`mc!deck ${tournamentId}|@Sample\`` +
-			"There are three commands that give a breakdown of the players and decks in the tournament, all in CSV format. `players` lists each player and the archetype of their deck, `pie` lists the number of times each archetype has been played, and `dump` lists each player and their decklist.\n" +
-			`These commands are \`mc!players ${tournamentId}\`, \`mc!pie ${tournamentId}\` and \`mc!dump ${tournamentId}\`\n` +
-			"Once all the players you want are signed up, and you're ready to start playing, you can use this command, and after that we'll send more details to private channels on how to proceed.\n" +
-			`\`mc!start ${tournamentId}\``;
+		const message = this.guides.open.replace(/{}/g, tournamentId);
 		await this.discord.sendMessage(channelId, message);
 	}
 
@@ -449,26 +449,12 @@ export class TournamentManager implements TournamentInterface {
 	}
 
 	private async sendPlayerGuide(channelId: string, tournamentId: string): Promise<void> {
-		const message =
-			"This tournament uses player score reporting. At the end of a match, both you and your opponent will have to submit your score.\n" +
-			`If you won 2-0, copy and paste this command:\n\`mc!score ${tournamentId}|2-0\`\n` +
-			`If you won 2-1, copy and paste this command:\n\`mc!score ${tournamentId}|2-1\`\n` +
-			`If you lose 0-2, copy and paste this command:\n\`mc!score ${tournamentId}|0-2\`\n` +
-			`If you lose 1-2, copy and paste this command:\n\`mc!score ${tournamentId}|0-2\`\n` +
-			"If your scores don't match, both of you will need to try again. If you can't agree on what the score was, ask a host to intervene. You will need to send them replays of the games.\n" +
-			`If you want to drop from the tournament and stop playing, copy and paste this command:\n\`mc!drop ${tournamentId}\`\n` +
-			"Please be careful, as using this command will __drop you from the tournament permanently__!";
+		const message = this.guides.player.replace(/{}/g, tournamentId);
 		await this.discord.sendMessage(channelId, message);
 	}
 
 	private async sendHostGuideStart(channelId: string, tournamentId: string): Promise<void> {
-		const message =
-			"Now that the first round of the tournament has begun, players are responsible for reporting their own scores." +
-			"However, if they can't, because they have trouble with the command or don't agree on who won, you can step in by mentioning the winner. If the player Sample won with a score of 2-1, use this command.\n" +
-			`\`mc!forcescore ${tournamentId}|2-1|@Sample\`\n` +
-			`Once you've got all the scores for the round and Challonge has generated the next pairings, you can start the timer for the next round at your leisure with this command.\n\`mc!round ${tournamentId}\`\n` +
-			`When all the rounds are complete and the tournament is finished, you can end it with this command.\n\`mc!finish ${tournamentId}\`` +
-			`If you need to stop the tournament early, and you can't finish it properly because you don't have all the scores, you can cancel it with this command. Be careful, because this will __end the tournament permanently__.\n\`mc!cancel ${tournamentId}\``;
+		const message = this.guides.start.replace(/{}/g, tournamentId);
 		await this.discord.sendMessage(channelId, message);
 	}
 

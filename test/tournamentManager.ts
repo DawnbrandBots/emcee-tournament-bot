@@ -13,6 +13,7 @@ import { WebsiteInterface } from "../src/website/interface";
 import { DatabaseWrapperMock } from "./mocks/database";
 import { DiscordWrapperMock } from "./mocks/discord";
 import { WebsiteWrapperMock } from "./mocks/website";
+import * as fs from "fs/promises";
 
 chai.use(chaiAsPromised);
 chai.use(sinonChai);
@@ -48,7 +49,10 @@ const mockWebsite = new WebsiteInterface(mockWebsiteWrapper);
 
 const tournament = new TournamentManagerTest(mockDiscord, mockDb, mockWebsite);
 
-before(initializeCardArray);
+before(async () => {
+	await initializeCardArray();
+	await tournament.loadGuides();
+});
 
 async function noop(): Promise<void> {
 	return;
@@ -57,20 +61,10 @@ async function noop(): Promise<void> {
 describe("Tournament creation commands", async function () {
 	it("Create tournament", async function () {
 		const [id, url, guide] = await tournament.createTournament("testUser", "testServer", "create", "desc");
+		const baseGuide = await fs.readFile("guides/create.template.md", "utf-8");
 		expect(id).to.equal("create");
 		expect(url).to.equal("https://example.com/create");
-		expect(guide).to.equal(
-			"Thanks for hosting your tournament with Emcee! To get started, you'll want to add some announcement channels.\n" +
-				`A public announcement channel will be where players in your tournament will see signups and new rounds. To add the current channel as a public channel, use this command.\n\`mc!addchannel ${id}\`\n` +
-				`To add a different channel as a public announcement channel, mention it. So for a channel called #pairings, use this command.\n\`mc!addchannel ${id}|public|#pairings\`\n` +
-				`A private announcement channel will be where hosts can see the decks players submit. To add the current channel as a private channel, use this command.\n\`mc!addchannel ${id}|private\`\n` +
-				`You can also mention private channels. For a channel called #decks, use this command.\n\`mc!addchannel ${id}|private|#decks\`\n` +
-				`If you want to change the name or description of the tournament, you can use this command.\n\`mc!update ${id}|New Name|A new description\`\n` +
-				`To add another user as a host so they can manage the tournament, you'll mention them. Be careful, only give this privilege to people you'd trust as moderators. For the user Sample, you'd use this command\n` +
-				`\`mc!addhost ${id}|@Sample\`\n` +
-				`If you need to take those privileges away, you can use this command.\n\`mc!removehost ${id}|@Sample\`\n` +
-				`When you're ready to open signups for your tournament, you can use this command, and after that we'll send details to private channels on how to proceed.\n\`mc!open ${id}\``
-		);
+		expect(guide).to.equal(baseGuide.replace(/{}/g, "create"));
 	});
 	it("Create tournament - taken URL", async function () {
 		const [id] = await tournament.createTournament("testUser", "testServer", "create1", "desc");
@@ -96,23 +90,11 @@ describe("Tournament creation commands", async function () {
 describe("Tournament flow commands", function () {
 	it("Open tournament", async function () {
 		await tournament.openTournament("tourn1");
+		const baseGuide = await fs.readFile("guides/open.template.md", "utf-8");
 		expect(discord.getResponse("channel1")).to.equal(
 			"__Registration now open for **Tournament 1**!__\nThe first tournament\n__Click the ✅ below to sign up!__"
 		);
-		const tournamentId = "tourn1";
-		expect(discord.getResponse("channel2")).to.equal(
-			"Now that you've started your tournaments, players can start signing up.\n" +
-				"If you need to remove a player from the tournament, because they're unwilling or unable to drop themself, you can mention them. So for the player Sample, you'd use this command.\n" +
-				`\`mc!forcedrop ${tournamentId}|@Sample\`\n` +
-				"You can give players round 1 byes, so that they don't duel anyone and automatically get one win in the first round. For this, you mention them. So for the player Sample, you'd use this command.\n" +
-				`\`mc!addbye ${tournamentId}|@Sample\`\n` +
-				`If you made a mistake and need to remove that bye, you can use this command.\n\`mc!removebye ${tournamentId}|@Sample\`\n` +
-				`If you need to see a player's deck, you can mention them. So for the player Sample, you'd use this command.\n\`mc!deck ${tournamentId}|@Sample\`` +
-				"There are three commands that give a breakdown of the players and decks in the tournament, all in CSV format. `players` lists each player and the archetype of their deck, `pie` lists the number of times each archetype has been played, and `dump` lists each player and their decklist.\n" +
-				`These commands are \`mc!players ${tournamentId}\`, \`mc!pie ${tournamentId}\` and \`mc!dump ${tournamentId}\`\n` +
-				"Once all the players you want are signed up, and you're ready to start playing, you can use this command, and after that we'll send more details to private channels on how to proceed.\n" +
-				`\`mc!start ${tournamentId}\``
-		);
+		expect(discord.getResponse("channel2")).to.equal(baseGuide.replace(/{}/g, "tourn1"));
 		expect(discord.getEmoji("channel1")).to.equal("✅");
 	});
 	it("Open tournament - no channels", async function () {
