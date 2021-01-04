@@ -436,7 +436,7 @@ export class TournamentManager implements TournamentInterface {
 					tournament.name
 				}. If they're not a human player, this is normal, but otherwise please tell them their opponent is ${this.discord.mentionUser(
 					opponent
-				)} (${this.discord.getUsername(opponent)})`
+				)} (${this.discord.getUsername(opponent)}), and vice versa.`
 			);
 		}
 	}
@@ -477,7 +477,7 @@ export class TournamentManager implements TournamentInterface {
 					} else {
 						const message = `A new round of ${tournament.name} has begun! ${
 							isBye2
-								? "You have a bye for this round."
+								? "I couldn't find your opponent. If you don't think you should have a bye for this round, please check the pairings."
 								: `Your opponent is ${this.discord.mentionUser(player2)} (${name2}).`
 						}`;
 						await this.discord.sendDirectMessage(player1, message);
@@ -487,7 +487,7 @@ export class TournamentManager implements TournamentInterface {
 					} else {
 						const message = `A new round of ${tournament.name} has begun! ${
 							isBye1
-								? "You have a bye for this round."
+								? "I couldn't find your opponent. If you don't think you should have a bye for this round, please check the pairings."
 								: `Your opponent is ${this.discord.mentionUser(player1)} (${name1}).`
 						}`;
 						await this.discord.sendDirectMessage(player2, message);
