@@ -1,4 +1,5 @@
 import * as csv from "@fast-csv/format";
+import * as fs from "fs/promises";
 import { Deck } from "ydeck";
 import { DatabaseInterface, DatabaseTournament } from "./database/interface";
 import { getDeck } from "./deck/deck";
@@ -8,7 +9,6 @@ import { PersistentTimer } from "./timer";
 import { BlockedDMsError, ChallongeAPIError, TournamentNotFoundError, UserError } from "./util/errors";
 import { getLogger } from "./util/logger";
 import { WebsiteInterface } from "./website/interface";
-import * as fs from "fs/promises";
 
 const logger = getLogger("tournament");
 
@@ -468,8 +468,14 @@ export class TournamentManager implements TournamentInterface {
 				const player1 = players.find(p => p.challongeId === match.player1)?.discordId;
 				const player2 = players.find(p => p.challongeId === match.player2)?.discordId;
 				if (player1 && player2) {
-					const name1 = this.discord.getUsername(player1);
-					const name2 = this.discord.getUsername(player2);
+					let name1 = this.discord.getUsername(player1);
+					if (name1 === player1) {
+						name1 = await this.discord.getRESTUsername(player1);
+					}
+					let name2 = this.discord.getUsername(player2);
+					if (name2 === player2) {
+						name2 = await this.discord.getRESTUsername(player2);
+					}
 					const isBye1 = player1 === name1; // if not bye, ID will be valid and resolve to a name
 					const isBye2 = player2 === name2;
 					if (isBye1) {

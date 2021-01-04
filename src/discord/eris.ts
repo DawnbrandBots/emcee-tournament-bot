@@ -56,7 +56,7 @@ export class DiscordWrapperEris implements DiscordWrapper {
 		this.toRoles = {};
 		this.playerRoles = {};
 		this.bot = new Client(discordToken, {
-			getAllUsers: true
+			restMode: true
 		});
 		this.bot.on("ready", () => logger.info(`Logged in as ${this.bot.user.username} - ${this.bot.user.id}`));
 		this.bot.on("messageCreate", this.handleMessage.bind(this));
@@ -356,13 +356,18 @@ export class DiscordWrapperEris implements DiscordWrapper {
 		return msg.mentions[0].id;
 	}
 
+	public async getRESTUsername(userId: string): Promise<string> {
+		const user = await this.bot.getRESTUser(userId);
+		return user ? `${user.username}#${user.discriminator}` : userId;
+	}
+
 	public getUsername(userId: string): string {
 		const user = this.bot.users.get(userId);
 		return user ? `${user.username}#${user.discriminator}` : userId;
 	}
 
 	public async sendDirectMessage(userId: string, content: DiscordMessageOut): Promise<void> {
-		const user = this.bot.users.get(userId);
+		const user = this.bot.users.get(userId) || (await this.bot.getRESTUser(userId));
 		if (!user) {
 			// user error means error by the bot user, not error related to the discord user
 			throw new UserError(`Cannot find user ${userId} to direct message!`);
