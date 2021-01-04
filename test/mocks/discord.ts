@@ -178,6 +178,10 @@ export class DiscordWrapperMock implements DiscordWrapper {
 		return result[1];
 	}
 
+	public async getRESTUsername(userId: string): Promise<string> {
+		return this.getUsername(userId);
+	}
+
 	public getUsername(userId: string): string {
 		return userId;
 	}
