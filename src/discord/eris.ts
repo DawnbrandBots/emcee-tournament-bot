@@ -365,14 +365,14 @@ export class DiscordWrapperEris implements DiscordWrapper {
 		}
 	}
 
-	public async getRESTUsername(userId: string): Promise<string> {
+	public async getRESTUsername(userId: string): Promise<string | null> {
 		const user = await this.getRESTUserSafe(userId);
-		return user ? `${user.username}#${user.discriminator}` : userId;
+		return user ? `${user.username}#${user.discriminator}` : null;
 	}
 
-	public getUsername(userId: string): string {
+	public getUsername(userId: string): string | null {
 		const user = this.bot.users.get(userId);
-		return user ? `${user.username}#${user.discriminator}` : userId;
+		return user ? `${user.username}#${user.discriminator}` : null;
 	}
 
 	public async sendDirectMessage(userId: string, content: DiscordMessageOut): Promise<void> {

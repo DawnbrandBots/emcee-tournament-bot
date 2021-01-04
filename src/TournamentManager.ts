@@ -301,7 +301,7 @@ export class TournamentManager implements TournamentInterface {
 			}
 			const challongeId = await this.website.registerPlayer(
 				tournament.id,
-				this.discord.getUsername(msg.author),
+				this.discord.getUsername(msg.author) || msg.author,
 				msg.author
 			);
 			await this.database.confirmPlayer(tournament.id, msg.author, challongeId, deck.url);
@@ -469,22 +469,22 @@ export class TournamentManager implements TournamentInterface {
 				const player2 = players.find(p => p.challongeId === match.player2)?.discordId;
 				if (player1 && player2) {
 					let name1 = this.discord.getUsername(player1);
-					if (name1 === player1) {
+					if (!name1) {
 						name1 = await this.discord.getRESTUsername(player1);
 					}
 					let name2 = this.discord.getUsername(player2);
-					if (name2 === player2) {
+					if (!name2) {
 						name2 = await this.discord.getRESTUsername(player2);
 					}
-					const isBye1 = player1 === name1; // if not bye, ID will be valid and resolve to a name
-					const isBye2 = player2 === name2;
+					const isBye1 = !!name1; // if not bye, ID will be valid and resolve to a name
+					const isBye2 = !!name2;
 					if (isBye1) {
 						await this.reportMatchDMFailure(tournament, player1, player2);
 					} else {
 						const message = `A new round of ${tournament.name} has begun! ${
 							isBye2
 								? "I couldn't find your opponent. If you don't think you should have a bye for this round, please check the pairings."
-								: `Your opponent is ${this.discord.mentionUser(player2)} (${name2}).`
+								: `Your opponent is ${this.discord.mentionUser(player2)} (${name2 || player2}).`
 						}`;
 						await this.discord.sendDirectMessage(player1, message);
 					}
@@ -494,7 +494,7 @@ export class TournamentManager implements TournamentInterface {
 						const message = `A new round of ${tournament.name} has begun! ${
 							isBye1
 								? "I couldn't find your opponent. If you don't think you should have a bye for this round, please check the pairings."
-								: `Your opponent is ${this.discord.mentionUser(player1)} (${name1}).`
+								: `Your opponent is ${this.discord.mentionUser(player1)} (${name1 || player1}).`
 						}`;
 						await this.discord.sendDirectMessage(player2, message);
 					}
@@ -611,7 +611,7 @@ export class TournamentManager implements TournamentInterface {
 			for (const player of top) {
 				const challongeId = await this.website.registerPlayer(
 					newId,
-					this.discord.getUsername(player.discordId),
+					this.discord.getUsername(player.discordId) || player.discordId,
 					player.discordId
 				);
 				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion

@@ -70,8 +70,8 @@ export interface DiscordWrapper {
 	deleteMessage(channelId: string, messageId: string): Promise<void>;
 	authenticateTO(msg: DiscordMessageIn): Promise<void>;
 	getMentionedUser(msg: DiscordMessageIn): string;
-	getUsername(userId: string): string;
-	getRESTUsername(userId: string): Promise<string>;
+	getUsername(userId: string): string | null;
+	getRESTUsername(userId: string): Promise<string | null>;
 	getPlayerRole(tournamentId: string, channelId: string): Promise<string>;
 	grantPlayerRole(userId: string, roleId: string): Promise<void>;
 	removePlayerRole(userId: string, roleId: string): Promise<void>;
@@ -164,11 +164,11 @@ export class DiscordInterface {
 		return this.api.getMentionedUser(msg);
 	}
 
-	public getUsername(userId: string): string {
+	public getUsername(userId: string): string | null {
 		return this.api.getUsername(userId);
 	}
 
-	public async getRESTUsername(userId: string): Promise<string> {
+	public async getRESTUsername(userId: string): Promise<string | null> {
 		return await this.api.getRESTUsername(userId);
 	}
 
