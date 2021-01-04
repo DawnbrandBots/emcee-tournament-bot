@@ -325,7 +325,7 @@ export class DatabaseWrapperPostgres implements DatabaseWrapper {
 		if (!participant.hasBye) {
 			throw new UserError(`Player ${playerId} does not have a bye in Tournament ${tournament}`);
 		}
-		participant.hasBye = true;
+		participant.hasBye = false;
 		await participant.save();
 	}
 }
