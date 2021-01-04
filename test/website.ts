@@ -94,11 +94,11 @@ describe("Misc functions", function () {
 	});
 
 	it("assignByes - no byes", async function () {
-		await expect(website.assignByes("test", 0, [])).to.not.be.rejected;
+		await expect(website.assignByes("test", [])).to.not.be.rejected;
 	});
 
 	it("assignByes - natural bye", async function () {
-		await expect(website.assignByes("bye", 1, ["player1"])).to.not.be.rejected;
+		await expect(website.assignByes("bye", ["player1"])).to.not.be.rejected;
 	});
 
 	it("dropByes - no byes", async function () {

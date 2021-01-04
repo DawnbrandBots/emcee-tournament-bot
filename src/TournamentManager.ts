@@ -560,7 +560,7 @@ export class TournamentManager implements TournamentInterface {
 		// send command guide to hosts
 		await Promise.all(tournament.privateChannels.map(async c => await this.sendHostGuideStart(c, tournamentId)));
 		// start tournament on challonge
-		await this.website.assignByes(tournamentId, tournament.players.length, tournament.byes);
+		await this.website.assignByes(tournamentId, tournament.byes);
 		await this.website.startTournament(tournamentId);
 		const webTourn = await this.website.getTournament(tournamentId);
 		await this.startNewRound(tournament, webTourn.url);
