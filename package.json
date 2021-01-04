@@ -16,7 +16,7 @@
 	],
 	"license": "AGPL-3.0-or-later",
 	"engines": {
-		"node": "14.x",
+		"node": ">=14.x",
 		"yarn": "1.x"
 	},
 	"dependencies": {
@@ -50,8 +50,8 @@
 		"chai": "^4.2.0",
 		"chai-as-promised": "^7.1.1",
 		"coveralls": "^3.1.0",
-		"eslint": "^7.16.0",
-		"eslint-config-prettier": "^6.15.0",
+		"eslint": "^7.17.0",
+		"eslint-config-prettier": "^7.1.0",
 		"mocha": "^8.2.1",
 		"nyc": "^15.1.0",
 		"prettier": "^2.2.1",
