@@ -9,7 +9,8 @@ import {
 	MessageFile,
 	PossiblyUncachedMessage,
 	Role,
-	TextChannel
+	TextChannel,
+	User
 } from "eris";
 import { toRole } from "../config/config.json";
 import { discordToken } from "../config/env";
@@ -356,18 +357,26 @@ export class DiscordWrapperEris implements DiscordWrapper {
 		return msg.mentions[0].id;
 	}
 
-	public async getRESTUsername(userId: string): Promise<string> {
-		const user = await this.bot.getRESTUser(userId);
-		return user ? `${user.username}#${user.discriminator}` : userId;
+	private async getRESTUserSafe(userId: string): Promise<User | null> {
+		try {
+			return await this.bot.getRESTUser(userId);
+		} catch {
+			return null;
+		}
 	}
 
-	public getUsername(userId: string): string {
+	public async getRESTUsername(userId: string): Promise<string | null> {
+		const user = await this.getRESTUserSafe(userId);
+		return user ? `${user.username}#${user.discriminator}` : null;
+	}
+
+	public getUsername(userId: string): string | null {
 		const user = this.bot.users.get(userId);
-		return user ? `${user.username}#${user.discriminator}` : userId;
+		return user ? `${user.username}#${user.discriminator}` : null;
 	}
 
 	public async sendDirectMessage(userId: string, content: DiscordMessageOut): Promise<void> {
-		const user = this.bot.users.get(userId) || (await this.bot.getRESTUser(userId));
+		const user = this.bot.users.get(userId) || (await this.getRESTUserSafe(userId));
 		if (!user) {
 			// user error means error by the bot user, not error related to the discord user
 			throw new UserError(`Cannot find user ${userId} to direct message!`);
