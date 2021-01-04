@@ -9,7 +9,7 @@ on:
     # redundant work since the main workflow already deals with testing builds
     paths:
       - Dockerfile
-      - docker-compose.yaml
+      - docker-compose.build.yaml
       - .github/workflows/docker.yml
 
 jobs:
@@ -34,13 +34,14 @@ jobs:
           # Use Docker `latest` tag convention
           [[ "$VERSION" == "master" ]] && VERSION=latest
           echo "EMCEE_VERSION=$VERSION" >> $GITHUB_ENV
+      - name: Login to registry
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login docker.pkg.github.com -u ${{ github.actor }} --password-stdin
       - name: Build image
         run: |
-          echo "POSTGRES_HOST_PORT=127.0.0.1:5432" > .env
-          docker-compose build
-      - name: Log into registry and push image
+          docker-compose -f docker-compose.build.yaml build --pull
+      - name: Push image
         # See also https://docs.docker.com/docker-hub/builds/
         if: github.event_name == 'push'
         run: |
-          echo "${{ secrets.GITHUB_TOKEN }}" | docker login docker.pkg.github.com -u ${{ github.actor }} --password-stdin
-          docker-compose push
+          docker-compose -f docker-compose.build.yaml push
