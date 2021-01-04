@@ -125,10 +125,12 @@ export class WebsiteInterface {
 		await this.api.setSeed(tournamentId, playerId, seed);
 	}
 
-	public async assignByes(tournamentId: string, playersToBye: string[]): Promise<void> {
+	public async assignByes(tournamentId: string, inPlayersToBye: string[]): Promise<void> {
+		const playersToBye = inPlayersToBye.slice(0); // shallow copy to sever reference for when we pop
 		if (playersToBye.length < 1) {
 			return;
 		}
+
 		const players = await this.api.getPlayers(tournamentId);
 		const numPlayers = players.length;
 		const numToBye = playersToBye.length;
