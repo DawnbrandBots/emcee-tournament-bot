@@ -265,12 +265,9 @@ export class DiscordWrapperEris implements DiscordWrapper {
 		if (!guild) {
 			throw new MiscInternalError(`Could not find guild with role ${roleId}.`);
 		}
-		let member = guild.members.get(userId);
+		const member = guild.members.get(userId);
 		if (!member) {
-			member = await this.bot.getRESTGuildMember(guild.id, userId);
-			if (!member) {
-				throw new MiscInternalError(`Could not find Member for user ${userId} in guild ${guild.id}.`);
-			}
+			throw new MiscInternalError(`Could not find Member for user ${userId} in guild ${guild.id}.`);
 		}
 		await member.addRole(roleId);
 	}
