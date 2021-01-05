@@ -80,7 +80,7 @@ export class WebsiteInterface {
 		}
 		const matches = await this.api.getMatches(tournamentId);
 		const bye = tournament.players.find(
-			p => !matches.find(m => m.player1 !== p.challongeId && m.player2 !== p.challongeId)
+			p => !matches.find(m => m.player1 === p.challongeId || m.player2 === p.challongeId)
 		);
 		return bye?.discordId;
 	}
