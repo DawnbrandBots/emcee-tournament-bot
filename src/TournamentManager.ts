@@ -7,7 +7,7 @@ import { DiscordAttachmentOut, DiscordInterface, DiscordMessageIn, DiscordMessag
 import { PersistentTimer } from "./timer";
 import { BlockedDMsError, ChallongeAPIError, TournamentNotFoundError, UserError } from "./util/errors";
 import { getLogger } from "./util/logger";
-import { WebsiteInterface } from "./website/interface";
+import { WebsiteInterface, WebsiteTournament } from "./website/interface";
 import * as fs from "fs/promises";
 
 const logger = getLogger("tournament");
@@ -502,11 +502,16 @@ export class TournamentManager implements TournamentInterface {
 	public async finishTournament(tournamentId: string, cancel = false): Promise<void> {
 		const tournament = await this.database.getTournament(tournamentId);
 		const channels = tournament.publicChannels;
-		const webTourn = await this.website.finishTournament(tournamentId);
-		await this.cancelTimers(tournament);
+		let webTourn: WebsiteTournament;
 		if (!cancel) {
-			await this.database.finishTournament(tournamentId);
-		} // TODO: else edit description?
+			webTourn = await this.website.finishTournament(tournamentId);
+		} else {
+			// TODO: edit description to say cancelled?
+			webTourn = await this.website.getTournament(tournamentId);
+		}
+		await this.cancelTimers(tournament);
+
+		await this.database.finishTournament(tournamentId);
 		await Promise.all(
 			channels.map(async c => {
 				const role = await this.discord.getPlayerRole(tournament);
