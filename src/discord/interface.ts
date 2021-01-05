@@ -110,6 +110,16 @@ export class DiscordInterface {
 		return msg;
 	}
 
+	public restoreReactionButton(
+		msg: DiscordMessageIn,
+		emoji: string,
+		response: DiscordReactionResponse,
+		removeResponse: DiscordReactionResponse
+	): void {
+		this.api.onReaction({ msg: msg.id, emoji, response });
+		this.api.onReactionRemove({ msg: msg.id, emoji, response: removeResponse });
+	}
+
 	public async removeUserReaction(
 		channelId: string,
 		messageId: string,

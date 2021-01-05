@@ -121,6 +121,32 @@ export class TournamentManager implements TournamentInterface {
 		}
 	}
 
+	public async loadButtons(): Promise<void> {
+		// TODO: check for repeated calls.
+		const tournaments = await this.database.listTournaments();
+		let count = 0;
+		let total = 0;
+		for (const tournament of tournaments) {
+			const messages = await this.database.getRegisterMessages(tournament.id);
+			total += messages.length;
+			for (const message of messages) {
+				try {
+					const discordMessage = await this.discord.getMessage(message.channelId, message.messageId);
+					this.discord.restoreReactionButton(
+						discordMessage,
+						this.CHECK_EMOJI,
+						this.registerPlayer.bind(this),
+						this.dropPlayerReaction.bind(this)
+					);
+					count++;
+				} catch (err) {
+					logger.warn(`On loading reaction buttons: ${message.channelId} ${message.messageId} was removed`);
+				}
+			}
+		}
+		logger.info(`Loaded ${count} of ${total} reaction buttons.`);
+	}
+
 	public async authenticateHost(tournamentId: string, message: DiscordMessageIn): Promise<void> {
 		await this.database.authenticateHost(tournamentId, message.author);
 		logger.verbose(
