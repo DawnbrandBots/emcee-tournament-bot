@@ -39,6 +39,7 @@ jobs:
           echo "${{ secrets.GITHUB_TOKEN }}" | docker login docker.pkg.github.com -u ${{ github.actor }} --password-stdin
       - name: Build image
         run: |
+          docker-compose -f docker-compose.build.yaml pull
           docker-compose -f docker-compose.build.yaml build --pull
       - name: Push image
         # See also https://docs.docker.com/docker-hub/builds/
