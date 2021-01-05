@@ -269,11 +269,18 @@ export class DatabaseWrapperPostgres implements DatabaseWrapper {
 	}
 
 	async getActiveTournaments(owningDiscordServer?: string): Promise<DatabaseTournament[]> {
+		// TODO: simplify
+		if (owningDiscordServer) {
+			const tournaments = await ChallongeTournament.find({
+				where: [
+					{ owningDiscordServer, status: TournamentStatus.IPR },
+					{ owningDiscordServer, status: TournamentStatus.PREPARING }
+				]
+			});
+			return tournaments.map(t => this.wrap(t));
+		}
 		const tournaments = await ChallongeTournament.find({
-			where: [
-				{ owningDiscordServer, status: TournamentStatus.IPR },
-				{ owningDiscordServer, status: TournamentStatus.PREPARING }
-			]
+			where: [{ status: TournamentStatus.IPR }, { status: TournamentStatus.PREPARING }]
 		});
 		return tournaments.map(t => this.wrap(t));
 	}
