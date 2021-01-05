@@ -130,8 +130,8 @@ export class TournamentManager implements TournamentInterface {
 			const messages = await this.database.getRegisterMessages(tournament.id);
 			total += messages.length;
 			for (const message of messages) {
-				try {
-					const discordMessage = await this.discord.getMessage(message.channelId, message.messageId);
+				const discordMessage = await this.discord.getMessage(message.channelId, message.messageId);
+				if (discordMessage) {
 					this.discord.restoreReactionButton(
 						discordMessage,
 						this.CHECK_EMOJI,
@@ -139,7 +139,7 @@ export class TournamentManager implements TournamentInterface {
 						this.dropPlayerReaction.bind(this)
 					);
 					count++;
-				} catch (err) {
+				} else {
 					logger.warn(`On loading reaction buttons: ${message.channelId} ${message.messageId} was removed`);
 				}
 			}

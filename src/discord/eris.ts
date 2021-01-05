@@ -104,8 +104,17 @@ export class DiscordWrapperEris implements DiscordWrapper {
 		return file ? { file: file.contents, name: file.filename } : undefined;
 	}
 
-	public async getMessage(channelId: string, messageId: string): Promise<DiscordMessageIn> {
-		return this.wrapMessageIn(await this.bot.getMessage(channelId, messageId));
+	public async getMessage(channelId: string, messageId: string): Promise<DiscordMessageIn | null> {
+		try {
+			const msg = await this.bot.getMessage(channelId, messageId);
+			return this.wrapMessageIn(msg);
+		} catch (err) {
+			// unknown message
+			if (err.code === 10008) {
+				return null;
+			}
+			throw err;
+		}
 	}
 
 	public async sendMessage(
