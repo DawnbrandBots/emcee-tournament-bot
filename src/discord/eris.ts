@@ -56,9 +56,7 @@ export class DiscordWrapperEris implements DiscordWrapper {
 		this.wrappedMessages = {};
 		this.toRoles = {};
 		this.playerRoles = {};
-		this.bot = new Client(discordToken, {
-			restMode: true
-		});
+		this.bot = new Client(discordToken);
 		this.bot.on("ready", () => logger.info(`Logged in as ${this.bot.user.username} - ${this.bot.user.id}`));
 		this.bot.on("messageCreate", this.handleMessage.bind(this));
 		this.bot.on("messageReactionAdd", this.handleReaction.bind(this));
