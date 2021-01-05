@@ -291,6 +291,10 @@ export class TournamentManager implements TournamentInterface {
 		if (tournaments.length === 1) {
 			const tournament = tournaments[0];
 			const deck = await getDeckFromMessage(msg);
+			if (!deck) {
+				await msg.reply("Must provide either attached `.ydk` file or valid `ydke://` URL!");
+				return;
+			}
 			const [content, file] = prettyPrint(deck, `${this.discord.getUsername(msg.author)}.ydk`);
 			if (deck.validationErrors.length > 0) {
 				await msg.reply(
@@ -338,6 +342,10 @@ export class TournamentManager implements TournamentInterface {
 		if (confirmedTourns.length === 1) {
 			const tournament = confirmedTourns[0];
 			const deck = await getDeckFromMessage(msg);
+			if (!deck) {
+				await msg.reply("Must provide either attached `.ydk` file or valid `ydke://` URL!");
+				return;
+			}
 			const [content, file] = prettyPrint(deck, `${this.discord.getUsername(msg.author)}.ydk`);
 			if (deck.validationErrors.length > 0) {
 				await msg.reply(
