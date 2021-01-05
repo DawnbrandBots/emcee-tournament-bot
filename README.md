@@ -53,7 +53,8 @@ Please use Australian English spellings.
 
 ## Licence
 
-Copyright © 2020 Luna Brand, Kevin Lu. See COPYING for more details.
+Copyright © 2020&ndash;2021 Luna Brand, Kevin Lu.
+See [COPYING](https://github.com/AlphaKretin/emcee-tournament-bot/blob/master/COPYING) for more details.
 
 ```
 This program is free software: you can redistribute it and/or modify
