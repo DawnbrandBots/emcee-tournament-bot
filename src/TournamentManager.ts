@@ -467,6 +467,14 @@ export class TournamentManager implements TournamentInterface {
 		}
 	}
 
+	private async getRealUsername(userId: string): Promise<string | null> {
+		// Naive check for an obviously invalid snowflake, such as the BYE# or DUMMY# we insert
+		// This saves the overhead of an HTTP request
+		if (!userId.length || userId[0] <= "0" || userId[0] >= "9") {
+			return null;
+		}
+		return await this.discord.getRESTUsername(userId);
+	}
 	private async startNewRound(tournament: DatabaseTournament, url: string, skip = false): Promise<void> {
 		const participantRole = this.discord.mentionRole(await this.discord.getPlayerRole(tournament));
 		await this.cancelTimers(tournament);
@@ -494,8 +502,8 @@ export class TournamentManager implements TournamentInterface {
 				const player1 = players.find(p => p.challongeId === match.player1)?.discordId;
 				const player2 = players.find(p => p.challongeId === match.player2)?.discordId;
 				if (player1 && player2) {
-					const name1 = await this.discord.getRESTUsername(player1);
-					const name2 = await this.discord.getRESTUsername(player2);
+					const name1 = await this.getRealUsername(player1);
+					const name2 = await this.getRealUsername(player2);
 					if (name1) {
 						await this.sendMatchupDM(tournament.name, player1, player2, name2);
 					} else {
