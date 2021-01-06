@@ -363,6 +363,18 @@ export class DiscordWrapperEris implements DiscordWrapper {
 		return user ? `${user.username}#${user.discriminator}` : userId;
 	}
 
+	/**
+	 * Retrieves user information by the REST API if not cached.
+	 */
+	public async getRESTUsername(userId: string): Promise<string | null> {
+		try {
+			const user = this.bot.users.get(userId) || (await this.bot.getRESTUser(userId));
+			return `${user.username}#${user.discriminator}`;
+		} catch {
+			return null;
+		}
+	}
+
 	public async sendDirectMessage(userId: string, content: DiscordMessageOut): Promise<void> {
 		const user = this.bot.users.get(userId) || (await this.bot.getRESTUser(userId));
 		const channel = await user.getDMChannel();

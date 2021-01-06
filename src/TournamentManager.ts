@@ -1,4 +1,5 @@
 import * as csv from "@fast-csv/format";
+import * as fs from "fs/promises";
 import { Deck } from "ydeck";
 import { DatabaseInterface, DatabaseTournament } from "./database/interface";
 import { getDeck } from "./deck/deck";
@@ -8,7 +9,6 @@ import { PersistentTimer } from "./timer";
 import { BlockedDMsError, ChallongeAPIError, TournamentNotFoundError, UserError } from "./util/errors";
 import { getLogger } from "./util/logger";
 import { WebsiteInterface, WebsiteTournament } from "./website/interface";
-import * as fs from "fs/promises";
 
 const logger = getLogger("tournament");
 
@@ -437,6 +437,36 @@ export class TournamentManager implements TournamentInterface {
 		this.timers[tournament.id] = [];
 	}
 
+	private async sendMatchupDM(
+		tournamentName: string,
+		receiverId: string,
+		opponentId: string,
+		opponentName: string | null
+	): Promise<void> {
+		let message = `A new round of ${tournamentName} has begun! `;
+		message += opponentName
+			? `Your opponent is ${this.discord.mentionUser(opponentId)} (${opponentName}).`
+			: "I couldn't find your opponent. If you don't think you should have a bye for this round, please check the pairings.";
+		await this.discord.sendDirectMessage(receiverId, message);
+	}
+
+	private async reportMatchDMFailure(
+		tournament: DatabaseTournament,
+		userId: string,
+		opponent: string
+	): Promise<void> {
+		for (const channel of tournament.privateChannels) {
+			await this.discord.sendMessage(
+				channel,
+				`I couldn't send a DM to ${this.discord.mentionUser(userId)} (${userId}) about their matchup for ${
+					tournament.name
+				}. If they're not a human player, this is normal, but otherwise please tell them their opponent is ${this.discord.mentionUser(
+					opponent
+				)} (${this.discord.getUsername(opponent)}), and vice versa.`
+			);
+		}
+	}
+
 	private async startNewRound(tournament: DatabaseTournament, url: string, skip = false): Promise<void> {
 		const participantRole = this.discord.mentionRole(await this.discord.getPlayerRole(tournament));
 		await this.cancelTimers(tournament);
@@ -464,25 +494,17 @@ export class TournamentManager implements TournamentInterface {
 				const player1 = players.find(p => p.challongeId === match.player1)?.discordId;
 				const player2 = players.find(p => p.challongeId === match.player2)?.discordId;
 				if (player1 && player2) {
-					const mention1 = this.discord.mentionUser(player1);
-					const mention2 = this.discord.mentionUser(player2);
-					const isBye1 = player1 === mention1; // if not bye, ID will be valid and resolve to a mention
-					const isBye2 = player2 === mention2;
-					if (!isBye1) {
-						const message = `A new round of ${tournament.name} has begun! ${
-							isBye2
-								? "You have a bye for this round."
-								: `Your opponent is ${mention2} (${this.discord.getUsername(player2)}).`
-						}`;
-						await this.discord.sendDirectMessage(player1, message);
+					const name1 = await this.discord.getRESTUsername(player1);
+					const name2 = await this.discord.getRESTUsername(player2);
+					if (name1) {
+						await this.sendMatchupDM(tournament.name, player1, player2, name2);
+					} else {
+						await this.reportMatchDMFailure(tournament, player1, player2);
 					}
-					if (!isBye2) {
-						const message = `A new round of ${tournament.name} has begun! ${
-							isBye1
-								? "You have a bye for this round."
-								: `Your opponent is ${mention1} (${this.discord.getUsername(player1)}).`
-						}`;
-						await this.discord.sendDirectMessage(player2, message);
+					if (name2) {
+						await this.sendMatchupDM(tournament.name, player2, player1, name1);
+					} else {
+						await this.reportMatchDMFailure(tournament, player2, player1);
 					}
 				} else {
 					// This error occuring is an issue on Challonge's end
