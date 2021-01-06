@@ -14,6 +14,7 @@
 			"preLaunchTask": "npm: build",
 			"outFiles": ["${workspaceFolder}/dist/**/*.js"],
 			"outputCapture": "std",
+			"internalConsoleOptions":"openOnSessionStart",
 			"env": {
 				"DEBUG_COLORS": "1"
 			}
