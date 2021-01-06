@@ -364,11 +364,7 @@ export class DiscordWrapperEris implements DiscordWrapper {
 	}
 
 	public async sendDirectMessage(userId: string, content: DiscordMessageOut): Promise<void> {
-		const user = this.bot.users.get(userId);
-		if (!user) {
-			// user error means error by the bot user, not error related to the discord user
-			throw new UserError(`Cannot find user ${userId} to direct message!`);
-		}
+		const user = this.bot.users.get(userId) || (await this.bot.getRESTUser(userId));
 		const channel = await user.getDMChannel();
 		try {
 			await channel.createMessage(this.unwrapMessageOut(content));
