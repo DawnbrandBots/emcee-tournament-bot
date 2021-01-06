@@ -79,9 +79,14 @@ export class WebsiteInterface {
 			return undefined;
 		}
 		const matches = await this.api.getMatches(tournamentId);
-		const bye = tournament.players.find(
-			p => !matches.find(m => m.player1 === p.challongeId || m.player2 === p.challongeId)
-		);
+		// Find a player for which the following is true
+		const bye = tournament.players.find(p => {
+			// Find a match which includes the player
+			const match = matches.find(m => m.player1 === p.challongeId || m.player2 === p.challongeId);
+			// Negate: if we found a match, this player doesn't have the bye.
+			return !match;
+		});
+		// This finds a player not in any match - i.e., they have the bye
 		return bye?.discordId;
 	}
 
