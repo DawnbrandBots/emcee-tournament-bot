@@ -12,6 +12,7 @@
 		"resolveJsonModule": true,
 		"emitDecoratorMetadata": true,
 		"experimentalDecorators": true,
+		"incremental": true,
 		"rootDir": "./src",
 		"outDir": "./dist"
 	},
