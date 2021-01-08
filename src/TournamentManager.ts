@@ -426,7 +426,7 @@ export class TournamentManager implements TournamentInterface {
 		const role = await this.discord.getPlayerRole(tournament);
 		const message = `A new round of ${tournament.name} has begun! ${this.discord.mentionRole(
 			role
-		)}\nPairings will be send out by Direct Message shortly, or can be found here: ${url}`;
+		)}\nPairings will be sent out by Direct Message shortly, or can be found here: ${url}`;
 		await this.discord.sendMessage(channelId, message);
 	}
 
