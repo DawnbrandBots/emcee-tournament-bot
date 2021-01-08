@@ -438,16 +438,20 @@ export class TournamentManager implements TournamentInterface {
 	}
 
 	private async sendMatchupDM(
-		tournamentName: string,
+		tournament: DatabaseTournament,
 		receiverId: string,
 		opponentId: string,
 		opponentName: string | null
 	): Promise<void> {
-		let message = `A new round of ${tournamentName} has begun! `;
+		let message = `A new round of ${tournament.name} has begun! `;
 		message += opponentName
 			? `Your opponent is ${this.discord.mentionUser(opponentId)} (${opponentName}).`
 			: "I couldn't find your opponent. If you don't think you should have a bye for this round, please check the pairings.";
-		await this.discord.sendDirectMessage(receiverId, message);
+		try {
+			await this.discord.sendDirectMessage(receiverId, message);
+		} catch (e) {
+			await this.reportMatchDMFailure(tournament, receiverId, opponentId);
+		}
 	}
 
 	private async reportMatchDMFailure(
@@ -505,12 +509,12 @@ export class TournamentManager implements TournamentInterface {
 					const name1 = await this.getRealUsername(player1);
 					const name2 = await this.getRealUsername(player2);
 					if (name1) {
-						await this.sendMatchupDM(tournament.name, player1, player2, name2);
+						await this.sendMatchupDM(tournament, player1, player2, name2);
 					} else {
 						await this.reportMatchDMFailure(tournament, player1, player2);
 					}
 					if (name2) {
-						await this.sendMatchupDM(tournament.name, player2, player1, name1);
+						await this.sendMatchupDM(tournament, player2, player1, name1);
 					} else {
 						await this.reportMatchDMFailure(tournament, player2, player1);
 					}
