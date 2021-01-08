@@ -1,17 +1,10 @@
 version: "3.8"
 services:
-  base:
-    build:
-      context: .
-      target: base
-    image: "docker.pkg.github.com/alphakretin/emcee-tournament-bot/base:${EMCEE_VERSION:-latest}"
   dev:
     build:
       context: .
       target: dev
     image: "docker.pkg.github.com/alphakretin/emcee-tournament-bot/dev:${EMCEE_VERSION:-latest}"
-    depends_on:
-      - base
   bot:
     build: .
     image: "docker.pkg.github.com/alphakretin/emcee-tournament-bot/bot:${EMCEE_VERSION:-latest}"
