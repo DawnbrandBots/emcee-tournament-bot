@@ -117,10 +117,10 @@ export class PersistentTimer {
 		const secondsRemaining = Math.ceil((now.getTime() - this.entity.end.getTime()) / 1000);
 		if (secondsRemaining % this.entity.cronIntervalSeconds == 0) {
 			const left = PersistentTimer.formatTime(this.entity.end.getTime() - Date.now());
-			try {
-				const message = await this.discord.getMessage(this.entity.channelId, this.entity.messageId);
+			const message = await this.discord.getMessage(this.entity.channelId, this.entity.messageId);
+			if (message) {
 				message.edit(`Time left in the round: \`${left}\``);
-			} catch (err) {
+			} else {
 				logger.warn(`${this.entity.channelId} ${this.entity.messageId} was removed`);
 			}
 		}
