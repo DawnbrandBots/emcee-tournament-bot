@@ -5,49 +5,33 @@ export class UserError extends Error {}
 export class ChallongeAPIError extends Error {}
 
 export class ChallongeIDConflictError extends ChallongeAPIError {
-	tournamentId: string;
-	constructor(tournamentId: string) {
+	constructor(readonly tournamentId: string) {
 		super(`Tournament ID ${tournamentId} already taken.`);
-		this.tournamentId = tournamentId;
 	}
 }
 
 export class TournamentNotFoundError extends UserError {
-	tournamentId: string;
-
-	constructor(tournamentId: string) {
+	constructor(readonly tournamentId: string) {
 		super(`Unknown tournament ${tournamentId}.`);
 		this.tournamentId = tournamentId;
 	}
 }
 
 export class UnauthorisedHostError extends UserError {
-	hostId: string;
-	tournamentId: string;
-
-	constructor(hostId: string, tournamentId: string) {
+	constructor(readonly hostId: string, readonly tournamentId: string) {
 		super(`User ${hostId} not authorised for tournament ${tournamentId}.`);
-		this.hostId = hostId;
-		this.tournamentId = tournamentId;
 	}
 }
 
 export class UnauthorisedPlayerError extends UserError {
-	playerId: string;
-	tournamentId: string;
-
-	constructor(playerId: string, tournamentId: string) {
+	constructor(readonly playerId: string, readonly tournamentId: string) {
 		super(`User ${playerId} not a player in tournament ${tournamentId}.`);
-		this.playerId = playerId;
-		this.tournamentId = tournamentId;
 	}
 }
 
 export class UnauthorisedTOError extends UserError {
-	to: string;
-	constructor(to: string) {
+	constructor(readonly to: string) {
 		super(`User ${to} not authorised to create tournaments in this server.`);
-		this.to = to;
 	}
 }
 
@@ -67,14 +51,12 @@ export class BlockedDMsError extends UserError {
 }
 
 export class AssertStatusError extends UserError {
-	tournamentId: string;
-	requiredStatus: TournamentStatus;
-	currentStatus: TournamentStatus;
-	constructor(tournamentId: string, requiredStatus: TournamentStatus, currentStatus: TournamentStatus) {
+	constructor(
+		readonly tournamentId: string,
+		readonly requiredStatus: TournamentStatus,
+		readonly currentStatus: TournamentStatus
+	) {
 		super(`Tournament ${tournamentId} must be ${requiredStatus}, but is currently ${currentStatus}.`);
-		this.tournamentId = tournamentId;
-		this.requiredStatus = requiredStatus;
-		this.currentStatus = currentStatus;
 	}
 }
 
