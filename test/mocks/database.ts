@@ -1,6 +1,6 @@
 import { DatabaseMessage, DatabasePlayer, DatabaseTournament, DatabaseWrapper } from "../../src/database/interface";
 import { TournamentStatus } from "../../src/database/orm";
-import { TournamentNotFoundError } from "../../src/util/errors";
+import { TournamentNotFoundError, UnauthorisedHostError, UnauthorisedPlayerError } from "../../src/util/errors";
 
 export class DatabaseWrapperMock implements DatabaseWrapper {
 	tournaments: DatabaseTournament[];
@@ -82,6 +82,16 @@ export class DatabaseWrapperMock implements DatabaseWrapper {
 				}
 			}
 		];
+	}
+	async authenticateHost(tournamentId: string, userId: string): Promise<void> {
+		if (userId.startsWith("not")) {
+			throw new UnauthorisedHostError(userId, tournamentId);
+		}
+	}
+	async authenticatePlayer(tournamentId: string, userId: string): Promise<void> {
+		if (userId.startsWith("not")) {
+			throw new UnauthorisedPlayerError(userId, tournamentId);
+		}
 	}
 	async createTournament(
 		hostId: string,
