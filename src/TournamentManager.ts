@@ -423,8 +423,7 @@ export class TournamentManager implements TournamentInterface {
 
 	private CHECK_EMOJI = "✅";
 	public async openTournament(tournamentId: string): Promise<void> {
-		await this.database.assertStatus(tournamentId, TournamentStatus.PREPARING);
-		const tournament = await this.database.getTournament(tournamentId);
+		const tournament = await this.database.getTournament(tournamentId, TournamentStatus.PREPARING);
 		const channels = tournament.publicChannels;
 		if (channels.length < 1) {
 			throw new UserError(
@@ -576,8 +575,7 @@ export class TournamentManager implements TournamentInterface {
 	}
 
 	public async startTournament(tournamentId: string): Promise<void> {
-		await this.database.assertStatus(tournamentId, TournamentStatus.PREPARING);
-		const tournament = await this.database.getTournament(tournamentId);
+		const tournament = await this.database.getTournament(tournamentId, TournamentStatus.PREPARING);
 		if (tournament.players.length < 2) {
 			throw new UserError("Cannot start a tournament without at least 2 confirmed participants!");
 		}
@@ -618,8 +616,7 @@ export class TournamentManager implements TournamentInterface {
 	}
 
 	public async finishTournament(tournamentId: string, cancel = false): Promise<void> {
-		await this.database.assertStatus(tournamentId, TournamentStatus.IPR);
-		const tournament = await this.database.getTournament(tournamentId);
+		const tournament = await this.database.getTournament(tournamentId, TournamentStatus.IPR);
 		const channels = tournament.publicChannels;
 		let webTourn: WebsiteTournament;
 		if (!cancel) {
@@ -691,8 +688,7 @@ export class TournamentManager implements TournamentInterface {
 		scoreOpp: number,
 		host = false
 	): Promise<string> {
-		await this.database.assertStatus(tournamentId, TournamentStatus.IPR);
-		const tournament = await this.database.getTournament(tournamentId);
+		const tournament = await this.database.getTournament(tournamentId, TournamentStatus.IPR);
 		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 		const player = tournament.findPlayer(playerId)!;
 		const match = await this.website.findMatch(tournamentId, player.challongeId);
@@ -757,8 +753,7 @@ export class TournamentManager implements TournamentInterface {
 	// specifically only handles telling participants about a new round
 	// hosts should handle outstanding scores individually with forcescore
 	public async nextRound(tournamentId: string, skip = false): Promise<void> {
-		await this.database.assertStatus(tournamentId, TournamentStatus.IPR);
-		const tournament = await this.database.getTournament(tournamentId);
+		const tournament = await this.database.getTournament(tournamentId, TournamentStatus.IPR);
 		const webTourn = await this.website.getTournament(tournamentId);
 		await this.startNewRound(tournament, webTourn.url, skip);
 	}
@@ -902,14 +897,12 @@ export class TournamentManager implements TournamentInterface {
 	}
 
 	public async registerBye(tournamentId: string, playerId: string): Promise<string[]> {
-		await this.database.assertStatus(tournamentId, TournamentStatus.PREPARING);
 		await this.database.registerBye(tournamentId, playerId);
 		const tournament = await this.database.getTournament(tournamentId);
 		return tournament.byes;
 	}
 
 	public async removeBye(tournamentId: string, playerId: string): Promise<string[]> {
-		await this.database.assertStatus(tournamentId, TournamentStatus.PREPARING);
 		await this.database.removeBye(tournamentId, playerId);
 		const tournament = await this.database.getTournament(tournamentId);
 		return tournament.byes;

@@ -1,5 +1,5 @@
 import { getConnection, IsNull, Not } from "typeorm";
-import { TournamentNotFoundError, UnauthorisedPlayerError, UserError } from "../util/errors";
+import { AssertStatusError, TournamentNotFoundError, UnauthorisedPlayerError, UserError } from "../util/errors";
 import {
 	DatabaseMessage,
 	DatabasePlayer,
@@ -73,8 +73,12 @@ export class DatabaseWrapperPostgres implements DatabaseWrapper {
 		}
 	}
 
-	async getTournament(tournamentId: string): Promise<DatabaseTournament> {
-		return this.wrap(await this.findTournament(tournamentId));
+	async getTournament(tournamentId: string, assertStatus?: TournamentStatus): Promise<DatabaseTournament> {
+		const tournament = await this.findTournament(tournamentId);
+		if (assertStatus && tournament.status !== assertStatus) {
+			throw new AssertStatusError(tournamentId, assertStatus, tournament.status);
+		}
+		return this.wrap(tournament);
 	}
 
 	async updateTournament(tournamentId: string, name: string, desc: string): Promise<void> {
@@ -308,7 +312,7 @@ export class DatabaseWrapperPostgres implements DatabaseWrapper {
 	async registerBye(tournamentId: string, playerId: string): Promise<void> {
 		const tournament = await this.findTournament(tournamentId);
 		if (tournament.status !== TournamentStatus.PREPARING) {
-			throw new UserError(`Tournament ${tournamentId} is not pending.`);
+			throw new AssertStatusError(tournamentId, TournamentStatus.PREPARING, tournament.status);
 		}
 		const participant = await ConfirmedParticipant.findOneOrFail({ tournamentId, discordId: playerId });
 		if (participant.hasBye) {
@@ -321,13 +325,13 @@ export class DatabaseWrapperPostgres implements DatabaseWrapper {
 	async removeBye(tournamentId: string, playerId: string): Promise<void> {
 		const tournament = await this.findTournament(tournamentId);
 		if (tournament.status !== TournamentStatus.PREPARING) {
-			throw new UserError(`Tournament ${tournamentId} is not pending.`);
+			throw new AssertStatusError(tournamentId, TournamentStatus.PREPARING, tournament.status);
 		}
 		const participant = await ConfirmedParticipant.findOneOrFail({ tournamentId, discordId: playerId });
 		if (!participant.hasBye) {
 			throw new UserError(`Player ${playerId} does not have a bye in Tournament ${tournament}`);
 		}
-		participant.hasBye = true;
+		participant.hasBye = false;
 		await participant.save();
 	}
 }

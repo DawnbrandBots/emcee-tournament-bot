@@ -1,4 +1,4 @@
-import { UnauthorisedHostError, UnauthorisedPlayerError, AssertStatusError } from "../util/errors";
+import { UnauthorisedHostError, UnauthorisedPlayerError } from "../util/errors";
 import { WebsiteTournament } from "../website/interface";
 import { TournamentStatus } from "./orm";
 
@@ -11,7 +11,7 @@ export interface DatabaseWrapper {
 		description: string
 	): Promise<DatabaseTournament>;
 	updateTournament(tournamentId: string, name: string, desc: string): Promise<void>;
-	getTournament(tournamentId: string): Promise<DatabaseTournament>;
+	getTournament(tournamentId: string, assertStatus?: TournamentStatus): Promise<DatabaseTournament>;
 	getActiveTournaments(server?: string): Promise<DatabaseTournament[]>;
 	addAnnouncementChannel(tournamentId: string, channelId: string, type: "public" | "private"): Promise<void>;
 	removeAnnouncementChannel(tournamentId: string, channelId: string, type: "public" | "private"): Promise<void>;
@@ -93,13 +93,6 @@ export class DatabaseInterface {
 		}
 	}
 
-	public async assertStatus(tournamentId: string, requiredStatus: TournamentStatus): Promise<void> {
-		const tournament = await this.getTournament(tournamentId);
-		if (tournament.status !== requiredStatus) {
-			throw new AssertStatusError(tournamentId, requiredStatus, tournament.status);
-		}
-	}
-
 	public async listTournaments(server?: string): Promise<DatabaseTournament[]> {
 		return await this.db.getActiveTournaments(server);
 	}
@@ -116,8 +109,8 @@ export class DatabaseInterface {
 		await this.db.updateTournament(tournamentId, name, desc);
 	}
 
-	public async getTournament(tournamentId: string): Promise<DatabaseTournament> {
-		return await this.db.getTournament(tournamentId);
+	public async getTournament(tournamentId: string, assertStatus?: TournamentStatus): Promise<DatabaseTournament> {
+		return await this.db.getTournament(tournamentId, assertStatus);
 	}
 
 	public async addAnnouncementChannel(
@@ -166,16 +159,8 @@ export class DatabaseInterface {
 		playerId: string
 	): Promise<DatabaseTournament | undefined> {
 		const tournament = await this.db.getTournamentFromMessage(channelId, messageId);
-		if (!tournament) {
+		if (!tournament || tournament.status !== TournamentStatus.PREPARING) {
 			return;
-		}
-		try {
-			await this.assertStatus(tournament.id, TournamentStatus.PREPARING);
-		} catch (e) {
-			if (e instanceof AssertStatusError) {
-				return;
-			}
-			// TODO: handle other errors?
 		}
 		if (await this.db.addPendingPlayer(tournament.id, playerId)) {
 			return tournament;
@@ -188,16 +173,8 @@ export class DatabaseInterface {
 		playerId: string
 	): Promise<DatabaseTournament | undefined> {
 		const tournament = await this.db.getTournamentFromMessage(channelId, messageId);
-		if (!tournament) {
+		if (!tournament || tournament.status !== TournamentStatus.PREPARING) {
 			return;
-		}
-		try {
-			await this.assertStatus(tournament.id, TournamentStatus.PREPARING);
-		} catch (e) {
-			if (e instanceof AssertStatusError) {
-				return;
-			}
-			// TODO: handle other errors?
 		}
 		if (await this.db.removePendingPlayer(tournament.id, playerId)) {
 			return tournament;
