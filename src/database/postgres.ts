@@ -177,32 +177,38 @@ export class DatabaseWrapperPostgres implements DatabaseWrapper {
 		return list.filter(p => !p.confirmed).map(p => this.wrap(p.tournament));
 	}
 
-	async getTournamentFromMessage(channelId: string, messageId: string): Promise<DatabaseTournament | undefined> {
+	async addPendingPlayer(
+		channelId: string,
+		messageId: string,
+		playerId: string
+	): Promise<DatabaseTournament | undefined> {
 		const message = await RegisterMessage.findOne({ channelId, messageId });
-		if (!message) {
+		if (!message || message.tournament.status !== TournamentStatus.PREPARING) {
 			return;
 		}
-		return this.wrap(message.tournament);
-	}
-
-	async addPendingPlayer(tournamentId: string, playerId: string): Promise<boolean> {
-		if (!(await Participant.findOne({ tournamentId, discordId: playerId }))) {
+		if (!(await Participant.findOne({ tournamentId: message.tournamentId, discordId: playerId }))) {
 			const participant = new Participant();
-			participant.tournamentId = tournamentId;
+			participant.tournamentId = message.tournamentId;
 			participant.discordId = playerId;
 			await participant.save();
-			return true;
+			return this.wrap(message.tournament);
 		}
-		return false;
 	}
 
-	async removePendingPlayer(tournamentId: string, playerId: string): Promise<boolean> {
-		const participant = await Participant.findOne({ tournamentId, discordId: playerId });
+	async removePendingPlayer(
+		channelId: string,
+		messageId: string,
+		playerId: string
+	): Promise<DatabaseTournament | undefined> {
+		const message = await RegisterMessage.findOne({ channelId, messageId });
+		if (!message || message.tournament.status !== TournamentStatus.PREPARING) {
+			return;
+		}
+		const participant = await Participant.findOne({ tournamentId: message.tournamentId, discordId: playerId });
 		if (participant && !participant.confirmed) {
 			await participant.remove();
-			return true;
+			return this.wrap(message.tournament);
 		}
-		return false;
 	}
 
 	async removeConfirmedPlayerReaction(

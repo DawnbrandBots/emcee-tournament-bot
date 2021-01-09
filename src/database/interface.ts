@@ -21,9 +21,12 @@ export interface DatabaseWrapper {
 	getRegisterMessages(tournamentId?: string): Promise<DatabaseMessage[]>;
 	cleanRegistration(channelId: string, messageId: string): Promise<void>;
 	getPendingTournaments(playerId: string): Promise<DatabaseTournament[]>;
-	getTournamentFromMessage(channelId: string, messageId: string): Promise<DatabaseTournament | undefined>;
-	addPendingPlayer(tournamentId: string, playerId: string): Promise<boolean>;
-	removePendingPlayer(tournamentId: string, playerId: string): Promise<boolean>;
+	addPendingPlayer(channelId: string, messageId: string, playerId: string): Promise<DatabaseTournament | undefined>;
+	removePendingPlayer(
+		channelId: string,
+		messageId: string,
+		playerId: string
+	): Promise<DatabaseTournament | undefined>;
 	confirmPlayer(tournamentId: string, playerId: string, challongeId: number, deck: string): Promise<void>;
 	removeConfirmedPlayerReaction(
 		channelId: string,
@@ -158,13 +161,7 @@ export class DatabaseInterface {
 		messageId: string,
 		playerId: string
 	): Promise<DatabaseTournament | undefined> {
-		const tournament = await this.db.getTournamentFromMessage(channelId, messageId);
-		if (!tournament || tournament.status !== TournamentStatus.PREPARING) {
-			return;
-		}
-		if (await this.db.addPendingPlayer(tournament.id, playerId)) {
-			return tournament;
-		}
+		return await this.db.addPendingPlayer(channelId, messageId, playerId);
 	}
 
 	public async removePendingPlayer(
@@ -172,13 +169,7 @@ export class DatabaseInterface {
 		messageId: string,
 		playerId: string
 	): Promise<DatabaseTournament | undefined> {
-		const tournament = await this.db.getTournamentFromMessage(channelId, messageId);
-		if (!tournament || tournament.status !== TournamentStatus.PREPARING) {
-			return;
-		}
-		if (await this.db.removePendingPlayer(tournament.id, playerId)) {
-			return tournament;
-		}
+		return await this.db.removePendingPlayer(channelId, messageId, playerId);
 	}
 
 	public async confirmPlayer(

@@ -247,17 +247,14 @@ export class DatabaseWrapperMock implements DatabaseWrapper {
 		}
 		return [this.tournaments[0]];
 	}
-	async getTournamentFromMessage(channelId: string, messageId: string): Promise<DatabaseTournament | undefined> {
+	async addPendingPlayer(channelId: string, messageId: string): Promise<DatabaseTournament | undefined> {
 		if (channelId.startsWith("wrong") || messageId.startsWith("wrong")) {
 			return;
 		}
 		return this.tournaments[0];
 	}
-	async addPendingPlayer(): Promise<boolean> {
-		return true;
-	}
-	async removePendingPlayer(): Promise<boolean> {
-		return true;
+	async removePendingPlayer(): Promise<DatabaseTournament | undefined> {
+		return this.tournaments[0];
 	}
 	async confirmPlayer(tournamentId: string, playerId: string): Promise<void> {
 		const index = this.tournaments.findIndex(t => t.id === tournamentId);
