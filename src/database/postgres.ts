@@ -1,4 +1,4 @@
-import { getConnection } from "typeorm";
+import { getConnection, IsNull, Not } from "typeorm";
 import { TournamentNotFoundError, UnauthorisedPlayerError, UserError } from "../util/errors";
 import {
 	DatabaseMessage,
@@ -268,19 +268,13 @@ export class DatabaseWrapperPostgres implements DatabaseWrapper {
 		});
 	}
 
-	async getActiveTournaments(owningDiscordServer?: string): Promise<DatabaseTournament[]> {
-		// TODO: simplify
-		if (owningDiscordServer) {
-			const tournaments = await ChallongeTournament.find({
-				where: [
-					{ owningDiscordServer, status: TournamentStatus.IPR },
-					{ owningDiscordServer, status: TournamentStatus.PREPARING }
-				]
-			});
-			return tournaments.map(t => this.wrap(t));
-		}
+	async getActiveTournaments(server?: string): Promise<DatabaseTournament[]> {
+		const owningDiscordServer = server || Not(IsNull());
 		const tournaments = await ChallongeTournament.find({
-			where: [{ status: TournamentStatus.IPR }, { status: TournamentStatus.PREPARING }]
+			where: [
+				{ owningDiscordServer, status: TournamentStatus.IPR },
+				{ owningDiscordServer, status: TournamentStatus.PREPARING }
+			]
 		});
 		return tournaments.map(t => this.wrap(t));
 	}
