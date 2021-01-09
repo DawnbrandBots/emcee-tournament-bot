@@ -71,7 +71,7 @@ export class AssertStatusError extends UserError {
 	requiredStatus: TournamentStatus;
 	currentStatus: TournamentStatus;
 	constructor(tournamentId: string, requiredStatus: TournamentStatus, currentStatus: TournamentStatus) {
-		super(`Tournament ${tournamentId} must be in be ${requiredStatus}, but is currently ${currentStatus}.`);
+		super(`Tournament ${tournamentId} must be ${requiredStatus}, but is currently ${currentStatus}.`);
 		this.tournamentId = tournamentId;
 		this.requiredStatus = requiredStatus;
 		this.currentStatus = currentStatus;
