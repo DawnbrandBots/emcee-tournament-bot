@@ -21,12 +21,9 @@ export interface DatabaseWrapper {
 	getRegisterMessages(tournamentId?: string): Promise<DatabaseMessage[]>;
 	cleanRegistration(channelId: string, messageId: string): Promise<void>;
 	getPendingTournaments(playerId: string): Promise<DatabaseTournament[]>;
-	addPendingPlayer(channelId: string, messageId: string, playerId: string): Promise<DatabaseTournament | undefined>;
-	removePendingPlayer(
-		channelId: string,
-		messageId: string,
-		playerId: string
-	): Promise<DatabaseTournament | undefined>;
+	getTournamentFromMessage(channelId: string, messageId: string): Promise<DatabaseTournament | undefined>;
+	addPendingPlayer(tournamentId: string, playerId: string): Promise<boolean>;
+	removePendingPlayer(tournamentId: string, playerId: string): Promise<boolean>;
 	confirmPlayer(tournamentId: string, playerId: string, challongeId: number, deck: string): Promise<void>;
 	removeConfirmedPlayerReaction(
 		channelId: string,
@@ -168,7 +165,21 @@ export class DatabaseInterface {
 		messageId: string,
 		playerId: string
 	): Promise<DatabaseTournament | undefined> {
-		return await this.db.addPendingPlayer(channelId, messageId, playerId);
+		const tournament = await this.db.getTournamentFromMessage(channelId, messageId);
+		if (!tournament) {
+			return;
+		}
+		try {
+			await this.assertStatus(tournament.id, TournamentStatus.PREPARING);
+		} catch (e) {
+			if (e instanceof AssertStatusError) {
+				return;
+			}
+			// TODO: handle other errors?
+		}
+		if (await this.db.addPendingPlayer(tournament.id, playerId)) {
+			return tournament;
+		}
 	}
 
 	public async removePendingPlayer(
@@ -176,7 +187,21 @@ export class DatabaseInterface {
 		messageId: string,
 		playerId: string
 	): Promise<DatabaseTournament | undefined> {
-		return await this.db.removePendingPlayer(channelId, messageId, playerId);
+		const tournament = await this.db.getTournamentFromMessage(channelId, messageId);
+		if (!tournament) {
+			return;
+		}
+		try {
+			await this.assertStatus(tournament.id, TournamentStatus.PREPARING);
+		} catch (e) {
+			if (e instanceof AssertStatusError) {
+				return;
+			}
+			// TODO: handle other errors?
+		}
+		if (await this.db.removePendingPlayer(tournament.id, playerId)) {
+			return tournament;
+		}
 	}
 
 	public async confirmPlayer(
