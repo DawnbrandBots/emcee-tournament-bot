@@ -1,8 +1,7 @@
 import { prefix } from "./config/config.json";
 import { challongeToken, challongeUsername, postgresqlUrl } from "./config/env";
 import { initializeBehaviours } from "./CommandHandler";
-import { DatabaseInterface } from "./database/interface";
-import { initializeDatabase as initializePostgres } from "./database/postgres";
+import { initializeDatabase } from "./database/postgres";
 import { initializeCardArray } from "./deck/deck";
 import { DiscordWrapperEris } from "./discord/eris";
 import { DiscordInterface } from "./discord/interface";
@@ -11,8 +10,7 @@ import { WebsiteWrapperChallonge } from "./website/challonge";
 import { WebsiteInterface } from "./website/interface";
 
 (async () => {
-	const wrapper = await initializePostgres(postgresqlUrl);
-	const database = new DatabaseInterface(wrapper);
+	const database = await initializeDatabase(postgresqlUrl);
 
 	await initializeCardArray();
 

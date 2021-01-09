@@ -1,8 +1,9 @@
 import * as csv from "@fast-csv/format";
 import * as fs from "fs/promises";
 import { Deck } from "ydeck";
-import { DatabaseInterface, DatabaseTournament } from "./database/interface";
+import { DatabaseTournament } from "./database/interface";
 import { TournamentStatus } from "./database/orm";
+import { DatabaseWrapperPostgres } from "./database/postgres";
 import { getDeck } from "./deck/deck";
 import { getDeckFromMessage, prettyPrint } from "./deck/discordDeck";
 import { DiscordAttachmentOut, DiscordInterface, DiscordMessageIn, DiscordMessageLimited } from "./discord/interface";
@@ -58,12 +59,12 @@ type Tail<T extends unknown[]> = T extends [unknown, ...infer R] ? R : never;
 
 export class TournamentManager implements TournamentInterface {
 	private discord: DiscordInterface;
-	private database: DatabaseInterface;
+	private database: DatabaseWrapperPostgres;
 	private website: WebsiteInterface;
 	private matchScores: { [matchId: number]: MatchScore };
 	private timers: { [tournamentId: string]: PersistentTimer[] };
 	private guides: { [name: string]: string };
-	constructor(discord: DiscordInterface, database: DatabaseInterface, website: WebsiteInterface) {
+	constructor(discord: DiscordInterface, database: DatabaseWrapperPostgres, website: WebsiteInterface) {
 		this.discord = discord;
 		this.database = database;
 		this.website = website;
@@ -170,7 +171,7 @@ export class TournamentManager implements TournamentInterface {
 	}
 
 	public async listTournaments(server?: string): Promise<string> {
-		const list = await this.database.listTournaments(server);
+		const list = await this.database.getActiveTournaments(server);
 		const text = list.map(t => `ID: ${t.id}|Name: ${t.name}|Status: ${t.status}|Players: ${t.players.length}`);
 		return text.join("\n");
 	}
@@ -225,7 +226,7 @@ export class TournamentManager implements TournamentInterface {
 		}
 
 		const web = await this.website.createTournament(name, desc, candidateUrl, topCut);
-		await this.database.createTournament(hostId, serverId, web);
+		await this.database.createTournament(hostId, serverId, web.id, name, desc);
 		return [web.id, web.url, this.generateHostGuideCreate(web.id)];
 	}
 
@@ -358,7 +359,8 @@ export class TournamentManager implements TournamentInterface {
 			return;
 		}
 		// allow confirmed user to resubmit
-		const allTourns = await this.database.listTournaments();
+		// TODO: add custom query
+		const allTourns = await this.database.getActiveTournaments();
 		const confirmedTourns = allTourns.filter(
 			t => t.players.includes(msg.author) && t.status === TournamentStatus.PREPARING
 		);

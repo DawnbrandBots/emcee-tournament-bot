@@ -1,9 +1,10 @@
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
+import * as fs from "fs/promises";
 import sinon, { SinonSandbox } from "sinon";
 import sinonChai from "sinon-chai";
 import sinonTest from "sinon-test";
-import { DatabaseInterface } from "../src/database/interface";
+import { DatabaseWrapperPostgres } from "../src/database/postgres";
 import { initializeCardArray } from "../src/deck/deck";
 import { DiscordAttachmentOut, DiscordEmbed, DiscordInterface, DiscordMessageOut } from "../src/discord/interface";
 import { PersistentTimer } from "../src/timer";
@@ -13,7 +14,6 @@ import { WebsiteInterface } from "../src/website/interface";
 import { DatabaseWrapperMock } from "./mocks/database";
 import { DiscordWrapperMock } from "./mocks/discord";
 import { WebsiteWrapperMock } from "./mocks/website";
-import * as fs from "fs/promises";
 
 chai.use(chaiAsPromised);
 chai.use(sinonChai);
@@ -41,8 +41,7 @@ class TournamentManagerTest extends TournamentManager {
 const discord = new DiscordWrapperMock(); // will be used to fetch responses in some cases
 const mockDiscord = new DiscordInterface(discord);
 
-const mockDbWrapper = new DatabaseWrapperMock();
-const mockDb = new DatabaseInterface(mockDbWrapper);
+const mockDb = (new DatabaseWrapperMock() as unknown) as DatabaseWrapperPostgres;
 
 const mockWebsiteWrapper = new WebsiteWrapperMock();
 const mockWebsite = new WebsiteInterface(mockWebsiteWrapper);

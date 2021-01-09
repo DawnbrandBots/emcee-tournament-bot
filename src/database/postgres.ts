@@ -6,13 +6,7 @@ import {
 	UnauthorisedPlayerError,
 	UserError
 } from "../util/errors";
-import {
-	DatabaseMessage,
-	DatabasePlayer,
-	DatabaseTournament,
-	DatabaseWrapper,
-	SynchroniseTournament
-} from "./interface";
+import { DatabaseMessage, DatabasePlayer, DatabaseTournament, SynchroniseTournament } from "./interface";
 import {
 	ChallongeTournament,
 	ConfirmedParticipant,
@@ -22,7 +16,7 @@ import {
 	TournamentStatus
 } from "./orm";
 
-export class DatabaseWrapperPostgres implements DatabaseWrapper {
+export class DatabaseWrapperPostgres {
 	private wrap(tournament: ChallongeTournament): DatabaseTournament {
 		return {
 			id: tournament.tournamentId,

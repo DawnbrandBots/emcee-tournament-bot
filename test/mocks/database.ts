@@ -1,8 +1,8 @@
-import { DatabaseMessage, DatabasePlayer, DatabaseTournament, DatabaseWrapper } from "../../src/database/interface";
+import { DatabaseMessage, DatabasePlayer, DatabaseTournament } from "../../src/database/interface";
 import { TournamentStatus } from "../../src/database/orm";
 import { TournamentNotFoundError, UnauthorisedHostError, UnauthorisedPlayerError } from "../../src/util/errors";
 
-export class DatabaseWrapperMock implements DatabaseWrapper {
+export class DatabaseWrapperMock {
 	tournaments: DatabaseTournament[];
 	constructor() {
 		this.tournaments = [
