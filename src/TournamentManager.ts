@@ -1,4 +1,5 @@
 import * as csv from "@fast-csv/format";
+import * as fs from "fs/promises";
 import { Deck } from "ydeck";
 import { DatabaseInterface, DatabaseTournament } from "./database/interface";
 import { getDeck } from "./deck/deck";
@@ -8,7 +9,6 @@ import { PersistentTimer } from "./timer";
 import { BlockedDMsError, ChallongeAPIError, TournamentNotFoundError, UserError } from "./util/errors";
 import { getLogger } from "./util/logger";
 import { WebsiteInterface, WebsiteTournament } from "./website/interface";
-import * as fs from "fs/promises";
 
 const logger = getLogger("tournament");
 
@@ -42,7 +42,7 @@ export interface TournamentInterface {
 		scoreOpp: number,
 		host?: boolean
 	): Promise<string>;
-	nextRound(tournamentId: string): Promise<void>;
+	nextRound(tournamentId: string, skip?: boolean): Promise<void>;
 	listPlayers(tournamentId: string): Promise<DiscordAttachmentOut>;
 	getPlayerDeck(tournamentId: string, playerId: string): Promise<Deck>;
 	dropPlayer(tournamentId: string, playerId: string, force?: boolean): Promise<void>;
@@ -420,19 +420,13 @@ export class TournamentManager implements TournamentInterface {
 		await Promise.all(tournament.privateChannels.map(async c => await this.sendHostGuideOpen(c, tournamentId)));
 	}
 
-	private async sendNewRoundMessage(
-		channelId: string,
-		tournament: DatabaseTournament,
-		url: string,
-		bye?: string
-	): Promise<void> {
+	// we could have logic for sending matchups in DMs in this function,
+	// but we want this to send first and leave it largely self-contained
+	private async sendNewRoundMessage(channelId: string, tournament: DatabaseTournament, url: string): Promise<void> {
 		const role = await this.discord.getPlayerRole(tournament);
-		let message = `A new round of ${tournament.name} has begun! ${this.discord.mentionRole(
+		const message = `A new round of ${tournament.name} has begun! ${this.discord.mentionRole(
 			role
-		)}\nPairings: ${url}`;
-		if (bye) {
-			message += `\n${this.discord.mentionUser(bye)} has the bye for this round.`;
-		}
+		)}\nPairings will be sent out by Direct Message shortly, or can be found here: ${url}`;
 		await this.discord.sendMessage(channelId, message);
 	}
 
@@ -443,13 +437,54 @@ export class TournamentManager implements TournamentInterface {
 		this.timers[tournament.id] = [];
 	}
 
-	private async startNewRound(tournament: DatabaseTournament, url: string): Promise<void> {
-		const bye = await this.website.getBye(tournament.id);
+	private async sendMatchupDM(
+		tournament: DatabaseTournament,
+		receiverId: string,
+		opponentId: string,
+		opponentName: string | null
+	): Promise<void> {
+		let message = `A new round of ${tournament.name} has begun! `;
+		message += opponentName
+			? `Your opponent is ${this.discord.mentionUser(opponentId)} (${opponentName}).`
+			: "I couldn't find your opponent. If you don't think you should have a bye for this round, please check the pairings.";
+		try {
+			await this.discord.sendDirectMessage(receiverId, message);
+		} catch (e) {
+			await this.reportMatchDMFailure(tournament, receiverId, opponentId);
+		}
+	}
+
+	private async reportMatchDMFailure(
+		tournament: DatabaseTournament,
+		userId: string,
+		opponent: string
+	): Promise<void> {
+		for (const channel of tournament.privateChannels) {
+			await this.discord.sendMessage(
+				channel,
+				`I couldn't send a DM to ${this.discord.mentionUser(userId)} (${userId}) about their matchup for ${
+					tournament.name
+				}. If they're not a human player, this is normal, but otherwise please tell them their opponent is ${this.discord.mentionUser(
+					opponent
+				)} (${this.discord.getUsername(opponent)}), and vice versa.`
+			);
+		}
+	}
+
+	private async getRealUsername(userId: string): Promise<string | null> {
+		// Naive check for an obviously invalid snowflake, such as the BYE# or DUMMY# we insert
+		// This saves the overhead of an HTTP request
+		if (!userId.length || userId[0] <= "0" || userId[0] >= "9") {
+			return null;
+		}
+		return await this.discord.getRESTUsername(userId);
+	}
+	private async startNewRound(tournament: DatabaseTournament, url: string, skip = false): Promise<void> {
 		const participantRole = this.discord.mentionRole(await this.discord.getPlayerRole(tournament));
 		await this.cancelTimers(tournament);
 		this.timers[tournament.id] = await Promise.all(
 			tournament.publicChannels.map(async channelId => {
-				await this.sendNewRoundMessage(channelId, tournament, url, bye);
+				await this.sendNewRoundMessage(channelId, tournament, url);
 				return await this.createPersistentTimer(
 					new Date(Date.now() + 50 * 60 * 1000), // 50 minutes
 					channelId,
@@ -459,6 +494,47 @@ export class TournamentManager implements TournamentInterface {
 				);
 			})
 		);
+		// can skip sending DMs
+		if (skip) {
+			return;
+		}
+		// direct message matchups to players
+		const matches = await this.website.getMatches(tournament.id);
+		const players = await this.website.getPlayers(tournament.id);
+		await Promise.all(
+			matches.map(async match => {
+				const player1 = players.find(p => p.challongeId === match.player1)?.discordId;
+				const player2 = players.find(p => p.challongeId === match.player2)?.discordId;
+				if (player1 && player2) {
+					const name1 = await this.getRealUsername(player1);
+					const name2 = await this.getRealUsername(player2);
+					if (name1) {
+						await this.sendMatchupDM(tournament, player1, player2, name2);
+					} else {
+						await this.reportMatchDMFailure(tournament, player1, player2);
+					}
+					if (name2) {
+						await this.sendMatchupDM(tournament, player2, player1, name1);
+					} else {
+						await this.reportMatchDMFailure(tournament, player2, player1);
+					}
+				} else {
+					// This error occuring is an issue on Challonge's end
+					logger.warn(
+						new Error(
+							`Challonge IDs ${player1} and/or ${player2} found in match ${match.matchId} but not the player list.`
+						)
+					);
+				}
+			})
+		);
+		const bye = await this.website.getBye(tournament.id);
+		if (bye) {
+			await this.discord.sendDirectMessage(
+				bye,
+				`A new round of ${tournament.name} has begun! You have a bye for this round.`
+			);
+		}
 	}
 
 	private async sendPlayerGuide(channelId: string, tournamentId: string): Promise<void> {
@@ -649,10 +725,10 @@ export class TournamentManager implements TournamentInterface {
 
 	// specifically only handles telling participants about a new round
 	// hosts should handle outstanding scores individually with forcescore
-	public async nextRound(tournamentId: string): Promise<void> {
+	public async nextRound(tournamentId: string, skip = false): Promise<void> {
 		const tournament = await this.database.getTournament(tournamentId);
 		const webTourn = await this.website.getTournament(tournamentId);
-		await this.startNewRound(tournament, webTourn.url);
+		await this.startNewRound(tournament, webTourn.url, skip);
 	}
 
 	public async listPlayers(tournamentId: string): Promise<DiscordAttachmentOut> {

@@ -90,8 +90,16 @@ export class WebsiteInterface {
 		return bye?.discordId;
 	}
 
+	public async getMatches(tournamentId: string): Promise<WebsiteMatch[]> {
+		return await this.api.getMatches(tournamentId);
+	}
+
 	public async findMatch(tournamentId: string, playerId: number): Promise<WebsiteMatch | undefined> {
 		return await this.api.getMatchWithPlayer(tournamentId, playerId);
+	}
+
+	public async getPlayers(tournamentId: string): Promise<WebsitePlayer[]> {
+		return await this.api.getPlayers(tournamentId);
 	}
 
 	public async removePlayer(tournamentId: string, playerId: number): Promise<void> {
