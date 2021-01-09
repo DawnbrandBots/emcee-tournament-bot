@@ -1,10 +1,7 @@
-import chai, { expect } from "chai";
+import { expect } from "chai";
 import { getDeckFromMessage, prettyPrint } from "../src/deck/discordDeck";
 import { DiscordEmbed, DiscordMessageIn } from "../src/discord/interface";
-import { DeckNotFoundError } from "../src/util/errors";
-import chaiAsPromised from "chai-as-promised";
 import { getDeck } from "../src/deck/deck";
-chai.use(chaiAsPromised);
 
 async function noop(): Promise<void> {
 	return;
@@ -28,7 +25,7 @@ describe("Get deck from message", function () {
 			"ydke://5m3qBeZt6gV9+McCffjHAn34xwK8beUDvG3lA7xt5QMfX5ICWvTJAVr0yQFa9MkBrDOdBKwznQSsM50Ey/UzAMv1MwDL9TMAdAxQBQ6wYAKvI94AryPeAK8j3gCmm/QBWXtjBOMavwDjGr8A4xq/AD6kcQGeE8oEnhPKBJ4TygSlLfUDpS31A6Ut9QMiSJkAIkiZACJImQCANVMDgDVTAw==!FtIXALVcnwC1XJ8AiBF2A4gRdgNLTV4Elt0IAMf4TQHCT0EAvw5JAqSaKwD5UX8EweoDA2LO9ATaI+sD!H1+SAg==!";
 		const deck = await getDeckFromMessage(sampleMessage);
 		sampleMessage.content = "";
-		expect(deck.mainSize).to.equal(40); // more details in ydeck tests, just checking we got something
+		expect(deck?.mainSize).to.equal(40); // more details in ydeck tests, just checking we got something
 	});
 	it("YDK", async function () {
 		sampleMessage.attachments = [
@@ -40,10 +37,11 @@ describe("Get deck from message", function () {
 		];
 		const deck = await getDeckFromMessage(sampleMessage);
 		sampleMessage.attachments = [];
-		expect(deck.mainSize).to.equal(40); // more details in ydeck tests, just checking we got something
+		expect(deck?.mainSize).to.equal(40); // more details in ydeck tests, just checking we got something
 	});
 	it("None", async function () {
-		await expect(getDeckFromMessage(sampleMessage)).to.be.rejectedWith(DeckNotFoundError);
+		const deck = await getDeckFromMessage(sampleMessage);
+		expect(deck).to.be.null;
 	});
 });
 

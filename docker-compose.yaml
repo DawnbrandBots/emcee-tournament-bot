@@ -29,7 +29,7 @@ services:
     <<: *common
   bot:
     build: .
-    image: "docker.pkg.github.com/alphakretin/emcee-tournament-bot/bot:${EMCEE_VERSION:-latest}"
+    image: "ghcr.io/alphakretin/emcee-discord-bot:${EMCEE_VERSION:-latest}"
     environment:
       DISCORD_TOKEN: "${DISCORD_TOKEN}"
       OCTOKIT_TOKEN: "${OCTOKIT_TOKEN}"

@@ -49,10 +49,6 @@ export class UnauthorisedTOError extends UserError {
 	}
 }
 
-export class DeckNotFoundError extends UserError {
-	message = "Must provide either attached `.ydk` file or valid `ydke://` URL!";
-}
-
 export class AssertTextChannelError extends UserError {
 	channelId: string;
 

@@ -56,7 +56,9 @@ export class DiscordWrapperEris implements DiscordWrapper {
 		this.wrappedMessages = {};
 		this.toRoles = {};
 		this.playerRoles = {};
-		this.bot = new Client(discordToken);
+		this.bot = new Client(discordToken, {
+			restMode: true
+		});
 		this.bot.on("messageCreate", this.handleMessage.bind(this));
 		this.bot.on("messageReactionAdd", this.handleReaction.bind(this));
 		this.bot.on("messageReactionRemove", this.handleReactionRemove.bind(this));
@@ -272,27 +274,29 @@ export class DiscordWrapperEris implements DiscordWrapper {
 		return newRole.id;
 	}
 
-	public async grantPlayerRole(userId: string, roleId: string): Promise<void> {
+	/**
+	 * Retrieve the server member object for the user if the user belongs to the server
+	 * that has the the specified role. The user does not have to have the role.
+	 *
+	 * @param userId Discord user snowflake
+	 * @param roleId Query the server by a role snowflake
+	 */
+	private async getServerMember(userId: string, roleId: string): Promise<Member> {
 		const guild = this.bot.guilds.find(g => g.roles.has(roleId));
 		if (!guild) {
 			throw new MiscInternalError(`Could not find guild with role ${roleId}.`);
 		}
-		const member = guild.members.get(userId);
-		if (!member) {
-			throw new MiscInternalError(`Could not find Member for user ${userId} in guild ${guild.id}.`);
-		}
+		const cachedMember = guild.members.get(userId);
+		return cachedMember || (await guild.getRESTMember(userId));
+	}
+
+	public async grantPlayerRole(userId: string, roleId: string): Promise<void> {
+		const member = await this.getServerMember(userId, roleId);
 		await member.addRole(roleId);
 	}
 
 	public async removePlayerRole(userId: string, roleId: string): Promise<void> {
-		const guild = this.bot.guilds.find(g => g.roles.has(roleId));
-		if (!guild) {
-			throw new MiscInternalError(`Could not find guild with role ${roleId}.`);
-		}
-		const member = guild.members.get(userId);
-		if (!member) {
-			throw new MiscInternalError(`Could not find Member for user ${userId} in guild ${guild.id}.`);
-		}
+		const member = await this.getServerMember(userId, roleId);
 		await member.removeRole(roleId);
 	}
 
@@ -374,12 +378,20 @@ export class DiscordWrapperEris implements DiscordWrapper {
 		return user ? `${user.username}#${user.discriminator}` : userId;
 	}
 
-	public async sendDirectMessage(userId: string, content: DiscordMessageOut): Promise<void> {
-		const user = this.bot.users.get(userId);
-		if (!user) {
-			// user error means error by the bot user, not error related to the discord user
-			throw new UserError(`Cannot find user ${userId} to direct message!`);
+	/**
+	 * Retrieves user information by the REST API if not cached.
+	 */
+	public async getRESTUsername(userId: string): Promise<string | null> {
+		try {
+			const user = this.bot.users.get(userId) || (await this.bot.getRESTUser(userId));
+			return `${user.username}#${user.discriminator}`;
+		} catch {
+			return null;
 		}
+	}
+
+	public async sendDirectMessage(userId: string, content: DiscordMessageOut): Promise<void> {
+		const user = this.bot.users.get(userId) || (await this.bot.getRESTUser(userId));
 		const channel = await user.getDMChannel();
 		try {
 			await channel.createMessage(this.unwrapMessageOut(content));
