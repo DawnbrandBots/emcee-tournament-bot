@@ -1,5 +1,6 @@
-import { UnauthorisedHostError, UnauthorisedPlayerError } from "../util/errors";
+import { UnauthorisedHostError, UnauthorisedPlayerError, AssertStatusError } from "../util/errors";
 import { WebsiteTournament } from "../website/interface";
+import { TournamentStatus } from "./orm";
 
 export interface DatabaseWrapper {
 	createTournament(
@@ -56,7 +57,7 @@ export interface DatabaseTournament {
 	id: string;
 	name: string;
 	description: string;
-	status: "preparing" | "in progress" | "complete";
+	status: TournamentStatus;
 	hosts: string[];
 	players: string[]; // list of IDs, for more info use findPlayer();
 	server: string;
@@ -92,6 +93,13 @@ export class DatabaseInterface {
 		const player = tournament.findPlayer(playerId);
 		if (!player) {
 			throw new UnauthorisedPlayerError(playerId, tournamentId);
+		}
+	}
+
+	public async assertStatus(tournamentId: string, requiredStatus: TournamentStatus): Promise<void> {
+		const tournament = await this.getTournament(tournamentId);
+		if (tournament.status !== requiredStatus) {
+			throw new AssertStatusError(tournamentId, requiredStatus, tournament.status);
 		}
 	}
 

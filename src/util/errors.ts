@@ -1,3 +1,5 @@
+import { TournamentStatus } from "../database/orm";
+
 export class UserError extends Error {}
 
 export class ChallongeAPIError extends Error {}
@@ -61,6 +63,18 @@ export class AssertTextChannelError extends UserError {
 export class BlockedDMsError extends UserError {
 	constructor(userId: string) {
 		super(`User <@${userId}> does not accept DMs from me! Please ask them to change their settings to allow this.`);
+	}
+}
+
+export class AssertStatusError extends UserError {
+	tournamentId: string;
+	requiredStatus: TournamentStatus;
+	currentStatus: TournamentStatus;
+	constructor(tournamentId: string, requiredStatus: TournamentStatus, currentStatus: TournamentStatus) {
+		super(`Tournament ${tournamentId} must be in be ${requiredStatus}, but is currently ${currentStatus}.`);
+		this.tournamentId = tournamentId;
+		this.requiredStatus = requiredStatus;
+		this.currentStatus = currentStatus;
 	}
 }
 
