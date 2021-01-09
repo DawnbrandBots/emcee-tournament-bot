@@ -35,7 +35,6 @@ export class DatabaseWrapperPostgres implements DatabaseWrapper {
 			privateChannels: tournament.privateChannels.slice(),
 			server: tournament.owningDiscordServer,
 			byes: tournament.confirmed.filter(p => p.hasBye).map(p => p.discordId),
-			findHost: (id: string): boolean => tournament.hosts.includes(id),
 			findPlayer: (id: string): DatabasePlayer => {
 				const p = tournament.confirmed.find(p => p.discordId === id);
 				if (!p) {

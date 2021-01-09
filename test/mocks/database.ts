@@ -17,9 +17,6 @@ export class DatabaseWrapperMock implements DatabaseWrapper {
 				privateChannels: ["channel2"],
 				server: "testServer",
 				byes: ["player1"],
-				findHost(id: string): boolean {
-					return !id.startsWith("not");
-				},
 				findPlayer(id: string): DatabasePlayer | undefined {
 					if (id.startsWith("not")) {
 						return;
@@ -43,9 +40,6 @@ export class DatabaseWrapperMock implements DatabaseWrapper {
 				hosts: ["host2"],
 				server: "testServer",
 				byes: ["player2"],
-				findHost(): boolean {
-					return true;
-				},
 				findPlayer(id: string): DatabasePlayer {
 					return {
 						discordId: id,
@@ -66,9 +60,6 @@ export class DatabaseWrapperMock implements DatabaseWrapper {
 				privateChannels: ["channel2"],
 				server: "testServer",
 				byes: [],
-				findHost(id: string): boolean {
-					return !id.startsWith("not");
-				},
 				findPlayer(id: string): DatabasePlayer | undefined {
 					if (id.startsWith("not")) {
 						return;
@@ -112,9 +103,6 @@ export class DatabaseWrapperMock implements DatabaseWrapper {
 			hosts: [hostId],
 			server: serverId,
 			byes: [],
-			findHost(): boolean {
-				return true;
-			},
 			findPlayer(id: string): DatabasePlayer {
 				return {
 					discordId: id,
@@ -143,7 +131,6 @@ export class DatabaseWrapperMock implements DatabaseWrapper {
 				publicChannels: [],
 				privateChannels: [],
 				byes: [],
-				findHost: (): boolean => true,
 				findPlayer: (): undefined => undefined
 			};
 		}
@@ -159,7 +146,6 @@ export class DatabaseWrapperMock implements DatabaseWrapper {
 				publicChannels: [],
 				privateChannels: [],
 				byes: [],
-				findHost: (): boolean => true,
 				findPlayer: (): undefined => undefined
 			};
 		}
@@ -175,7 +161,6 @@ export class DatabaseWrapperMock implements DatabaseWrapper {
 				publicChannels: [],
 				privateChannels: [],
 				byes: [],
-				findHost: (): boolean => true,
 				findPlayer: (): undefined => undefined
 			};
 		}
@@ -191,7 +176,6 @@ export class DatabaseWrapperMock implements DatabaseWrapper {
 				publicChannels: ["channel1"],
 				privateChannels: ["channel2"],
 				byes: [],
-				findHost: (): boolean => true,
 				findPlayer: (): undefined => undefined
 			};
 		}
@@ -207,7 +191,6 @@ export class DatabaseWrapperMock implements DatabaseWrapper {
 				publicChannels: ["topChannel"],
 				privateChannels: ["channel2"],
 				byes: [],
-				findHost: (): boolean => true,
 				findPlayer: (p: string): DatabasePlayer => {
 					return {
 						discordId: p,

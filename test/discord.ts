@@ -124,7 +124,6 @@ const sampleTournament: DatabaseTournament = {
 	publicChannels: [],
 	privateChannels: [],
 	byes: [],
-	findHost: () => true,
 	findPlayer: () => {
 		return { discordId: "testPlayer", challongeId: 1, deck: "" };
 	}
