@@ -1,5 +1,11 @@
 import { getConnection, IsNull, Not } from "typeorm";
-import { AssertStatusError, TournamentNotFoundError, UnauthorisedPlayerError, UserError } from "../util/errors";
+import {
+	AssertStatusError,
+	TournamentNotFoundError,
+	UnauthorisedHostError,
+	UnauthorisedPlayerError,
+	UserError
+} from "../util/errors";
 import {
 	DatabaseMessage,
 	DatabasePlayer,
@@ -70,6 +76,24 @@ export class DatabaseWrapperPostgres implements DatabaseWrapper {
 			return await ChallongeTournament.findOneOrFail(tournamentId, { relations });
 		} catch (err) {
 			throw new TournamentNotFoundError(tournamentId);
+		}
+	}
+
+	// TODO: remove and replace with alternate implementation
+	// This causes many unnecessary double queries
+	public async authenticateHost(tournamentId: string, hostId: string): Promise<void> {
+		const tournament = await this.findTournament(tournamentId);
+		if (!tournament.hosts.includes(hostId)) {
+			throw new UnauthorisedHostError(hostId, tournamentId);
+		}
+	}
+
+	// TODO: remove and replace with alternate implementation
+	// This causes many unnecessary double queries
+	public async authenticatePlayer(tournamentId: string, playerId: string): Promise<void> {
+		const tournament = await this.findTournament(tournamentId);
+		if (!tournament.confirmed.find(participant => participant.discordId === playerId)) {
+			throw new UnauthorisedPlayerError(playerId, tournamentId);
 		}
 	}
 

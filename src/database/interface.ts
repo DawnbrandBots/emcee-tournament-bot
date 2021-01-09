@@ -1,4 +1,3 @@
-import { UnauthorisedHostError, UnauthorisedPlayerError } from "../util/errors";
 import { WebsiteTournament } from "../website/interface";
 import { TournamentStatus } from "./orm";
 
@@ -11,6 +10,8 @@ export interface DatabaseWrapper {
 		description: string
 	): Promise<DatabaseTournament>;
 	updateTournament(tournamentId: string, name: string, desc: string): Promise<void>;
+	authenticateHost(tournamentId: string, hostId: string): Promise<void>;
+	authenticatePlayer(tournamentId: string, playerId: string): Promise<void>;
 	getTournament(tournamentId: string, assertStatus?: TournamentStatus): Promise<DatabaseTournament>;
 	getActiveTournaments(server?: string): Promise<DatabaseTournament[]>;
 	addAnnouncementChannel(tournamentId: string, channelId: string, type: "public" | "private"): Promise<void>;
@@ -81,19 +82,11 @@ export class DatabaseInterface {
 	}
 
 	public async authenticateHost(tournamentId: string, hostId: string): Promise<void> {
-		const tournament = await this.getTournament(tournamentId);
-		const auth = tournament.findHost(hostId);
-		if (!auth) {
-			throw new UnauthorisedHostError(hostId, tournamentId);
-		}
+		return await this.db.authenticateHost(tournamentId, hostId);
 	}
 
 	public async authenticatePlayer(tournamentId: string, playerId: string): Promise<void> {
-		const tournament = await this.getTournament(tournamentId);
-		const player = tournament.findPlayer(playerId);
-		if (!player) {
-			throw new UnauthorisedPlayerError(playerId, tournamentId);
-		}
+		return await this.db.authenticatePlayer(tournamentId, playerId);
 	}
 
 	public async listTournaments(server?: string): Promise<DatabaseTournament[]> {
