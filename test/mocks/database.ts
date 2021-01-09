@@ -277,10 +277,10 @@ export class DatabaseWrapperMock {
 	async synchronise(): Promise<void> {
 		return;
 	}
-	async registerBye(): Promise<void> {
-		return;
+	async registerBye(): Promise<DatabaseTournament> {
+		throw new Error("Not implemented");
 	}
-	async removeBye(): Promise<void> {
-		return;
+	async removeBye(): Promise<DatabaseTournament> {
+		throw new Error("Not implemented");
 	}
 }

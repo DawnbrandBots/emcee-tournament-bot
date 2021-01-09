@@ -332,30 +332,40 @@ export class DatabaseWrapperPostgres {
 		});
 	}
 
-	async registerBye(tournamentId: string, playerId: string): Promise<void> {
+	/// @throws {TournamentNotFoundError}
+	/// @throws {AssertStatusError}
+	/// @throws {EntityNotFoundError}
+	private async byeHelper(
+		tournamentId: string,
+		playerId: string,
+		operation: (participant: ConfirmedParticipant) => Promise<void>
+	): Promise<DatabaseTournament> {
 		const tournament = await this.findTournament(tournamentId);
 		if (tournament.status !== TournamentStatus.PREPARING) {
 			throw new AssertStatusError(tournamentId, TournamentStatus.PREPARING, tournament.status);
 		}
 		const participant = await ConfirmedParticipant.findOneOrFail({ tournamentId, discordId: playerId });
-		if (participant.hasBye) {
-			throw new UserError(`Player ${playerId} already has a bye in Tournament ${tournament}`);
-		}
-		participant.hasBye = true;
+		await operation(participant);
 		await participant.save();
+		return this.wrap(tournament);
 	}
 
-	async removeBye(tournamentId: string, playerId: string): Promise<void> {
-		const tournament = await this.findTournament(tournamentId);
-		if (tournament.status !== TournamentStatus.PREPARING) {
-			throw new AssertStatusError(tournamentId, TournamentStatus.PREPARING, tournament.status);
-		}
-		const participant = await ConfirmedParticipant.findOneOrFail({ tournamentId, discordId: playerId });
-		if (!participant.hasBye) {
-			throw new UserError(`Player ${playerId} does not have a bye in Tournament ${tournament}`);
-		}
-		participant.hasBye = false;
-		await participant.save();
+	async registerBye(tournamentId: string, playerId: string): Promise<DatabaseTournament> {
+		return await this.byeHelper(tournamentId, playerId, async participant => {
+			if (participant.hasBye) {
+				throw new UserError(`Player ${playerId} already has a bye in Tournament ${tournamentId}`);
+			}
+			participant.hasBye = true;
+		});
+	}
+
+	async removeBye(tournamentId: string, playerId: string): Promise<DatabaseTournament> {
+		return await this.byeHelper(tournamentId, playerId, async participant => {
+			if (!participant.hasBye) {
+				throw new UserError(`Player ${playerId} does not have a bye in Tournament ${tournamentId}`);
+			}
+			participant.hasBye = false;
+		});
 	}
 }
 

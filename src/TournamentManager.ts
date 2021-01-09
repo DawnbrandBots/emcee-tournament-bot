@@ -577,6 +577,8 @@ export class TournamentManager implements TournamentInterface {
 			throw new UserError("Cannot start a tournament without at least 2 confirmed participants!");
 		}
 		// delete register messages
+		// TODO: can be a single transaction instead of relying on onDelete->cleanRegistration,
+		//       a totally unclear relationship without the comment
 		const messages = await this.database.getRegisterMessages(tournamentId);
 		await Promise.all(
 			messages.map(async m => {
@@ -757,6 +759,7 @@ export class TournamentManager implements TournamentInterface {
 
 	public async listPlayers(tournamentId: string): Promise<DiscordAttachmentOut> {
 		const tournament = await this.database.getTournament(tournamentId);
+		// TODO: major WTF
 		const rows = tournament.players.map(p => {
 			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 			const player = tournament.findPlayer(p)!;
@@ -894,14 +897,12 @@ export class TournamentManager implements TournamentInterface {
 	}
 
 	public async registerBye(tournamentId: string, playerId: string): Promise<string[]> {
-		await this.database.registerBye(tournamentId, playerId);
-		const tournament = await this.database.getTournament(tournamentId);
+		const tournament = await this.database.registerBye(tournamentId, playerId);
 		return tournament.byes;
 	}
 
 	public async removeBye(tournamentId: string, playerId: string): Promise<string[]> {
-		await this.database.removeBye(tournamentId, playerId);
-		const tournament = await this.database.getTournament(tournamentId);
+		const tournament = await this.database.removeBye(tournamentId, playerId);
 		return tournament.byes;
 	}
 }
