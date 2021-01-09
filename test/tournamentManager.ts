@@ -159,7 +159,7 @@ describe("Tournament flow commands", function () {
 		);
 		const response6 = discord.getResponse("player2");
 		expect(response6).to.equal(
-			"Your opponent has successfully confirmed your score of 2-1 for Tournament Tournament 1, so the score has been saved. Thank you."
+			"Your opponent has successfully confirmed your score of 2-1 for Tournament Tournament 2, so the score has been saved. Thank you."
 		);
 		const response7 = discord.getResponse("channel2");
 		expect(response7).to.equal(
@@ -358,7 +358,7 @@ describe("Confirm player", function () {
 			edit: noop
 		});
 		expect(response).to.equal(
-			"You're trying to update your deck for a tournament, but you're in multiple! Please choose one by dropping and registering again.\nTournament 1, Tournament 2"
+			"You're trying to update your deck for a tournament, but you're in multiple! Please choose one by dropping and registering again.\nTournament 1, Tournament 3"
 		);
 	});
 	it("Update deck", async function () {

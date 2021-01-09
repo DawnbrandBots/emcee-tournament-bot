@@ -7,13 +7,7 @@ import { getDeck } from "./deck/deck";
 import { getDeckFromMessage, prettyPrint } from "./deck/discordDeck";
 import { DiscordAttachmentOut, DiscordInterface, DiscordMessageIn, DiscordMessageLimited } from "./discord/interface";
 import { PersistentTimer } from "./timer";
-import {
-	AssertStatusError,
-	BlockedDMsError,
-	ChallongeAPIError,
-	TournamentNotFoundError,
-	UserError
-} from "./util/errors";
+import { BlockedDMsError, ChallongeAPIError, TournamentNotFoundError, UserError } from "./util/errors";
 import { getLogger } from "./util/logger";
 import { WebsiteInterface, WebsiteTournament } from "./website/interface";
 

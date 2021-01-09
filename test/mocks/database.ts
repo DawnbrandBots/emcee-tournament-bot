@@ -49,7 +49,33 @@ export class DatabaseWrapperMock implements DatabaseWrapper {
 				findPlayer(id: string): DatabasePlayer {
 					return {
 						discordId: id,
-						challongeId: parseInt(id, 10), // will turn player1 into 1
+						challongeId: parseInt(id.slice(id.length - 1), 10), // will turn player1 into 1
+						deck:
+							"ydke://5m3qBeZt6gV9+McCffjHAn34xwK8beUDvG3lA7xt5QMfX5ICWvTJAVr0yQFa9MkBrDOdBKwznQSsM50Ey/UzAMv1MwDL9TMAdAxQBQ6wYAKvI94AryPeAK8j3gCmm/QBWXtjBOMavwDjGr8A4xq/AD6kcQGeE8oEnhPKBJ4TygSlLfUDpS31A6Ut9QMiSJkAIkiZACJImQCANVMDgDVTAw==!FtIXALVcnwC1XJ8AiBF2A4gRdgNLTV4Elt0IAMf4TQHCT0EAvw5JAqSaKwD5UX8EweoDA2LO9ATaI+sD!H1+SAg==!"
+					};
+				}
+			},
+			{
+				id: "tourn3",
+				name: "Tournament 3",
+				description: "The third tournament",
+				status: TournamentStatus.PREPARING,
+				hosts: ["host1"],
+				players: ["sTooMany"],
+				publicChannels: ["channel1"],
+				privateChannels: ["channel2"],
+				server: "testServer",
+				byes: [],
+				findHost(id: string): boolean {
+					return !id.startsWith("not");
+				},
+				findPlayer(id: string): DatabasePlayer | undefined {
+					if (id.startsWith("not")) {
+						return;
+					}
+					return {
+						discordId: id,
+						challongeId: parseInt(id.slice(id.length - 1), 10), // will turn player1 into 1
 						deck:
 							"ydke://5m3qBeZt6gV9+McCffjHAn34xwK8beUDvG3lA7xt5QMfX5ICWvTJAVr0yQFa9MkBrDOdBKwznQSsM50Ey/UzAMv1MwDL9TMAdAxQBQ6wYAKvI94AryPeAK8j3gCmm/QBWXtjBOMavwDjGr8A4xq/AD6kcQGeE8oEnhPKBJ4TygSlLfUDpS31A6Ut9QMiSJkAIkiZACJImQCANVMDgDVTAw==!FtIXALVcnwC1XJ8AiBF2A4gRdgNLTV4Elt0IAMf4TQHCT0EAvw5JAqSaKwD5UX8EweoDA2LO9ATaI+sD!H1+SAg==!"
 					};
@@ -221,13 +247,13 @@ export class DatabaseWrapperMock implements DatabaseWrapper {
 		}
 		return [this.tournaments[0]];
 	}
-	async getTournamentFromMessage(): Promise<DatabaseTournament> {
+	async getTournamentFromMessage(channelId: string, messageId: string): Promise<DatabaseTournament | undefined> {
+		if (channelId.startsWith("wrong") || messageId.startsWith("wrong")) {
+			return;
+		}
 		return this.tournaments[0];
 	}
-	async addPendingPlayer(tournamentId: string): Promise<boolean> {
-		if (tournamentId.startsWith("wrong") || tournamentId.startsWith("wrong")) {
-			return false;
-		}
+	async addPendingPlayer(): Promise<boolean> {
 		return true;
 	}
 	async removePendingPlayer(): Promise<boolean> {
