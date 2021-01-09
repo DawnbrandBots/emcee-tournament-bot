@@ -1,4 +1,4 @@
-import { TournamentStatus } from "../database/orm";
+import { TournamentStatus } from "../database/interface";
 
 export class UserError extends Error {}
 

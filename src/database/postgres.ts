@@ -6,15 +6,14 @@ import {
 	UnauthorisedPlayerError,
 	UserError
 } from "../util/errors";
-import { DatabaseMessage, DatabasePlayer, DatabaseTournament, SynchroniseTournament } from "./interface";
 import {
-	ChallongeTournament,
-	ConfirmedParticipant,
-	initializeConnection,
-	Participant,
-	RegisterMessage,
+	DatabaseMessage,
+	DatabasePlayer,
+	DatabaseTournament,
+	SynchroniseTournament,
 	TournamentStatus
-} from "./orm";
+} from "./interface";
+import { ChallongeTournament, ConfirmedParticipant, initializeConnection, Participant, RegisterMessage } from "./orm";
 
 export class DatabaseWrapperPostgres {
 	private wrap(tournament: ChallongeTournament): DatabaseTournament {
@@ -24,7 +23,11 @@ export class DatabaseWrapperPostgres {
 			description: tournament.description,
 			status: tournament.status,
 			hosts: tournament.hosts.slice(),
-			players: tournament.confirmed.map(p => p.discordId),
+			players: tournament.confirmed.map(p => ({
+				discordId: p.discordId,
+				challongeId: p.challongeId,
+				deck: p.deck
+			})),
 			publicChannels: tournament.publicChannels.slice(),
 			privateChannels: tournament.privateChannels.slice(),
 			server: tournament.owningDiscordServer,

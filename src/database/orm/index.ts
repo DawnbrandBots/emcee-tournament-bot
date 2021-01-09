@@ -1,7 +1,7 @@
 import "reflect-metadata";
 import { createConnection } from "typeorm";
 import { getLogger } from "../../util/logger";
-import { ChallongeTournament, TournamentStatus } from "./ChallongeTournament";
+import { ChallongeTournament } from "./ChallongeTournament";
 import { ConfirmedParticipant } from "./ConfirmedParticipant";
 import { Countdown } from "./Countdown";
 import { Participant } from "./Participant";
@@ -21,4 +21,4 @@ export async function initializeConnection(postgresqlUrl: string): Promise<void>
 	logger.info(`Connected to PostgreSQL via TypeORM`);
 }
 
-export { ChallongeTournament, ConfirmedParticipant, Countdown, Participant, TournamentStatus, RegisterMessage };
+export { ChallongeTournament, ConfirmedParticipant, Countdown, Participant, RegisterMessage };

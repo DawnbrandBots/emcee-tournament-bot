@@ -1,14 +1,9 @@
 import { BaseEntity, Column, Entity, OneToMany, PrimaryColumn } from "typeorm";
+import { TournamentStatus } from "../interface";
 import { ConfirmedParticipant } from "./ConfirmedParticipant";
 import { Countdown } from "./Countdown";
 import { Participant } from "./Participant";
 import { RegisterMessage } from "./RegisterMessage";
-
-export enum TournamentStatus {
-	PREPARING = "preparing",
-	IPR = "in progress",
-	COMPLETE = "complete"
-}
 
 /**
  * The main entity for all information related to one tournament.

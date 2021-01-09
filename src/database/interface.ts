@@ -1,4 +1,8 @@
-import { TournamentStatus } from "./orm";
+export enum TournamentStatus {
+	PREPARING = "preparing",
+	IPR = "in progress",
+	COMPLETE = "complete"
+}
 
 export interface DatabasePlayer {
 	discordId: string;
@@ -18,7 +22,7 @@ export interface DatabaseTournament {
 	description: string;
 	status: TournamentStatus;
 	hosts: string[];
-	players: string[]; // list of IDs, for more info use findPlayer();
+	players: DatabasePlayer[];
 	server: string;
 	publicChannels: string[];
 	privateChannels: string[];

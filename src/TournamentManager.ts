@@ -1,8 +1,7 @@
 import * as csv from "@fast-csv/format";
 import * as fs from "fs/promises";
 import { Deck } from "ydeck";
-import { DatabaseTournament } from "./database/interface";
-import { TournamentStatus } from "./database/orm";
+import { DatabaseTournament, TournamentStatus } from "./database/interface";
 import { DatabaseWrapperPostgres } from "./database/postgres";
 import { getDeck } from "./deck/deck";
 import { getDeckFromMessage, prettyPrint } from "./deck/discordDeck";
@@ -357,7 +356,7 @@ export class TournamentManager implements TournamentInterface {
 		// TODO: add custom query
 		const allTourns = await this.database.getActiveTournaments();
 		const confirmedTourns = allTourns.filter(
-			t => t.players.includes(msg.author) && t.status === TournamentStatus.PREPARING
+			t => t.status === TournamentStatus.PREPARING && t.players.find(player => player.discordId === msg.author)
 		);
 		if (confirmedTourns.length > 1) {
 			const out = confirmedTourns.map(t => t.name).join(", ");
@@ -759,10 +758,7 @@ export class TournamentManager implements TournamentInterface {
 
 	public async listPlayers(tournamentId: string): Promise<DiscordAttachmentOut> {
 		const tournament = await this.database.getTournament(tournamentId);
-		// TODO: major WTF
-		const rows = tournament.players.map(p => {
-			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-			const player = tournament.findPlayer(p)!;
+		const rows = tournament.players.map(player => {
 			const name = this.discord.getUsername(player.discordId);
 			const deck = getDeck(player.deck);
 			const themes = deck.themes.length > 0 ? deck.themes.join("/") : "No themes";
@@ -844,9 +840,7 @@ export class TournamentManager implements TournamentInterface {
 		await this.database.synchronise(tournamentId, {
 			name: tournamentData.name,
 			description: tournamentData.desc,
-			players: tournamentData.players.map(p => {
-				return { challongeId: p.challongeId, discordId: p.discordId };
-			})
+			players: tournamentData.players.map(({ challongeId, discordId }) => ({ challongeId, discordId }))
 		});
 	}
 
@@ -861,9 +855,8 @@ export class TournamentManager implements TournamentInterface {
 
 	public async generatePieChart(tournamentId: string): Promise<DiscordAttachmentOut> {
 		const tournament = await this.database.getTournament(tournamentId);
-		const themes = tournament.players.map(p => {
-			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-			const player = tournament.findPlayer(p)!;
+		// TODO: yikes
+		const themes = tournament.players.map(player => {
 			const deck = getDeck(player.deck);
 			return deck.themes.length > 0 ? deck.themes.join("/") : "No themes";
 		});
@@ -879,12 +872,11 @@ export class TournamentManager implements TournamentInterface {
 
 	public async generateDeckDump(tournamentId: string): Promise<DiscordAttachmentOut> {
 		const tournament = await this.database.getTournament(tournamentId);
-		const rows = tournament.players.map(p => {
-			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-			const player = tournament.findPlayer(p)!;
+		// TODO: yikes
+		const rows = tournament.players.map(player => {
 			const deck = getDeck(player.deck);
 			return [
-				this.discord.getUsername(p),
+				this.discord.getUsername(player.discordId),
 				`Main: ${deck.mainText}, Extra: ${deck.extraText}, Side: ${deck.sideText}`.replace(/\n/g, ", ")
 			];
 		});
