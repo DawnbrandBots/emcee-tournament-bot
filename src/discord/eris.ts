@@ -45,6 +45,7 @@ export class DiscordWrapperEris implements DiscordWrapper {
 	private toRoles: { [guild: string]: string };
 	private playerRoles: { [tournamentId: string]: string };
 	private bot: Client;
+	public ready: Promise<void>;
 
 	constructor() {
 		this.messageHandlers = [];
@@ -56,7 +57,6 @@ export class DiscordWrapperEris implements DiscordWrapper {
 		this.toRoles = {};
 		this.playerRoles = {};
 		this.bot = new Client(discordToken);
-		this.bot.on("ready", () => logger.info(`Logged in as ${this.bot.user.username} - ${this.bot.user.id}`));
 		this.bot.on("messageCreate", this.handleMessage.bind(this));
 		this.bot.on("messageReactionAdd", this.handleReaction.bind(this));
 		this.bot.on("messageReactionRemove", this.handleReactionRemove.bind(this));
@@ -65,6 +65,12 @@ export class DiscordWrapperEris implements DiscordWrapper {
 			// TODO: Make this more exposed in the main bot files
 			// but this whole module system is getting overhauled later anyway
 			await this.createTORole(guild);
+		});
+		this.ready = new Promise(resolve => {
+			this.bot.on("ready", () => {
+				logger.info(`Logged in as ${this.bot.user.username} - ${this.bot.user.id}`);
+				resolve();
+			});
 		});
 		this.bot.connect().catch(logger.error);
 	}

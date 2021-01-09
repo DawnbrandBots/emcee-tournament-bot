@@ -23,8 +23,10 @@ import { WebsiteInterface } from "./website/interface";
 	const discord = new DiscordInterface(eris);
 
 	const tournamentManager = new TournamentManager(discord, database, website);
-	await tournamentManager.loadTimers();
 	await tournamentManager.loadGuides();
-	await tournamentManager.loadButtons();
 	initializeBehaviours(prefix, discord, tournamentManager);
+
+	await eris.ready;
+	await tournamentManager.loadTimers();
+	await tournamentManager.loadButtons();
 })();
