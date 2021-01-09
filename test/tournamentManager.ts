@@ -4,7 +4,6 @@ import * as fs from "fs/promises";
 import sinon, { SinonSandbox } from "sinon";
 import sinonChai from "sinon-chai";
 import sinonTest from "sinon-test";
-import { DatabaseWrapperPostgres } from "../src/database/postgres";
 import { initializeCardArray } from "../src/deck/deck";
 import { DiscordAttachmentOut, DiscordEmbed, DiscordInterface, DiscordMessageOut } from "../src/discord/interface";
 import { PersistentTimer } from "../src/timer";
@@ -41,7 +40,7 @@ class TournamentManagerTest extends TournamentManager {
 const discord = new DiscordWrapperMock(); // will be used to fetch responses in some cases
 const mockDiscord = new DiscordInterface(discord);
 
-const mockDb = (new DatabaseWrapperMock() as unknown) as DatabaseWrapperPostgres;
+const mockDb = new DatabaseWrapperMock();
 
 const mockWebsiteWrapper = new WebsiteWrapperMock();
 const mockWebsite = new WebsiteInterface(mockWebsiteWrapper);

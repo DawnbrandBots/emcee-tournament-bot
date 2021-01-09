@@ -55,23 +55,18 @@ export interface TournamentInterface {
 	removeBye(tournamentId: string, playerId: string): Promise<string[]>;
 }
 
+type Public<T> = Pick<T, keyof T>;
 type Tail<T extends unknown[]> = T extends [unknown, ...infer R] ? R : never;
 
 export class TournamentManager implements TournamentInterface {
-	private discord: DiscordInterface;
-	private database: DatabaseWrapperPostgres;
-	private website: WebsiteInterface;
-	private matchScores: { [matchId: number]: MatchScore };
-	private timers: { [tournamentId: string]: PersistentTimer[] };
-	private guides: { [name: string]: string };
-	constructor(discord: DiscordInterface, database: DatabaseWrapperPostgres, website: WebsiteInterface) {
-		this.discord = discord;
-		this.database = database;
-		this.website = website;
-		this.matchScores = {};
-		this.timers = {};
-		this.guides = {};
-	}
+	private matchScores: Record<number, MatchScore> = {};
+	private timers: Record<string, PersistentTimer[]> = {}; // index: tournament id
+	private guides: Record<string, string> = {}; // index: guide name
+	constructor(
+		private discord: DiscordInterface,
+		private database: Public<DatabaseWrapperPostgres>,
+		private website: WebsiteInterface
+	) {}
 
 	/// Link seam to override for testing
 	protected async createPersistentTimer(
