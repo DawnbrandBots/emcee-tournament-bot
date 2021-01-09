@@ -365,7 +365,9 @@ export class TournamentManager implements TournamentInterface {
 		}
 		// allow confirmed user to resubmit
 		const allTourns = await this.database.listTournaments();
-		const confirmedTourns = allTourns.filter(t => t.players.includes(msg.author) && t.status === "preparing");
+		const confirmedTourns = allTourns.filter(
+			t => t.players.includes(msg.author) && t.status === TournamentStatus.PREPARING
+		);
 		if (confirmedTourns.length > 1) {
 			const out = confirmedTourns.map(t => t.name).join(", ");
 			await msg.reply(
@@ -375,16 +377,7 @@ export class TournamentManager implements TournamentInterface {
 		}
 		if (confirmedTourns.length === 1) {
 			const tournament = confirmedTourns[0];
-			try {
-				await this.database.assertStatus(tournament.id, TournamentStatus.PREPARING);
-			} catch (e) {
-				if (e instanceof AssertStatusError) {
-					await msg.reply(
-						`You're trying to update your deck for ${tournament.name}, but you can't change your decklist for a tournament that has already begun!`
-					);
-				}
-				// TODO: handle other errors? need to be more thorough in non-command functions in general
-			}
+			// tournament already confirmed preparing by filter
 			const deck = await getDeckFromMessage(msg);
 			if (!deck) {
 				await msg.reply("Must provide either attached `.ydk` file or valid `ydke://` URL!");
