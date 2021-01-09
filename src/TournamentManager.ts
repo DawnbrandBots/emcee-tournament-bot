@@ -353,11 +353,7 @@ export class TournamentManager implements TournamentInterface {
 			return;
 		}
 		// allow confirmed user to resubmit
-		// TODO: add custom query
-		const allTourns = await this.database.getActiveTournaments();
-		const confirmedTourns = allTourns.filter(
-			t => t.status === TournamentStatus.PREPARING && t.players.find(player => player.discordId === msg.author)
-		);
+		const confirmedTourns = await this.database.getConfirmedTournaments(msg.author);
 		if (confirmedTourns.length > 1) {
 			const out = confirmedTourns.map(t => t.name).join(", ");
 			await msg.reply(

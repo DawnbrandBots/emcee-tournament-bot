@@ -197,6 +197,11 @@ export class DatabaseWrapperPostgres {
 		return list.filter(p => !p.confirmed).map(p => this.wrap(p.tournament));
 	}
 
+	async getConfirmedTournaments(playerId: string): Promise<DatabaseTournament[]> {
+		const list = await ConfirmedParticipant.find({ where: { discordId: playerId }, relations: ["tournament"] });
+		return list.filter(p => p.tournament.status === TournamentStatus.PREPARING).map(p => this.wrap(p.tournament));
+	}
+
 	async addPendingPlayer(
 		channelId: string,
 		messageId: string,

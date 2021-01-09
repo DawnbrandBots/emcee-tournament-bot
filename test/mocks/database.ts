@@ -232,6 +232,11 @@ export class DatabaseWrapperMock {
 		}
 		return [this.tournaments[0]];
 	}
+	async getConfirmedTournaments(playerId: string): Promise<DatabaseTournament[]> {
+		return this.tournaments.filter(
+			t => t.status === TournamentStatus.PREPARING && t.players.find(p => p.discordId === playerId)
+		);
+	}
 	async addPendingPlayer(channelId: string, messageId: string): Promise<DatabaseTournament | undefined> {
 		if (channelId.startsWith("wrong") || messageId.startsWith("wrong")) {
 			return;
