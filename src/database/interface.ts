@@ -17,7 +17,7 @@ export interface DatabaseWrapper {
 	addHost(tournamentId: string, newHost: string): Promise<void>;
 	removeHost(tournamentId: string, newHost: string): Promise<void>;
 	openRegistration(tournamentId: string, channelId: string, messageId: string): Promise<void>;
-	getRegisterMessages(tournamentId: string): Promise<DatabaseMessage[]>;
+	getRegisterMessages(tournamentId?: string): Promise<DatabaseMessage[]>;
 	cleanRegistration(channelId: string, messageId: string): Promise<void>;
 	getPendingTournaments(playerId: string): Promise<DatabaseTournament[]>;
 	addPendingPlayer(channelId: string, messageId: string, playerId: string): Promise<DatabaseTournament | undefined>;
@@ -143,7 +143,7 @@ export class DatabaseInterface {
 		await this.db.openRegistration(tournamentId, channelId, messageId);
 	}
 
-	public async getRegisterMessages(tournamentId: string): Promise<DatabaseMessage[]> {
+	public async getRegisterMessages(tournamentId?: string): Promise<DatabaseMessage[]> {
 		return await this.db.getRegisterMessages(tournamentId);
 	}
 

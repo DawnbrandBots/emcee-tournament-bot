@@ -1,4 +1,5 @@
 import * as csv from "@fast-csv/format";
+import * as fs from "fs/promises";
 import { Deck } from "ydeck";
 import { DatabaseInterface, DatabaseTournament } from "./database/interface";
 import { getDeck } from "./deck/deck";
@@ -8,7 +9,6 @@ import { PersistentTimer } from "./timer";
 import { BlockedDMsError, ChallongeAPIError, TournamentNotFoundError, UserError } from "./util/errors";
 import { getLogger } from "./util/logger";
 import { WebsiteInterface, WebsiteTournament } from "./website/interface";
-import * as fs from "fs/promises";
 
 const logger = getLogger("tournament");
 
@@ -123,28 +123,23 @@ export class TournamentManager implements TournamentInterface {
 
 	public async loadButtons(): Promise<void> {
 		// TODO: check for repeated calls.
-		const tournaments = await this.database.listTournaments();
+		const messages = await this.database.getRegisterMessages();
 		let count = 0;
-		let total = 0;
-		for (const tournament of tournaments) {
-			const messages = await this.database.getRegisterMessages(tournament.id);
-			total += messages.length;
-			for (const message of messages) {
-				const discordMessage = await this.discord.getMessage(message.channelId, message.messageId);
-				if (discordMessage) {
-					this.discord.restoreReactionButton(
-						discordMessage,
-						this.CHECK_EMOJI,
-						this.registerPlayer.bind(this),
-						this.dropPlayerReaction.bind(this)
-					);
-					count++;
-				} else {
-					logger.warn(`On loading reaction buttons: ${message.channelId} ${message.messageId} was removed`);
-				}
+		for (const message of messages) {
+			const discordMessage = await this.discord.getMessage(message.channelId, message.messageId);
+			if (discordMessage) {
+				this.discord.restoreReactionButton(
+					discordMessage,
+					this.CHECK_EMOJI,
+					this.registerPlayer.bind(this),
+					this.dropPlayerReaction.bind(this)
+				);
+				count++;
+			} else {
+				logger.warn(`On loading reaction buttons: ${message.channelId} ${message.messageId} was removed`);
 			}
 		}
-		logger.info(`Loaded ${count} of ${total} reaction buttons.`);
+		logger.info(`Loaded ${count} of ${messages.length} reaction buttons.`);
 	}
 
 	public async authenticateHost(tournamentId: string, message: DiscordMessageIn): Promise<void> {

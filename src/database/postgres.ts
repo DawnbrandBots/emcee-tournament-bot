@@ -145,7 +145,14 @@ export class DatabaseWrapperPostgres implements DatabaseWrapper {
 		await message.save();
 	}
 
-	async getRegisterMessages(tournamentId: string): Promise<DatabaseMessage[]> {
+	async getRegisterMessages(tournamentId?: string): Promise<DatabaseMessage[]> {
+		if (!tournamentId) {
+			const messages = await RegisterMessage.find();
+			return messages.map(m => ({
+				channelId: m.channelId,
+				messageId: m.messageId
+			}));
+		}
 		const tournament = await this.findTournament(tournamentId, ["registerMessages"]);
 		return tournament.registerMessages.map(m => ({
 			channelId: m.channelId,
