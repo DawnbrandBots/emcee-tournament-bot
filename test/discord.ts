@@ -1,6 +1,7 @@
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { DatabaseTournament } from "../src/database/interface";
+import { TournamentStatus } from "../src/database/orm";
 import { DiscordInterface, DiscordMessageHandler, DiscordMessageIn, splitText } from "../src/discord/interface";
 import { DiscordWrapperMock } from "./mocks/discord";
 chai.use(chaiAsPromised);
@@ -116,7 +117,7 @@ const sampleTournament: DatabaseTournament = {
 	id: "test",
 	name: "Test tournament",
 	description: "A sample tournament",
-	status: "preparing",
+	status: TournamentStatus.PREPARING,
 	hosts: ["testHost"],
 	players: [],
 	server: "testServer",

@@ -124,9 +124,9 @@ describe("Tournament flow commands", function () {
 		await expect(tournament.startTournament("smallTournament")).to.be.rejectedWith(UserError);
 	});
 	it("Cancel tournament", async function () {
-		await tournament.finishTournament("tourn1", true);
+		await tournament.finishTournament("tourn2", true);
 		expect(discord.getResponse("channel1")).to.equal(
-			"Tournament 1 has been cancelled. Thank you all for playing! <@&role>\nResults: https://example.com/url"
+			"Tournament 2 has been cancelled. Thank you all for playing! <@&role>\nResults: https://example.com/url"
 		);
 	});
 	// tournament temporarily disabled because unique ID checking + top cut creation logic
@@ -137,23 +137,23 @@ describe("Tournament flow commands", function () {
 		expect(discord.getResponse("topChannel")).to.equal("Time left in the round: `50:00`"); // timer message posted after new round message
 	});
 	it("Submit score", async function () {
-		const response1 = await tournament.submitScore("tourn1", "player1", 2, 1);
+		const response1 = await tournament.submitScore("tourn2", "player1", 2, 1);
 		expect(response1).to.equal(
 			"You have reported a score of 2-1, <@player1>. Your opponent still needs to confirm this score."
 		);
-		const response2 = await tournament.submitScore("tourn1", "player1", 2, 1);
+		const response2 = await tournament.submitScore("tourn2", "player1", 2, 1);
 		expect(response2).to.equal(
 			`You have already reported your score for this match, <@player1>. Please have your opponent confirm the score.`
 		);
-		const response3 = await tournament.submitScore("tourn1", "player2", 2, 1);
+		const response3 = await tournament.submitScore("tourn2", "player2", 2, 1);
 		expect(response3).to.equal(
 			"Your score does not match your opponent's reported score of 1-2. Both of you will need to report again, <@player2>."
 		);
-		const response4 = await tournament.submitScore("tourn1", "player2", 2, 1);
+		const response4 = await tournament.submitScore("tourn2", "player2", 2, 1);
 		expect(response4).to.equal(
 			"You have reported a score of 2-1, <@player2>. Your opponent still needs to confirm this score."
 		);
-		const response5 = await tournament.submitScore("tourn1", "player1", 1, 2);
+		const response5 = await tournament.submitScore("tourn2", "player1", 1, 2);
 		expect(response5).to.equal(
 			"You have successfully reported a score of 1-2, and it matches your opponent's report, so the score has been saved. Thank you, <@player1>."
 		);
@@ -163,18 +163,18 @@ describe("Tournament flow commands", function () {
 		);
 		const response7 = discord.getResponse("channel2");
 		expect(response7).to.equal(
-			"<@player1> (player1) and <@player2> (player2) have reported their score of 1-2 for Tournament Tournament 1 (tourn1)."
+			"<@player1> (player1) and <@player2> (player2) have reported their score of 1-2 for Tournament Tournament 2 (tourn2)."
 		);
 	});
 	it("Submit score - host", async function () {
-		const response = await tournament.submitScore("tourn1", "player1", 2, 1, true);
+		const response = await tournament.submitScore("tourn2", "player1", 2, 1, true);
 		expect(response).to.equal("");
 	});
 	it(
 		"Next round",
 		test(async function (this: SinonSandbox) {
 			const createSpy = this.spy(tournament, "createPersistentTimer");
-			await tournament.nextRound("tourn1");
+			await tournament.nextRound("tourn2");
 			expect(createSpy).to.have.been.calledOnce; // new round means new timer
 		})
 	);
@@ -184,7 +184,7 @@ describe("Misc commands", function () {
 	it("List tournaments", async function () {
 		const list = await tournament.listTournaments();
 		const expectedList =
-			"ID: tourn1|Name: Tournament 1|Status: preparing|Players: 4\nID: tourn2|Name: Tournament 2|Status: preparing|Players: 3";
+			"ID: tourn1|Name: Tournament 1|Status: preparing|Players: 4\nID: tourn2|Name: Tournament 2|Status: in progress|Players: 3";
 		const testList = list.slice(0, expectedList.length);
 		expect(testList).to.equal(expectedList);
 	});

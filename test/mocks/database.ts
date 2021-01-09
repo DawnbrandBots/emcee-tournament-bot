@@ -1,4 +1,5 @@
 import { DatabaseMessage, DatabasePlayer, DatabaseTournament, DatabaseWrapper } from "../../src/database/interface";
+import { TournamentStatus } from "../../src/database/orm";
 import { TournamentNotFoundError } from "../../src/util/errors";
 
 export class DatabaseWrapperMock implements DatabaseWrapper {
@@ -9,7 +10,7 @@ export class DatabaseWrapperMock implements DatabaseWrapper {
 				id: "tourn1",
 				name: "Tournament 1",
 				description: "The first tournament",
-				status: "preparing",
+				status: TournamentStatus.PREPARING,
 				hosts: ["host1"],
 				players: ["player1", "player2", "sJustRight", "sTooMany"],
 				publicChannels: ["channel1"],
@@ -35,7 +36,7 @@ export class DatabaseWrapperMock implements DatabaseWrapper {
 				id: "tourn2",
 				name: "Tournament 2",
 				description: "The second tournament",
-				status: "preparing",
+				status: TournamentStatus.IPR,
 				players: ["player1", "player2", "sTooMany"],
 				publicChannels: ["channel1"],
 				privateChannels: ["channel2"],
@@ -63,7 +64,7 @@ export class DatabaseWrapperMock implements DatabaseWrapper {
 		name: string,
 		description: string
 	): Promise<DatabaseTournament> {
-		const status = "preparing" as const;
+		const status = TournamentStatus.PREPARING;
 		const newTournament = {
 			id: tournamentId,
 			name: name,
@@ -99,7 +100,7 @@ export class DatabaseWrapperMock implements DatabaseWrapper {
 				id: tournamentId,
 				name: "Small tournament",
 				description: "A Small Tournament",
-				status: "preparing",
+				status: TournamentStatus.PREPARING,
 				hosts: ["testHost"],
 				players: [],
 				server: "testServer",
@@ -115,7 +116,7 @@ export class DatabaseWrapperMock implements DatabaseWrapper {
 				id: tournamentId,
 				name: "Small tournament",
 				description: "A Small Tournament",
-				status: "preparing",
+				status: TournamentStatus.PREPARING,
 				hosts: ["testHost"],
 				players: [],
 				server: "testServer",
@@ -131,7 +132,7 @@ export class DatabaseWrapperMock implements DatabaseWrapper {
 				id: tournamentId,
 				name: "Bye tournament",
 				description: "A tournament with a natural bye",
-				status: "preparing",
+				status: TournamentStatus.PREPARING,
 				hosts: ["testHost"],
 				players: ["a", "b", "c"],
 				server: "testServer",
@@ -147,7 +148,7 @@ export class DatabaseWrapperMock implements DatabaseWrapper {
 				id: tournamentId,
 				name: "Pending tournament",
 				description: "A tournament with a pending player",
-				status: "preparing",
+				status: TournamentStatus.PREPARING,
 				hosts: ["testHost"],
 				players: ["a", "b"],
 				server: "testServer",
@@ -163,7 +164,7 @@ export class DatabaseWrapperMock implements DatabaseWrapper {
 				id: tournamentId,
 				name: "Big tournament",
 				description: "A tournament with a lot of players",
-				status: "in progress",
+				status: TournamentStatus.IPR,
 				hosts: ["testHost"],
 				players: ["a", "b", "c", "d", "e", "f", "g", "h", "i"],
 				server: "testServer",
@@ -220,14 +221,17 @@ export class DatabaseWrapperMock implements DatabaseWrapper {
 		}
 		return [this.tournaments[0]];
 	}
-	async addPendingPlayer(channelId: string, messageId: string): Promise<DatabaseTournament | undefined> {
-		if (channelId.startsWith("wrong") || messageId.startsWith("wrong")) {
-			return;
-		}
+	async getTournamentFromMessage(): Promise<DatabaseTournament> {
 		return this.tournaments[0];
 	}
-	async removePendingPlayer(): Promise<DatabaseTournament | undefined> {
-		return this.tournaments[0];
+	async addPendingPlayer(tournamentId: string): Promise<boolean> {
+		if (tournamentId.startsWith("wrong") || tournamentId.startsWith("wrong")) {
+			return false;
+		}
+		return true;
+	}
+	async removePendingPlayer(): Promise<boolean> {
+		return true;
 	}
 	async confirmPlayer(tournamentId: string, playerId: string): Promise<void> {
 		const index = this.tournaments.findIndex(t => t.id === tournamentId);
