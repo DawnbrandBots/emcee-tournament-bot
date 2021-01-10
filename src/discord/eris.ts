@@ -145,7 +145,8 @@ export class DiscordWrapperEris implements DiscordWrapper {
 	}
 
 	private async handleMessage(msg: Message): Promise<void> {
-		if (msg.author.bot) {
+		// Ignore messages from all bots and replies
+		if (msg.author.bot || msg.messageReference) {
 			return;
 		}
 		const wrappedMsg = this.wrapMessageIn(msg);
