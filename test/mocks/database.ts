@@ -1,5 +1,6 @@
 import { DatabaseMessage, DatabasePlayer, DatabaseTournament, DatabaseWrapper } from "../../src/database/interface";
-import { TournamentNotFoundError } from "../../src/util/errors";
+import { TournamentStatus } from "../../src/database/orm";
+import { TournamentNotFoundError, UnauthorisedHostError, UnauthorisedPlayerError } from "../../src/util/errors";
 
 export class DatabaseWrapperMock implements DatabaseWrapper {
 	tournaments: DatabaseTournament[];
@@ -9,16 +10,13 @@ export class DatabaseWrapperMock implements DatabaseWrapper {
 				id: "tourn1",
 				name: "Tournament 1",
 				description: "The first tournament",
-				status: "preparing",
+				status: TournamentStatus.PREPARING,
 				hosts: ["host1"],
 				players: ["player1", "player2", "sJustRight", "sTooMany"],
 				publicChannels: ["channel1"],
 				privateChannels: ["channel2"],
 				server: "testServer",
 				byes: ["player1"],
-				findHost(id: string): boolean {
-					return !id.startsWith("not");
-				},
 				findPlayer(id: string): DatabasePlayer | undefined {
 					if (id.startsWith("not")) {
 						return;
@@ -35,26 +33,56 @@ export class DatabaseWrapperMock implements DatabaseWrapper {
 				id: "tourn2",
 				name: "Tournament 2",
 				description: "The second tournament",
-				status: "preparing",
+				status: TournamentStatus.IPR,
 				players: ["player1", "player2", "sTooMany"],
 				publicChannels: ["channel1"],
 				privateChannels: ["channel2"],
 				hosts: ["host2"],
 				server: "testServer",
 				byes: ["player2"],
-				findHost(): boolean {
-					return true;
-				},
 				findPlayer(id: string): DatabasePlayer {
 					return {
 						discordId: id,
-						challongeId: parseInt(id, 10), // will turn player1 into 1
+						challongeId: parseInt(id.slice(id.length - 1), 10), // will turn player1 into 1
+						deck:
+							"ydke://5m3qBeZt6gV9+McCffjHAn34xwK8beUDvG3lA7xt5QMfX5ICWvTJAVr0yQFa9MkBrDOdBKwznQSsM50Ey/UzAMv1MwDL9TMAdAxQBQ6wYAKvI94AryPeAK8j3gCmm/QBWXtjBOMavwDjGr8A4xq/AD6kcQGeE8oEnhPKBJ4TygSlLfUDpS31A6Ut9QMiSJkAIkiZACJImQCANVMDgDVTAw==!FtIXALVcnwC1XJ8AiBF2A4gRdgNLTV4Elt0IAMf4TQHCT0EAvw5JAqSaKwD5UX8EweoDA2LO9ATaI+sD!H1+SAg==!"
+					};
+				}
+			},
+			{
+				id: "tourn3",
+				name: "Tournament 3",
+				description: "The third tournament",
+				status: TournamentStatus.PREPARING,
+				hosts: ["host1"],
+				players: ["sTooMany"],
+				publicChannels: ["channel1"],
+				privateChannels: ["channel2"],
+				server: "testServer",
+				byes: [],
+				findPlayer(id: string): DatabasePlayer | undefined {
+					if (id.startsWith("not")) {
+						return;
+					}
+					return {
+						discordId: id,
+						challongeId: parseInt(id.slice(id.length - 1), 10), // will turn player1 into 1
 						deck:
 							"ydke://5m3qBeZt6gV9+McCffjHAn34xwK8beUDvG3lA7xt5QMfX5ICWvTJAVr0yQFa9MkBrDOdBKwznQSsM50Ey/UzAMv1MwDL9TMAdAxQBQ6wYAKvI94AryPeAK8j3gCmm/QBWXtjBOMavwDjGr8A4xq/AD6kcQGeE8oEnhPKBJ4TygSlLfUDpS31A6Ut9QMiSJkAIkiZACJImQCANVMDgDVTAw==!FtIXALVcnwC1XJ8AiBF2A4gRdgNLTV4Elt0IAMf4TQHCT0EAvw5JAqSaKwD5UX8EweoDA2LO9ATaI+sD!H1+SAg==!"
 					};
 				}
 			}
 		];
+	}
+	async authenticateHost(tournamentId: string, userId: string): Promise<void> {
+		if (userId.startsWith("not")) {
+			throw new UnauthorisedHostError(userId, tournamentId);
+		}
+	}
+	async authenticatePlayer(tournamentId: string, userId: string): Promise<void> {
+		if (userId.startsWith("not")) {
+			throw new UnauthorisedPlayerError(userId, tournamentId);
+		}
 	}
 	async createTournament(
 		hostId: string,
@@ -63,7 +91,7 @@ export class DatabaseWrapperMock implements DatabaseWrapper {
 		name: string,
 		description: string
 	): Promise<DatabaseTournament> {
-		const status = "preparing" as const;
+		const status = TournamentStatus.PREPARING;
 		const newTournament = {
 			id: tournamentId,
 			name: name,
@@ -75,9 +103,6 @@ export class DatabaseWrapperMock implements DatabaseWrapper {
 			hosts: [hostId],
 			server: serverId,
 			byes: [],
-			findHost(): boolean {
-				return true;
-			},
 			findPlayer(id: string): DatabasePlayer {
 				return {
 					discordId: id,
@@ -99,14 +124,13 @@ export class DatabaseWrapperMock implements DatabaseWrapper {
 				id: tournamentId,
 				name: "Small tournament",
 				description: "A Small Tournament",
-				status: "preparing",
+				status: TournamentStatus.PREPARING,
 				hosts: ["testHost"],
 				players: [],
 				server: "testServer",
 				publicChannels: [],
 				privateChannels: [],
 				byes: [],
-				findHost: (): boolean => true,
 				findPlayer: (): undefined => undefined
 			};
 		}
@@ -115,14 +139,13 @@ export class DatabaseWrapperMock implements DatabaseWrapper {
 				id: tournamentId,
 				name: "Small tournament",
 				description: "A Small Tournament",
-				status: "preparing",
+				status: TournamentStatus.PREPARING,
 				hosts: ["testHost"],
 				players: [],
 				server: "testServer",
 				publicChannels: [],
 				privateChannels: [],
 				byes: [],
-				findHost: (): boolean => true,
 				findPlayer: (): undefined => undefined
 			};
 		}
@@ -131,14 +154,13 @@ export class DatabaseWrapperMock implements DatabaseWrapper {
 				id: tournamentId,
 				name: "Bye tournament",
 				description: "A tournament with a natural bye",
-				status: "preparing",
+				status: TournamentStatus.PREPARING,
 				hosts: ["testHost"],
 				players: ["a", "b", "c"],
 				server: "testServer",
 				publicChannels: [],
 				privateChannels: [],
 				byes: [],
-				findHost: (): boolean => true,
 				findPlayer: (): undefined => undefined
 			};
 		}
@@ -147,14 +169,13 @@ export class DatabaseWrapperMock implements DatabaseWrapper {
 				id: tournamentId,
 				name: "Pending tournament",
 				description: "A tournament with a pending player",
-				status: "preparing",
+				status: TournamentStatus.PREPARING,
 				hosts: ["testHost"],
 				players: ["a", "b"],
 				server: "testServer",
 				publicChannels: ["channel1"],
 				privateChannels: ["channel2"],
 				byes: [],
-				findHost: (): boolean => true,
 				findPlayer: (): undefined => undefined
 			};
 		}
@@ -163,14 +184,13 @@ export class DatabaseWrapperMock implements DatabaseWrapper {
 				id: tournamentId,
 				name: "Big tournament",
 				description: "A tournament with a lot of players",
-				status: "in progress",
+				status: TournamentStatus.IPR,
 				hosts: ["testHost"],
 				players: ["a", "b", "c", "d", "e", "f", "g", "h", "i"],
 				server: "testServer",
 				publicChannels: ["topChannel"],
 				privateChannels: ["channel2"],
 				byes: [],
-				findHost: (): boolean => true,
 				findPlayer: (p: string): DatabasePlayer => {
 					return {
 						discordId: p,

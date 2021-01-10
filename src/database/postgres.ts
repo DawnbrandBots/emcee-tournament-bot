@@ -1,5 +1,11 @@
 import { getConnection, IsNull, Not } from "typeorm";
-import { TournamentNotFoundError, UnauthorisedPlayerError, UserError } from "../util/errors";
+import {
+	AssertStatusError,
+	TournamentNotFoundError,
+	UnauthorisedHostError,
+	UnauthorisedPlayerError,
+	UserError
+} from "../util/errors";
 import {
 	DatabaseMessage,
 	DatabasePlayer,
@@ -29,7 +35,6 @@ export class DatabaseWrapperPostgres implements DatabaseWrapper {
 			privateChannels: tournament.privateChannels.slice(),
 			server: tournament.owningDiscordServer,
 			byes: tournament.confirmed.filter(p => p.hasBye).map(p => p.discordId),
-			findHost: (id: string): boolean => tournament.hosts.includes(id),
 			findPlayer: (id: string): DatabasePlayer => {
 				const p = tournament.confirmed.find(p => p.discordId === id);
 				if (!p) {
@@ -73,14 +78,36 @@ export class DatabaseWrapperPostgres implements DatabaseWrapper {
 		}
 	}
 
-	async getTournament(tournamentId: string): Promise<DatabaseTournament> {
-		return this.wrap(await this.findTournament(tournamentId));
+	// TODO: remove and replace with alternate implementation
+	// This causes many unnecessary double queries
+	public async authenticateHost(tournamentId: string, hostId: string): Promise<void> {
+		const tournament = await this.findTournament(tournamentId);
+		if (!tournament.hosts.includes(hostId)) {
+			throw new UnauthorisedHostError(hostId, tournamentId);
+		}
+	}
+
+	// TODO: remove and replace with alternate implementation
+	// This causes many unnecessary double queries
+	public async authenticatePlayer(tournamentId: string, playerId: string): Promise<void> {
+		const tournament = await this.findTournament(tournamentId);
+		if (!tournament.confirmed.find(participant => participant.discordId === playerId)) {
+			throw new UnauthorisedPlayerError(playerId, tournamentId);
+		}
+	}
+
+	async getTournament(tournamentId: string, assertStatus?: TournamentStatus): Promise<DatabaseTournament> {
+		const tournament = await this.findTournament(tournamentId);
+		if (assertStatus && tournament.status !== assertStatus) {
+			throw new AssertStatusError(tournamentId, assertStatus, tournament.status);
+		}
+		return this.wrap(tournament);
 	}
 
 	async updateTournament(tournamentId: string, name: string, desc: string): Promise<void> {
 		const tournament = await this.findTournament(tournamentId);
 		if (tournament.status !== TournamentStatus.PREPARING) {
-			throw new UserError(`It's too late to update the information for ${tournament.name}.`);
+			throw new AssertStatusError(tournamentId, TournamentStatus.PREPARING, tournament.status);
 		}
 		tournament.name = name;
 		tournament.description = desc;
@@ -179,7 +206,7 @@ export class DatabaseWrapperPostgres implements DatabaseWrapper {
 		playerId: string
 	): Promise<DatabaseTournament | undefined> {
 		const message = await RegisterMessage.findOne({ channelId, messageId });
-		if (!message) {
+		if (!message || message.tournament.status !== TournamentStatus.PREPARING) {
 			return;
 		}
 		if (!(await Participant.findOne({ tournamentId: message.tournamentId, discordId: playerId }))) {
@@ -197,7 +224,7 @@ export class DatabaseWrapperPostgres implements DatabaseWrapper {
 		playerId: string
 	): Promise<DatabaseTournament | undefined> {
 		const message = await RegisterMessage.findOne({ channelId, messageId });
-		if (!message) {
+		if (!message || message.tournament.status !== TournamentStatus.PREPARING) {
 			return;
 		}
 		const participant = await Participant.findOne({ tournamentId: message.tournamentId, discordId: playerId });
@@ -314,7 +341,7 @@ export class DatabaseWrapperPostgres implements DatabaseWrapper {
 	async registerBye(tournamentId: string, playerId: string): Promise<void> {
 		const tournament = await this.findTournament(tournamentId);
 		if (tournament.status !== TournamentStatus.PREPARING) {
-			throw new UserError(`Tournament ${tournamentId} is not pending.`);
+			throw new AssertStatusError(tournamentId, TournamentStatus.PREPARING, tournament.status);
 		}
 		const participant = await ConfirmedParticipant.findOneOrFail({ tournamentId, discordId: playerId });
 		if (participant.hasBye) {
@@ -327,13 +354,13 @@ export class DatabaseWrapperPostgres implements DatabaseWrapper {
 	async removeBye(tournamentId: string, playerId: string): Promise<void> {
 		const tournament = await this.findTournament(tournamentId);
 		if (tournament.status !== TournamentStatus.PREPARING) {
-			throw new UserError(`Tournament ${tournamentId} is not pending.`);
+			throw new AssertStatusError(tournamentId, TournamentStatus.PREPARING, tournament.status);
 		}
 		const participant = await ConfirmedParticipant.findOneOrFail({ tournamentId, discordId: playerId });
 		if (!participant.hasBye) {
 			throw new UserError(`Player ${playerId} does not have a bye in Tournament ${tournament}`);
 		}
-		participant.hasBye = true;
+		participant.hasBye = false;
 		await participant.save();
 	}
 }
