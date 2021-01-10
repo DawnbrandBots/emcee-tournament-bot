@@ -10,19 +10,12 @@ import {
 	DatabaseMessage,
 	DatabasePlayer,
 	DatabaseTournament,
-	DatabaseWrapper,
-	SynchroniseTournament
-} from "./interface";
-import {
-	ChallongeTournament,
-	ConfirmedParticipant,
-	initializeConnection,
-	Participant,
-	RegisterMessage,
+	SynchroniseTournament,
 	TournamentStatus
-} from "./orm";
+} from "./interface";
+import { ChallongeTournament, ConfirmedParticipant, initializeConnection, Participant, RegisterMessage } from "./orm";
 
-export class DatabaseWrapperPostgres implements DatabaseWrapper {
+export class DatabaseWrapperPostgres {
 	private wrap(tournament: ChallongeTournament): DatabaseTournament {
 		return {
 			id: tournament.tournamentId,
@@ -30,7 +23,11 @@ export class DatabaseWrapperPostgres implements DatabaseWrapper {
 			description: tournament.description,
 			status: tournament.status,
 			hosts: tournament.hosts.slice(),
-			players: tournament.confirmed.map(p => p.discordId),
+			players: tournament.confirmed.map(p => ({
+				discordId: p.discordId,
+				challongeId: p.challongeId,
+				deck: p.deck
+			})),
 			publicChannels: tournament.publicChannels.slice(),
 			privateChannels: tournament.privateChannels.slice(),
 			server: tournament.owningDiscordServer,
@@ -200,6 +197,11 @@ export class DatabaseWrapperPostgres implements DatabaseWrapper {
 		return list.filter(p => !p.confirmed).map(p => this.wrap(p.tournament));
 	}
 
+	async getConfirmedTournaments(playerId: string): Promise<DatabaseTournament[]> {
+		const list = await ConfirmedParticipant.find({ where: { discordId: playerId }, relations: ["tournament"] });
+		return list.filter(p => p.tournament.status === TournamentStatus.PREPARING).map(p => this.wrap(p.tournament));
+	}
+
 	async addPendingPlayer(
 		channelId: string,
 		messageId: string,
@@ -338,30 +340,40 @@ export class DatabaseWrapperPostgres implements DatabaseWrapper {
 		});
 	}
 
-	async registerBye(tournamentId: string, playerId: string): Promise<void> {
+	/// @throws {TournamentNotFoundError}
+	/// @throws {AssertStatusError}
+	/// @throws {EntityNotFoundError}
+	private async byeHelper(
+		tournamentId: string,
+		playerId: string,
+		operation: (participant: ConfirmedParticipant) => Promise<void>
+	): Promise<DatabaseTournament> {
 		const tournament = await this.findTournament(tournamentId);
 		if (tournament.status !== TournamentStatus.PREPARING) {
 			throw new AssertStatusError(tournamentId, TournamentStatus.PREPARING, tournament.status);
 		}
 		const participant = await ConfirmedParticipant.findOneOrFail({ tournamentId, discordId: playerId });
-		if (participant.hasBye) {
-			throw new UserError(`Player ${playerId} already has a bye in Tournament ${tournament}`);
-		}
-		participant.hasBye = true;
+		await operation(participant);
 		await participant.save();
+		return this.wrap(tournament);
 	}
 
-	async removeBye(tournamentId: string, playerId: string): Promise<void> {
-		const tournament = await this.findTournament(tournamentId);
-		if (tournament.status !== TournamentStatus.PREPARING) {
-			throw new AssertStatusError(tournamentId, TournamentStatus.PREPARING, tournament.status);
-		}
-		const participant = await ConfirmedParticipant.findOneOrFail({ tournamentId, discordId: playerId });
-		if (!participant.hasBye) {
-			throw new UserError(`Player ${playerId} does not have a bye in Tournament ${tournament}`);
-		}
-		participant.hasBye = false;
-		await participant.save();
+	async registerBye(tournamentId: string, playerId: string): Promise<DatabaseTournament> {
+		return await this.byeHelper(tournamentId, playerId, async participant => {
+			if (participant.hasBye) {
+				throw new UserError(`Player ${playerId} already has a bye in Tournament ${tournamentId}`);
+			}
+			participant.hasBye = true;
+		});
+	}
+
+	async removeBye(tournamentId: string, playerId: string): Promise<DatabaseTournament> {
+		return await this.byeHelper(tournamentId, playerId, async participant => {
+			if (!participant.hasBye) {
+				throw new UserError(`Player ${playerId} does not have a bye in Tournament ${tournamentId}`);
+			}
+			participant.hasBye = false;
+		});
 	}
 }
 

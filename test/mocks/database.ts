@@ -1,8 +1,34 @@
-import { DatabaseMessage, DatabasePlayer, DatabaseTournament, DatabaseWrapper } from "../../src/database/interface";
-import { TournamentStatus } from "../../src/database/orm";
+import { DatabaseMessage, DatabasePlayer, DatabaseTournament, TournamentStatus } from "../../src/database/interface";
 import { TournamentNotFoundError, UnauthorisedHostError, UnauthorisedPlayerError } from "../../src/util/errors";
 
-export class DatabaseWrapperMock implements DatabaseWrapper {
+function findPlayer(id: string): DatabasePlayer | undefined {
+	if (id.startsWith("not")) {
+		return;
+	}
+	return {
+		discordId: id,
+		challongeId: parseInt(id.slice(id.length - 1), 10), // will turn player1 into 1
+		deck:
+			"ydke://5m3qBeZt6gV9+McCffjHAn34xwK8beUDvG3lA7xt5QMfX5ICWvTJAVr0yQFa9MkBrDOdBKwznQSsM50Ey/UzAMv1MwDL9TMAdAxQBQ6wYAKvI94AryPeAK8j3gCmm/QBWXtjBOMavwDjGr8A4xq/AD6kcQGeE8oEnhPKBJ4TygSlLfUDpS31A6Ut9QMiSJkAIkiZACJImQCANVMDgDVTAw==!FtIXALVcnwC1XJ8AiBF2A4gRdgNLTV4Elt0IAMf4TQHCT0EAvw5JAqSaKwD5UX8EweoDA2LO9ATaI+sD!H1+SAg==!"
+	};
+}
+
+function transform(players: string[]): DatabasePlayer[] {
+	// TypeScript is not smart enough to figure out that the array cannot have undefined items now
+	// players.map(findPlayer).filter(p => p !== undefined);
+	// may be able to use some kind of type guard but some say this is equivalent to a cast or assert
+	// https://www.typescriptlang.org/docs/handbook/advanced-types.html#user-defined-type-guards
+	const result = [];
+	for (const player of players) {
+		const obj = findPlayer(player);
+		if (obj) {
+			result.push(obj);
+		}
+	}
+	return result;
+}
+
+export class DatabaseWrapperMock {
 	tournaments: DatabaseTournament[];
 	constructor() {
 		this.tournaments = [
@@ -12,42 +38,25 @@ export class DatabaseWrapperMock implements DatabaseWrapper {
 				description: "The first tournament",
 				status: TournamentStatus.PREPARING,
 				hosts: ["host1"],
-				players: ["player1", "player2", "sJustRight", "sTooMany"],
+				players: transform(["player1", "player2", "sJustRight", "sTooMany"]),
 				publicChannels: ["channel1"],
 				privateChannels: ["channel2"],
 				server: "testServer",
 				byes: ["player1"],
-				findPlayer(id: string): DatabasePlayer | undefined {
-					if (id.startsWith("not")) {
-						return;
-					}
-					return {
-						discordId: id,
-						challongeId: parseInt(id.slice(id.length - 1), 10), // will turn player1 into 1
-						deck:
-							"ydke://5m3qBeZt6gV9+McCffjHAn34xwK8beUDvG3lA7xt5QMfX5ICWvTJAVr0yQFa9MkBrDOdBKwznQSsM50Ey/UzAMv1MwDL9TMAdAxQBQ6wYAKvI94AryPeAK8j3gCmm/QBWXtjBOMavwDjGr8A4xq/AD6kcQGeE8oEnhPKBJ4TygSlLfUDpS31A6Ut9QMiSJkAIkiZACJImQCANVMDgDVTAw==!FtIXALVcnwC1XJ8AiBF2A4gRdgNLTV4Elt0IAMf4TQHCT0EAvw5JAqSaKwD5UX8EweoDA2LO9ATaI+sD!H1+SAg==!"
-					};
-				}
+				findPlayer
 			},
 			{
 				id: "tourn2",
 				name: "Tournament 2",
 				description: "The second tournament",
 				status: TournamentStatus.IPR,
-				players: ["player1", "player2", "sTooMany"],
+				players: transform(["player1", "player2", "sTooMany"]),
 				publicChannels: ["channel1"],
 				privateChannels: ["channel2"],
 				hosts: ["host2"],
 				server: "testServer",
 				byes: ["player2"],
-				findPlayer(id: string): DatabasePlayer {
-					return {
-						discordId: id,
-						challongeId: parseInt(id.slice(id.length - 1), 10), // will turn player1 into 1
-						deck:
-							"ydke://5m3qBeZt6gV9+McCffjHAn34xwK8beUDvG3lA7xt5QMfX5ICWvTJAVr0yQFa9MkBrDOdBKwznQSsM50Ey/UzAMv1MwDL9TMAdAxQBQ6wYAKvI94AryPeAK8j3gCmm/QBWXtjBOMavwDjGr8A4xq/AD6kcQGeE8oEnhPKBJ4TygSlLfUDpS31A6Ut9QMiSJkAIkiZACJImQCANVMDgDVTAw==!FtIXALVcnwC1XJ8AiBF2A4gRdgNLTV4Elt0IAMf4TQHCT0EAvw5JAqSaKwD5UX8EweoDA2LO9ATaI+sD!H1+SAg==!"
-					};
-				}
+				findPlayer
 			},
 			{
 				id: "tourn3",
@@ -55,22 +64,12 @@ export class DatabaseWrapperMock implements DatabaseWrapper {
 				description: "The third tournament",
 				status: TournamentStatus.PREPARING,
 				hosts: ["host1"],
-				players: ["sTooMany"],
+				players: transform(["sTooMany"]),
 				publicChannels: ["channel1"],
 				privateChannels: ["channel2"],
 				server: "testServer",
 				byes: [],
-				findPlayer(id: string): DatabasePlayer | undefined {
-					if (id.startsWith("not")) {
-						return;
-					}
-					return {
-						discordId: id,
-						challongeId: parseInt(id.slice(id.length - 1), 10), // will turn player1 into 1
-						deck:
-							"ydke://5m3qBeZt6gV9+McCffjHAn34xwK8beUDvG3lA7xt5QMfX5ICWvTJAVr0yQFa9MkBrDOdBKwznQSsM50Ey/UzAMv1MwDL9TMAdAxQBQ6wYAKvI94AryPeAK8j3gCmm/QBWXtjBOMavwDjGr8A4xq/AD6kcQGeE8oEnhPKBJ4TygSlLfUDpS31A6Ut9QMiSJkAIkiZACJImQCANVMDgDVTAw==!FtIXALVcnwC1XJ8AiBF2A4gRdgNLTV4Elt0IAMf4TQHCT0EAvw5JAqSaKwD5UX8EweoDA2LO9ATaI+sD!H1+SAg==!"
-					};
-				}
+				findPlayer
 			}
 		];
 	}
@@ -103,14 +102,7 @@ export class DatabaseWrapperMock implements DatabaseWrapper {
 			hosts: [hostId],
 			server: serverId,
 			byes: [],
-			findPlayer(id: string): DatabasePlayer {
-				return {
-					discordId: id,
-					challongeId: parseInt(id, 10), // will turn player1 into 1
-					deck:
-						"ydke://5m3qBeZt6gV9+McCffjHAn34xwK8beUDvG3lA7xt5QMfX5ICWvTJAVr0yQFa9MkBrDOdBKwznQSsM50Ey/UzAMv1MwDL9TMAdAxQBQ6wYAKvI94AryPeAK8j3gCmm/QBWXtjBOMavwDjGr8A4xq/AD6kcQGeE8oEnhPKBJ4TygSlLfUDpS31A6Ut9QMiSJkAIkiZACJImQCANVMDgDVTAw==!FtIXALVcnwC1XJ8AiBF2A4gRdgNLTV4Elt0IAMf4TQHCT0EAvw5JAqSaKwD5UX8EweoDA2LO9ATaI+sD!H1+SAg==!"
-				};
-			}
+			findPlayer
 		};
 		this.tournaments.push(newTournament);
 		return newTournament;
@@ -156,7 +148,7 @@ export class DatabaseWrapperMock implements DatabaseWrapper {
 				description: "A tournament with a natural bye",
 				status: TournamentStatus.PREPARING,
 				hosts: ["testHost"],
-				players: ["a", "b", "c"],
+				players: transform(["a", "b", "c"]),
 				server: "testServer",
 				publicChannels: [],
 				privateChannels: [],
@@ -171,7 +163,7 @@ export class DatabaseWrapperMock implements DatabaseWrapper {
 				description: "A tournament with a pending player",
 				status: TournamentStatus.PREPARING,
 				hosts: ["testHost"],
-				players: ["a", "b"],
+				players: transform(["a", "b"]),
 				server: "testServer",
 				publicChannels: ["channel1"],
 				privateChannels: ["channel2"],
@@ -186,7 +178,7 @@ export class DatabaseWrapperMock implements DatabaseWrapper {
 				description: "A tournament with a lot of players",
 				status: TournamentStatus.IPR,
 				hosts: ["testHost"],
-				players: ["a", "b", "c", "d", "e", "f", "g", "h", "i"],
+				players: transform(["a", "b", "c", "d", "e", "f", "g", "h", "i"]),
 				server: "testServer",
 				publicChannels: ["topChannel"],
 				privateChannels: ["channel2"],
@@ -240,6 +232,11 @@ export class DatabaseWrapperMock implements DatabaseWrapper {
 		}
 		return [this.tournaments[0]];
 	}
+	async getConfirmedTournaments(playerId: string): Promise<DatabaseTournament[]> {
+		return this.tournaments.filter(
+			t => t.status === TournamentStatus.PREPARING && t.players.find(p => p.discordId === playerId)
+		);
+	}
 	async addPendingPlayer(channelId: string, messageId: string): Promise<DatabaseTournament | undefined> {
 		if (channelId.startsWith("wrong") || messageId.startsWith("wrong")) {
 			return;
@@ -251,7 +248,11 @@ export class DatabaseWrapperMock implements DatabaseWrapper {
 	}
 	async confirmPlayer(tournamentId: string, playerId: string): Promise<void> {
 		const index = this.tournaments.findIndex(t => t.id === tournamentId);
-		this.tournaments[index].players.push(playerId);
+		this.tournaments[index].players.push({
+			discordId: playerId,
+			challongeId: -1,
+			deck: ""
+		});
 	}
 	async removeConfirmedPlayerReaction(): Promise<DatabaseTournament | undefined> {
 		return this.tournaments[0];
@@ -277,10 +278,10 @@ export class DatabaseWrapperMock implements DatabaseWrapper {
 	async synchronise(): Promise<void> {
 		return;
 	}
-	async registerBye(): Promise<void> {
-		return;
+	async registerBye(): Promise<DatabaseTournament> {
+		throw new Error("Not implemented");
 	}
-	async removeBye(): Promise<void> {
-		return;
+	async removeBye(): Promise<DatabaseTournament> {
+		throw new Error("Not implemented");
 	}
 }

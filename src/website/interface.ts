@@ -39,10 +39,7 @@ export interface WebsiteMatch {
 }
 
 export class WebsiteInterface {
-	private api: WebsiteWrapper;
-	constructor(api: WebsiteWrapper) {
-		this.api = api;
-	}
+	constructor(private api: WebsiteWrapper) {}
 
 	public async createTournament(name: string, desc: string, url: string, topCut = false): Promise<WebsiteTournament> {
 		try {

@@ -1,11 +1,11 @@
 import * as csv from "@fast-csv/format";
-import * as fs from "fs/promises";
 import { Deck } from "ydeck";
-import { DatabaseInterface, DatabaseTournament } from "./database/interface";
-import { TournamentStatus } from "./database/orm";
+import { DatabaseTournament, TournamentStatus } from "./database/interface";
+import { DatabaseWrapperPostgres } from "./database/postgres";
 import { getDeck } from "./deck/deck";
 import { getDeckFromMessage, prettyPrint } from "./deck/discordDeck";
 import { DiscordAttachmentOut, DiscordInterface, DiscordMessageIn, DiscordMessageLimited } from "./discord/interface";
+import { Templater } from "./templates";
 import { PersistentTimer } from "./timer";
 import { BlockedDMsError, ChallongeAPIError, TournamentNotFoundError, UserError } from "./util/errors";
 import { getLogger } from "./util/logger";
@@ -54,23 +54,18 @@ export interface TournamentInterface {
 	removeBye(tournamentId: string, playerId: string): Promise<string[]>;
 }
 
+type Public<T> = Pick<T, keyof T>;
 type Tail<T extends unknown[]> = T extends [unknown, ...infer R] ? R : never;
 
 export class TournamentManager implements TournamentInterface {
-	private discord: DiscordInterface;
-	private database: DatabaseInterface;
-	private website: WebsiteInterface;
-	private matchScores: { [matchId: number]: MatchScore };
-	private timers: { [tournamentId: string]: PersistentTimer[] };
-	private guides: { [name: string]: string };
-	constructor(discord: DiscordInterface, database: DatabaseInterface, website: WebsiteInterface) {
-		this.discord = discord;
-		this.database = database;
-		this.website = website;
-		this.matchScores = {};
-		this.timers = {};
-		this.guides = {};
-	}
+	private matchScores: Record<number, MatchScore> = {};
+	private timers: Record<string, PersistentTimer[]> = {}; // index: tournament id
+	constructor(
+		private discord: DiscordInterface,
+		private database: Public<DatabaseWrapperPostgres>,
+		private website: WebsiteInterface,
+		private templater: Templater
+	) {}
 
 	/// Link seam to override for testing
 	protected async createPersistentTimer(
@@ -101,24 +96,6 @@ export class TournamentManager implements TournamentInterface {
 			}
 			const tournaments = Object.keys(this.timers).length;
 			logger.info(`Loaded ${count} of ${timers.length} PersistentTimers for ${tournaments} tournaments.`);
-		}
-	}
-
-	public async loadGuides(): Promise<void> {
-		if (Object.keys(this.guides).length) {
-			logger.warn(new Error("loadGuides called multiple times"));
-		} else {
-			const files = await fs.readdir("guides");
-			if (files.length < 1) {
-				logger.warn(new Error("No guides loaded!"));
-			} else {
-				for (const file of files.filter(f => f.endsWith(".template.md"))) {
-					const guide = await fs.readFile(`guides/${file}`, "utf-8");
-					const name = file.split(".")[0];
-					this.guides[name] = guide;
-				}
-				logger.info(`Loaded ${files.length} guides.`);
-			}
 		}
 	}
 
@@ -170,7 +147,7 @@ export class TournamentManager implements TournamentInterface {
 	}
 
 	public async listTournaments(server?: string): Promise<string> {
-		const list = await this.database.listTournaments(server);
+		const list = await this.database.getActiveTournaments(server);
 		const text = list.map(t => `ID: ${t.id}|Name: ${t.name}|Status: ${t.status}|Players: ${t.players.length}`);
 		return text.join("\n");
 	}
@@ -202,11 +179,6 @@ export class TournamentManager implements TournamentInterface {
 		}
 	}
 
-	private generateHostGuideCreate(tournamentId: string): string {
-		const message = this.guides.create.replace(/{}/g, tournamentId);
-		return message;
-	}
-
 	public async createTournament(
 		hostId: string,
 		serverId: string,
@@ -225,8 +197,8 @@ export class TournamentManager implements TournamentInterface {
 		}
 
 		const web = await this.website.createTournament(name, desc, candidateUrl, topCut);
-		await this.database.createTournament(hostId, serverId, web);
-		return [web.id, web.url, this.generateHostGuideCreate(web.id)];
+		await this.database.createTournament(hostId, serverId, web.id, name, desc);
+		return [web.id, web.url, this.templater.format("create", web.id)];
 	}
 
 	public async updateTournament(tournamentId: string, name: string, desc: string): Promise<void> {
@@ -358,10 +330,7 @@ export class TournamentManager implements TournamentInterface {
 			return;
 		}
 		// allow confirmed user to resubmit
-		const allTourns = await this.database.listTournaments();
-		const confirmedTourns = allTourns.filter(
-			t => t.players.includes(msg.author) && t.status === TournamentStatus.PREPARING
-		);
+		const confirmedTourns = await this.database.getConfirmedTournaments(msg.author);
 		if (confirmedTourns.length > 1) {
 			const out = confirmedTourns.map(t => t.name).join(", ");
 			await msg.reply(
@@ -416,11 +385,6 @@ export class TournamentManager implements TournamentInterface {
 		await this.database.cleanRegistration(msg.channelId, msg.id);
 	}
 
-	private async sendHostGuideOpen(channelId: string, tournamentId: string): Promise<void> {
-		const message = this.guides.open.replace(/{}/g, tournamentId);
-		await this.discord.sendMessage(channelId, message);
-	}
-
 	private CHECK_EMOJI = "✅";
 	public async openTournament(tournamentId: string): Promise<void> {
 		const tournament = await this.database.getTournament(tournamentId, TournamentStatus.PREPARING);
@@ -443,7 +407,11 @@ export class TournamentManager implements TournamentInterface {
 				await this.database.openRegistration(tournamentId, msg.channelId, msg.id);
 			})
 		);
-		await Promise.all(tournament.privateChannels.map(async c => await this.sendHostGuideOpen(c, tournamentId)));
+		await Promise.all(
+			tournament.privateChannels.map(
+				async c => await this.discord.sendMessage(c, this.templater.format("open", tournamentId))
+			)
+		);
 	}
 
 	// we could have logic for sending matchups in DMs in this function,
@@ -564,22 +532,14 @@ export class TournamentManager implements TournamentInterface {
 		}
 	}
 
-	private async sendPlayerGuide(channelId: string, tournamentId: string): Promise<void> {
-		const message = this.guides.player.replace(/{}/g, tournamentId);
-		await this.discord.sendMessage(channelId, message);
-	}
-
-	private async sendHostGuideStart(channelId: string, tournamentId: string): Promise<void> {
-		const message = this.guides.start.replace(/{}/g, tournamentId);
-		await this.discord.sendMessage(channelId, message);
-	}
-
 	public async startTournament(tournamentId: string): Promise<void> {
 		const tournament = await this.database.getTournament(tournamentId, TournamentStatus.PREPARING);
 		if (tournament.players.length < 2) {
 			throw new UserError("Cannot start a tournament without at least 2 confirmed participants!");
 		}
 		// delete register messages
+		// TODO: can be a single transaction instead of relying on onDelete->cleanRegistration,
+		//       a totally unclear relationship without the comment
 		const messages = await this.database.getRegisterMessages(tournamentId);
 		await Promise.all(
 			messages.map(async m => {
@@ -600,12 +560,14 @@ export class TournamentManager implements TournamentInterface {
 		// send command guide to players
 		const channels = tournament.publicChannels;
 		await Promise.all(
-			channels.map(async c => {
-				await this.sendPlayerGuide(c, tournamentId);
-			})
+			channels.map(async c => await this.discord.sendMessage(c, this.templater.format("player", tournamentId)))
 		);
 		// send command guide to hosts
-		await Promise.all(tournament.privateChannels.map(async c => await this.sendHostGuideStart(c, tournamentId)));
+		await Promise.all(
+			tournament.privateChannels.map(
+				async c => await this.discord.sendMessage(c, this.templater.format("start", tournamentId))
+			)
+		);
 		// start tournament on challonge
 		await this.website.assignByes(tournamentId, tournament.byes);
 		await this.website.startTournament(tournamentId);
@@ -760,9 +722,7 @@ export class TournamentManager implements TournamentInterface {
 
 	public async listPlayers(tournamentId: string): Promise<DiscordAttachmentOut> {
 		const tournament = await this.database.getTournament(tournamentId);
-		const rows = tournament.players.map(p => {
-			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-			const player = tournament.findPlayer(p)!;
+		const rows = tournament.players.map(player => {
 			const name = this.discord.getUsername(player.discordId);
 			const deck = getDeck(player.deck);
 			const themes = deck.themes.length > 0 ? deck.themes.join("/") : "No themes";
@@ -844,9 +804,7 @@ export class TournamentManager implements TournamentInterface {
 		await this.database.synchronise(tournamentId, {
 			name: tournamentData.name,
 			description: tournamentData.desc,
-			players: tournamentData.players.map(p => {
-				return { challongeId: p.challongeId, discordId: p.discordId };
-			})
+			players: tournamentData.players.map(({ challongeId, discordId }) => ({ challongeId, discordId }))
 		});
 	}
 
@@ -861,9 +819,7 @@ export class TournamentManager implements TournamentInterface {
 
 	public async generatePieChart(tournamentId: string): Promise<DiscordAttachmentOut> {
 		const tournament = await this.database.getTournament(tournamentId);
-		const themes = tournament.players.map(p => {
-			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-			const player = tournament.findPlayer(p)!;
+		const themes = tournament.players.map(player => {
 			const deck = getDeck(player.deck);
 			return deck.themes.length > 0 ? deck.themes.join("/") : "No themes";
 		});
@@ -879,12 +835,10 @@ export class TournamentManager implements TournamentInterface {
 
 	public async generateDeckDump(tournamentId: string): Promise<DiscordAttachmentOut> {
 		const tournament = await this.database.getTournament(tournamentId);
-		const rows = tournament.players.map(p => {
-			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-			const player = tournament.findPlayer(p)!;
+		const rows = tournament.players.map(player => {
 			const deck = getDeck(player.deck);
 			return [
-				this.discord.getUsername(p),
+				this.discord.getUsername(player.discordId),
 				`Main: ${deck.mainText}, Extra: ${deck.extraText}, Side: ${deck.sideText}`.replace(/\n/g, ", ")
 			];
 		});
@@ -897,14 +851,12 @@ export class TournamentManager implements TournamentInterface {
 	}
 
 	public async registerBye(tournamentId: string, playerId: string): Promise<string[]> {
-		await this.database.registerBye(tournamentId, playerId);
-		const tournament = await this.database.getTournament(tournamentId);
+		const tournament = await this.database.registerBye(tournamentId, playerId);
 		return tournament.byes;
 	}
 
 	public async removeBye(tournamentId: string, playerId: string): Promise<string[]> {
-		await this.database.removeBye(tournamentId, playerId);
-		const tournament = await this.database.getTournament(tournamentId);
+		const tournament = await this.database.removeBye(tournamentId, playerId);
 		return tournament.byes;
 	}
 }

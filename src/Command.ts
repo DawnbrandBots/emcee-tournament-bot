@@ -20,11 +20,7 @@ export interface CommandDefinition {
 }
 
 export class Command {
-	protected definition: CommandDefinition;
-
-	constructor(definition: CommandDefinition) {
-		this.definition = definition; // copy?
-	}
+	constructor(protected definition: CommandDefinition) {}
 
 	protected checkUsage(args: string[]): string {
 		// If not enough arguments are provided or some of them are falsy

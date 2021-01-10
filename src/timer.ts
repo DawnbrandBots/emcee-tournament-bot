@@ -11,19 +11,15 @@ const logger = getLogger("timer");
  * is not public and only accessible through a static async create function.
  *
  * States of the object:
- *   init: constructor called, but the timer is not installed and the entity is not serialized
+ *   init: constructor called and the timer is not installed, but the entity is not serialized
  *   ready: after create returns, everything is ready for use, and isActive()
  *   done: either the timer ran out or was aborted, so do not use the serialized entity
  */
 export class PersistentTimer {
-	protected discord: DiscordInterface;
-	protected entity: Countdown;
 	protected interval?: NodeJS.Timeout;
 
 	/// This constructor has side effects as it immediately starts the timer!
-	protected constructor(discord: DiscordInterface, entity: Countdown) {
-		this.discord = discord;
-		this.entity = entity;
+	protected constructor(protected discord: DiscordInterface, protected entity: Countdown) {
 		this.interval = setInterval(() => this.tick(), 1000);
 	}
 

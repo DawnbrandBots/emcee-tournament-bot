@@ -1,7 +1,6 @@
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
-import { DatabaseTournament } from "../src/database/interface";
-import { TournamentStatus } from "../src/database/orm";
+import { DatabaseTournament, TournamentStatus } from "../src/database/interface";
 import { DiscordInterface, DiscordMessageHandler, DiscordMessageIn, splitText } from "../src/discord/interface";
 import { DiscordWrapperMock } from "./mocks/discord";
 chai.use(chaiAsPromised);
