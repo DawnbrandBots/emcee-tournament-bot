@@ -6,6 +6,7 @@ import sinonChai from "sinon-chai";
 import sinonTest from "sinon-test";
 import { initializeCardArray } from "../src/deck/deck";
 import { DiscordAttachmentOut, DiscordEmbed, DiscordInterface, DiscordMessageOut } from "../src/discord/interface";
+import { Templater } from "../src/templates";
 import { PersistentTimer } from "../src/timer";
 import { TournamentManager } from "../src/TournamentManager";
 import { UserError } from "../src/util/errors";
@@ -45,11 +46,13 @@ const mockDb = new DatabaseWrapperMock();
 const mockWebsiteWrapper = new WebsiteWrapperMock();
 const mockWebsite = new WebsiteInterface(mockWebsiteWrapper);
 
-const tournament = new TournamentManagerTest(mockDiscord, mockDb, mockWebsite);
+const templater = new Templater();
+
+const tournament = new TournamentManagerTest(mockDiscord, mockDb, mockWebsite, templater);
 
 before(async () => {
 	await initializeCardArray();
-	await tournament.loadGuides();
+	await templater.load("guides");
 });
 
 async function noop(): Promise<void> {
