@@ -107,7 +107,7 @@ export class DatabaseWrapperPostgres implements DatabaseWrapper {
 	async updateTournament(tournamentId: string, name: string, desc: string): Promise<void> {
 		const tournament = await this.findTournament(tournamentId);
 		if (tournament.status !== TournamentStatus.PREPARING) {
-			throw new UserError(`It's too late to update the information for ${tournament.name}.`);
+			throw new AssertStatusError(tournamentId, TournamentStatus.PREPARING, tournament.status);
 		}
 		tournament.name = name;
 		tournament.description = desc;
