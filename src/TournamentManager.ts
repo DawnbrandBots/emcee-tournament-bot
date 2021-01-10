@@ -819,7 +819,6 @@ export class TournamentManager implements TournamentInterface {
 
 	public async generatePieChart(tournamentId: string): Promise<DiscordAttachmentOut> {
 		const tournament = await this.database.getTournament(tournamentId);
-		// TODO: yikes
 		const themes = tournament.players.map(player => {
 			const deck = getDeck(player.deck);
 			return deck.themes.length > 0 ? deck.themes.join("/") : "No themes";
@@ -836,7 +835,6 @@ export class TournamentManager implements TournamentInterface {
 
 	public async generateDeckDump(tournamentId: string): Promise<DiscordAttachmentOut> {
 		const tournament = await this.database.getTournament(tournamentId);
-		// TODO: yikes
 		const rows = tournament.players.map(player => {
 			const deck = getDeck(player.deck);
 			return [
