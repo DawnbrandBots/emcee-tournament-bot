@@ -8,7 +8,6 @@ const command: CommandDefinition = {
 	requiredArgs: [],
 	executor: async (msg, args, support) => {
 		void args;
-		// TODO: restrict to current server
 		await support.discord.authenticateTO(msg);
 		// This log may be meaningless because we perform no parameter processing
 		// and authenticateTO already logs
