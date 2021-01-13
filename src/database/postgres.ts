@@ -379,5 +379,8 @@ export class DatabaseWrapperPostgres {
 
 export async function initializeDatabase(postgresqlUrl: string): Promise<DatabaseWrapperPostgres> {
 	await initializeConnection(postgresqlUrl);
+	// process.once("SIGTERM", () => {
+	// 	getConnection().close();
+	// });
 	return new DatabaseWrapperPostgres();
 }
