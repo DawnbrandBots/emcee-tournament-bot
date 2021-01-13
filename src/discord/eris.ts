@@ -59,11 +59,19 @@ export class DiscordWrapperEris implements DiscordWrapper {
 		this.bot = new Client(discordToken, {
 			restMode: true
 		});
+		this.bot.on("warn", (message, shard) => logger.warn(`Shard ${shard}: ${message}`));
+		this.bot.on("error", (message, shard) => logger.error(`Shard ${shard}: ${message}`));
+		this.bot.on("connect", shard => logger.info(`Shard ${shard} connected to Discord`));
+		this.bot.on("disconnect", () => logger.info("Disconnected from Discord"));
+		this.bot.on("shardReady", shard => logger.info(`Shard ${shard} ready`));
+		this.bot.on("shardDisconnect", shard => logger.info(`Shard ${shard} disconnected`));
+		this.bot.on("guildDelete", guild => logger.info(`Guild delete: ${guild}`));
 		this.bot.on("messageCreate", this.handleMessage.bind(this));
 		this.bot.on("messageReactionAdd", this.handleReaction.bind(this));
 		this.bot.on("messageReactionRemove", this.handleReactionRemove.bind(this));
 		this.bot.on("messageDelete", this.handleDelete.bind(this));
 		this.bot.on("guildCreate", async guild => {
+			logger.info(`Guild create: ${guild}`);
 			// TODO: Make this more exposed in the main bot files
 			// but this whole module system is getting overhauled later anyway
 			await this.createTORole(guild);
@@ -225,7 +233,7 @@ export class DiscordWrapperEris implements DiscordWrapper {
 			"Auto-created by Emcee bot."
 		);
 		this.toRoles[guild.id] = newRole.id;
-		logger.verbose(`TO role ${newRole.id} re-created in ${guild.id}.`);
+		logger.verbose(`TO role ${newRole.id} created in ${guild.id}.`);
 		return newRole;
 	}
 
