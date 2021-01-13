@@ -71,6 +71,7 @@ export class DiscordWrapperEris implements DiscordWrapper {
 		this.bot.on("messageReactionRemove", this.handleReactionRemove.bind(this));
 		this.bot.on("messageDelete", this.handleDelete.bind(this));
 		this.bot.on("guildCreate", async guild => {
+			logger.info(`Guild create: ${guild}`);
 			// TODO: Make this more exposed in the main bot files
 			// but this whole module system is getting overhauled later anyway
 			await this.createTORole(guild);
@@ -232,7 +233,7 @@ export class DiscordWrapperEris implements DiscordWrapper {
 			"Auto-created by Emcee bot."
 		);
 		this.toRoles[guild.id] = newRole.id;
-		logger.verbose(`TO role ${newRole.id} re-created in ${guild.id}.`);
+		logger.verbose(`TO role ${newRole.id} created in ${guild.id}.`);
 		return newRole;
 	}
 
