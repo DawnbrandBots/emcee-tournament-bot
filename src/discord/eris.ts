@@ -59,6 +59,13 @@ export class DiscordWrapperEris implements DiscordWrapper {
 		this.bot = new Client(discordToken, {
 			restMode: true
 		});
+		this.bot.on("warn", (message, shard) => logger.warn(`Shard ${shard}: ${message}`));
+		this.bot.on("error", (message, shard) => logger.error(`Shard ${shard}: ${message}`));
+		this.bot.on("connect", shard => logger.info(`Shard ${shard} connected to Discord`));
+		this.bot.on("disconnect", () => logger.info("Disconnected from Discord"));
+		this.bot.on("shardReady", shard => logger.info(`Shard ${shard} ready`));
+		this.bot.on("shardDisconnect", shard => logger.info(`Shard ${shard} disconnected`));
+		this.bot.on("guildDelete", guild => logger.info(`Guild delete: ${guild}`));
 		this.bot.on("messageCreate", this.handleMessage.bind(this));
 		this.bot.on("messageReactionAdd", this.handleReaction.bind(this));
 		this.bot.on("messageReactionRemove", this.handleReactionRemove.bind(this));
