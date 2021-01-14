@@ -83,6 +83,9 @@ export class DiscordWrapperEris implements DiscordWrapper {
 			});
 		});
 		this.bot.connect().catch(logger.error);
+		process.once("SIGTERM", () => {
+			this.bot.disconnect({ reconnect: false });
+		});
 	}
 
 	private wrapMessageIn(msg: Message): DiscordMessageIn {
