@@ -251,9 +251,12 @@ export class TournamentManager implements TournamentInterface {
 		const tournaments = await this.database.getPendingTournaments(playerId);
 		if (tournaments.length > 0) {
 			await this.discord.removeUserReaction(msg.channelId, msg.id, this.CHECK_EMOJI, playerId);
-			throw new UserError(
+			// If DMs are blocked, this does end up logging by way of stack trace
+			await this.discord.sendDirectMessage(
+				playerId,
 				`You can only sign up for 1 Tournament at a time! Please either drop from or complete your registration for ${tournaments[0].name}!`
 			);
+			return;
 		}
 		// addPendingPlayer needs to status-guard for preparing tournament
 		const tournament = await this.database.addPendingPlayer(msg.channelId, msg.id, playerId);
