@@ -199,9 +199,8 @@ export class DiscordWrapperEris implements DiscordWrapper {
 			try {
 				await handler.response(this.wrapMessageIn(fullMsg), member.id);
 			} catch (e) {
-				if (e instanceof UserError) {
-					await this.sendDirectMessage(member.id, e.message);
-				}
+				// no errors arising here should concern the user directly,
+				// any procedural issues should be handled by a message, not throwing
 				logger.error(e);
 			}
 		}
@@ -219,9 +218,8 @@ export class DiscordWrapperEris implements DiscordWrapper {
 			try {
 				await handler.response(this.wrapMessageIn(fullMsg), userId);
 			} catch (e) {
-				if (e instanceof UserError) {
-					await this.sendDirectMessage(userId, e.message);
-				}
+				// no errors arising here should concern the user directly,
+				// any procedural issues should be handled by a message, not throwing
 				logger.error(e);
 			}
 		}
