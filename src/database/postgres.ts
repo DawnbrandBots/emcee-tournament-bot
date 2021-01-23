@@ -6,6 +6,7 @@ import {
 	UnauthorisedPlayerError,
 	UserError
 } from "../util/errors";
+import { getLogger } from "../util/logger";
 import {
 	DatabaseMessage,
 	DatabasePlayer,
@@ -14,6 +15,8 @@ import {
 	TournamentStatus
 } from "./interface";
 import { ChallongeTournament, ConfirmedParticipant, initializeConnection, Participant, RegisterMessage } from "./orm";
+
+const logger = getLogger("postgres");
 
 export class DatabaseWrapperPostgres {
 	private wrap(tournament: ChallongeTournament): DatabaseTournament {
@@ -266,7 +269,9 @@ export class DatabaseWrapperPostgres {
 
 	async startTournament(tournamentId: string): Promise<string[]> {
 		const tournament = await this.findTournament(tournamentId, ["participants"]);
+		logger.verbose(`startTournament: loaded ${tournamentId} with participants`);
 		const ejected = tournament.participants.filter(p => !p.confirmed);
+		logger.verbose(`startTournament: filtered for unconfirmed participants`);
 		await getConnection().transaction(async entityManager => {
 			for (const p of ejected) {
 				await entityManager.remove(p);
@@ -274,6 +279,7 @@ export class DatabaseWrapperPostgres {
 			tournament.status = TournamentStatus.IPR;
 			await entityManager.save(tournament);
 		});
+		logger.verbose(`startTournament: transaction complete`);
 		return ejected.map(p => p.discordId);
 	}
 
