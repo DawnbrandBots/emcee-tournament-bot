@@ -268,9 +268,12 @@ export class DatabaseWrapperPostgres {
 	}
 
 	async startTournament(tournamentId: string): Promise<string[]> {
-		const tournament = await this.findTournament(tournamentId, ["participants"]);
-		logger.verbose(`startTournament: loaded ${tournamentId} with participants`);
-		const ejected = tournament.participants.filter(p => !p.confirmed);
+		logger.verbose(`startTournament: ${tournamentId}`);
+		const tournament = await this.findTournament(tournamentId);
+		logger.verbose(`startTournament: loaded ${tournamentId}`);
+		const participants = await Participant.find({ tournamentId });
+		logger.verbose(`startTournament: loaded ${participants.length} participants for ${tournamentId}`);
+		const ejected = participants.filter(p => !p.confirmed);
 		logger.verbose(`startTournament: filtered for unconfirmed participants`);
 		await getConnection().transaction(async entityManager => {
 			for (const p of ejected) {
