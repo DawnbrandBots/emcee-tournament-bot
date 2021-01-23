@@ -272,7 +272,7 @@ export class DatabaseWrapperPostgres {
 				await entityManager.remove(p);
 			}
 			tournament.status = TournamentStatus.IPR;
-			await tournament.save();
+			await entityManager.save(tournament);
 		});
 		return ejected.map(p => p.discordId);
 	}
