@@ -664,7 +664,7 @@ export class TournamentManager implements TournamentInterface {
 		}
 		const mention = this.discord.mentionUser(playerId); // prepare for multiple uses below
 		if (!match) {
-			return `Could not find an open match in Tournament ${tournament.name} including you, ${mention}`;
+			return `Could not find an open match in Tournament ${tournament.name} including you, ${mention}. This could mean your opponent dropped, conceding the match. If the score for your current match is incorrect, please ask a host to change it.`;
 		}
 		if (match.matchId in this.matchScores) {
 			const score = this.matchScores[match.matchId];
