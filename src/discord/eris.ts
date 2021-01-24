@@ -4,6 +4,7 @@ import {
 	Guild,
 	GuildChannel,
 	Member,
+	MemberPartial,
 	Message,
 	MessageContent,
 	MessageFile,
@@ -24,6 +25,7 @@ import { getLogger } from "../util/logger";
 import {
 	DiscordAttachmentOut,
 	DiscordDeleteHandler,
+	DiscordLeaveHandler,
 	DiscordMessageHandler,
 	DiscordMessageIn,
 	DiscordMessageLimited,
@@ -41,6 +43,7 @@ export class DiscordWrapperEris implements DiscordWrapper {
 	private reactionHandlers: DiscordReactionHandler[];
 	private reactionRemoveHandlers: DiscordReactionHandler[];
 	private deleteHandlers: DiscordDeleteHandler[];
+	private leaveHandlers: DiscordLeaveHandler[];
 	private wrappedMessages: { [id: string]: Message };
 	private toRoles: { [guild: string]: string };
 	private playerRoles: { [tournamentId: string]: string };
@@ -53,6 +56,7 @@ export class DiscordWrapperEris implements DiscordWrapper {
 		this.pingHandlers = [];
 		this.reactionHandlers = [];
 		this.reactionRemoveHandlers = [];
+		this.leaveHandlers = [];
 		this.wrappedMessages = {};
 		this.toRoles = {};
 		this.playerRoles = {};
@@ -70,6 +74,7 @@ export class DiscordWrapperEris implements DiscordWrapper {
 		this.bot.on("messageReactionAdd", this.handleReaction.bind(this));
 		this.bot.on("messageReactionRemove", this.handleReactionRemove.bind(this));
 		this.bot.on("messageDelete", this.handleDelete.bind(this));
+		this.bot.on("guildMemberRemove", this.handleLeave.bind(this));
 		this.bot.on("guildCreate", async guild => {
 			logger.info(`Guild create: ${guild}`);
 			// TODO: Make this more exposed in the main bot files
@@ -225,6 +230,15 @@ export class DiscordWrapperEris implements DiscordWrapper {
 		}
 	}
 
+	private async handleLeave(guild: Guild, member: Member | MemberPartial): Promise<void> {
+		if (member.user.id === this.bot.user.id) {
+			return;
+		}
+		for (const handler of this.leaveHandlers) {
+			await handler(guild.id, member.user.id);
+		}
+	}
+
 	private async createTORole(guild: Guild): Promise<Role> {
 		const newRole = await guild.createRole(
 			{
@@ -341,6 +355,10 @@ export class DiscordWrapperEris implements DiscordWrapper {
 
 	public onReactionRemove(handler: DiscordReactionHandler): void {
 		this.reactionRemoveHandlers.push(handler);
+	}
+
+	public onLeave(handler: DiscordLeaveHandler): void {
+		this.leaveHandlers.push(handler);
 	}
 
 	public async removeUserReaction(

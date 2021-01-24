@@ -50,6 +50,8 @@ export type DiscordMessageHandler = (msg: DiscordMessageIn) => Promise<void> | v
 
 export type DiscordDeleteHandler = (msg: DiscordMessageLimited) => Promise<void> | void;
 
+export type DiscordLeaveHandler = (serverId: string, userId: string) => Promise<void> | void;
+
 type DiscordReactionResponse = (msg: DiscordMessageIn, userId: string) => Promise<void> | void;
 
 export interface DiscordReactionHandler {
@@ -64,6 +66,7 @@ export interface DiscordWrapper {
 	onPing: (hander: DiscordMessageHandler) => void;
 	onReaction: (handler: DiscordReactionHandler) => void;
 	onReactionRemove: (handler: DiscordReactionHandler) => void;
+	onLeave: (handler: DiscordLeaveHandler) => void;
 	removeUserReaction: (channelId: string, messageId: string, emoji: string, userId: string) => Promise<boolean>;
 	getMessage(channelId: string, messageId: string): Promise<DiscordMessageIn | null>;
 	sendMessage(channelId: string, msg: DiscordMessageOut, file?: DiscordAttachmentOut): Promise<DiscordMessageSent>;
@@ -95,6 +98,10 @@ export class DiscordInterface {
 
 	public onPing(func: DiscordMessageHandler): void {
 		this.api.onPing(func);
+	}
+
+	public onLeave(func: DiscordLeaveHandler): void {
+		this.api.onLeave(func);
 	}
 
 	public async awaitReaction(
