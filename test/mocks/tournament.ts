@@ -54,6 +54,10 @@ export class TournamentMock implements TournamentInterface {
 		return;
 	}
 
+	public async cleanPlayer(): Promise<void> {
+		return;
+	}
+
 	public async openTournament(): Promise<void> {
 		return;
 	}

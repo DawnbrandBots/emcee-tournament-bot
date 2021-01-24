@@ -201,6 +201,9 @@ export class DatabaseWrapperMock {
 	async getActiveTournaments(): Promise<DatabaseTournament[]> {
 		return this.tournaments;
 	}
+	async getServerTournaments(serverId: string): Promise<DatabaseTournament[]> {
+		return this.tournaments.filter(t => t.server === serverId);
+	}
 	async addAnnouncementChannel(tournamentId: string, channelId: string): Promise<void> {
 		const index = this.tournaments.findIndex(t => t.id === tournamentId);
 		this.tournaments[index].publicChannels.push(channelId);

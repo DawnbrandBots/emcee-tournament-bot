@@ -1,6 +1,7 @@
 import {
 	DiscordAttachmentOut,
 	DiscordDeleteHandler,
+	DiscordLeaveHandler,
 	DiscordMessageHandler,
 	DiscordMessageIn,
 	DiscordMessageOut,
@@ -13,6 +14,7 @@ export class DiscordWrapperMock implements DiscordWrapper {
 	private messageHandlers: DiscordMessageHandler[];
 	private pingHandlers: DiscordMessageHandler[];
 	private deleteHandlers: DiscordDeleteHandler[];
+	private leaveHandlers: DiscordLeaveHandler[];
 
 	private messages: { [channelId: string]: DiscordMessageOut };
 	private files: { [channelId: string]: DiscordAttachmentOut };
@@ -21,6 +23,7 @@ export class DiscordWrapperMock implements DiscordWrapper {
 		this.messageHandlers = [];
 		this.pingHandlers = [];
 		this.deleteHandlers = [];
+		this.leaveHandlers = [];
 
 		this.messages = {};
 		this.files = {};
@@ -149,6 +152,10 @@ export class DiscordWrapperMock implements DiscordWrapper {
 
 	public onPing(handler: DiscordMessageHandler): void {
 		this.pingHandlers.push(handler);
+	}
+
+	public onLeave(handler: DiscordLeaveHandler): void {
+		this.leaveHandlers.push(handler);
 	}
 
 	public onReaction(): void {
