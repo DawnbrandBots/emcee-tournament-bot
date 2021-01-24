@@ -7,6 +7,7 @@ export function initializeBehaviours(prefix: string, discord: DiscordInterface, 
 	// Note: .bind may be significantly less performant than an arrow lambda
 	discord.onMessage(tm.confirmPlayer.bind(tm));
 	discord.onDelete(tm.cleanRegistration.bind(tm));
+	discord.onLeave(tm.cleanPlayer.bind(tm));
 
 	const handlers: Record<string, Command> = {};
 	for (const name in commands) {

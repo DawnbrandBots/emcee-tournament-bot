@@ -205,6 +205,12 @@ export class DatabaseWrapperPostgres {
 		return list.filter(p => p.tournament.status === TournamentStatus.PREPARING).map(p => this.wrap(p.tournament));
 	}
 
+	async getServerTournaments(serverId: string): Promise<DatabaseTournament[]> {
+		const list = await ChallongeTournament.find({ where: { owningDiscordServer: serverId } });
+		// if no results, array will be empty, and that's OK
+		return list.map(p => this.wrap(p));
+	}
+
 	async addPendingPlayer(
 		channelId: string,
 		messageId: string,

@@ -24,6 +24,7 @@ export interface TournamentInterface {
 	registerPlayer(msg: DiscordMessageIn, playerId: string): Promise<void>;
 	confirmPlayer(msg: DiscordMessageIn): Promise<void>;
 	cleanRegistration(msg: DiscordMessageLimited): Promise<void>;
+	cleanPlayer(serverId: string, userId: string): Promise<void>;
 	authenticateHost(tournamentId: string, message: DiscordMessageIn): Promise<void>;
 	authenticatePlayer(tournamentId: string, message: DiscordMessageIn): Promise<void>;
 	listTournaments(server?: string): Promise<string>;
@@ -386,6 +387,16 @@ export class TournamentManager implements TournamentInterface {
 
 	public async cleanRegistration(msg: DiscordMessageLimited): Promise<void> {
 		await this.database.cleanRegistration(msg.channelId, msg.id);
+	}
+
+	public async cleanPlayer(serverId: string, userId: string): Promise<void> {
+		// TODO: handle tournaments with user as host? we epxect more rational behaviour from hosts than players
+		const tournaments = await this.database.getServerTournaments(serverId);
+		// for loop handles empty array
+		for (const tournament of tournaments) {
+			// If player is not in tournament, does nothing and moves on
+			await this.dropPlayer(tournament.id, userId, true);
+		}
 	}
 
 	private CHECK_EMOJI = "✅";
