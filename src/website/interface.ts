@@ -7,7 +7,7 @@ export interface WebsiteWrapper {
 	registerPlayer(tournamentId: string, playerName: string, playerId: string): Promise<number>;
 	startTournament(tournamentId: string): Promise<void>;
 	getMatches(tournamentId: string): Promise<WebsiteMatch[]>;
-	getMatchWithPlayer(tournamentId: string, playerId: number): Promise<WebsiteMatch>;
+	getMatchWithPlayer(tournamentId: string, playerId: number): Promise<WebsiteMatch | undefined>;
 	removePlayer(tournamentId: string, playerId: number): Promise<void>;
 	submitScore(tournamentId: string, winner: number, winnerScore: number, loserScore: number): Promise<void>;
 	finishTournament(tournamentId: string): Promise<void>;
@@ -206,8 +206,13 @@ export class WebsiteInterface {
 			   This also neatly handles edge cases like a bye player being manually dropped. */
 			if (player) {
 				const match = await this.api.getMatchWithPlayer(tournamentId, player.challongeId);
-				const winner = match.player1 === player.challongeId ? match.player2 : match.player1;
-				await this.api.submitScore(tournamentId, winner, 2, 0);
+				/* We assume the match will exist and be open since the tournament just started
+				   But checking handles edge cases like a human theoretically changing the score before Emcee can
+				   Considering how slow the startTournament function is, that's not impossible */
+				if (match) {
+					const winner = match.player1 === player.challongeId ? match.player2 : match.player1;
+					await this.api.submitScore(tournamentId, winner, 2, 0);
+				}
 				await this.removePlayer(tournamentId, player.challongeId);
 			}
 		}
