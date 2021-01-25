@@ -442,7 +442,9 @@ export class TournamentManager implements TournamentInterface {
 	): Promise<void> {
 		let message = `A new round of ${tournament.name} has begun! `;
 		message += opponentName
-			? `Your opponent is ${this.discord.mentionUser(opponentId)} (${opponentName}).`
+			? `Your opponent is ${this.discord.mentionUser(
+					opponentId
+			  )} (${opponentName}). Make sure to report your score after the match is over!`
 			: "I couldn't find your opponent. If you don't think you should have a bye for this round, please check the pairings.";
 		try {
 			await this.discord.sendDirectMessage(receiverId, message);
@@ -613,7 +615,7 @@ export class TournamentManager implements TournamentInterface {
 				tournament.hosts[0], // tournament cannot have 0 hosts by addition on creation and guard on removal
 				tournament.server,
 				`${tournament.name} Top Cut`,
-				`Top Cut for ${tournament.name}`,
+				`Top Cut for ${tournament.name} (https://challonge.com/${tournamentId})`,
 				true
 			);
 
