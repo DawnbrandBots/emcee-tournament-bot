@@ -92,7 +92,7 @@ export class PersistentTimer {
 	public async abort(): Promise<void> {
 		if (this.interval) {
 			clearInterval(this.interval);
-			this.interval === undefined;
+			this.interval = undefined;
 			try {
 				await this.entity.remove();
 			} catch (error) {
