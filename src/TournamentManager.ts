@@ -784,8 +784,18 @@ export class TournamentManager implements TournamentInterface {
 			const match = await this.website.findMatch(tournament.id, player.challongeId);
 			// if there's no match, their most recent score is already submitted.
 			if (match) {
-				const opponent = match.player1 === player.challongeId ? match.player2 : match.player1;
-				await this.website.submitScore(tournament.id, opponent, 2, 0);
+				const oppChallonge = match.player1 === player.challongeId ? match.player2 : match.player1;
+				await this.website.submitScore(tournament.id, oppChallonge, 2, 0);
+				const opponent = tournament.players.find(p => p.challongeId === oppChallonge);
+				// should exist but checking is safer than not-null assertion
+				if (opponent) {
+					await this.discord.sendDirectMessage(
+						opponent.discordId,
+						`Your opponent ${this.discord.mentionUser(
+							player.discordId
+						)} has dropped from the tournament, conceding this round to you. You don't need to submit a score for this round.`
+					);
+				}
 			}
 		}
 		await this.website.removePlayer(tournament.id, player.challongeId);
