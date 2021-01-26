@@ -390,7 +390,7 @@ export class TournamentManager implements TournamentInterface {
 	}
 
 	public async cleanPlayer(serverId: string, userId: string): Promise<void> {
-		// TODO: handle tournaments with user as host? we epxect more rational behaviour from hosts than players
+		// TODO: handle tournaments with user as host? we expect more rational behaviour from hosts than players
 		const tournaments = await this.database.getServerTournaments(serverId);
 		// for loop handles empty array
 		for (const tournament of tournaments) {
