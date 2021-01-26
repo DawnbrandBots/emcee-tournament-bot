@@ -18,6 +18,7 @@ export interface WebsiteWrapper {
 export interface WebsitePlayer {
 	challongeId: number;
 	discordId: string;
+	active: boolean; // !dropped
 	rank: number;
 	seed: number;
 }
@@ -71,13 +72,15 @@ export class WebsiteInterface {
 
 	public async getBye(tournamentId: string): Promise<string | undefined> {
 		const tournament = await this.getTournament(tournamentId);
-		if (tournament.players.length % 2 === 0) {
+		// do not count dropped players
+		const activePlayers = tournament.players.filter(p => p.active);
+		if (activePlayers.length % 2 === 0) {
 			// even number of players means no bye
 			return undefined;
 		}
 		const matches = await this.api.getMatches(tournamentId);
 		// Find a player for which the following is true
-		const bye = tournament.players.find(p => {
+		const bye = activePlayers.find(p => {
 			// Find a match which includes the player
 			const match = matches.find(m => m.player1 === p.challongeId || m.player2 === p.challongeId);
 			// Negate: if we found a match, this player doesn't have the bye.
