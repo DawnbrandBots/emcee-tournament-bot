@@ -23,6 +23,7 @@ It uses Eris to talk to Discord and PostgreSQL for persistence.
     - In Docker:
 
         ```
+        POSTGRES_VERSION=13-alpine
         POSTGRES_HOST_PORT=127.0.0.1:5432
         POSTGRES_USER=
         POSTGRES_PASSWORD=
