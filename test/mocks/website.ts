@@ -26,6 +26,7 @@ export class WebsiteWrapperMock implements WebsiteWrapper {
 					{
 						challongeId: 1,
 						rank: -1,
+						active: true,
 						seed: 1,
 						discordId: "bye"
 					}
@@ -76,54 +77,63 @@ export class WebsiteWrapperMock implements WebsiteWrapper {
 				{
 					challongeId: 1,
 					discordId: "a",
+					active: true,
 					rank: 1,
 					seed: 1
 				},
 				{
 					challongeId: 2,
 					discordId: "b",
+					active: true,
 					rank: 2,
 					seed: 2
 				},
 				{
 					challongeId: 3,
 					discordId: "c",
+					active: true,
 					rank: 3,
 					seed: 3
 				},
 				{
 					challongeId: 4,
 					discordId: "d",
+					active: true,
 					rank: 4,
 					seed: 4
 				},
 				{
 					challongeId: 5,
 					discordId: "e",
+					active: true,
 					rank: 5,
 					seed: 5
 				},
 				{
 					challongeId: 6,
 					discordId: "f",
+					active: true,
 					rank: 6,
 					seed: 6
 				},
 				{
 					challongeId: 7,
 					discordId: "g",
+					active: true,
 					rank: 7,
 					seed: 7
 				},
 				{
 					challongeId: 8,
 					discordId: "h",
+					active: true,
 					rank: 8,
 					seed: 8
 				},
 				{
 					challongeId: 9,
 					discordId: "i",
+					active: true,
 					rank: 9,
 					seed: 9
 				}
@@ -134,12 +144,14 @@ export class WebsiteWrapperMock implements WebsiteWrapper {
 				{
 					challongeId: 1,
 					discordId: "player1",
+					active: true,
 					rank: -1,
 					seed: 1
 				},
 				{
 					challongeId: 2,
 					discordId: "dummy0",
+					active: true,
 					rank: -1,
 					seed: 2
 				}
@@ -149,6 +161,7 @@ export class WebsiteWrapperMock implements WebsiteWrapper {
 			{
 				challongeId: 1,
 				discordId: "player1",
+				active: true,
 				rank: -1,
 				seed: 1
 			}

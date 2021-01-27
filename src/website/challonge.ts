@@ -435,6 +435,7 @@ export class WebsiteWrapperChallonge implements WebsiteWrapper {
 		return {
 			challongeId: player.id,
 			discordId: player.misc || "DUMMY", // Dummy players should have already been given an enumerated ID
+			active: player.active,
 			rank: player.final_rank || -1,
 			seed: player.seed
 		};
