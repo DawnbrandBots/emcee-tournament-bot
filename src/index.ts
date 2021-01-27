@@ -1,10 +1,11 @@
+import { Client } from "eris";
 import { prefix } from "./config/config.json";
-import { challongeToken, challongeUsername, postgresqlUrl } from "./config/env";
-import { initializeBehaviours } from "./CommandHandler";
+import { challongeToken, challongeUsername, discordToken, postgresqlUrl } from "./config/env";
 import { initializeDatabase } from "./database/postgres";
 import { initializeCardArray } from "./deck/deck";
 import { DiscordWrapperEris } from "./discord/eris";
 import { DiscordInterface } from "./discord/interface";
+import { registerEvents } from "./events";
 import { Templater } from "./templates";
 import { TournamentManager } from "./TournamentManager";
 import { getLogger } from "./util/logger";
@@ -25,11 +26,15 @@ const logger = getLogger("index");
 	const challonge = new WebsiteWrapperChallonge(challongeUsername, challongeToken);
 	const website = new WebsiteInterface(challonge);
 
-	const eris = new DiscordWrapperEris();
+	const bot = new Client(discordToken, {
+		restMode: true
+	});
+	const eris = new DiscordWrapperEris(bot);
 	const discord = new DiscordInterface(eris);
 
 	const tournamentManager = new TournamentManager(discord, database, website, templater);
-	initializeBehaviours(prefix, discord, tournamentManager);
+	registerEvents(bot, prefix, { discord, tournamentManager });
+	discord.onDelete(msg => tournamentManager.cleanRegistration(msg));
 
 	await eris.ready;
 	await tournamentManager.loadTimers();

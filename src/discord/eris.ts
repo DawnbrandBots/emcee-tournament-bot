@@ -12,7 +12,6 @@ import {
 	TextChannel
 } from "eris";
 import { toRole } from "../config/config.json";
-import { discordToken } from "../config/env";
 import {
 	AssertTextChannelError,
 	BlockedDMsError,
@@ -44,10 +43,9 @@ export class DiscordWrapperEris implements DiscordWrapper {
 	private wrappedMessages: { [id: string]: Message };
 	private toRoles: { [guild: string]: string };
 	private playerRoles: { [tournamentId: string]: string };
-	private bot: Client;
 	public ready: Promise<void>;
 
-	constructor() {
+	constructor(private bot: Client) {
 		this.messageHandlers = [];
 		this.deleteHandlers = [];
 		this.pingHandlers = [];
@@ -56,9 +54,6 @@ export class DiscordWrapperEris implements DiscordWrapper {
 		this.wrappedMessages = {};
 		this.toRoles = {};
 		this.playerRoles = {};
-		this.bot = new Client(discordToken, {
-			restMode: true
-		});
 		this.bot.on("warn", (message, shard) => logger.warn(`Shard ${shard}: ${message}`));
 		this.bot.on("error", (message, shard) => logger.error(`Shard ${shard}: ${message}`));
 		this.bot.on("connect", shard => logger.info(`Shard ${shard} connected to Discord`));
