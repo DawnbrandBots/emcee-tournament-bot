@@ -140,7 +140,7 @@ describe("Tournament flow commands", function () {
 	it("Submit score", async function () {
 		const response1 = await tournament.submitScore("tourn2", "player1", 2, 1);
 		expect(response1).to.equal(
-			"You have reported a score of 2-1, <@player1>. Your opponent still needs to confirm this score."
+			"You have reported a score of 2-1, <@player1>. Your opponent still needs to confirm this score. If you want to drop, please wait for your opponent to confirm or you will concede 0-2."
 		);
 		const response2 = await tournament.submitScore("tourn2", "player1", 2, 1);
 		expect(response2).to.equal(
@@ -152,7 +152,7 @@ describe("Tournament flow commands", function () {
 		);
 		const response4 = await tournament.submitScore("tourn2", "player2", 2, 1);
 		expect(response4).to.equal(
-			"You have reported a score of 2-1, <@player2>. Your opponent still needs to confirm this score."
+			"You have reported a score of 2-1, <@player2>. Your opponent still needs to confirm this score. If you want to drop, please wait for your opponent to confirm or you will concede 0-2."
 		);
 		const response5 = await tournament.submitScore("tourn2", "player1", 1, 2);
 		expect(response5).to.equal(

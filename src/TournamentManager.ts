@@ -714,7 +714,7 @@ export class TournamentManager implements TournamentInterface {
 			playerScore: scorePlayer,
 			oppScore: scoreOpp
 		};
-		return `You have reported a score of ${scorePlayer}-${scoreOpp}, ${mention}. Your opponent still needs to confirm this score.`;
+		return `You have reported a score of ${scorePlayer}-${scoreOpp}, ${mention}. Your opponent still needs to confirm this score. If you want to drop, please wait for your opponent to confirm or you will concede 0-2.`;
 	}
 
 	// specifically only handles telling participants about a new round
@@ -760,6 +760,7 @@ export class TournamentManager implements TournamentInterface {
 		if (tournament) {
 			await this.sendDropMessage(tournament, playerId, tournament.id);
 		}
+		// players can only drop by reaction when a tournament is preparing, so we don't have to worry about scores
 	}
 
 	public async dropPlayer(tournamentId: string, playerId: string, force = false): Promise<void> {
@@ -769,6 +770,7 @@ export class TournamentManager implements TournamentInterface {
 		}
 	}
 
+	// TODO: misleading function name, this command handles all drop logic after checking validity
 	private async sendDropMessage(
 		tournament: DatabaseTournament,
 		playerId: string,
@@ -777,6 +779,25 @@ export class TournamentManager implements TournamentInterface {
 	): Promise<void> {
 		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 		const player = tournament.findPlayer(playerId)!;
+		// if the tournament is in progress, they may have a match we must concede on their behalf
+		if (tournament.status === TournamentStatus.IPR) {
+			const match = await this.website.findMatch(tournament.id, player.challongeId);
+			// if there's no match, their most recent score is already submitted.
+			if (match) {
+				const oppChallonge = match.player1 === player.challongeId ? match.player2 : match.player1;
+				await this.website.submitScore(tournament.id, oppChallonge, 2, 0);
+				const opponent = tournament.players.find(p => p.challongeId === oppChallonge);
+				// should exist but checking is safer than not-null assertion
+				if (opponent) {
+					await this.discord.sendDirectMessage(
+						opponent.discordId,
+						`Your opponent ${this.discord.mentionUser(
+							player.discordId
+						)} has dropped from the tournament, conceding this round to you. You don't need to submit a score for this round.`
+					);
+				}
+			}
+		}
 		await this.website.removePlayer(tournament.id, player.challongeId);
 		await this.discord.removePlayerRole(playerId, await this.discord.getPlayerRole(tournament));
 		logger.verbose(`User ${playerId} dropped from tournament ${tournament.id}${force ? " by host" : ""}.`);
