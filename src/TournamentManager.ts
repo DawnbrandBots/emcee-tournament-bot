@@ -714,7 +714,7 @@ export class TournamentManager implements TournamentInterface {
 			playerScore: scorePlayer,
 			oppScore: scoreOpp
 		};
-		return `You have reported a score of ${scorePlayer}-${scoreOpp}, ${mention}. Your opponent still needs to confirm this score.`;
+		return `You have reported a score of ${scorePlayer}-${scoreOpp}, ${mention}. Your opponent still needs to confirm this score. If you want to drop, please wait for your opponent to confirm or you will concede 0-2.`;
 	}
 
 	// specifically only handles telling participants about a new round

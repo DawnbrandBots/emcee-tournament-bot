@@ -18,7 +18,7 @@ In Swiss, ties are also a valid outcome:
 mc!score {}|1-1
 mc!score {}|0-0```
 **Drop**
-If you want to stop playing. If you're in the middle of a round, this will concede the current game.
+If you want to stop playing. If you're in the middle of a round, this will concede the current match.
 Be careful, this **removes you from the tournament permanently**.
 ```
 mc!drop {}```
