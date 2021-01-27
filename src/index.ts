@@ -36,7 +36,17 @@ const logger = getLogger("index");
 	registerEvents(bot, prefix, { discord, tournamentManager });
 	discord.onDelete(msg => tournamentManager.cleanRegistration(msg));
 
-	await eris.ready;
-	await tournamentManager.loadTimers();
-	await tournamentManager.loadButtons();
+	let firstReady = true;
+	bot.on("ready", async () => {
+		logger.info(`Logged in as ${bot.user.username} - ${bot.user.id}`);
+		if (firstReady) {
+			firstReady = false;
+			await tournamentManager.loadTimers();
+			await tournamentManager.loadButtons();
+		}
+	});
+	bot.connect().catch(logger.error);
+	process.once("SIGTERM", () => {
+		bot.disconnect({ reconnect: false });
+	});
 })();

@@ -23,7 +23,6 @@ import { getLogger } from "../util/logger";
 import {
 	DiscordAttachmentOut,
 	DiscordDeleteHandler,
-	DiscordMessageHandler,
 	DiscordMessageIn,
 	DiscordMessageLimited,
 	DiscordMessageOut,
@@ -35,33 +34,20 @@ import {
 const logger = getLogger("eris");
 
 export class DiscordWrapperEris implements DiscordWrapper {
-	private messageHandlers: DiscordMessageHandler[];
-	private pingHandlers: DiscordMessageHandler[];
 	private reactionHandlers: DiscordReactionHandler[];
 	private reactionRemoveHandlers: DiscordReactionHandler[];
 	private deleteHandlers: DiscordDeleteHandler[];
 	private wrappedMessages: { [id: string]: Message };
 	private toRoles: { [guild: string]: string };
 	private playerRoles: { [tournamentId: string]: string };
-	public ready: Promise<void>;
 
 	constructor(private bot: Client) {
-		this.messageHandlers = [];
 		this.deleteHandlers = [];
-		this.pingHandlers = [];
 		this.reactionHandlers = [];
 		this.reactionRemoveHandlers = [];
 		this.wrappedMessages = {};
 		this.toRoles = {};
 		this.playerRoles = {};
-		this.bot.on("warn", (message, shard) => logger.warn(`Shard ${shard}: ${message}`));
-		this.bot.on("error", (message, shard) => logger.error(`Shard ${shard}: ${message}`));
-		this.bot.on("connect", shard => logger.info(`Shard ${shard} connected to Discord`));
-		this.bot.on("disconnect", () => logger.info("Disconnected from Discord"));
-		this.bot.on("shardReady", shard => logger.info(`Shard ${shard} ready`));
-		this.bot.on("shardDisconnect", shard => logger.info(`Shard ${shard} disconnected`));
-		this.bot.on("guildDelete", guild => logger.info(`Guild delete: ${guild}`));
-		this.bot.on("messageCreate", this.handleMessage.bind(this));
 		this.bot.on("messageReactionAdd", this.handleReaction.bind(this));
 		this.bot.on("messageReactionRemove", this.handleReactionRemove.bind(this));
 		this.bot.on("messageDelete", this.handleDelete.bind(this));
@@ -70,16 +56,6 @@ export class DiscordWrapperEris implements DiscordWrapper {
 			// TODO: Make this more exposed in the main bot files
 			// but this whole module system is getting overhauled later anyway
 			await this.createTORole(guild);
-		});
-		this.ready = new Promise(resolve => {
-			this.bot.on("ready", () => {
-				logger.info(`Logged in as ${this.bot.user.username} - ${this.bot.user.id}`);
-				resolve();
-			});
-		});
-		this.bot.connect().catch(logger.error);
-		process.once("SIGTERM", () => {
-			this.bot.disconnect({ reconnect: false });
 		});
 	}
 
@@ -148,23 +124,6 @@ export class DiscordWrapperEris implements DiscordWrapper {
 
 	public async deleteMessage(channelId: string, messageId: string): Promise<void> {
 		await this.bot.deleteMessage(channelId, messageId);
-	}
-
-	private async handleMessage(msg: Message): Promise<void> {
-		// Ignore messages from all bots and replies
-		if (msg.author.bot || msg.messageReference) {
-			return;
-		}
-		const wrappedMsg = this.wrapMessageIn(msg);
-		if (msg.mentions.includes(this.bot.user)) {
-			for (const handler of this.pingHandlers) {
-				await handler(wrappedMsg);
-			}
-			return;
-		}
-		for (const handler of this.messageHandlers) {
-			await handler(wrappedMsg);
-		}
 	}
 
 	private wrapMessageLimited(msg: PossiblyUncachedMessage): DiscordMessageLimited {
@@ -318,16 +277,8 @@ export class DiscordWrapperEris implements DiscordWrapper {
 		await guild.deleteRole(role);
 	}
 
-	public onMessage(handler: DiscordMessageHandler): void {
-		this.messageHandlers.push(handler);
-	}
-
 	public onDelete(handler: DiscordDeleteHandler): void {
 		this.deleteHandlers.push(handler);
-	}
-
-	public onPing(handler: DiscordMessageHandler): void {
-		this.pingHandlers.push(handler);
 	}
 
 	public onReaction(handler: DiscordReactionHandler): void {

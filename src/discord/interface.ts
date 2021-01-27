@@ -59,9 +59,7 @@ export interface DiscordReactionHandler {
 }
 
 export interface DiscordWrapper {
-	onMessage: (handler: DiscordMessageHandler) => void;
 	onDelete: (handler: DiscordDeleteHandler) => void;
-	onPing: (hander: DiscordMessageHandler) => void;
 	onReaction: (handler: DiscordReactionHandler) => void;
 	onReactionRemove: (handler: DiscordReactionHandler) => void;
 	removeUserReaction: (channelId: string, messageId: string, emoji: string, userId: string) => Promise<boolean>;
@@ -85,16 +83,8 @@ export class DiscordInterface {
 		this.api = api;
 	}
 
-	public onMessage(func: DiscordMessageHandler): void {
-		this.api.onMessage(func);
-	}
-
 	public onDelete(func: DiscordDeleteHandler): void {
 		this.api.onDelete(func);
-	}
-
-	public onPing(func: DiscordMessageHandler): void {
-		this.api.onPing(func);
 	}
 
 	public async awaitReaction(
