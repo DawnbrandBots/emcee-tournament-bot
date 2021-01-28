@@ -1,4 +1,3 @@
-import { DatabaseTournament } from "../database/interface";
 import { getLogger } from "../util/logger";
 
 const logger = getLogger("discord");
@@ -69,10 +68,6 @@ export interface DiscordWrapper {
 	getMentionedUser(msg: DiscordMessageIn): string;
 	getUsername(userId: string): string;
 	getRESTUsername(userId: string): Promise<string | null>;
-	getPlayerRole(tournamentId: string, channelId: string): Promise<string>;
-	grantPlayerRole(userId: string, roleId: string): Promise<void>;
-	removePlayerRole(userId: string, roleId: string): Promise<void>;
-	deletePlayerRole(tournamentId: string, channelId: string): Promise<void>;
 	sendDirectMessage(userId: string, content: DiscordMessageOut): Promise<void>;
 }
 
@@ -161,22 +156,6 @@ export class DiscordInterface {
 
 	public async sendDirectMessage(userId: string, content: DiscordMessageOut): Promise<void> {
 		await this.api.sendDirectMessage(userId, content);
-	}
-
-	public async getPlayerRole(tournament: DatabaseTournament): Promise<string> {
-		return await this.api.getPlayerRole(tournament.id, tournament.server);
-	}
-
-	public async grantPlayerRole(userId: string, roleId: string): Promise<void> {
-		await this.api.grantPlayerRole(userId, roleId);
-	}
-
-	public async removePlayerRole(userId: string, roleId: string): Promise<void> {
-		await this.api.removePlayerRole(userId, roleId);
-	}
-
-	public async deletePlayerRole(tournament: DatabaseTournament): Promise<void> {
-		await this.api.deletePlayerRole(tournament.id, tournament.server);
 	}
 
 	public getChannel(query: string): string | undefined {

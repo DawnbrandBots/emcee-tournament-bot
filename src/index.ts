@@ -7,6 +7,7 @@ import { DiscordWrapperEris } from "./discord/eris";
 import { DiscordInterface } from "./discord/interface";
 import { registerEvents } from "./events";
 import { OrganiserRoleProvider } from "./role/organiser";
+import { ParticipantRoleProvider } from "./role/participant";
 import { Templater } from "./templates";
 import { TournamentManager } from "./TournamentManager";
 import { getLogger } from "./util/logger";
@@ -33,7 +34,8 @@ const logger = getLogger("index");
 	const eris = new DiscordWrapperEris(bot);
 	const discord = new DiscordInterface(eris);
 	const organiserRole = new OrganiserRoleProvider(toRole, 0x3498db);
-	const tournamentManager = new TournamentManager(discord, database, website, templater);
+	const participantRole = new ParticipantRoleProvider(bot, 0xe67e22);
+	const tournamentManager = new TournamentManager(discord, database, website, templater, participantRole);
 	registerEvents(bot, prefix, { discord, tournamentManager, organiserRole });
 	discord.onDelete(msg => tournamentManager.cleanRegistration(msg));
 

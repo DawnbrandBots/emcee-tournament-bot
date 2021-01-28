@@ -5,6 +5,7 @@ import { DatabaseWrapperPostgres } from "./database/postgres";
 import { getDeck } from "./deck/deck";
 import { getDeckFromMessage, prettyPrint } from "./deck/discordDeck";
 import { DiscordAttachmentOut, DiscordInterface, DiscordMessageIn, DiscordMessageLimited } from "./discord/interface";
+import { ParticipantRoleProvider } from "./role/participant";
 import { Templater } from "./templates";
 import { PersistentTimer } from "./timer";
 import { BlockedDMsError, ChallongeAPIError, TournamentNotFoundError, UserError } from "./util/errors";
@@ -64,7 +65,8 @@ export class TournamentManager implements TournamentInterface {
 		private discord: DiscordInterface,
 		private database: Public<DatabaseWrapperPostgres>,
 		private website: WebsiteInterface,
-		private templater: Templater
+		private templater: Templater,
+		private participantRole: ParticipantRoleProvider
 	) {}
 
 	/// Link seam to override for testing
@@ -312,7 +314,7 @@ export class TournamentManager implements TournamentInterface {
 				msg.author
 			);
 			await this.database.confirmPlayer(tournament.id, msg.author, challongeId, deck.url);
-			await this.discord.grantPlayerRole(msg.author, await this.discord.getPlayerRole(tournament));
+			await this.participantRole.grant(msg.author, tournament);
 			const channels = tournament.privateChannels;
 			await Promise.all(
 				channels.map(async c => {
@@ -420,10 +422,8 @@ export class TournamentManager implements TournamentInterface {
 	// we could have logic for sending matchups in DMs in this function,
 	// but we want this to send first and leave it largely self-contained
 	private async sendNewRoundMessage(channelId: string, tournament: DatabaseTournament, url: string): Promise<void> {
-		const role = await this.discord.getPlayerRole(tournament);
-		const message = `A new round of ${tournament.name} has begun! ${this.discord.mentionRole(
-			role
-		)}\nPairings will be sent out by Direct Message shortly, or can be found here: ${url}`;
+		const role = this.discord.mentionRole(await this.participantRole.get(tournament));
+		const message = `A new round of ${tournament.name} has begun! ${role}\nPairings will be sent out by Direct Message shortly, or can be found here: ${url}`;
 		await this.discord.sendMessage(channelId, message);
 	}
 
@@ -480,7 +480,7 @@ export class TournamentManager implements TournamentInterface {
 	}
 
 	private async startNewRound(tournament: DatabaseTournament, url: string, skip = false): Promise<void> {
-		const participantRole = this.discord.mentionRole(await this.discord.getPlayerRole(tournament));
+		const role = this.discord.mentionRole(await this.participantRole.get(tournament));
 		await this.cancelTimers(tournament);
 		this.timers[tournament.id] = await Promise.all(
 			tournament.publicChannels.map(async channelId => {
@@ -488,7 +488,7 @@ export class TournamentManager implements TournamentInterface {
 				return await this.createPersistentTimer(
 					new Date(Date.now() + 50 * 60 * 1000), // 50 minutes
 					channelId,
-					`That's time in the round, ${participantRole}! Please end the current phase, then the player with the lower LP must forfeit!`,
+					`That's time in the round, ${role}! Please end the current phase, then the player with the lower LP must forfeit!`,
 					5, // update every 5 seconds
 					tournament.id
 				);
@@ -595,18 +595,18 @@ export class TournamentManager implements TournamentInterface {
 		await this.cancelTimers(tournament);
 
 		await this.database.finishTournament(tournamentId);
+		const role = this.discord.mentionRole(await this.participantRole.get(tournament));
 		await Promise.all(
 			channels.map(async c => {
-				const role = await this.discord.getPlayerRole(tournament);
 				await this.discord.sendMessage(
 					c,
 					`${tournament.name} has ${
 						cancel ? "been cancelled." : "concluded!"
-					} Thank you all for playing! ${this.discord.mentionRole(role)}\nResults: ${webTourn.url}`
+					} Thank you all for playing! ${role}\nResults: ${webTourn.url}`
 				);
 			})
 		);
-		await this.discord.deletePlayerRole(tournament);
+		await this.participantRole.delete(tournament);
 		// this condition both prevents errors with small tournaments
 		// and ensures top cuts don't get their own top cuts
 		if (!cancel && tournament.players.length > 8) {
@@ -626,7 +626,6 @@ export class TournamentManager implements TournamentInterface {
 			}
 
 			const newTournament = await this.database.getTournament(newId);
-			const newRole = await this.discord.getPlayerRole(newTournament);
 			for (const player of top) {
 				const challongeId = await this.website.registerPlayer(
 					newId,
@@ -636,7 +635,7 @@ export class TournamentManager implements TournamentInterface {
 				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 				const deck = tournament.findPlayer(player.discordId)!.deck;
 				await this.database.confirmPlayer(newId, player.discordId, challongeId, deck);
-				await this.discord.grantPlayerRole(player.discordId, newRole);
+				await this.participantRole.grant(player.discordId, newTournament);
 			}
 			for (const channel of tournament.publicChannels) {
 				await this.database.addAnnouncementChannel(newId, channel, "public");
@@ -778,7 +777,7 @@ export class TournamentManager implements TournamentInterface {
 		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 		const player = tournament.findPlayer(playerId)!;
 		await this.website.removePlayer(tournament.id, player.challongeId);
-		await this.discord.removePlayerRole(playerId, await this.discord.getPlayerRole(tournament));
+		await this.participantRole.ungrant(playerId, tournament);
 		logger.verbose(`User ${playerId} dropped from tournament ${tournament.id}${force ? " by host" : ""}.`);
 		await this.discord.sendDirectMessage(
 			playerId,

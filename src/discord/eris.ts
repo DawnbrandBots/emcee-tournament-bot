@@ -1,17 +1,15 @@
 import {
 	Client,
 	Emoji,
-	Guild,
 	GuildChannel,
 	Member,
 	Message,
 	MessageContent,
 	MessageFile,
 	PossiblyUncachedMessage,
-	Role,
 	TextChannel
 } from "eris";
-import { AssertTextChannelError, BlockedDMsError, MiscInternalError, UserError } from "../util/errors";
+import { AssertTextChannelError, BlockedDMsError, UserError } from "../util/errors";
 import { getLogger } from "../util/logger";
 import {
 	DiscordAttachmentOut,
@@ -162,77 +160,6 @@ export class DiscordWrapperEris implements DiscordWrapper {
 				logger.error(e);
 			}
 		}
-	}
-
-	private async createPlayerRole(guild: Guild, tournamentId: string): Promise<Role> {
-		const newRole = await guild.createRole(
-			{
-				name: `MC-${tournamentId}-player`,
-				color: 0xe67e22
-			},
-			"Auto-created by Emcee bot."
-		);
-		logger.verbose(`Player role ${newRole.id} created in ${guild.id}.`);
-		return newRole;
-	}
-
-	public async getPlayerRole(tournamentId: string, serverId: string): Promise<string> {
-		if (tournamentId in this.playerRoles) {
-			return this.playerRoles[tournamentId];
-		}
-		const guild = this.bot.guilds.get(serverId);
-		if (!guild) {
-			throw new MiscInternalError(
-				`Could not find server ${serverId} as registered with Tournament ${tournamentId}.`
-			);
-		}
-		const role = guild.roles.find(r => r.name === `MC-${tournamentId}-player`);
-		if (role) {
-			this.playerRoles[tournamentId] = role.id;
-			return role.id;
-		}
-		const newRole = await this.createPlayerRole(guild, tournamentId);
-
-		return newRole.id;
-	}
-
-	/**
-	 * Retrieve the server member object for the user if the user belongs to the server
-	 * that has the the specified role. The user does not have to have the role.
-	 *
-	 * @param userId Discord user snowflake
-	 * @param roleId Query the server by a role snowflake
-	 */
-	private async getServerMember(userId: string, roleId: string): Promise<Member> {
-		const guild = this.bot.guilds.find(g => g.roles.has(roleId));
-		if (!guild) {
-			throw new MiscInternalError(`Could not find guild with role ${roleId}.`);
-		}
-		const cachedMember = guild.members.get(userId);
-		return cachedMember || (await guild.getRESTMember(userId));
-	}
-
-	public async grantPlayerRole(userId: string, roleId: string): Promise<void> {
-		const member = await this.getServerMember(userId, roleId);
-		await member.addRole(roleId);
-	}
-
-	public async removePlayerRole(userId: string, roleId: string): Promise<void> {
-		const member = await this.getServerMember(userId, roleId);
-		await member.removeRole(roleId);
-	}
-
-	public async deletePlayerRole(tournamentId: string, serverId: string): Promise<void> {
-		// yes this creates it just to delete it if it doesn't exist
-		// but that's better than not deleting it if it exists but isn't cached
-		const role = await this.getPlayerRole(tournamentId, serverId);
-		const guild = this.bot.guilds.get(serverId);
-		if (!guild) {
-			throw new MiscInternalError(
-				`Could not find server ${serverId} as registered with Tournament ${tournamentId}.`
-			);
-		}
-		await guild.deleteRole(role);
 	}
 
 	public onDelete(handler: DiscordDeleteHandler): void {
