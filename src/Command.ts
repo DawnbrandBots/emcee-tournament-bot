@@ -1,4 +1,6 @@
-import { DiscordInterface, DiscordMessageIn } from "./discord/interface";
+import { DiscordInterface } from "./discord/interface";
+import { DiscordMessageIn } from "./events/messageCreate";
+import { OrganiserRoleProvider } from "./role/organiser";
 import { TournamentInterface } from "./TournamentManager";
 import { UserError } from "./util/errors";
 import { getLogger } from "./util/logger";
@@ -8,6 +10,7 @@ const logger = getLogger("command");
 export interface CommandSupport {
 	discord: DiscordInterface;
 	tournamentManager: TournamentInterface;
+	organiserRole: OrganiserRoleProvider;
 }
 
 // This is a composition-over-inheritance approach. In an inheritance model this

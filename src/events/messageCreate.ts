@@ -22,6 +22,7 @@ export interface DiscordEmbed {
 export type DiscordMessageOut = string | DiscordEmbed;
 
 export interface DiscordMessageIn {
+	secretOriginalMessage: Message; // remove when refactor complete
 	id: string;
 	content: string;
 	attachments: DiscordAttachmentIn[];
@@ -49,6 +50,7 @@ function wrapMessageIn(msg: Message): DiscordMessageIn {
 	const channel = msg.channel;
 	const guildId = channel instanceof GuildChannel ? channel.guild.id : "private";
 	return {
+		secretOriginalMessage: msg, // remove when refactor complete
 		id: msg.id,
 		attachments: msg.attachments,
 		content: msg.content,

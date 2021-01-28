@@ -8,9 +8,8 @@ const command: CommandDefinition = {
 	requiredArgs: [],
 	executor: async (msg, args, support) => {
 		void args;
-		await support.discord.authenticateTO(msg);
+		await support.organiserRole.authorize(msg.secretOriginalMessage);
 		// This log may be meaningless because we perform no parameter processing
-		// and authenticateTO already logs
 		logger.verbose(
 			JSON.stringify({
 				channel: msg.channelId,

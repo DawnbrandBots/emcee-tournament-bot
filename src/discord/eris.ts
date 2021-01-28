@@ -11,14 +11,7 @@ import {
 	Role,
 	TextChannel
 } from "eris";
-import { toRole } from "../config/config.json";
-import {
-	AssertTextChannelError,
-	BlockedDMsError,
-	MiscInternalError,
-	UnauthorisedTOError,
-	UserError
-} from "../util/errors";
+import { AssertTextChannelError, BlockedDMsError, MiscInternalError, UserError } from "../util/errors";
 import { getLogger } from "../util/logger";
 import {
 	DiscordAttachmentOut,
@@ -38,7 +31,6 @@ export class DiscordWrapperEris implements DiscordWrapper {
 	private reactionRemoveHandlers: DiscordReactionHandler[];
 	private deleteHandlers: DiscordDeleteHandler[];
 	private wrappedMessages: { [id: string]: Message };
-	private toRoles: { [guild: string]: string };
 	private playerRoles: { [tournamentId: string]: string };
 
 	constructor(private bot: Client) {
@@ -46,17 +38,10 @@ export class DiscordWrapperEris implements DiscordWrapper {
 		this.reactionHandlers = [];
 		this.reactionRemoveHandlers = [];
 		this.wrappedMessages = {};
-		this.toRoles = {};
 		this.playerRoles = {};
 		this.bot.on("messageReactionAdd", this.handleReaction.bind(this));
 		this.bot.on("messageReactionRemove", this.handleReactionRemove.bind(this));
 		this.bot.on("messageDelete", this.handleDelete.bind(this));
-		this.bot.on("guildCreate", async guild => {
-			logger.info(`Guild create: ${guild}`);
-			// TODO: Make this more exposed in the main bot files
-			// but this whole module system is getting overhauled later anyway
-			await this.createTORole(guild);
-		});
 	}
 
 	private wrapMessageIn(msg: Message): DiscordMessageIn {
@@ -179,32 +164,6 @@ export class DiscordWrapperEris implements DiscordWrapper {
 		}
 	}
 
-	private async createTORole(guild: Guild): Promise<Role> {
-		const newRole = await guild.createRole(
-			{
-				name: toRole,
-				color: 0x3498db
-			},
-			"Auto-created by Emcee bot."
-		);
-		this.toRoles[guild.id] = newRole.id;
-		logger.verbose(`TO role ${newRole.id} created in ${guild.id}.`);
-		return newRole;
-	}
-
-	private async getTORole(guild: Guild): Promise<string> {
-		if (guild.id in this.toRoles) {
-			return this.toRoles[guild.id];
-		}
-		const role = guild.roles.find(r => r.name === toRole);
-		if (role) {
-			this.toRoles[guild.id] = role.id;
-			return role.id;
-		}
-		const newRole = await this.createTORole(guild);
-		return newRole.id;
-	}
-
 	private async createPlayerRole(guild: Guild, tournamentId: string): Promise<Role> {
 		const newRole = await guild.createRole(
 			{
@@ -213,7 +172,6 @@ export class DiscordWrapperEris implements DiscordWrapper {
 			},
 			"Auto-created by Emcee bot."
 		);
-		this.toRoles[guild.id] = newRole.id;
 		logger.verbose(`Player role ${newRole.id} created in ${guild.id}.`);
 		return newRole;
 	}
@@ -302,22 +260,6 @@ export class DiscordWrapperEris implements DiscordWrapper {
 		} catch (e) {
 			// TODO: check for specific error for message not having the specified reaction/user
 			return false;
-		}
-	}
-
-	public async authenticateTO(m: DiscordMessageIn): Promise<void> {
-		const msg = this.wrappedMessages[m.id];
-		if (!(msg && msg.channel instanceof GuildChannel)) {
-			throw new UnauthorisedTOError(msg.author.id);
-		}
-		const guild = msg.channel.guild;
-		const member = guild.members.get(msg.author.id);
-		if (!member) {
-			throw new UnauthorisedTOError(msg.author.id);
-		}
-		const role = await this.getTORole(guild);
-		if (!member.roles.includes(role)) {
-			throw new UnauthorisedTOError(msg.author.id);
 		}
 	}
 

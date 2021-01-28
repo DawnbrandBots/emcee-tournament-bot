@@ -1,11 +1,12 @@
 import { Client } from "eris";
-import { prefix } from "./config/config.json";
+import { prefix, toRole } from "./config/config.json";
 import { challongeToken, challongeUsername, discordToken, postgresqlUrl } from "./config/env";
 import { initializeDatabase } from "./database/postgres";
 import { initializeCardArray } from "./deck/deck";
 import { DiscordWrapperEris } from "./discord/eris";
 import { DiscordInterface } from "./discord/interface";
 import { registerEvents } from "./events";
+import { OrganiserRoleProvider } from "./role/organiser";
 import { Templater } from "./templates";
 import { TournamentManager } from "./TournamentManager";
 import { getLogger } from "./util/logger";
@@ -31,9 +32,9 @@ const logger = getLogger("index");
 	});
 	const eris = new DiscordWrapperEris(bot);
 	const discord = new DiscordInterface(eris);
-
+	const organiserRole = new OrganiserRoleProvider(toRole, 0x3498db);
 	const tournamentManager = new TournamentManager(discord, database, website, templater);
-	registerEvents(bot, prefix, { discord, tournamentManager });
+	registerEvents(bot, prefix, { discord, tournamentManager, organiserRole });
 	discord.onDelete(msg => tournamentManager.cleanRegistration(msg));
 
 	let firstReady = true;

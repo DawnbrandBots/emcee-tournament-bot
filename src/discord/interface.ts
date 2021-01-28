@@ -66,7 +66,6 @@ export interface DiscordWrapper {
 	getMessage(channelId: string, messageId: string): Promise<DiscordMessageIn | null>;
 	sendMessage(channelId: string, msg: DiscordMessageOut, file?: DiscordAttachmentOut): Promise<DiscordMessageSent>;
 	deleteMessage(channelId: string, messageId: string): Promise<void>;
-	authenticateTO(msg: DiscordMessageIn): Promise<void>;
 	getMentionedUser(msg: DiscordMessageIn): string;
 	getUsername(userId: string): string;
 	getRESTUsername(userId: string): Promise<string | null>;
@@ -118,18 +117,6 @@ export class DiscordInterface {
 		userId: string
 	): Promise<boolean> {
 		return await this.api.removeUserReaction(channelId, messageId, emoji, userId);
-	}
-
-	public async authenticateTO(msg: DiscordMessageIn): Promise<void> {
-		await this.api.authenticateTO(msg);
-		logger.verbose(
-			JSON.stringify({
-				channel: msg.channelId,
-				message: msg.id,
-				user: msg.author,
-				event: `TO authorized ${msg.serverId}`
-			})
-		);
 	}
 
 	public mentionChannel(channelId: string): string {
