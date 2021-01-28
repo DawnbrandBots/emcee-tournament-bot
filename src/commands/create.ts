@@ -8,7 +8,7 @@ const command: CommandDefinition = {
 	name: "create",
 	requiredArgs: ["name", "description"],
 	executor: async (msg, args, support) => {
-		await support.organiserRole.authorize(msg.secretOriginalMessage);
+		await support.organiserRole.authorise(msg.secretOriginalMessage);
 		const [name, desc] = args;
 		logger.verbose(
 			JSON.stringify({

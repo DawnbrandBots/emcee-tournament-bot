@@ -8,7 +8,7 @@ const command: CommandDefinition = {
 	requiredArgs: [],
 	executor: async (msg, args, support) => {
 		void args;
-		await support.organiserRole.authorize(msg.secretOriginalMessage);
+		await support.organiserRole.authorise(msg.secretOriginalMessage);
 		// This log may be meaningless because we perform no parameter processing
 		logger.verbose(
 			JSON.stringify({

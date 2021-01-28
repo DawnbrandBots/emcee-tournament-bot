@@ -37,7 +37,7 @@ export class OrganiserRoleProvider {
 		return await this.create(server);
 	}
 
-	public async authorize(msg: Message): Promise<void> {
+	public async authorise(msg: Message): Promise<void> {
 		if (!(msg.channel instanceof GuildChannel)) {
 			throw new UnauthorisedTOError(msg.author.id);
 		}
