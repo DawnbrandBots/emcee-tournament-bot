@@ -14,10 +14,9 @@ type Tournament = {
 	server: string;
 };
 
-// TODO: logging, including additional parameters to role grants for audit log
+// TODO: logging
 // TODO: error handling for Discord API failures
 // TODO: figure out how to store server objects, if we even should
-// TODO: evaluate https://abal.moe/Eris/docs/Guild#function-removeMemberRole vs getRESTMember
 export class ParticipantRoleProvider {
 	protected roleCache: Record<string, ParticipantRole> = {};
 
@@ -54,18 +53,16 @@ export class ParticipantRoleProvider {
 		return role.id;
 	}
 
+	// Preconditions: user in tournament.server or this throws
+
 	public async grant(userId: string, tournament: Tournament): Promise<void> {
 		const role = await this.get(tournament);
-		const server = this.roleCache[tournament.id].server;
-		const member = server.members.get(userId) || (await server.getRESTMember(userId));
-		member.addRole(role);
+		await this.roleCache[tournament.id].server.addMemberRole(userId, role, "Granted by Emcee.");
 	}
 
 	public async ungrant(userId: string, tournament: Tournament): Promise<void> {
 		const role = await this.get(tournament);
-		const server = this.roleCache[tournament.id].server;
-		const member = server.members.get(userId) || (await server.getRESTMember(userId));
-		member.removeRole(role);
+		await this.roleCache[tournament.id].server.removeMemberRole(userId, role, "Removed by Emcee.");
 	}
 
 	public async delete(tournament: Tournament): Promise<void> {
