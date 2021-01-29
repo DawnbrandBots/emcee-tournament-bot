@@ -102,6 +102,18 @@ export class WebsiteInterface {
 		}
 	}
 
+	public async findClosedMatch(
+		tournamentId: string,
+		playerId: number,
+		round: number
+	): Promise<WebsiteMatch | undefined> {
+		const playerMatches = await this.api.getMatches(tournamentId, false, playerId);
+		const roundMatches = playerMatches.filter(m => m.round === round);
+		if (roundMatches.length > 0) {
+			return roundMatches[0];
+		}
+	}
+
 	public async getRound(tournamentId: string): Promise<number> {
 		const matches = await this.api.getMatches(tournamentId, true);
 		if (matches.length < 1) {
