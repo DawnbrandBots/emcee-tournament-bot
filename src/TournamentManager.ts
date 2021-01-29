@@ -658,13 +658,23 @@ export class TournamentManager implements TournamentInterface {
 		const tournament = await this.database.getTournament(tournamentId, TournamentStatus.IPR);
 		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 		const player = tournament.findPlayer(playerId)!;
-		const match = await this.website.findMatch(tournamentId, player.challongeId);
+		const mention = this.discord.mentionUser(playerId); // prepare for multiple uses below
+		let match = await this.website.findMatch(tournamentId, player.challongeId);
 		// if a host is submitting, skip straight to trusting the score
 		if (host) {
+			// TODO: is having these in the same function doing more harm than good?
+			if (!match) {
+				match = await this.website.findClosedMatch(tournamentId, player.challongeId);
+			}
+			if (!match) {
+				// need to throw or else the command will report a success
+				throw new UserError(
+					`Could not find an open match in Tournament ${tournament.name} including ${mention}.`
+				);
+			}
 			await this.website.submitScore(tournamentId, player.challongeId, scorePlayer, scoreOpp);
 			return ""; // output in this case is handled by the command
 		}
-		const mention = this.discord.mentionUser(playerId); // prepare for multiple uses below
 		if (!match) {
 			return `Could not find an open match in Tournament ${tournament.name} including you, ${mention}. This could mean your opponent dropped, conceding the match. If the score for your current match is incorrect, please ask a host to change it.`;
 		}
