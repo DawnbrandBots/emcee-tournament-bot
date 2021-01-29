@@ -373,7 +373,8 @@ export class WebsiteWrapperChallonge implements WebsiteWrapper {
 		return {
 			player1: match.player1_id,
 			player2: match.player2_id,
-			matchId: match.id
+			matchId: match.id,
+			round: match.round
 		};
 	}
 

@@ -37,6 +37,7 @@ export interface WebsiteMatch {
 	player1: number;
 	player2: number;
 	matchId: number;
+	round: number;
 }
 
 export class WebsiteInterface {
