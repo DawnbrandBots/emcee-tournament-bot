@@ -1,4 +1,4 @@
-import { ChallongeIDConflictError } from "../util/errors";
+import { ChallongeIDConflictError, UserError } from "../util/errors";
 
 export interface WebsiteWrapper {
 	createTournament(name: string, desc: string, url: string, topCut?: boolean): Promise<WebsiteTournament>;
@@ -100,6 +100,17 @@ export class WebsiteInterface {
 		if (matches.length > 0) {
 			return matches[0];
 		}
+	}
+
+	public async getRound(tournamentId: string): Promise<number> {
+		const matches = await this.api.getMatches(tournamentId, true);
+		if (matches.length < 1) {
+			throw new UserError(
+				`No matches found for Tournament ${tournamentId}! This likely means the tournament either has not started or is finished!`
+			);
+		}
+		// All open matches should have the same round in Swiss. In Elim, we expect the array to be sorted by age and the lowest round should be the current.
+		return matches[0].round;
 	}
 
 	public async getPlayers(tournamentId: string): Promise<WebsitePlayer[]> {
