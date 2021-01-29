@@ -36,13 +36,8 @@ export interface TournamentInterface {
 	openTournament(tournamentId: string): Promise<void>;
 	startTournament(tournamentId: string): Promise<void>;
 	finishTournament(tournamentId: string, cancel: boolean | undefined): Promise<void>;
-	submitScore(
-		tournamentId: string,
-		playerId: string,
-		scorePlayer: number,
-		scoreOpp: number,
-		host?: boolean
-	): Promise<string>;
+	submitScore(tournamentId: string, playerId: string, scorePlayer: number, scoreOpp: number): Promise<string>;
+	submitScoreForce(tournamentId: string, playerId: string, scorePlayer: number, scoreOpp: number): Promise<string>;
 	nextRound(tournamentId: string, skip?: boolean): Promise<void>;
 	listPlayers(tournamentId: string): Promise<DiscordAttachmentOut>;
 	getPlayerDeck(tournamentId: string, playerId: string): Promise<Deck>;
@@ -648,12 +643,11 @@ export class TournamentManager implements TournamentInterface {
 		}
 	}
 
-	public async submitScore(
+	public async submitScoreForce(
 		tournamentId: string,
 		playerId: string,
 		scorePlayer: number,
-		scoreOpp: number,
-		host = false
+		scoreOpp: number
 	): Promise<string> {
 		const tournament = await this.database.getTournament(tournamentId, TournamentStatus.IPR);
 		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -661,20 +655,30 @@ export class TournamentManager implements TournamentInterface {
 		const mention = this.discord.mentionUser(playerId); // prepare for multiple uses below
 		let match = await this.website.findMatch(tournamentId, player.challongeId);
 		// if a host is submitting, skip straight to trusting the score
-		if (host) {
-			// TODO: is having these in the same function doing more harm than good?
-			if (!match) {
-				match = await this.website.findClosedMatch(tournamentId, player.challongeId);
-			}
-			if (!match) {
-				// need to throw or else the command will report a success
-				throw new UserError(
-					`Could not find an open match in Tournament ${tournament.name} including ${mention}.`
-				);
-			}
-			await this.website.submitScore(tournamentId, player.challongeId, scorePlayer, scoreOpp);
-			return ""; // output in this case is handled by the command
+		if (!match) {
+			match = await this.website.findClosedMatch(tournamentId, player.challongeId);
 		}
+		if (!match) {
+			// need to throw or else the command will report a success
+			return `Could not find an open match in Tournament ${tournament.name} including ${mention}.`;
+		}
+		await this.website.submitScore(tournamentId, player.challongeId, scorePlayer, scoreOpp);
+		return `Score of ${scorePlayer}-${scoreOpp} submitted in favour of ${mention} (${this.discord.getUsername(
+			playerId
+		)}) in Tournament ${tournamentId}!`; // output in this case is handled by the command
+	}
+
+	public async submitScore(
+		tournamentId: string,
+		playerId: string,
+		scorePlayer: number,
+		scoreOpp: number
+	): Promise<string> {
+		const tournament = await this.database.getTournament(tournamentId, TournamentStatus.IPR);
+		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+		const player = tournament.findPlayer(playerId)!;
+		const mention = this.discord.mentionUser(playerId); // prepare for multiple uses below
+		const match = await this.website.findMatch(tournamentId, player.challongeId);
 		if (!match) {
 			return `Could not find an open match in Tournament ${tournament.name} including you, ${mention}. This could mean your opponent dropped, conceding the match. If the score for your current match is incorrect, please ask a host to change it.`;
 		}
