@@ -35,9 +35,9 @@ export class ParticipantRoleProvider {
 		return role;
 	}
 
-	public async get(tournament: Tournament): Promise<string> {
+	protected async lazyGet(tournament: Tournament): Promise<ParticipantRole> {
 		if (tournament.id in this.roleCache) {
-			return this.roleCache[tournament.id].id;
+			return this.roleCache[tournament.id];
 		}
 		const server = this.bot.guilds.get(tournament.server);
 		if (!server) {
@@ -46,40 +46,87 @@ export class ParticipantRoleProvider {
 				`Could not find server ${tournament.server} as registered with Tournament ${tournament.server}.`
 			);
 		}
+		logger.verbose(
+			JSON.stringify({
+				method: "get",
+				tournament: tournament.id,
+				server: tournament.server,
+				event: "cache miss"
+			})
+		);
 		const role =
 			server.roles.find(r => r.name === `MC-${tournament.id}-player`) ||
 			(await this.create(server, tournament.id));
-		this.roleCache[tournament.id] = { id: role.id, server };
-		return role.id;
+		return (this.roleCache[tournament.id] = { id: role.id, server });
 	}
 
-	// Preconditions: user in tournament.server or this throws
+	public async get(tournament: Tournament): Promise<string> {
+		return (await this.lazyGet(tournament)).id;
+	}
+
+	// Preconditions: user is in tournament.server or this throws
 
 	public async grant(userId: string, tournament: Tournament): Promise<void> {
-		const role = await this.get(tournament);
-		await this.roleCache[tournament.id].server.addMemberRole(userId, role, "Granted by Emcee.");
+		const { id, server } = await this.lazyGet(tournament);
+		await server.addMemberRole(userId, id, "Granted by Emcee.");
 	}
 
 	public async ungrant(userId: string, tournament: Tournament): Promise<void> {
-		const role = await this.get(tournament);
-		await this.roleCache[tournament.id].server.removeMemberRole(userId, role, "Removed by Emcee.");
+		const { id, server } = await this.lazyGet(tournament);
+		await server.removeMemberRole(userId, id, "Granted by Emcee.");
 	}
 
 	public async delete(tournament: Tournament): Promise<void> {
+		logger.verbose(
+			JSON.stringify({
+				method: "delete",
+				tournament: tournament.id,
+				server: tournament.server,
+				event: "attempt"
+			})
+		);
 		if (tournament.id in this.roleCache) {
 			const { id, server } = this.roleCache[tournament.id];
-			server.deleteRole(id);
+			await server.deleteRole(id); // potential exception
+			delete this.roleCache[tournament.id];
+			logger.info(
+				JSON.stringify({
+					method: "delete",
+					tournament: tournament.id,
+					server: tournament.server,
+					serverName: server.name,
+					event: "success"
+				})
+			);
+			return;
 		} else {
 			const server = this.bot.guilds.get(tournament.server);
 			if (!server) {
-				// This actually only checks if the server is in the cache
-				throw new MiscInternalError(
-					`Could not find server ${tournament.server} as registered with Tournament ${tournament.server}.`
-				);
+				logger.error(new Error(`Could not find server ${tournament.server}.`));
+				return;
 			}
 			const role = server.roles.find(r => r.name === `MC-${tournament.id}-player`);
 			if (role) {
-				server.deleteRole(role.id);
+				await server.deleteRole(role.id); // potential exception
+				logger.info(
+					JSON.stringify({
+						method: "delete",
+						tournament: tournament.id,
+						server: tournament.server,
+						serverName: server.name,
+						event: "success, cache miss"
+					})
+				);
+			} else {
+				logger.warn(
+					JSON.stringify({
+						method: "delete",
+						tournament: tournament.id,
+						server: tournament.server,
+						serverName: server.name,
+						event: "not found"
+					})
+				);
 			}
 		}
 	}
