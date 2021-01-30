@@ -1,6 +1,6 @@
 import { WebsiteMatch, WebsitePlayer, WebsiteTournament, WebsiteWrapper } from "./interface";
 import fetch, { Response } from "node-fetch";
-import { ChallongeAPIError } from "../util/errors";
+import { ChallongeAPIError, UserError } from "../util/errors";
 
 type TournamentType = "single elimination" | "double elimination" | "round robin" | "swiss";
 type RankedBy = "match wins" | "game wins" | "points scored" | "points difference" | "custom";
@@ -373,18 +373,14 @@ export class WebsiteWrapperChallonge implements WebsiteWrapper {
 		return {
 			player1: match.player1_id,
 			player2: match.player2_id,
-			matchId: match.id
+			matchId: match.id,
+			round: match.round
 		};
 	}
 
-	public async getMatches(tournamentId: string): Promise<WebsiteMatch[]> {
-		const webMatches = await this.indexMatches(tournamentId, "open");
-		return webMatches.map(this.wrapMatch.bind(this));
-	}
-
-	public async getMatchWithPlayer(tournamentId: string, playerId: number): Promise<WebsiteMatch> {
-		const webMatch = await this.indexMatches(tournamentId, "open", playerId);
-		return this.wrapMatch(webMatch[0]);
+	public async getMatches(tournamentId: string, open = false, playerId?: number): Promise<WebsiteMatch[]> {
+		const webMatches = await this.indexMatches(tournamentId, open ? "open" : undefined, playerId);
+		return webMatches.map(this.wrapMatch);
 	}
 
 	private async updateMatch(
@@ -407,12 +403,18 @@ export class WebsiteWrapperChallonge implements WebsiteWrapper {
 		loserScore: number
 	): Promise<void> {
 		const webMatch = await this.indexMatches(tournamentId, "open", winner);
-		const match = webMatch[0].match;
-		const score = match.player1_id === winner ? `${winnerScore}-${loserScore}` : `${loserScore}-${winnerScore}`;
-		await this.updateMatch(tournamentId, match.id, {
-			winner_id: winnerScore === loserScore ? "tie" : winner,
-			scores_csv: score
-		});
+		if (webMatch.length > 0) {
+			const match = webMatch[0].match;
+			const score = match.player1_id === winner ? `${winnerScore}-${loserScore}` : `${loserScore}-${winnerScore}`;
+			await this.updateMatch(tournamentId, match.id, {
+				winner_id: winnerScore === loserScore ? "tie" : winner,
+				scores_csv: score
+			});
+		} else {
+			// TODO: Find a way to get the most recent closed match with that play and verify that it is in the current round.
+			// This is to enable overriding of incorrect scores.
+			throw new UserError("There is no open match for the specified player.");
+		}
 	}
 
 	private async indexPlayers(tournamentId: string): Promise<ChallongeParticipant[]> {
@@ -426,6 +428,7 @@ export class WebsiteWrapperChallonge implements WebsiteWrapper {
 		return {
 			challongeId: player.id,
 			discordId: player.misc || "DUMMY", // Dummy players should have already been given an enumerated ID
+			active: player.active,
 			rank: player.final_rank || -1,
 			seed: player.seed
 		};

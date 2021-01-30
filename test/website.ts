@@ -62,7 +62,8 @@ describe("Tournament flow commands", function () {
 		expect(match).to.deep.equal({
 			player1: 1,
 			player2: 2,
-			matchId: 0
+			matchId: 0,
+			round: 1
 		});
 	});
 

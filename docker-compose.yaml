@@ -9,7 +9,7 @@ x-common: &common
 
 services:
   postgres:
-    image: postgres:alpine
+    image: "postgres:${POSTGRES_VERSION}"
     user: postgres
     environment:
       POSTGRES_DB: "${POSTGRES_DB}"
@@ -27,6 +27,35 @@ services:
       timeout: 5s
       retries: 5
     <<: *common
+  adminer:
+    image: adminer
+    environment:
+      ADMINER_DESIGN: "${ADMINER_DESIGN}"
+      ADMINER_DEFAULT_SERVER: postgres
+    ports:
+      - "${ADMINER_HOST_PORT}:8080"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080"]
+    depends_on:
+      - postgres
+    <<: *common
+  backup:
+    image: "prodrigestivill/postgres-backup-local:${POSTGRES_VERSION}"
+    user: postgres
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_DB: "${POSTGRES_DB}"
+      POSTGRES_USER: "${POSTGRES_USER}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
+      SCHEDULE: "${BACKUP_SCHEDULE}"
+      BACKUP_KEEP_DAYS: "${BACKUP_KEEP_DAYS}"
+      BACKUP_KEEP_WEEKS: "${BACKUP_KEEP_WEEKS}"
+      BACKUP_KEEP_MONTHS: "${BACKUP_KEEP_MONTHS}"
+    volumes:
+      - ./backups:/backups
+    depends_on:
+      - postgres
+    <<: *common
   bot:
     build: .
     image: "ghcr.io/alphakretin/emcee-discord-bot:${EMCEE_VERSION:-latest}"
@@ -39,6 +68,8 @@ services:
       DEBUG: "emcee:*"
     volumes:
       - ./dbs:/app/dbs
+    depends_on:
+      - postgres
     <<: *common
   watchtower:
     image: containrrr/watchtower

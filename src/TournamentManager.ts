@@ -400,9 +400,14 @@ export class TournamentManager implements TournamentInterface {
 
 	// we could have logic for sending matchups in DMs in this function,
 	// but we want this to send first and leave it largely self-contained
-	private async sendNewRoundMessage(channelId: string, tournament: DatabaseTournament, url: string): Promise<void> {
+	private async sendNewRoundMessage(
+		channelId: string,
+		tournament: DatabaseTournament,
+		url: string,
+		round: number
+	): Promise<void> {
 		const role = this.discord.mentionRole(await this.participantRole.get(tournament));
-		const message = `A new round of ${tournament.name} has begun! ${role}\nPairings will be sent out by Direct Message shortly, or can be found here: ${url}`;
+		const message = `Round ${round} of ${tournament.name} has begun! ${role}\nPairings will be sent out by Direct Message shortly, or can be found here: ${url}`;
 		await this.discord.sendMessage(channelId, message);
 	}
 
@@ -417,9 +422,10 @@ export class TournamentManager implements TournamentInterface {
 		tournament: DatabaseTournament,
 		receiverId: string,
 		opponentId: string,
-		opponentName: string | null
+		opponentName: string | null,
+		round: number
 	): Promise<void> {
-		let message = `A new round of ${tournament.name} has begun! `;
+		let message = `Round ${round} of ${tournament.name} has begun! `;
 		message += opponentName
 			? `Your opponent is ${this.discord.mentionUser(
 					opponentId
@@ -461,9 +467,10 @@ export class TournamentManager implements TournamentInterface {
 	private async startNewRound(tournament: DatabaseTournament, url: string, skip = false): Promise<void> {
 		const role = this.discord.mentionRole(await this.participantRole.get(tournament));
 		await this.cancelTimers(tournament);
+		const round = await this.website.getRound(tournament.id);
 		this.timers[tournament.id] = await Promise.all(
 			tournament.publicChannels.map(async channelId => {
-				await this.sendNewRoundMessage(channelId, tournament, url);
+				await this.sendNewRoundMessage(channelId, tournament, url, round);
 				return await this.createPersistentTimer(
 					new Date(Date.now() + 50 * 60 * 1000), // 50 minutes
 					channelId,
@@ -488,12 +495,12 @@ export class TournamentManager implements TournamentInterface {
 					const name1 = await this.getRealUsername(player1);
 					const name2 = await this.getRealUsername(player2);
 					if (name1) {
-						await this.sendMatchupDM(tournament, player1, player2, name2);
+						await this.sendMatchupDM(tournament, player1, player2, name2, round);
 					} else {
 						await this.reportMatchDMFailure(tournament, player1, player2);
 					}
 					if (name2) {
-						await this.sendMatchupDM(tournament, player2, player1, name1);
+						await this.sendMatchupDM(tournament, player2, player1, name1, round);
 					} else {
 						await this.reportMatchDMFailure(tournament, player2, player1);
 					}
@@ -511,7 +518,7 @@ export class TournamentManager implements TournamentInterface {
 		if (bye) {
 			await this.discord.sendDirectMessage(
 				bye,
-				`A new round of ${tournament.name} has begun! You have a bye for this round.`
+				`Round ${round} of ${tournament.name} has begun! You have a bye for this round.`
 			);
 		}
 	}
@@ -644,7 +651,7 @@ export class TournamentManager implements TournamentInterface {
 		}
 		const mention = this.discord.mentionUser(playerId); // prepare for multiple uses below
 		if (!match) {
-			return `Could not find an open match in Tournament ${tournament.name} including you, ${mention}`;
+			return `Could not find an open match in Tournament ${tournament.name} including you, ${mention}. This could mean your opponent dropped, conceding the match. If the score for your current match is incorrect, please ask a host to change it.`;
 		}
 		if (match.matchId in this.matchScores) {
 			const score = this.matchScores[match.matchId];
@@ -692,7 +699,7 @@ export class TournamentManager implements TournamentInterface {
 			playerScore: scorePlayer,
 			oppScore: scoreOpp
 		};
-		return `You have reported a score of ${scorePlayer}-${scoreOpp}, ${mention}. Your opponent still needs to confirm this score.`;
+		return `You have reported a score of ${scorePlayer}-${scoreOpp}, ${mention}. Your opponent still needs to confirm this score. If you want to drop, please wait for your opponent to confirm or you will concede 0-2.`;
 	}
 
 	// specifically only handles telling participants about a new round
@@ -722,6 +729,7 @@ export class TournamentManager implements TournamentInterface {
 		if (tournament) {
 			await this.sendDropMessage(tournament, playerId, tournament.id);
 		}
+		// players can only drop by reaction when a tournament is preparing, so we don't have to worry about scores
 	}
 
 	public async dropPlayer(tournamentId: string, playerId: string, force = false): Promise<void> {
@@ -731,6 +739,7 @@ export class TournamentManager implements TournamentInterface {
 		}
 	}
 
+	// TODO: misleading function name, this command handles all drop logic after checking validity
 	private async sendDropMessage(
 		tournament: DatabaseTournament,
 		playerId: string,
@@ -739,6 +748,25 @@ export class TournamentManager implements TournamentInterface {
 	): Promise<void> {
 		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 		const player = tournament.findPlayer(playerId)!;
+		// if the tournament is in progress, they may have a match we must concede on their behalf
+		if (tournament.status === TournamentStatus.IPR) {
+			const match = await this.website.findMatch(tournament.id, player.challongeId);
+			// if there's no match, their most recent score is already submitted.
+			if (match) {
+				const oppChallonge = match.player1 === player.challongeId ? match.player2 : match.player1;
+				await this.website.submitScore(tournament.id, oppChallonge, 2, 0);
+				const opponent = tournament.players.find(p => p.challongeId === oppChallonge);
+				// should exist but checking is safer than not-null assertion
+				if (opponent) {
+					await this.discord.sendDirectMessage(
+						opponent.discordId,
+						`Your opponent ${this.discord.mentionUser(
+							player.discordId
+						)} has dropped from the tournament, conceding this round to you. You don't need to submit a score for this round.`
+					);
+				}
+			}
+		}
 		await this.website.removePlayer(tournament.id, player.challongeId);
 		await this.participantRole.ungrant(playerId, tournament);
 		logger.verbose(`User ${playerId} dropped from tournament ${tournament.id}${force ? " by host" : ""}.`);
@@ -781,12 +809,10 @@ export class TournamentManager implements TournamentInterface {
 	}
 
 	public async registerBye(tournamentId: string, playerId: string): Promise<string[]> {
-		const tournament = await this.database.registerBye(tournamentId, playerId);
-		return tournament.byes;
+		return await this.database.registerBye(tournamentId, playerId);
 	}
 
 	public async removeBye(tournamentId: string, playerId: string): Promise<string[]> {
-		const tournament = await this.database.removeBye(tournamentId, playerId);
-		return tournament.byes;
+		return await this.database.removeBye(tournamentId, playerId);
 	}
 }
