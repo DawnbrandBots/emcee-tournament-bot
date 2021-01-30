@@ -36,7 +36,7 @@ const command: CommandDefinition = {
 			})
 		);
 		const name = support.discord.getUsername(player);
-		const [message, attachment] = prettyPrint(deck, `${name}.ydk`);
+		const [message, { filename, contents }] = prettyPrint(deck, `${name}.ydk`);
 		logger.verbose(
 			JSON.stringify({
 				channel: msg.channel.id,
@@ -47,7 +47,11 @@ const command: CommandDefinition = {
 				event: "success"
 			})
 		);
-		await reply(msg, message, attachment);
+		// TODO: replace
+		await reply(msg, typeof message === "string" ? message : { embed: message }, {
+			name: filename,
+			file: contents
+		});
 	}
 };
 
