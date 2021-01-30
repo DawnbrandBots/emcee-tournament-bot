@@ -1,6 +1,7 @@
 import { CommandDefinition } from "../Command";
 import { UserError } from "../util/errors";
 import { getLogger } from "../util/logger";
+import { reply } from "../util/reply";
 
 const logger = getLogger("command:score");
 
@@ -10,13 +11,13 @@ const command: CommandDefinition = {
 	executor: async (msg, args, support) => {
 		// TODO: infer tournamentId from tournament player is in? gotta make player-facing features as simple as possible
 		const [id, score] = args;
-		await support.tournamentManager.authenticatePlayer(id, msg.author);
+		await support.tournamentManager.authenticatePlayer(id, msg.author.id);
 		const scores = score.split("-").map(s => parseInt(s, 10));
 		logger.verbose(
 			JSON.stringify({
-				channel: msg.channelId,
+				channel: msg.channel.id,
 				message: msg.id,
-				user: msg.author,
+				user: msg.author.id,
 				tournament: id,
 				command: "score",
 				scores,
@@ -26,19 +27,19 @@ const command: CommandDefinition = {
 		if (scores.length !== 2) {
 			throw new UserError("Must provide score in format `#-#` e.g. `2-1`.");
 		}
-		const response = await support.tournamentManager.submitScore(id, msg.author, scores[0], scores[1]);
+		const response = await support.tournamentManager.submitScore(id, msg.author.id, scores[0], scores[1]);
 		logger.verbose(
 			JSON.stringify({
-				channel: msg.channelId,
+				channel: msg.channel.id,
 				message: msg.id,
-				user: msg.author,
+				user: msg.author.id,
 				tournament: id,
 				command: "score",
 				scores,
 				event: "success"
 			})
 		);
-		await msg.reply(response);
+		await reply(msg, response);
 	}
 };
 

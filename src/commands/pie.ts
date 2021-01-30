@@ -1,5 +1,6 @@
 import { CommandDefinition } from "../Command";
 import { getLogger } from "../util/logger";
+import { reply } from "../util/reply";
 
 const logger = getLogger("command:pie");
 
@@ -8,12 +9,12 @@ const command: CommandDefinition = {
 	requiredArgs: ["id"],
 	executor: async (msg, args, support) => {
 		const [id] = args;
-		await support.tournamentManager.authenticateHost(id, msg.author);
+		await support.tournamentManager.authenticateHost(id, msg.author.id);
 		logger.verbose(
 			JSON.stringify({
-				channel: msg.channelId,
+				channel: msg.channel.id,
 				message: msg.id,
-				user: msg.author,
+				user: msg.author.id,
 				tournament: id,
 				command: "pie",
 				event: "attempt"
@@ -22,15 +23,15 @@ const command: CommandDefinition = {
 		const csv = await support.tournamentManager.generatePieChart(id);
 		logger.verbose(
 			JSON.stringify({
-				channel: msg.channelId,
+				channel: msg.channel.id,
 				message: msg.id,
-				user: msg.author,
+				user: msg.author.id,
 				tournament: id,
 				command: "pie",
 				event: "success"
 			})
 		);
-		await msg.reply(`Archetype counts for Tournament ${id} are attached.`, csv);
+		await reply(msg, `Archetype counts for Tournament ${id} are attached.`, csv);
 	}
 };
 

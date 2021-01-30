@@ -1,5 +1,6 @@
 import { CommandDefinition } from "../Command";
 import { getLogger } from "../util/logger";
+import { reply } from "../util/reply";
 
 const logger = getLogger("command:forcedrop");
 
@@ -8,13 +9,13 @@ const command: CommandDefinition = {
 	requiredArgs: ["id"],
 	executor: async (msg, args, support) => {
 		const [id] = args;
-		await support.tournamentManager.authenticateHost(id, msg.author);
+		await support.tournamentManager.authenticateHost(id, msg.author.id);
 		const player = support.discord.getMentionedUser(msg);
 		logger.verbose(
 			JSON.stringify({
-				channel: msg.channelId,
+				channel: msg.channel.id,
 				message: msg.id,
-				user: msg.author,
+				user: msg.author.id,
 				tournament: id,
 				command: "forcedrop",
 				mention: player,
@@ -24,9 +25,9 @@ const command: CommandDefinition = {
 		await support.tournamentManager.dropPlayer(id, player, true);
 		logger.verbose(
 			JSON.stringify({
-				channel: msg.channelId,
+				channel: msg.channel.id,
 				message: msg.id,
-				user: msg.author,
+				user: msg.author.id,
 				tournament: id,
 				command: "forcedrop",
 				mention: player,
@@ -34,7 +35,7 @@ const command: CommandDefinition = {
 			})
 		);
 		const name = support.discord.getUsername(player);
-		await msg.reply(`Player ${name} successfully dropped from Tournament ${id}.`);
+		await reply(msg, `Player ${name} successfully dropped from Tournament ${id}.`);
 	}
 };
 

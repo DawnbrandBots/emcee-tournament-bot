@@ -46,7 +46,7 @@ function unwrapFileOut(file?: DiscordAttachmentOut): MessageFile | undefined {
 	return file ? { file: file.contents, name: file.filename } : undefined;
 }
 
-function wrapMessageIn(msg: Message): DiscordMessageIn {
+export function wrapMessageIn(msg: Message): DiscordMessageIn {
 	const channel = msg.channel;
 	const guildId = channel instanceof GuildChannel ? channel.guild.id : "private";
 	return {
@@ -84,9 +84,8 @@ export function makeHandler(
 		if (msg.author.bot || msg.messageReference) {
 			return;
 		}
-		const wrappedMsg = wrapMessageIn(msg);
 		if (msg.mentions.includes(bot.user)) {
-			return await handlers["help"]?.run(wrappedMsg, [], support);
+			return await handlers["help"]?.run(msg, [], support);
 		}
 		if (msg.content.startsWith(prefix)) {
 			const terms = msg.content.split(" ");
@@ -96,10 +95,10 @@ export function makeHandler(
 				.join(" ")
 				.split("|")
 				.map(s => s.trim());
-			await handlers[cmdName]?.run(wrappedMsg, args, support);
+			await handlers[cmdName]?.run(msg, args, support);
 		} else {
 			// If this throws, we crash out
-			await support.tournamentManager.confirmPlayer(wrappedMsg);
+			await support.tournamentManager.confirmPlayer(wrapMessageIn(msg));
 		}
 	};
 }

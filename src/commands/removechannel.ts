@@ -1,5 +1,6 @@
 import { CommandDefinition } from "../Command";
 import { getLogger } from "../util/logger";
+import { reply } from "../util/reply";
 
 const logger = getLogger("command:removechannel");
 
@@ -9,14 +10,14 @@ const command: CommandDefinition = {
 	executor: async (msg, args, support) => {
 		// Mirror of addchannel
 		const [id, baseType, channelMention] = args; // 2 optional and thus potentially undefined
-		await support.tournamentManager.authenticateHost(id, msg.author);
+		await support.tournamentManager.authenticateHost(id, msg.author.id);
 		const type = baseType?.toLowerCase() === "private" ? "private" : "public";
-		const channelId = support.discord.getChannel(channelMention) || msg.channelId;
+		const channelId = support.discord.getChannel(channelMention) || msg.channel.id;
 		logger.verbose(
 			JSON.stringify({
-				channel: msg.channelId,
+				channel: msg.channel.id,
 				message: msg.id,
-				user: msg.author,
+				user: msg.author.id,
 				tournament: id,
 				command: "removechannel",
 				type,
@@ -27,9 +28,9 @@ const command: CommandDefinition = {
 		await support.tournamentManager.removeAnnouncementChannel(id, channelId, type);
 		logger.verbose(
 			JSON.stringify({
-				channel: msg.channelId,
+				channel: msg.channel.id,
 				message: msg.id,
-				user: msg.author,
+				user: msg.author.id,
 				tournament: id,
 				command: "removechannel",
 				type,
@@ -41,7 +42,8 @@ const command: CommandDefinition = {
 			channelId,
 			`This channel removed as a ${type} announcement channel for Tournament ${id}!`
 		);
-		await msg.reply(
+		await reply(
+			msg,
 			`${support.discord.mentionChannel(
 				channelId
 			)} removed as a ${type} announcement channel for Tournament ${id}!`

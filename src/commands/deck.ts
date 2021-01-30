@@ -1,6 +1,7 @@
 import { CommandDefinition } from "../Command";
 import { prettyPrint } from "../deck/discordDeck";
 import { getLogger } from "../util/logger";
+import { reply } from "../util/reply";
 
 const logger = getLogger("command:deck");
 
@@ -9,13 +10,13 @@ const command: CommandDefinition = {
 	requiredArgs: ["id"],
 	executor: async (msg, args, support) => {
 		const [id] = args;
-		await support.tournamentManager.authenticateHost(id, msg.author);
+		await support.tournamentManager.authenticateHost(id, msg.author.id);
 		const player = support.discord.getMentionedUser(msg);
 		logger.verbose(
 			JSON.stringify({
-				channel: msg.channelId,
+				channel: msg.channel.id,
 				message: msg.id,
-				user: msg.author,
+				user: msg.author.id,
 				tournament: id,
 				command: "deck",
 				mention: player,
@@ -25,9 +26,9 @@ const command: CommandDefinition = {
 		const deck = await support.tournamentManager.getPlayerDeck(id, player);
 		logger.verbose(
 			JSON.stringify({
-				channel: msg.channelId,
+				channel: msg.channel.id,
 				message: msg.id,
-				user: msg.author,
+				user: msg.author.id,
 				tournament: id,
 				command: "deck",
 				mention: player,
@@ -38,15 +39,15 @@ const command: CommandDefinition = {
 		const [message, attachment] = prettyPrint(deck, `${name}.ydk`);
 		logger.verbose(
 			JSON.stringify({
-				channel: msg.channelId,
+				channel: msg.channel.id,
 				message: msg.id,
-				user: msg.author,
+				user: msg.author.id,
 				command: "deck",
 				mention: player,
 				event: "success"
 			})
 		);
-		await msg.reply(message, attachment);
+		await reply(msg, message, attachment);
 	}
 };
 

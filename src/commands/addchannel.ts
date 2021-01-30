@@ -1,5 +1,6 @@
 import { CommandDefinition } from "../Command";
 import { getLogger } from "../util/logger";
+import { reply } from "../util/reply";
 
 const logger = getLogger("command:addchannel");
 
@@ -8,14 +9,14 @@ const command: CommandDefinition = {
 	requiredArgs: ["id"],
 	executor: async (msg, args, support) => {
 		const [id, baseType, channelMention] = args; // 2 optional and thus potentially undefined
-		await support.tournamentManager.authenticateHost(id, msg.author);
+		await support.tournamentManager.authenticateHost(id, msg.author.id);
 		const type = baseType?.toLowerCase() === "private" ? "private" : "public";
-		const channelId = support.discord.getChannel(channelMention) || msg.channelId;
+		const channelId = support.discord.getChannel(channelMention) || msg.channel.id;
 		logger.verbose(
 			JSON.stringify({
-				channel: msg.channelId,
+				channel: msg.channel.id,
 				message: msg.id,
-				user: msg.author,
+				user: msg.author.id,
 				tournament: id,
 				command: "addchannel",
 				type,
@@ -26,9 +27,9 @@ const command: CommandDefinition = {
 		await support.tournamentManager.addAnnouncementChannel(id, channelId, type);
 		logger.verbose(
 			JSON.stringify({
-				channel: msg.channelId,
+				channel: msg.channel.id,
 				message: msg.id,
-				user: msg.author,
+				user: msg.author.id,
 				tournament: id,
 				command: "addchannel",
 				type,
@@ -40,7 +41,8 @@ const command: CommandDefinition = {
 			channelId,
 			`This channel added as a ${type} announcement channel for Tournament ${id}!`
 		);
-		await msg.reply(
+		await reply(
+			msg,
 			`${support.discord.mentionChannel(channelId)} added as a ${type} announcement channel for Tournament ${id}!`
 		);
 	}

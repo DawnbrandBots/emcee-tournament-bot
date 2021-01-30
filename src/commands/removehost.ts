@@ -1,5 +1,6 @@
 import { CommandDefinition } from "../Command";
 import { getLogger } from "../util/logger";
+import { reply } from "../util/reply";
 
 const logger = getLogger("command:removehost");
 
@@ -9,13 +10,13 @@ const command: CommandDefinition = {
 	executor: async (msg, args, support) => {
 		// Mirror of addhost
 		const [id] = args;
-		await support.tournamentManager.authenticateHost(id, msg.author);
+		await support.tournamentManager.authenticateHost(id, msg.author.id);
 		const newHost = support.discord.getMentionedUser(msg);
 		logger.verbose(
 			JSON.stringify({
-				channel: msg.channelId,
+				channel: msg.channel.id,
 				message: msg.id,
-				user: msg.author,
+				user: msg.author.id,
 				tournament: id,
 				command: "removehost",
 				mention: newHost,
@@ -25,16 +26,16 @@ const command: CommandDefinition = {
 		await support.tournamentManager.removeHost(id, newHost);
 		logger.verbose(
 			JSON.stringify({
-				channel: msg.channelId,
+				channel: msg.channel.id,
 				message: msg.id,
-				user: msg.author,
+				user: msg.author.id,
 				tournament: id,
 				command: "removehost",
 				mention: newHost,
 				event: "success"
 			})
 		);
-		await msg.reply(`${support.discord.mentionUser(newHost)} removed as a host for Tournament ${id}!`);
+		await reply(msg, `${support.discord.mentionUser(newHost)} removed as a host for Tournament ${id}!`);
 	}
 };
 
