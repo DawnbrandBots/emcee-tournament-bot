@@ -64,6 +64,7 @@ export class WebsiteWrapperMock implements WebsiteWrapper {
 				round: 1
 			}
 		];
+
 	}
 	async removePlayer(): Promise<void> {
 		return;
