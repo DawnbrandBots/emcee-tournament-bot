@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import { initializeBehaviours } from "../src/CommandHandler";
+// import { initializeBehaviours } from "../src/CommandHandler";
 import { DiscordInterface } from "../src/discord/interface";
 import { DiscordWrapperMock } from "./mocks/discord";
 import { TournamentMock } from "./mocks/tournament";
@@ -10,7 +10,7 @@ const discord = new DiscordWrapperMock();
 const mockDiscord = new DiscordInterface(discord);
 const mockTournament = new TournamentMock();
 
-initializeBehaviours("mc!", mockDiscord, mockTournament);
+// initializeBehaviours("mc!", mockDiscord, mockTournament);
 
 describe("Basic test", function () {
 	it("Help", async function () {

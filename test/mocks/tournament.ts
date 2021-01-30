@@ -1,6 +1,6 @@
 import { Deck } from "ydeck";
+import { DatabasePlayer } from "../../src/database/interface";
 import { getDeck } from "../../src/deck/deck";
-import { DiscordAttachmentOut } from "../../src/discord/interface";
 import { TournamentInterface } from "../../src/TournamentManager";
 
 export class TournamentMock implements TournamentInterface {
@@ -78,11 +78,8 @@ export class TournamentMock implements TournamentInterface {
 		return;
 	}
 
-	public async listPlayers(tournamentId: string): Promise<DiscordAttachmentOut> {
-		return {
-			filename: `${tournamentId}.csv`,
-			contents: tournamentId
-		};
+	public async getConfirmed(): Promise<DatabasePlayer[]> {
+		return [];
 	}
 
 	public async getPlayerDeck(): Promise<Deck> {
@@ -98,20 +95,6 @@ export class TournamentMock implements TournamentInterface {
 
 	public async syncTournament(): Promise<void> {
 		return;
-	}
-
-	public async generatePieChart(tournamentId: string): Promise<DiscordAttachmentOut> {
-		return {
-			filename: `${tournamentId}.csv`,
-			contents: tournamentId
-		};
-	}
-
-	public async generateDeckDump(tournamentId: string): Promise<DiscordAttachmentOut> {
-		return {
-			filename: `${tournamentId}.csv`,
-			contents: tournamentId
-		};
 	}
 
 	public async registerBye(): Promise<string[]> {

@@ -27,10 +27,10 @@ const command: CommandDefinition = {
 			const deck = getDeck(player.deck);
 			return {
 				Player: support.discord.getUsername(player.discordId), // TODO: REST needed
-				Deck: `Main: ${deck.mainText}, Extra: ${deck.extraText}, Side: ${deck.sideText}`.replaceAll("\n", ", ")
+				Deck: `Main: ${deck.mainText}, Extra: ${deck.extraText}, Side: ${deck.sideText}`.replace(/\n/g, ", ")
 			};
 		});
-		const file = await csv.writeToString(rows);
+		const file = await csv.writeToString(rows, { headers: true });
 		logger.verbose(
 			JSON.stringify({
 				channel: msg.channel.id,

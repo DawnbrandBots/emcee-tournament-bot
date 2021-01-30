@@ -1,33 +1,25 @@
 import chai, { expect } from "chai";
+import { Client, Message } from "eris";
 import sinon, { SinonSandbox } from "sinon";
 import sinonChai from "sinon-chai";
 import sinonTest from "sinon-test";
 import { Command, CommandDefinition, CommandSupport } from "../src/Command";
-import { DiscordInterface, DiscordMessageIn } from "../src/discord/interface";
+import { DiscordInterface } from "../src/discord/interface";
+import { OrganiserRoleProvider } from "../src/role/organiser";
 import { UserError } from "../src/util/errors";
 import { DiscordWrapperMock } from "./mocks/discord";
 import { TournamentMock } from "./mocks/tournament";
 
 chai.use(sinonChai);
 const test = sinonTest(sinon);
-void expect;
 
 describe("Command class", function () {
 	const support: CommandSupport = {
 		discord: new DiscordInterface(new DiscordWrapperMock()),
-		tournamentManager: new TournamentMock()
+		tournamentManager: new TournamentMock(),
+		organiserRole: new OrganiserRoleProvider("MC-TO")
 	};
-	const msg: DiscordMessageIn = {
-		id: "007",
-		content: "irrelevant",
-		attachments: [],
-		author: "creator",
-		channelId: "four",
-		serverId: "six",
-		reply: async () => void 0,
-		react: async () => void 0,
-		edit: async () => void 0
-	};
+	const msg = new Message({ id: "007", channel_id: "foo", author: { id: "0000" } }, new Client("mock"));
 	const testCommand: CommandDefinition = {
 		name: "test",
 		requiredArgs: ["unused", "failmode"],
@@ -45,7 +37,8 @@ describe("Command class", function () {
 	it(
 		"checks command usage and runs the command",
 		test(async function (this: SinonSandbox) {
-			const replySpy = this.spy(msg, "reply");
+			const replySpy = this.spy();
+			msg.channel.createMessage = replySpy;
 			const execStub = this.stub(testCommand, "executor");
 			const usage = "Usage: test unused|failmode";
 			const fails = [
@@ -61,7 +54,7 @@ describe("Command class", function () {
 			];
 			for (const args of fails) {
 				await command.run(msg, args, support);
-				expect(replySpy).to.have.been.calledOnceWithExactly(usage);
+				expect(msg.channel.createMessage).to.have.been.calledOnceWithExactly(usage);
 				expect(execStub).to.not.have.been.called;
 				replySpy.resetHistory();
 			}
@@ -71,7 +64,7 @@ describe("Command class", function () {
 			];
 			for (const args of successes) {
 				await command.run(msg, args, support);
-				expect(replySpy).to.not.have.been.called;
+				expect(msg.channel.createMessage).to.not.have.been.called;
 				expect(execStub).to.have.been.calledOnceWithExactly(msg, args, support);
 				execStub.resetHistory();
 			}
@@ -80,21 +73,21 @@ describe("Command class", function () {
 	it(
 		"informs the user of errors",
 		test(async function (this: SinonSandbox) {
-			const replySpy = this.spy(msg, "reply");
+			msg.channel.createMessage = this.spy();
 			await command.run(msg, ["fail", "user"], support);
-			expect(replySpy).to.have.been.calledOnceWithExactly("induced-user");
+			expect(msg.channel.createMessage).to.have.been.calledOnceWithExactly("induced-user");
 		})
 	);
 	it(
 		"absorbs and logs all errors",
 		test(async function (this: SinonSandbox) {
-			const replyStub = this.stub(msg, "reply").rejects();
+			msg.channel.createMessage = this.stub().rejects();
 			await command.run(msg, [], support);
-			expect(replyStub).to.have.been.calledOnce;
+			expect(msg.channel.createMessage).to.have.been.calledOnce;
 			await command.run(msg, ["fail", "user"], support);
-			expect(replyStub).to.have.been.calledTwice;
+			expect(msg.channel.createMessage).to.have.been.calledTwice;
 			await command.run(msg, ["fail", "other"], support);
-			expect(replyStub).to.have.been.calledTwice;
+			expect(msg.channel.createMessage).to.have.been.calledTwice;
 		})
 	);
 });
