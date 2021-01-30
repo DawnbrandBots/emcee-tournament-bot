@@ -103,16 +103,16 @@ export class WebsiteInterface {
 	}
 
 	public async findClosedMatch(tournamentId: string, playerId: number): Promise<WebsiteMatch | undefined> {
-		const currentRound = await this.getRound(tournamentId);
 		const playerMatches = await this.api.getMatches(tournamentId, false, playerId);
+		const currentRound = await this.getRound(tournamentId, playerMatches);
 		const roundMatches = playerMatches.filter(m => m.round === currentRound);
 		if (roundMatches.length > 0) {
 			return roundMatches[0];
 		}
 	}
 
-	public async getRound(tournamentId: string): Promise<number> {
-		const matches = await this.api.getMatches(tournamentId, true);
+	public async getRound(tournamentId: string, cachedMatches?: WebsiteMatch[]): Promise<number> {
+		const matches = cachedMatches || (await this.api.getMatches(tournamentId, true));
 		if (matches.length < 1) {
 			throw new UserError(
 				`No matches found for Tournament ${tournamentId}! This likely means the tournament either has not started or is finished!`
