@@ -373,21 +373,14 @@ export class WebsiteWrapperChallonge implements WebsiteWrapper {
 		return {
 			player1: match.player1_id,
 			player2: match.player2_id,
-			matchId: match.id
+			matchId: match.id,
+			round: match.round
 		};
 	}
 
-	public async getMatches(tournamentId: string): Promise<WebsiteMatch[]> {
-		const webMatches = await this.indexMatches(tournamentId, "open");
-		// don't need to check length like below function because a 0-length array is valid
-		return webMatches.map(this.wrapMatch.bind(this));
-	}
-
-	public async getMatchWithPlayer(tournamentId: string, playerId: number): Promise<WebsiteMatch | undefined> {
-		const webMatch = await this.indexMatches(tournamentId, "open", playerId);
-		if (webMatch.length > 0) {
-			return this.wrapMatch(webMatch[0]);
-		}
+	public async getMatches(tournamentId: string, open = false, playerId?: number): Promise<WebsiteMatch[]> {
+		const webMatches = await this.indexMatches(tournamentId, open ? "open" : undefined, playerId);
+		return webMatches.map(this.wrapMatch);
 	}
 
 	private async updateMatch(

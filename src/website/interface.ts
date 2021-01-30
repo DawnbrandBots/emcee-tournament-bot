@@ -1,4 +1,4 @@
-import { ChallongeIDConflictError } from "../util/errors";
+import { ChallongeIDConflictError, UserError } from "../util/errors";
 
 export interface WebsiteWrapper {
 	createTournament(name: string, desc: string, url: string, topCut?: boolean): Promise<WebsiteTournament>;
@@ -6,8 +6,7 @@ export interface WebsiteWrapper {
 	getTournament(tournamentId: string): Promise<WebsiteTournament>;
 	registerPlayer(tournamentId: string, playerName: string, playerId: string): Promise<number>;
 	startTournament(tournamentId: string): Promise<void>;
-	getMatches(tournamentId: string): Promise<WebsiteMatch[]>;
-	getMatchWithPlayer(tournamentId: string, playerId: number): Promise<WebsiteMatch | undefined>;
+	getMatches(tournamentId: string, open?: boolean, playerId?: number): Promise<WebsiteMatch[]>;
 	removePlayer(tournamentId: string, playerId: number): Promise<void>;
 	submitScore(tournamentId: string, winner: number, winnerScore: number, loserScore: number): Promise<void>;
 	finishTournament(tournamentId: string): Promise<void>;
@@ -37,6 +36,7 @@ export interface WebsiteMatch {
 	player1: number;
 	player2: number;
 	matchId: number;
+	round: number;
 }
 
 export class WebsiteInterface {
@@ -90,12 +90,27 @@ export class WebsiteInterface {
 		return bye?.discordId;
 	}
 
+	// public interface is expected to get open matches
 	public async getMatches(tournamentId: string): Promise<WebsiteMatch[]> {
-		return await this.api.getMatches(tournamentId);
+		return await this.api.getMatches(tournamentId, true);
 	}
 
 	public async findMatch(tournamentId: string, playerId: number): Promise<WebsiteMatch | undefined> {
-		return await this.api.getMatchWithPlayer(tournamentId, playerId);
+		const matches = await this.api.getMatches(tournamentId, true, playerId);
+		if (matches.length > 0) {
+			return matches[0];
+		}
+	}
+
+	public async getRound(tournamentId: string): Promise<number> {
+		const matches = await this.api.getMatches(tournamentId, true);
+		if (matches.length < 1) {
+			throw new UserError(
+				`No matches found for Tournament ${tournamentId}! This likely means the tournament either has not started or is finished!`
+			);
+		}
+		// All open matches should have the same round in Swiss. In Elim, we expect the array to be sorted by age and the lowest round should be the current.
+		return matches[0].round;
 	}
 
 	public async getPlayers(tournamentId: string): Promise<WebsitePlayer[]> {
@@ -208,7 +223,7 @@ export class WebsiteInterface {
 			   and this is simpler than calculating that again.
 			   This also neatly handles edge cases like a bye player being manually dropped. */
 			if (player) {
-				const match = await this.api.getMatchWithPlayer(tournamentId, player.challongeId);
+				const match = await this.findMatch(tournamentId, player.challongeId);
 				/* We assume the match will exist and be open since the tournament just started
 				   But checking handles edge cases like a human theoretically changing the score before Emcee can
 				   Considering how slow the startTournament function is, that's not impossible */
