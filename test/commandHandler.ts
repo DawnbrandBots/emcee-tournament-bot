@@ -138,9 +138,7 @@ describe("Tournament flow commands", function () {
 	});
 	it("Submit score - by host", async function () {
 		await discord.simMessage("mc!forcescore name|2-1|<@player1>", "forcescore");
-		expect(discord.getResponse("forcescore")).to.equal(
-			"Score of 2-1 submitted in favour of <@player1> (player1) in Tournament name!"
-		);
+		expect(discord.getResponse("forcescore")).to.equal("For more detail, test the tournament handler!");
 	});
 	it("Submit score - by host bad input", async function () {
 		await discord.simMessage("mc!forcescore name|john won|<@john>", "forcescore2");

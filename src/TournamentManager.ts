@@ -665,7 +665,7 @@ export class TournamentManager implements TournamentInterface {
 		await this.website.submitScore(tournamentId, player.challongeId, scorePlayer, scoreOpp);
 		return `Score of ${scorePlayer}-${scoreOpp} submitted in favour of ${mention} (${this.discord.getUsername(
 			playerId
-		)}) in Tournament ${tournamentId}!`; // output in this case is handled by the command
+		)}) in Tournament ${tournamentId}!`;
 	}
 
 	public async submitScore(
