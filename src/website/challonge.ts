@@ -380,7 +380,7 @@ export class WebsiteWrapperChallonge implements WebsiteWrapper {
 
 	public async getMatches(tournamentId: string, open = false, playerId?: number): Promise<WebsiteMatch[]> {
 		const webMatches = await this.indexMatches(tournamentId, open ? "open" : undefined, playerId);
-		return webMatches.map(this.wrapMatch.bind(this));
+		return webMatches.map(this.wrapMatch);
 	}
 
 	private async updateMatch(
