@@ -9,7 +9,7 @@ const command: CommandDefinition = {
 	executor: async (msg, args, support) => {
 		// Mirror of addchannel
 		const [id, baseType, channelMention] = args; // 2 optional and thus potentially undefined
-		await support.tournamentManager.authenticateHost(id, msg);
+		await support.tournamentManager.authenticateHost(id, msg.author);
 		const type = baseType?.toLowerCase() === "private" ? "private" : "public";
 		const channelId = support.discord.getChannel(channelMention) || msg.channelId;
 		logger.verbose(

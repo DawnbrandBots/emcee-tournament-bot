@@ -25,8 +25,8 @@ export interface TournamentInterface {
 	registerPlayer(msg: DiscordMessageIn, playerId: string): Promise<void>;
 	confirmPlayer(msg: DiscordMessageIn): Promise<void>;
 	cleanRegistration(msg: DiscordMessageLimited): Promise<void>;
-	authenticateHost(tournamentId: string, message: DiscordMessageIn): Promise<void>;
-	authenticatePlayer(tournamentId: string, message: DiscordMessageIn): Promise<void>;
+	authenticateHost(tournamentId: string, userId: string): Promise<void>;
+	authenticatePlayer(tournamentId: string, userId: string): Promise<void>;
 	listTournaments(server?: string): Promise<string>;
 	createTournament(hostId: string, serverId: string, name: string, desc: string): Promise<[string, string, string]>;
 	updateTournament(tournamentId: string, name: string, desc: string): Promise<void>;
@@ -122,30 +122,12 @@ export class TournamentManager implements TournamentInterface {
 		logger.info(`Loaded ${count} of ${messages.length} reaction buttons.`);
 	}
 
-	public async authenticateHost(tournamentId: string, message: DiscordMessageIn): Promise<void> {
-		await this.database.authenticateHost(tournamentId, message.author);
-		logger.verbose(
-			JSON.stringify({
-				channel: message.channelId,
-				message: message.id,
-				user: message.author,
-				tournament: tournamentId,
-				event: "host authorized"
-			})
-		);
+	public async authenticateHost(tournamentId: string, userId: string): Promise<void> {
+		await this.database.authenticateHost(tournamentId, userId);
 	}
 
-	public async authenticatePlayer(tournamentId: string, message: DiscordMessageIn): Promise<void> {
-		await this.database.authenticatePlayer(tournamentId, message.author);
-		logger.verbose(
-			JSON.stringify({
-				channel: message.channelId,
-				message: message.id,
-				user: message.author,
-				tournament: tournamentId,
-				event: "player authorized"
-			})
-		);
+	public async authenticatePlayer(tournamentId: string, userId: string): Promise<void> {
+		await this.database.authenticatePlayer(tournamentId, userId);
 	}
 
 	public async listTournaments(server?: string): Promise<string> {

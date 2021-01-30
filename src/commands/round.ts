@@ -8,7 +8,7 @@ const command: CommandDefinition = {
 	requiredArgs: ["id"],
 	executor: async (msg, args, support) => {
 		const [id, skip] = args; // second is optional and may be undefined
-		await support.tournamentManager.authenticateHost(id, msg);
+		await support.tournamentManager.authenticateHost(id, msg.author);
 		logger.verbose(
 			JSON.stringify({
 				channel: msg.channelId,

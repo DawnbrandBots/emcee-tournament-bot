@@ -9,7 +9,7 @@ const command: CommandDefinition = {
 	executor: async (msg, args, support) => {
 		// Mirror of addbye
 		const [id] = args;
-		await support.tournamentManager.authenticateHost(id, msg);
+		await support.tournamentManager.authenticateHost(id, msg.author);
 		const player = support.discord.getMentionedUser(msg);
 		logger.verbose(
 			JSON.stringify({

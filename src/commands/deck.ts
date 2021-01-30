@@ -9,7 +9,7 @@ const command: CommandDefinition = {
 	requiredArgs: ["id"],
 	executor: async (msg, args, support) => {
 		const [id] = args;
-		await support.tournamentManager.authenticateHost(id, msg);
+		await support.tournamentManager.authenticateHost(id, msg.author);
 		const player = support.discord.getMentionedUser(msg);
 		logger.verbose(
 			JSON.stringify({
