@@ -52,18 +52,18 @@ export class WebsiteWrapperMock implements WebsiteWrapper {
 	async startTournament(): Promise<void> {
 		return;
 	}
-	async getMatches(tournamentId: string, _?: boolean, playerId?: number): Promise<WebsiteMatch[]> {
-		if (playerId) {
-			return [
-				{
-					player1: 1,
-					player2: 2,
-					matchId: 0,
-					round: 1
-				}
-			];
+	async getMatches(tournamentId: string): Promise<WebsiteMatch[]> {
+		if (tournamentId === "bye") {
+			return [];
 		}
-		return [];
+		return [
+			{
+				player1: 1,
+				player2: 2,
+				matchId: 0,
+				round: 1
+			}
+		];
 	}
 	async removePlayer(): Promise<void> {
 		return;
