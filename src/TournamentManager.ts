@@ -884,12 +884,10 @@ export class TournamentManager implements TournamentInterface {
 	}
 
 	public async registerBye(tournamentId: string, playerId: string): Promise<string[]> {
-		const tournament = await this.database.registerBye(tournamentId, playerId);
-		return tournament.byes;
+		return await this.database.registerBye(tournamentId, playerId);
 	}
 
 	public async removeBye(tournamentId: string, playerId: string): Promise<string[]> {
-		const tournament = await this.database.removeBye(tournamentId, playerId);
-		return tournament.byes;
+		return await this.database.removeBye(tournamentId, playerId);
 	}
 }
