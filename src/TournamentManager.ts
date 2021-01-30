@@ -523,7 +523,7 @@ export class TournamentManager implements TournamentInterface {
 				}
 			})
 		);
-		const bye = await this.website.getBye(tournament.id);
+		const bye = await this.website.getBye(tournament.id, matches);
 		if (bye) {
 			await this.discord.sendDirectMessage(
 				bye,
