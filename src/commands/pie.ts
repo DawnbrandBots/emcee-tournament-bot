@@ -1,4 +1,6 @@
+import * as csv from "@fast-csv/format";
 import { CommandDefinition } from "../Command";
+import { getDeck } from "../deck/deck";
 import { reply } from "../util/discord";
 import { getLogger } from "../util/logger";
 
@@ -20,7 +22,15 @@ const command: CommandDefinition = {
 				event: "attempt"
 			})
 		);
-		const csv = await support.tournamentManager.generatePieChart(id);
+		const players = await support.tournamentManager.getConfirmed(id);
+		// TODO: benchmark performance of map-reduce
+		const themes = players
+			.map(player => {
+				const deck = getDeck(player.deck);
+				return deck.themes.length > 0 ? deck.themes.join("/") : "No themes";
+			})
+			.reduce((map, theme) => map.set(theme, (map.get(theme) || 0) + 1), new Map<string, number>());
+		const file = await csv.writeToString([["Theme", "Count"], ...themes.entries()]);
 		logger.verbose(
 			JSON.stringify({
 				channel: msg.channel.id,
@@ -31,7 +41,10 @@ const command: CommandDefinition = {
 				event: "success"
 			})
 		);
-		await reply(msg, `Archetype counts for Tournament ${id} are attached.`, csv);
+		await reply(msg, `Archetype counts for Tournament ${id} are attached.`, {
+			name: `${id} Pie.csv`,
+			file
+		});
 	}
 };
 

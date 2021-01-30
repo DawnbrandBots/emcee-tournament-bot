@@ -1,4 +1,6 @@
+import * as csv from "@fast-csv/format";
 import { CommandDefinition } from "../Command";
+import { getDeck } from "../deck/deck";
 import { reply } from "../util/discord";
 import { getLogger } from "../util/logger";
 
@@ -20,7 +22,15 @@ const command: CommandDefinition = {
 				event: "attempt"
 			})
 		);
-		const list = await support.tournamentManager.listPlayers(id);
+		const players = await support.tournamentManager.getConfirmed(id);
+		const rows = players.map(player => {
+			const deck = getDeck(player.deck);
+			return {
+				Player: support.discord.getUsername(player.discordId), // TODO: REST needed
+				Theme: deck.themes.length > 0 ? deck.themes.join("/") : "No themes"
+			};
+		});
+		const file = await csv.writeToString(rows);
 		logger.verbose(
 			JSON.stringify({
 				channel: msg.channel.id,
@@ -31,7 +41,10 @@ const command: CommandDefinition = {
 				event: "success"
 			})
 		);
-		await reply(msg, `A list of players for tournament ${id} with the theme of their deck is attached.`, list);
+		await reply(msg, `A list of players for tournament ${id} with the theme of their deck is attached.`, {
+			name: `${id}.csv`,
+			file
+		});
 	}
 };
 

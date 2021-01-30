@@ -1,4 +1,6 @@
+import * as csv from "@fast-csv/format";
 import { CommandDefinition } from "../Command";
+import { getDeck } from "../deck/deck";
 import { reply } from "../util/discord";
 import { getLogger } from "../util/logger";
 
@@ -20,7 +22,15 @@ const command: CommandDefinition = {
 				event: "attempt"
 			})
 		);
-		const csv = await support.tournamentManager.generateDeckDump(id);
+		const players = await support.tournamentManager.getConfirmed(id);
+		const rows = players.map(player => {
+			const deck = getDeck(player.deck);
+			return {
+				Player: support.discord.getUsername(player.discordId), // TODO: REST needed
+				Deck: `Main: ${deck.mainText}, Extra: ${deck.extraText}, Side: ${deck.sideText}`.replaceAll("\n", ", ")
+			};
+		});
+		const file = await csv.writeToString(rows);
 		logger.verbose(
 			JSON.stringify({
 				channel: msg.channel.id,
@@ -31,7 +41,10 @@ const command: CommandDefinition = {
 				event: "success"
 			})
 		);
-		await reply(msg, `Player decklists for Tournament ${id} is attached.`, csv);
+		await reply(msg, `Player decklists for Tournament ${id} is attached.`, {
+			name: `${id} Decks.csv`,
+			file
+		});
 	}
 };
 

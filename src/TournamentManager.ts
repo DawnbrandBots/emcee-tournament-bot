@@ -1,10 +1,9 @@
-import * as csv from "@fast-csv/format";
 import { Deck } from "ydeck";
-import { DatabaseTournament, TournamentStatus } from "./database/interface";
+import { DatabasePlayer, DatabaseTournament, TournamentStatus } from "./database/interface";
 import { DatabaseWrapperPostgres } from "./database/postgres";
 import { getDeck } from "./deck/deck";
 import { getDeckFromMessage, prettyPrint } from "./deck/discordDeck";
-import { DiscordAttachmentOut, DiscordInterface, DiscordMessageIn, DiscordMessageLimited } from "./discord/interface";
+import { DiscordInterface, DiscordMessageIn, DiscordMessageLimited } from "./discord/interface";
 import { ParticipantRoleProvider } from "./role/participant";
 import { Templater } from "./templates";
 import { PersistentTimer } from "./timer";
@@ -45,12 +44,10 @@ export interface TournamentInterface {
 		host?: boolean
 	): Promise<string>;
 	nextRound(tournamentId: string, skip?: boolean): Promise<void>;
-	listPlayers(tournamentId: string): Promise<DiscordAttachmentOut>;
 	getPlayerDeck(tournamentId: string, playerId: string): Promise<Deck>;
 	dropPlayer(tournamentId: string, playerId: string, force?: boolean): Promise<void>;
 	syncTournament(tournamentId: string): Promise<void>;
-	generatePieChart(tournamentId: string): Promise<DiscordAttachmentOut>;
-	generateDeckDump(tournamentId: string): Promise<DiscordAttachmentOut>;
+	getConfirmed(tournamentId: string): Promise<DatabasePlayer[]>;
 	registerBye(tournamentId: string, playerId: string): Promise<string[]>;
 	removeBye(tournamentId: string, playerId: string): Promise<string[]>;
 }
@@ -706,22 +703,6 @@ export class TournamentManager implements TournamentInterface {
 		await this.startNewRound(tournament, webTourn.url, skip);
 	}
 
-	public async listPlayers(tournamentId: string): Promise<DiscordAttachmentOut> {
-		const tournament = await this.database.getTournament(tournamentId);
-		const rows = tournament.players.map(player => {
-			const name = this.discord.getUsername(player.discordId);
-			const deck = getDeck(player.deck);
-			const themes = deck.themes.length > 0 ? deck.themes.join("/") : "No themes";
-			return [name, themes];
-		});
-		rows.unshift(["Player", "Theme"]);
-		const contents = await csv.writeToString(rows);
-		return {
-			filename: `${tournament.name}.csv`,
-			contents
-		};
-	}
-
 	public async getPlayerDeck(tournamentId: string, playerId: string): Promise<Deck> {
 		const tourn = await this.database.getTournament(tournamentId);
 		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -794,46 +775,9 @@ export class TournamentManager implements TournamentInterface {
 		});
 	}
 
-	// utility function, can be moved elsewhere if it turns out to be more universally useful
-	// copied from ydeck/counts.ts, doesn't seem in-scope to expose it
-	private countStrings(list: string[]): { [element: string]: number } {
-		return list.reduce<{ [element: string]: number }>((acc, curr) => {
-			acc[curr] = (acc[curr] || 0) + 1;
-			return acc;
-		}, {});
-	}
-
-	public async generatePieChart(tournamentId: string): Promise<DiscordAttachmentOut> {
+	public async getConfirmed(tournamentId: string): Promise<DatabasePlayer[]> {
 		const tournament = await this.database.getTournament(tournamentId);
-		const themes = tournament.players.map(player => {
-			const deck = getDeck(player.deck);
-			return deck.themes.length > 0 ? deck.themes.join("/") : "No themes";
-		});
-		const counts = this.countStrings(themes);
-		const rows = Object.entries(counts).map(e => [e[0], e[1].toString()]);
-		rows.unshift(["Theme", "Count"]);
-		const contents = await csv.writeToString(rows);
-		return {
-			filename: `${tournament.name} Pie.csv`,
-			contents
-		};
-	}
-
-	public async generateDeckDump(tournamentId: string): Promise<DiscordAttachmentOut> {
-		const tournament = await this.database.getTournament(tournamentId);
-		const rows = tournament.players.map(player => {
-			const deck = getDeck(player.deck);
-			return [
-				this.discord.getUsername(player.discordId),
-				`Main: ${deck.mainText}, Extra: ${deck.extraText}, Side: ${deck.sideText}`.replace(/\n/g, ", ")
-			];
-		});
-		rows.unshift(["Player", "Deck"]);
-		const contents = await csv.writeToString(rows);
-		return {
-			filename: `${tournament.name} Decks.csv`,
-			contents
-		};
+		return tournament.players;
 	}
 
 	public async registerBye(tournamentId: string, playerId: string): Promise<string[]> {
