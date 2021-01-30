@@ -28,22 +28,17 @@ export class DiscordWrapperEris implements DiscordWrapper {
 	private reactionHandlers: DiscordReactionHandler[];
 	private reactionRemoveHandlers: DiscordReactionHandler[];
 	private deleteHandlers: DiscordDeleteHandler[];
-	private wrappedMessages: { [id: string]: Message };
-	private playerRoles: { [tournamentId: string]: string };
 
 	constructor(private bot: Client) {
 		this.deleteHandlers = [];
 		this.reactionHandlers = [];
 		this.reactionRemoveHandlers = [];
-		this.wrappedMessages = {};
-		this.playerRoles = {};
 		this.bot.on("messageReactionAdd", this.handleReaction.bind(this));
 		this.bot.on("messageReactionRemove", this.handleReactionRemove.bind(this));
 		this.bot.on("messageDelete", this.handleDelete.bind(this));
 	}
 
 	private wrapMessageIn(msg: Message): DiscordMessageIn {
-		this.wrappedMessages[msg.id] = msg;
 		const channel = msg.channel;
 		const guildId = channel instanceof GuildChannel ? channel.guild.id : "private";
 		return {

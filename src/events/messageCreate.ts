@@ -1,17 +1,18 @@
 import { Client, GuildChannel, Message, MessageContent, MessageFile } from "eris";
 import { Command, CommandDefinition, CommandSupport } from "../Command";
 
-export interface DiscordAttachmentIn {
+// Lifted from Discord wrapper, to be removed when TM.confirmPlayer is fixed
+interface DiscordAttachmentIn {
 	filename: string;
 	url: string;
 }
 
-export interface DiscordAttachmentOut {
+interface DiscordAttachmentOut {
 	filename: string;
 	contents: string;
 }
 
-export interface DiscordEmbed {
+interface DiscordEmbed {
 	title: string;
 	fields: {
 		name: string;
@@ -19,10 +20,9 @@ export interface DiscordEmbed {
 	}[];
 }
 
-export type DiscordMessageOut = string | DiscordEmbed;
+type DiscordMessageOut = string | DiscordEmbed;
 
-export interface DiscordMessageIn {
-	secretOriginalMessage: Message; // remove when refactor complete
+interface DiscordMessageIn {
 	id: string;
 	content: string;
 	attachments: DiscordAttachmentIn[];
@@ -46,11 +46,10 @@ function unwrapFileOut(file?: DiscordAttachmentOut): MessageFile | undefined {
 	return file ? { file: file.contents, name: file.filename } : undefined;
 }
 
-export function wrapMessageIn(msg: Message): DiscordMessageIn {
+function wrapMessageIn(msg: Message): DiscordMessageIn {
 	const channel = msg.channel;
 	const guildId = channel instanceof GuildChannel ? channel.guild.id : "private";
 	return {
-		secretOriginalMessage: msg, // remove when refactor complete
 		id: msg.id,
 		attachments: msg.attachments,
 		content: msg.content,
