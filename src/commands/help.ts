@@ -1,5 +1,5 @@
 import { CommandDefinition } from "../Command";
-import { reply } from "../util/reply";
+import { reply } from "../util/discord";
 
 const command: CommandDefinition = {
 	name: "help",

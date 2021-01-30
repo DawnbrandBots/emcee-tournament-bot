@@ -1,7 +1,7 @@
 import { CommandDefinition } from "../Command";
+import { firstMentionOrFail, reply } from "../util/discord";
 import { UserError } from "../util/errors";
 import { getLogger } from "../util/logger";
-import { reply } from "../util/reply";
 
 const logger = getLogger("command:forcescore");
 
@@ -11,7 +11,7 @@ const command: CommandDefinition = {
 	executor: async (msg, args, support) => {
 		const [id, score] = args;
 		await support.tournamentManager.authenticateHost(id, msg.author.id);
-		const player = support.discord.getMentionedUser(msg);
+		const player = firstMentionOrFail(msg);
 		// player is guaranteed, throws if not found
 		const scores = score.split("-").map(s => parseInt(s, 10));
 		logger.verbose(

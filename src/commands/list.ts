@@ -1,6 +1,6 @@
 import { CommandDefinition } from "../Command";
+import { reply } from "../util/discord";
 import { getLogger } from "../util/logger";
-import { reply } from "../util/reply";
 
 const logger = getLogger("command:list");
 
@@ -20,7 +20,7 @@ const command: CommandDefinition = {
 				event: "attempt"
 			})
 		);
-		const list = await support.tournamentManager.listTournaments(msg.serverId);
+		const list = await support.tournamentManager.listTournaments(msg.guildID || "private");
 		logger.verbose(
 			JSON.stringify({
 				channel: msg.channel.id,

@@ -2,9 +2,9 @@ import { Message } from "eris";
 import { DiscordInterface } from "./discord/interface";
 import { OrganiserRoleProvider } from "./role/organiser";
 import { TournamentInterface } from "./TournamentManager";
+import { reply } from "./util/discord";
 import { UserError } from "./util/errors";
 import { getLogger } from "./util/logger";
-import { reply } from "./util/reply";
 
 const logger = getLogger("command");
 

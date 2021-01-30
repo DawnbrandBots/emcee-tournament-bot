@@ -1,6 +1,6 @@
 import { CommandDefinition } from "../Command";
+import { firstMentionOrFail, reply } from "../util/discord";
 import { getLogger } from "../util/logger";
-import { reply } from "../util/reply";
 
 const logger = getLogger("command:removehost");
 
@@ -11,7 +11,7 @@ const command: CommandDefinition = {
 		// Mirror of addhost
 		const [id] = args;
 		await support.tournamentManager.authenticateHost(id, msg.author.id);
-		const newHost = support.discord.getMentionedUser(msg);
+		const newHost = firstMentionOrFail(msg);
 		logger.verbose(
 			JSON.stringify({
 				channel: msg.channel.id,

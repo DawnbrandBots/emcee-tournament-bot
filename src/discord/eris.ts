@@ -9,7 +9,7 @@ import {
 	PossiblyUncachedMessage,
 	TextChannel
 } from "eris";
-import { AssertTextChannelError, BlockedDMsError, UserError } from "../util/errors";
+import { AssertTextChannelError, BlockedDMsError } from "../util/errors";
 import { getLogger } from "../util/logger";
 import {
 	DiscordAttachmentOut,
@@ -188,14 +188,6 @@ export class DiscordWrapperEris implements DiscordWrapper {
 			// TODO: check for specific error for message not having the specified reaction/user
 			return false;
 		}
-	}
-
-	public getMentionedUser(m: DiscordMessageIn): string {
-		const msg = this.wrappedMessages[m.id];
-		if (msg.mentions.length < 1) {
-			throw new UserError(`Message does not mention a user!\n\`${msg.content}\``);
-		}
-		return msg.mentions[0].id;
 	}
 
 	public getUsername(userId: string): string {

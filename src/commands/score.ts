@@ -1,7 +1,7 @@
 import { CommandDefinition } from "../Command";
+import { reply } from "../util/discord";
 import { UserError } from "../util/errors";
 import { getLogger } from "../util/logger";
-import { reply } from "../util/reply";
 
 const logger = getLogger("command:score");
 

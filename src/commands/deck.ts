@@ -1,7 +1,7 @@
 import { CommandDefinition } from "../Command";
 import { prettyPrint } from "../deck/discordDeck";
+import { firstMentionOrFail, reply } from "../util/discord";
 import { getLogger } from "../util/logger";
-import { reply } from "../util/reply";
 
 const logger = getLogger("command:deck");
 
@@ -11,7 +11,7 @@ const command: CommandDefinition = {
 	executor: async (msg, args, support) => {
 		const [id] = args;
 		await support.tournamentManager.authenticateHost(id, msg.author.id);
-		const player = support.discord.getMentionedUser(msg);
+		const player = firstMentionOrFail(msg);
 		logger.verbose(
 			JSON.stringify({
 				channel: msg.channel.id,

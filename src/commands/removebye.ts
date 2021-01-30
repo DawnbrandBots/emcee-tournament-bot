@@ -1,6 +1,6 @@
 import { CommandDefinition } from "../Command";
+import { firstMentionOrFail, reply } from "../util/discord";
 import { getLogger } from "../util/logger";
-import { reply } from "../util/reply";
 
 const logger = getLogger("command:removebye");
 
@@ -11,7 +11,7 @@ const command: CommandDefinition = {
 		// Mirror of addbye
 		const [id] = args;
 		await support.tournamentManager.authenticateHost(id, msg.author.id);
-		const player = support.discord.getMentionedUser(msg);
+		const player = firstMentionOrFail(msg);
 		logger.verbose(
 			JSON.stringify({
 				channel: msg.channel.id,
