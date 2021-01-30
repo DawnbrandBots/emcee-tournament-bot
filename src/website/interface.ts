@@ -104,10 +104,9 @@ export class WebsiteInterface {
 
 	public async findClosedMatch(tournamentId: string, playerId: number): Promise<WebsiteMatch | undefined> {
 		const playerMatches = await this.api.getMatches(tournamentId, false, playerId);
-		const currentRound = await this.getRound(tournamentId, playerMatches);
-		const roundMatches = playerMatches.filter(m => m.round === currentRound);
-		if (roundMatches.length > 0) {
-			return roundMatches[0];
+		if (playerMatches.length) {
+			const roundMatches = playerMatches.filter(m => m.round === playerMatches[0].round);
+			return roundMatches[0]; // if length === 0 then this will be undefined at runtime
 		}
 	}
 
