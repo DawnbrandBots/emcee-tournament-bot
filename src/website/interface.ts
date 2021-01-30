@@ -70,7 +70,7 @@ export class WebsiteInterface {
 		await this.api.startTournament(tournamentId);
 	}
 
-	public async getBye(tournamentId: string): Promise<string | undefined> {
+	public async getBye(tournamentId: string, cachedMatches?: WebsiteMatch[]): Promise<string | undefined> {
 		const tournament = await this.getTournament(tournamentId);
 		// do not count dropped players
 		const activePlayers = tournament.players.filter(p => p.active);
@@ -78,7 +78,7 @@ export class WebsiteInterface {
 			// even number of players means no bye
 			return undefined;
 		}
-		const matches = await this.api.getMatches(tournamentId);
+		const matches = cachedMatches || (await this.api.getMatches(tournamentId));
 		// Find a player for which the following is true
 		const bye = activePlayers.find(p => {
 			// Find a match which includes the player
