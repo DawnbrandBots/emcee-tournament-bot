@@ -13,11 +13,6 @@ const mockTournament = new TournamentMock();
 initializeBehaviours("mc!", mockDiscord, mockTournament);
 
 describe("Tournament creation commands", function () {
-	it("Update tournament", async function () {
-		await discord.simMessage("mc!update name|newName|newDesc", "update");
-		const response = discord.getResponse("update");
-		expect(response).to.equal("Tournament `name` updated! It now has the name newName and the given description.");
-	});
 	it("Add channel - public/specific", async function () {
 		// channel mentions must be digits
 		await discord.simMessage("mc!addchannel name|public|<#1101>", "addchannel");
