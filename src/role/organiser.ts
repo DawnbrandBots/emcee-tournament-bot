@@ -4,14 +4,22 @@ import { getLogger } from "../util/logger";
 
 const logger = getLogger("role:organiser");
 
+/**
+ * Creates the server role that permits using the list and create commands.
+ */
 export class OrganiserRoleProvider {
 	protected roleCache: { [serverId: string]: string } = {};
 
 	// Using American spelling for Eris consistency
 	constructor(readonly name: string, readonly color?: number) {}
 
+	/**
+	 * Creates the role in question and stores it in the internal cache.
+	 * Exceptions (missing permissions, network fault) can be thrown.
+	 *
+	 * @param server The server to create the organiser role in
+	 */
 	public async create(server: Guild): Promise<string> {
-		// TODO: error handling?
 		const role = await server.createRole(
 			{
 				name: this.name,
@@ -24,6 +32,12 @@ export class OrganiserRoleProvider {
 		return role.id;
 	}
 
+	/**
+	 * Retrieve the organiser role and cache it, or create the role if it is missing.
+	 * Exceptions on creation (missing permissions, network fault) can be thrown.
+	 *
+	 * @param server The server to retrieve or create the organiser role in
+	 */
 	public async get(server: Guild): Promise<string> {
 		if (server.id in this.roleCache) {
 			return this.roleCache[server.id];
@@ -31,12 +45,20 @@ export class OrganiserRoleProvider {
 		// Find already-created role and cache in memory
 		const existingRole = server.roles.find(role => role.name === this.name);
 		if (existingRole) {
+			logger.verbose(`Cached role ${this.name} (${existingRole.id}) in ${server.name} (${server.id}).`);
 			return (this.roleCache[server.id] = existingRole.id);
 		}
-		// TODO: log?
+		logger.verbose(`Cache miss for role ${this.name} in ${server.name} (${server.id}).`);
 		return await this.create(server);
 	}
 
+	/**
+	 * Assert that the sender of the message holds the organiser role for the server
+	 * the message was sent in, or throw UnauthorisedTOError.
+	 * Exceptions on role creation (missing permissions, network fault) can be thrown.
+	 *
+	 * @param msg The message to authorise
+	 */
 	public async authorise(msg: Message): Promise<void> {
 		if (!(msg.channel instanceof GuildChannel)) {
 			throw new UnauthorisedTOError(msg.author.id);
