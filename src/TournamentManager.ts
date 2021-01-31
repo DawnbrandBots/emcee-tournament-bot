@@ -293,7 +293,7 @@ export class TournamentManager implements TournamentInterface {
 				msg.author
 			);
 			await this.database.confirmPlayer(tournament.id, msg.author, challongeId, deck.url);
-			await this.participantRole.grant(msg.author, tournament);
+			await this.participantRole.grant(msg.author, tournament).catch(logger.error);
 			const channels = tournament.privateChannels;
 			await Promise.all(
 				channels.map(async c => {
@@ -621,7 +621,7 @@ export class TournamentManager implements TournamentInterface {
 				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 				const deck = tournament.findPlayer(player.discordId)!.deck;
 				await this.database.confirmPlayer(newId, player.discordId, challongeId, deck);
-				await this.participantRole.grant(player.discordId, newTournament);
+				await this.participantRole.grant(player.discordId, newTournament).catch(logger.error);
 			}
 			for (const channel of tournament.publicChannels) {
 				await this.database.addAnnouncementChannel(newId, channel, "public");
@@ -768,7 +768,7 @@ export class TournamentManager implements TournamentInterface {
 			}
 		}
 		await this.website.removePlayer(tournament.id, player.challongeId);
-		await this.participantRole.ungrant(playerId, tournament);
+		await this.participantRole.ungrant(playerId, tournament).catch(logger.error);
 		logger.verbose(`User ${playerId} dropped from tournament ${tournament.id}${force ? " by host" : ""}.`);
 		await this.discord.sendDirectMessage(
 			playerId,

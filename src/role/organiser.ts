@@ -18,6 +18,7 @@ export class OrganiserRoleProvider {
 	 * Exceptions (missing permissions, network fault) can be thrown.
 	 *
 	 * @param server The server to create the organiser role in
+	 * @returns Discord role snowflake
 	 */
 	public async create(server: Guild): Promise<string> {
 		const role = await server.createRole(
@@ -28,7 +29,7 @@ export class OrganiserRoleProvider {
 			"Auto-created by Emcee."
 		);
 		this.roleCache[server.id] = role.id;
-		logger.verbose(`Role ${this.name} (${role.id}) created in ${server.name} (${server.id}).`);
+		logger.info(`Role ${this.name} (${role.id}) created in ${server.name} (${server.id}).`);
 		return role.id;
 	}
 
@@ -37,6 +38,7 @@ export class OrganiserRoleProvider {
 	 * Exceptions on creation (missing permissions, network fault) can be thrown.
 	 *
 	 * @param server The server to retrieve or create the organiser role in
+	 * @returns Discord role snowflake
 	 */
 	public async get(server: Guild): Promise<string> {
 		if (server.id in this.roleCache) {
@@ -58,6 +60,7 @@ export class OrganiserRoleProvider {
 	 * Exceptions on role creation (missing permissions, network fault) can be thrown.
 	 *
 	 * @param msg The message to authorise
+	 * @throws UnauthorisedTOError
 	 */
 	public async authorise(msg: Message): Promise<void> {
 		if (!(msg.channel instanceof GuildChannel)) {
