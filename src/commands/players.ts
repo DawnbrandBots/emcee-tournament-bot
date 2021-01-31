@@ -30,7 +30,7 @@ const command: CommandDefinition = {
 				Theme: deck.themes.length > 0 ? deck.themes.join("/") : "No themes"
 			};
 		});
-		const file = await csv.writeToString(rows);
+		const file = await csv.writeToString(rows, { headers: true });
 		logger.verbose(
 			JSON.stringify({
 				channel: msg.channel.id,

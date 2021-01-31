@@ -62,7 +62,7 @@ export class Command {
 		} catch (e) {
 			if (e instanceof UserError) {
 				logger.verbose(this.log(msg, { error: e.message }));
-				await reply(msg, error).catch(logger.error);
+				await reply(msg, e.message).catch(logger.error);
 				return;
 			}
 			logger.error(e); // internal error
