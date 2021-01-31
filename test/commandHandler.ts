@@ -1,5 +1,5 @@
 import { expect } from "chai";
-// import { initializeBehaviours } from "../src/CommandHandler";
+import { initializeBehaviours } from "../src/CommandHandler";
 import { DiscordInterface } from "../src/discord/interface";
 import { DiscordWrapperMock } from "./mocks/discord";
 import { TournamentMock } from "./mocks/tournament";
@@ -10,36 +10,9 @@ const discord = new DiscordWrapperMock();
 const mockDiscord = new DiscordInterface(discord);
 const mockTournament = new TournamentMock();
 
-// initializeBehaviours("mc!", mockDiscord, mockTournament);
+initializeBehaviours("mc!", mockDiscord, mockTournament);
 
-describe("Basic test", function () {
-	it("Help", async function () {
-		await discord.simMessage("mc!help", "help");
-		const response = discord.getResponse("help");
-		expect(response).to.equal(
-			"Emcee's documentation can be found at https://github.com/AlphaKretin/emcee-tournament-bot/wiki."
-		);
-	});
-	it("Ping help", async function () {
-		await discord.simPing("ping");
-		const response = discord.getResponse("ping");
-		expect(response).to.equal(
-			"Emcee's documentation can be found at https://github.com/AlphaKretin/emcee-tournament-bot/wiki."
-		);
-	});
-	it("Argument validation", async function () {
-		await discord.simMessage("mc!create", "error");
-		const response = discord.getResponse("error");
-		expect(response).to.equal("Usage: create name|description");
-	});
-});
 describe("Tournament creation commands", function () {
-	it("Create tournament", async function () {
-		await discord.simMessage("mc!create name|desc", "create");
-		const response = discord.getResponse("create");
-		// guide message sent after creation response
-		expect(response).to.equal("Guide: mc!help name");
-	});
 	it("Update tournament", async function () {
 		await discord.simMessage("mc!update name|newName|newDesc", "update");
 		const response = discord.getResponse("update");
@@ -152,10 +125,6 @@ describe("Tournament flow commands", function () {
 	});
 });
 describe("Misc tournament commands", function () {
-	it("List tournaments", async function () {
-		await discord.simMessage("mc!list", "list");
-		expect(discord.getResponse("list")).to.equal("```\nThis sure is a list.```");
-	});
 	it("List players", async function () {
 		await discord.simMessage("mc!players name", "players");
 		expect(discord.getResponse("players")).to.equal(
