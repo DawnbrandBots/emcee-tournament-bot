@@ -4144,10 +4144,10 @@ yargs@^16.0.0, yargs@^16.0.3:
     y18n "^5.0.5"
     yargs-parser "^20.2.2"
 
-ydeck@^0.1.3:
-  version "0.1.3"
-  resolved "https://registry.yarnpkg.com/ydeck/-/ydeck-0.1.3.tgz#c0ab3448dfa9c847176cb45c5316fa69f78ff9ad"
-  integrity sha512-nwK0jWyXoouU9h5jKS/fxykBqhUNgO1ehXSf4oacGOf8Fy7iPJBOVBsq029w/YFgQ8dAbWJkhfRD2hM8J48NrA==
+ydeck@^0.1.5:
+  version "0.1.5"
+  resolved "https://registry.yarnpkg.com/ydeck/-/ydeck-0.1.5.tgz#717bb94d134d7bc00afcc829c19ce02d263d6990"
+  integrity sha512-z1rQ23fRc7Rcl+bb2DuJ9F0OfaqMDAVCksxNZ9wXQn+kcGVCsP+R1aH5tWuTIMma61RXgvN6/lW5Hnn6vmUL6w==
   dependencies:
     ydke "^1.1.0"
 
