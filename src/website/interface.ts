@@ -36,6 +36,7 @@ export interface WebsiteMatch {
 	player1: number;
 	player2: number;
 	matchId: number;
+	open: boolean;
 	round: number;
 }
 

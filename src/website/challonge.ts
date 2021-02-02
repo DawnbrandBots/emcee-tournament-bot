@@ -374,6 +374,7 @@ export class WebsiteWrapperChallonge implements WebsiteWrapper {
 			player1: match.player1_id,
 			player2: match.player2_id,
 			matchId: match.id,
+			open: match.state === "open",
 			round: match.round
 		};
 	}
