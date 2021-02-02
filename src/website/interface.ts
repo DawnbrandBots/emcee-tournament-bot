@@ -8,7 +8,13 @@ export interface WebsiteWrapper {
 	startTournament(tournamentId: string): Promise<void>;
 	getMatches(tournamentId: string, open?: boolean, playerId?: number): Promise<WebsiteMatch[]>;
 	removePlayer(tournamentId: string, playerId: number): Promise<void>;
-	submitScore(tournamentId: string, winner: number, winnerScore: number, loserScore: number): Promise<void>;
+	submitScore(
+		tournamentId: string,
+		match: WebsiteMatch,
+		winner: number,
+		winnerScore: number,
+		loserScore: number
+	): Promise<void>;
 	finishTournament(tournamentId: string): Promise<void>;
 	getPlayers(tournamentId: string): Promise<WebsitePlayer[]>;
 	setSeed(tournamentId: string, playerId: number, newSeed: number): Promise<void>;
@@ -136,7 +142,20 @@ export class WebsiteInterface {
 		winnerScore: number,
 		loserScore: number
 	): Promise<void> {
-		await this.api.submitScore(tournamentId, winner, winnerScore, loserScore);
+		// don't filter for open so we can submit to closed
+		// don't filter for player so we can get correct round no.
+		const matches = await this.api.getMatches(tournamentId, false);
+		// filter open matches to get round no.
+		const openMatches = matches.filter(m => m.open);
+		// passing an array of matches skips the excessive call
+		const round = await this.getRound(tournamentId, openMatches);
+		const match = matches.find(m => m.round === round && (m.player1 === winner || m.player2 === winner));
+		if (!match) {
+			throw new UserError(
+				`Could not find a match with Player ${winner} in Tournament ${tournamentId}, Round ${round}!`
+			);
+		}
+		await this.api.submitScore(tournamentId, match, winner, winnerScore, loserScore);
 	}
 
 	public async finishTournament(tournamentId: string): Promise<WebsiteTournament> {
@@ -238,7 +257,7 @@ export class WebsiteInterface {
 				   Considering how slow the startTournament function is, that's not impossible */
 				if (match) {
 					const winner = match.player1 === player.challongeId ? match.player2 : match.player1;
-					await this.api.submitScore(tournamentId, winner, 2, 0);
+					await this.api.submitScore(tournamentId, match, winner, 2, 0);
 				}
 				await this.removePlayer(tournamentId, player.challongeId);
 			}
