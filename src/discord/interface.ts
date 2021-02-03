@@ -142,10 +142,6 @@ export class DiscordInterface {
 		);
 	}
 
-	public mentionChannel(channelId: string): string {
-		return `<#${channelId}>`;
-	}
-
 	public mentionUser(userId: string): string {
 		return `<@${userId}>`;
 	}
@@ -200,12 +196,6 @@ export class DiscordInterface {
 
 	public async deletePlayerRole(tournament: DatabaseTournament): Promise<void> {
 		await this.api.deletePlayerRole(tournament.id, tournament.server);
-	}
-
-	public getChannel(query: string): string | undefined {
-		const channelRegex = /<#(\d+?)>/g;
-		const channelMatch = channelRegex.exec(query);
-		return channelMatch ? channelMatch[1] : undefined; // capture group ensured by regex
 	}
 }
 
