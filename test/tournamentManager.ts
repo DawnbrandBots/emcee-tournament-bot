@@ -49,14 +49,14 @@ const mockWebsiteWrapper = new WebsiteWrapperMock();
 const mockWebsite = new WebsiteInterface(mockWebsiteWrapper);
 
 const templater = new Templater();
+const participantRole = new ParticipantRoleProvider(new Client("foo"));
 
-const tournament = new TournamentManagerTest(
-	mockDiscord,
-	mockDb,
-	mockWebsite,
-	templater,
-	new ParticipantRoleProvider(new Client("foo"))
-);
+sinon.stub(participantRole, "get").resolves("role");
+sinon.stub(participantRole, "grant").resolves();
+sinon.stub(participantRole, "ungrant").resolves();
+sinon.stub(participantRole, "delete").resolves();
+
+const tournament = new TournamentManagerTest(mockDiscord, mockDb, mockWebsite, templater, participantRole);
 
 before(async () => {
 	await initializeCardArray();
