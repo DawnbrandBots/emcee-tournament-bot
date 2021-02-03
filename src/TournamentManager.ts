@@ -414,9 +414,14 @@ export class TournamentManager implements TournamentInterface {
 
 	// we could have logic for sending matchups in DMs in this function,
 	// but we want this to send first and leave it largely self-contained
-	private async sendNewRoundMessage(channelId: string, tournament: DatabaseTournament, url: string): Promise<void> {
+	private async sendNewRoundMessage(
+		channelId: string,
+		tournament: DatabaseTournament,
+		url: string,
+		round: number
+	): Promise<void> {
 		const role = await this.discord.getPlayerRole(tournament);
-		const message = `A new round of ${tournament.name} has begun! ${this.discord.mentionRole(
+		const message = `Round ${round} of ${tournament.name} has begun! ${this.discord.mentionRole(
 			role
 		)}\nPairings will be sent out by Direct Message shortly, or can be found here: ${url}`;
 		await this.discord.sendMessage(channelId, message);
@@ -433,9 +438,10 @@ export class TournamentManager implements TournamentInterface {
 		tournament: DatabaseTournament,
 		receiverId: string,
 		opponentId: string,
-		opponentName: string | null
+		opponentName: string | null,
+		round: number
 	): Promise<void> {
-		let message = `A new round of ${tournament.name} has begun! `;
+		let message = `Round ${round} of ${tournament.name} has begun! `;
 		message += opponentName
 			? `Your opponent is ${this.discord.mentionUser(
 					opponentId
@@ -477,9 +483,10 @@ export class TournamentManager implements TournamentInterface {
 	private async startNewRound(tournament: DatabaseTournament, url: string, skip = false): Promise<void> {
 		const participantRole = this.discord.mentionRole(await this.discord.getPlayerRole(tournament));
 		await this.cancelTimers(tournament);
+		const round = await this.website.getRound(tournament.id);
 		this.timers[tournament.id] = await Promise.all(
 			tournament.publicChannels.map(async channelId => {
-				await this.sendNewRoundMessage(channelId, tournament, url);
+				await this.sendNewRoundMessage(channelId, tournament, url, round);
 				return await this.createPersistentTimer(
 					new Date(Date.now() + 50 * 60 * 1000), // 50 minutes
 					channelId,
@@ -504,12 +511,12 @@ export class TournamentManager implements TournamentInterface {
 					const name1 = await this.getRealUsername(player1);
 					const name2 = await this.getRealUsername(player2);
 					if (name1) {
-						await this.sendMatchupDM(tournament, player1, player2, name2);
+						await this.sendMatchupDM(tournament, player1, player2, name2, round);
 					} else {
 						await this.reportMatchDMFailure(tournament, player1, player2);
 					}
 					if (name2) {
-						await this.sendMatchupDM(tournament, player2, player1, name1);
+						await this.sendMatchupDM(tournament, player2, player1, name1, round);
 					} else {
 						await this.reportMatchDMFailure(tournament, player2, player1);
 					}
@@ -527,7 +534,7 @@ export class TournamentManager implements TournamentInterface {
 		if (bye) {
 			await this.discord.sendDirectMessage(
 				bye,
-				`A new round of ${tournament.name} has begun! You have a bye for this round.`
+				`Round ${round} of ${tournament.name} has begun! You have a bye for this round.`
 			);
 		}
 	}
@@ -891,12 +898,10 @@ export class TournamentManager implements TournamentInterface {
 	}
 
 	public async registerBye(tournamentId: string, playerId: string): Promise<string[]> {
-		const tournament = await this.database.registerBye(tournamentId, playerId);
-		return tournament.byes;
+		return await this.database.registerBye(tournamentId, playerId);
 	}
 
 	public async removeBye(tournamentId: string, playerId: string): Promise<string[]> {
-		const tournament = await this.database.removeBye(tournamentId, playerId);
-		return tournament.byes;
+		return await this.database.removeBye(tournamentId, playerId);
 	}
 }

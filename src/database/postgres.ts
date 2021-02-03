@@ -356,7 +356,7 @@ export class DatabaseWrapperPostgres {
 		tournamentId: string,
 		playerId: string,
 		operation: (participant: ConfirmedParticipant) => Promise<void>
-	): Promise<DatabaseTournament> {
+	): Promise<string[]> {
 		const tournament = await this.findTournament(tournamentId);
 		if (tournament.status !== TournamentStatus.PREPARING) {
 			throw new AssertStatusError(tournamentId, TournamentStatus.PREPARING, tournament.status);
@@ -364,10 +364,11 @@ export class DatabaseWrapperPostgres {
 		const participant = await ConfirmedParticipant.findOneOrFail({ tournamentId, discordId: playerId });
 		await operation(participant);
 		await participant.save();
-		return this.wrap(tournament);
+		const byes = await ConfirmedParticipant.find({ tournamentId, hasBye: true });
+		return byes.map(p => p.discordId);
 	}
 
-	async registerBye(tournamentId: string, playerId: string): Promise<DatabaseTournament> {
+	async registerBye(tournamentId: string, playerId: string): Promise<string[]> {
 		return await this.byeHelper(tournamentId, playerId, async participant => {
 			if (participant.hasBye) {
 				throw new UserError(`Player ${playerId} already has a bye in Tournament ${tournamentId}`);
@@ -376,7 +377,7 @@ export class DatabaseWrapperPostgres {
 		});
 	}
 
-	async removeBye(tournamentId: string, playerId: string): Promise<DatabaseTournament> {
+	async removeBye(tournamentId: string, playerId: string): Promise<string[]> {
 		return await this.byeHelper(tournamentId, playerId, async participant => {
 			if (!participant.hasBye) {
 				throw new UserError(`Player ${playerId} does not have a bye in Tournament ${tournamentId}`);
