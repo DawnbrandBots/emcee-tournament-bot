@@ -63,6 +63,7 @@ describe("Tournament flow commands", function () {
 			player1: 1,
 			player2: 2,
 			matchId: 0,
+			open: true,
 			round: 1
 		});
 	});
