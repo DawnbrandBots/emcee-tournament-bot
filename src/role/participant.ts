@@ -59,7 +59,7 @@ export class ParticipantRoleProvider {
 		if (!server) {
 			// TODO: determine what bizarre scenario would result in this
 			throw new MiscInternalError(
-				`Could not find server ${tournament.server} as registered with Tournament ${tournament.server}.`
+				`Could not find server ${tournament.server} as registered with Tournament ${tournament.id}.`
 			);
 		}
 		logger.verbose(
