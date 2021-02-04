@@ -2,14 +2,14 @@
 You need a public channel to start signups.
 Public channels are used for signups and pairings.
 ```
-mc!addchannel {}|public|#pairings```
+mc!addchannel {}|public```
 Private channels are used for player decks.
 ```
-mc!addchannel {}|private|#decks```
+mc!addchannel {}|private```
 You remove channels if you make a mistake.
 ```
-mc!removechannel {}|public|#pairings```
-If you don't mention a channel, it will add the current channel.
+mc!removechannel {}|public```
+These commands add the current channel.
 **Add hosts**
 Hosts have all the same permissions you do.
 Trust them like you would a moderator.
