@@ -103,18 +103,30 @@ export class WebsiteInterface {
 	}
 
 	public async findMatch(tournamentId: string, playerId: number): Promise<WebsiteMatch | undefined> {
+		// an open match will be in the current round
 		const matches = await this.api.getMatches(tournamentId, true, playerId);
 		if (matches.length > 0) {
 			return matches[0];
 		}
 	}
 
+	// this can also find open matches, but uses a weighter query to include closed matches
 	public async findClosedMatch(tournamentId: string, playerId: number): Promise<WebsiteMatch | undefined> {
-		const playerMatches = await this.api.getMatches(tournamentId, false, playerId);
-		if (playerMatches.length) {
-			const roundMatches = playerMatches.filter(m => m.round === playerMatches[0].round);
-			return roundMatches[0]; // if length === 0 then this will be undefined at runtime
+		// don't filter for open so we can submit to closed
+		// don't filter for player so we can get correct round no.
+		const matches = await this.api.getMatches(tournamentId, false);
+		// filter open matches to get round no.
+		const openMatches = matches.filter(m => m.open);
+		// passing an array of matches skips the excessive call
+		const round = await this.getRound(tournamentId, openMatches);
+		const match = matches.find(m => m.round === round && (m.player1 === playerId || m.player2 === playerId));
+		if (!match) {
+			// may have the bye
+			throw new UserError(
+				`Could not find a match with Player ${playerId} in Tournament ${tournamentId}, Round ${round}!`
+			);
 		}
+		return match;
 	}
 
 	public async getRound(tournamentId: string, cachedMatches?: WebsiteMatch[]): Promise<number> {

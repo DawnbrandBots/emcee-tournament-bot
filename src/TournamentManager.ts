@@ -660,11 +660,8 @@ export class TournamentManager implements TournamentInterface {
 		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 		const player = tournament.findPlayer(playerId)!;
 		const mention = this.discord.mentionUser(playerId); // prepare for multiple uses below
-		let match = await this.website.findMatch(tournamentId, player.challongeId);
-		// if they're not in an open match, try a closed one
-		if (!match) {
-			match = await this.website.findClosedMatch(tournamentId, player.challongeId);
-		}
+		// can also find open matches, just depends on current round
+		const match = await this.website.findClosedMatch(tournamentId, player.challongeId);
 		if (!match) {
 			return `Could not find an open match in Tournament ${tournament.name} including ${mention}.`;
 		}
