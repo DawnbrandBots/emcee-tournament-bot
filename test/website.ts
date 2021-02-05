@@ -73,7 +73,8 @@ describe("Tournament flow commands", function () {
 	});
 
 	it("submitScore", async function () {
-		await expect(website.submitScore("test", 1, 2, 1)).to.not.be.rejected;
+		await expect(website.submitScore("test", { player1: 1, player2: 2, matchId: 0, open: true, round: 1 }, 1, 2, 1))
+			.to.not.be.rejected;
 	});
 
 	it("finishTournament", async function () {
