@@ -138,23 +138,11 @@ export class WebsiteInterface {
 
 	public async submitScore(
 		tournamentId: string,
+		match: WebsiteMatch,
 		winner: number,
 		winnerScore: number,
 		loserScore: number
 	): Promise<void> {
-		// don't filter for open so we can submit to closed
-		// don't filter for player so we can get correct round no.
-		const matches = await this.api.getMatches(tournamentId, false);
-		// filter open matches to get round no.
-		const openMatches = matches.filter(m => m.open);
-		// passing an array of matches skips the excessive call
-		const round = await this.getRound(tournamentId, openMatches);
-		const match = matches.find(m => m.round === round && (m.player1 === winner || m.player2 === winner));
-		if (!match) {
-			throw new UserError(
-				`Could not find a match with Player ${winner} in Tournament ${tournamentId}, Round ${round}!`
-			);
-		}
 		await this.api.submitScore(tournamentId, match, winner, winnerScore, loserScore);
 	}
 
