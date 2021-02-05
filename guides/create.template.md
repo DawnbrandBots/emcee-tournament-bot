@@ -9,7 +9,7 @@ mc!addchannel {}|private```
 You remove channels if you make a mistake.
 ```
 mc!removechannel {}|public```
-These commands add the current channel.
+These commands affect the current channel.
 **Add hosts**
 Hosts have all the same permissions you do.
 Trust them like you would a moderator.
