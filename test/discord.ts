@@ -29,10 +29,6 @@ describe("Simple helpers", function () {
 		await expect(discord.authenticateTO(sampleMessage)).to.not.be.rejected;
 	});
 
-	it("mentionChannel", function () {
-		expect(discord.mentionChannel("channel")).to.equal("<#channel>");
-	});
-
 	it("mentionUser", function () {
 		expect(discord.mentionUser("player")).to.equal("<@player>");
 	});
@@ -47,10 +43,6 @@ describe("Simple helpers", function () {
 
 	it("getUsername", function () {
 		expect(discord.getUsername("player1")).to.equal("player1");
-	});
-
-	it("getChannel", function () {
-		expect(discord.getChannel(sampleMessage.content)).to.equal("1101");
 	});
 });
 
