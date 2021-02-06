@@ -1,6 +1,6 @@
 import { WebsiteMatch, WebsitePlayer, WebsiteTournament, WebsiteWrapper } from "./interface";
 import fetch, { Response } from "node-fetch";
-import { ChallongeAPIError, UserError } from "../util/errors";
+import { ChallongeAPIError } from "../util/errors";
 
 type TournamentType = "single elimination" | "double elimination" | "round robin" | "swiss";
 type RankedBy = "match wins" | "game wins" | "points scored" | "points difference" | "custom";
@@ -374,6 +374,7 @@ export class WebsiteWrapperChallonge implements WebsiteWrapper {
 			player1: match.player1_id,
 			player2: match.player2_id,
 			matchId: match.id,
+			open: match.state === "open",
 			round: match.round
 		};
 	}
@@ -398,23 +399,16 @@ export class WebsiteWrapperChallonge implements WebsiteWrapper {
 
 	public async submitScore(
 		tournamentId: string,
+		match: WebsiteMatch,
 		winner: number,
 		winnerScore: number,
 		loserScore: number
 	): Promise<void> {
-		const webMatch = await this.indexMatches(tournamentId, "open", winner);
-		if (webMatch.length > 0) {
-			const match = webMatch[0].match;
-			const score = match.player1_id === winner ? `${winnerScore}-${loserScore}` : `${loserScore}-${winnerScore}`;
-			await this.updateMatch(tournamentId, match.id, {
-				winner_id: winnerScore === loserScore ? "tie" : winner,
-				scores_csv: score
-			});
-		} else {
-			// TODO: Find a way to get the most recent closed match with that play and verify that it is in the current round.
-			// This is to enable overriding of incorrect scores.
-			throw new UserError("There is no open match for the specified player.");
-		}
+		const score = match.player1 === winner ? `${winnerScore}-${loserScore}` : `${loserScore}-${winnerScore}`;
+		await this.updateMatch(tournamentId, match.matchId, {
+			winner_id: winnerScore === loserScore ? "tie" : winner,
+			scores_csv: score
+		});
 	}
 
 	private async indexPlayers(tournamentId: string): Promise<ChallongeParticipant[]> {

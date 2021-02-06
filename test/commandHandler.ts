@@ -10,61 +10,39 @@ const mockDiscord = new DiscordInterface(discord);
 const mockTournament = new TournamentMock();
 
 describe.skip("Tournament creation commands", function () {
-	it("Add channel - public/specific", async function () {
-		// channel mentions must be digits
-		await discord.simMessage("mc!addchannel name|public|<#1101>", "addchannel");
-		expect(discord.getResponse("1101")).to.equal(
-			"This channel added as a public announcement channel for Tournament name!"
-		);
-		expect(discord.getResponse("addchannel")).to.equal(
-			`${mockDiscord.mentionChannel("1101")} added as a public announcement channel for Tournament name!`
-		);
+	it("Create tournament", async function () {
+		await discord.simMessage("mc!create name|desc", "create");
+		const response = discord.getResponse("create");
+		// guide message sent after creation response
+		expect(response).to.equal("Guide: mc!help name");
 	});
-	it("Add channel - private/default", async function () {
+	it("Update tournament", async function () {
+		await discord.simMessage("mc!update name|newName|newDesc", "update");
+		const response = discord.getResponse("update");
+		expect(response).to.equal("Tournament `name` updated! It now has the name newName and the given description.");
+	});
+	it("Add channel - private", async function () {
 		await discord.simMessage("mc!addchannel name|private", "addchannel2");
-		expect(discord.getResponse("testChannel")).to.equal(
-			"This channel added as a private announcement channel for Tournament name!"
-		);
 		expect(discord.getResponse("addchannel2")).to.equal(
-			`${mockDiscord.mentionChannel("testChannel")} added as a private announcement channel for Tournament name!`
+			`This channel added as a private announcement channel for Tournament name!`
 		);
 	});
 	it("Add channel - unspecified type", async function () {
 		await discord.simMessage("mc!addchannel name", "addchannel3");
-		expect(discord.getResponse("testChannel")).to.equal(
-			"This channel added as a public announcement channel for Tournament name!"
-		);
 		expect(discord.getResponse("addchannel3")).to.equal(
-			`${mockDiscord.mentionChannel("testChannel")} added as a public announcement channel for Tournament name!`
-		);
-	});
-	it("Remove channel - public/specified", async function () {
-		await discord.simMessage("mc!removechannel name|public|<#1102>", "remchannel");
-		expect(discord.getResponse("1102")).to.equal(
-			"This channel removed as a public announcement channel for Tournament name!"
-		);
-		expect(discord.getResponse("remchannel")).to.equal(
-			`${mockDiscord.mentionChannel("1102")} removed as a public announcement channel for Tournament name!`
+			`This channel added as a public announcement channel for Tournament name!`
 		);
 	});
 	it("Remove channel - private/default", async function () {
 		await discord.simMessage("mc!removechannel name|private", "remchannel2");
-		expect(discord.getResponse("testChannel")).to.equal(
-			"This channel removed as a private announcement channel for Tournament name!"
-		);
 		expect(discord.getResponse("remchannel2")).to.equal(
-			`${mockDiscord.mentionChannel(
-				"testChannel"
-			)} removed as a private announcement channel for Tournament name!`
+			`This channel removed as a private announcement channel for Tournament name!`
 		);
 	});
 	it("Remove channel - unspecified type", async function () {
 		await discord.simMessage("mc!removechannel name", "remchannel3");
-		expect(discord.getResponse("testChannel")).to.equal(
-			"This channel removed as a public announcement channel for Tournament name!"
-		);
 		expect(discord.getResponse("remchannel3")).to.equal(
-			`${mockDiscord.mentionChannel("testChannel")} removed as a public announcement channel for Tournament name!`
+			`This channel removed as a public announcement channel for Tournament name!`
 		);
 	});
 	it("Add host", async function () {
@@ -103,9 +81,7 @@ describe.skip("Tournament flow commands", function () {
 	});
 	it("Submit score - by host", async function () {
 		await discord.simMessage("mc!forcescore name|2-1|<@player1>", "forcescore");
-		expect(discord.getResponse("forcescore")).to.equal(
-			"Score of 2-1 submitted in favour of <@player1> (player1) in Tournament name!"
-		);
+		expect(discord.getResponse("forcescore")).to.equal("For more detail, test the tournament handler!");
 	});
 	it("Submit score - by host bad input", async function () {
 		await discord.simMessage("mc!forcescore name|john won|<@john>", "forcescore2");

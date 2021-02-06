@@ -36,13 +36,8 @@ export interface TournamentInterface {
 	openTournament(tournamentId: string): Promise<void>;
 	startTournament(tournamentId: string): Promise<void>;
 	finishTournament(tournamentId: string, cancel: boolean | undefined): Promise<void>;
-	submitScore(
-		tournamentId: string,
-		playerId: string,
-		scorePlayer: number,
-		scoreOpp: number,
-		host?: boolean
-	): Promise<string>;
+	submitScore(tournamentId: string, playerId: string, scorePlayer: number, scoreOpp: number): Promise<string>;
+	submitScoreForce(tournamentId: string, playerId: string, scorePlayer: number, scoreOpp: number): Promise<string>;
 	nextRound(tournamentId: string, skip?: boolean): Promise<void>;
 	getPlayerDeck(tournamentId: string, playerId: string): Promise<Deck>;
 	dropPlayer(tournamentId: string, playerId: string, force?: boolean): Promise<void>;
@@ -514,7 +509,7 @@ export class TournamentManager implements TournamentInterface {
 				}
 			})
 		);
-		const bye = await this.website.getBye(tournament.id);
+		const bye = await this.website.getBye(tournament.id, matches);
 		if (bye) {
 			await this.discord.sendDirectMessage(
 				bye,
@@ -633,23 +628,38 @@ export class TournamentManager implements TournamentInterface {
 		}
 	}
 
-	public async submitScore(
+	public async submitScoreForce(
 		tournamentId: string,
 		playerId: string,
 		scorePlayer: number,
-		scoreOpp: number,
-		host = false
+		scoreOpp: number
 	): Promise<string> {
 		const tournament = await this.database.getTournament(tournamentId, TournamentStatus.IPR);
 		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 		const player = tournament.findPlayer(playerId)!;
-		const match = await this.website.findMatch(tournamentId, player.challongeId);
-		// if a host is submitting, skip straight to trusting the score
-		if (host) {
-			await this.website.submitScore(tournamentId, player.challongeId, scorePlayer, scoreOpp);
-			return ""; // output in this case is handled by the command
-		}
 		const mention = this.discord.mentionUser(playerId); // prepare for multiple uses below
+		// can also find open matches, just depends on current round
+		const match = await this.website.findClosedMatch(tournamentId, player.challongeId);
+		if (!match) {
+			return `Could not find an open match in Tournament ${tournament.name} including ${mention}.`;
+		}
+		await this.website.submitScore(tournamentId, match, player.challongeId, scorePlayer, scoreOpp);
+		return `Score of ${scorePlayer}-${scoreOpp} submitted in favour of ${mention} (${this.discord.getUsername(
+			playerId
+		)}) in Tournament ${tournamentId}!`;
+	}
+
+	public async submitScore(
+		tournamentId: string,
+		playerId: string,
+		scorePlayer: number,
+		scoreOpp: number
+	): Promise<string> {
+		const tournament = await this.database.getTournament(tournamentId, TournamentStatus.IPR);
+		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+		const player = tournament.findPlayer(playerId)!;
+		const mention = this.discord.mentionUser(playerId); // prepare for multiple uses below
+		const match = await this.website.findMatch(tournamentId, player.challongeId);
 		if (!match) {
 			return `Could not find an open match in Tournament ${tournament.name} including you, ${mention}. This could mean your opponent dropped, conceding the match. If the score for your current match is incorrect, please ask a host to change it.`;
 		}
@@ -666,7 +676,7 @@ export class TournamentManager implements TournamentInterface {
 				const winner = weWon ? player.challongeId : score.playerId;
 				const winnerScore = weWon ? scorePlayer : scoreOpp;
 				const loserScore = weWon ? scoreOpp : scorePlayer;
-				await this.website.submitScore(tournamentId, winner, winnerScore, loserScore);
+				await this.website.submitScore(tournamentId, match, winner, winnerScore, loserScore);
 				// send DM to opponent
 				const opponent = score.playerDiscord;
 				await this.discord.sendDirectMessage(
@@ -754,7 +764,7 @@ export class TournamentManager implements TournamentInterface {
 			// if there's no match, their most recent score is already submitted.
 			if (match) {
 				const oppChallonge = match.player1 === player.challongeId ? match.player2 : match.player1;
-				await this.website.submitScore(tournament.id, oppChallonge, 2, 0);
+				await this.website.submitScore(tournament.id, match, oppChallonge, 2, 0);
 				const opponent = tournament.players.find(p => p.challongeId === oppChallonge);
 				// should exist but checking is safer than not-null assertion
 				if (opponent) {

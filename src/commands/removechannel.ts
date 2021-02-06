@@ -9,10 +9,10 @@ const command: CommandDefinition = {
 	requiredArgs: ["id"],
 	executor: async (msg, args, support) => {
 		// Mirror of addchannel
-		const [id, baseType, channelMention] = args; // 2 optional and thus potentially undefined
+		const [id, baseType] = args; // 1 optional and thus potentially undefined
 		await support.tournamentManager.authenticateHost(id, msg.author.id);
 		const type = baseType?.toLowerCase() === "private" ? "private" : "public";
-		const channelId = support.discord.getChannel(channelMention) || msg.channel.id;
+		const channelId = msg.channel.id;
 		logger.verbose(
 			JSON.stringify({
 				channel: msg.channel.id,
@@ -21,7 +21,7 @@ const command: CommandDefinition = {
 				tournament: id,
 				command: "removechannel",
 				type,
-				destination: channelId,
+				// destination: channelId,
 				event: "attempt"
 			})
 		);
@@ -34,20 +34,17 @@ const command: CommandDefinition = {
 				tournament: id,
 				command: "removechannel",
 				type,
-				destination: channelId,
+				// destination: channelId,
 				event: "success"
 			})
 		);
-		await support.discord.sendMessage(
-			channelId,
-			`This channel removed as a ${type} announcement channel for Tournament ${id}!`
-		);
-		await reply(
+		/* await reply(
 			msg,
 			`${support.discord.mentionChannel(
 				channelId
 			)} removed as a ${type} announcement channel for Tournament ${id}!`
-		);
+		); */
+		await reply(msg, `This channel removed as a ${type} announcement channel for Tournament ${id}!`);
 	}
 };
 

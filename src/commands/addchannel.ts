@@ -8,10 +8,10 @@ const command: CommandDefinition = {
 	name: "addchannel",
 	requiredArgs: ["id"],
 	executor: async (msg, args, support) => {
-		const [id, baseType, channelMention] = args; // 2 optional and thus potentially undefined
+		const [id, baseType] = args; // 1 optional and thus potentially undefined
 		await support.tournamentManager.authenticateHost(id, msg.author.id);
 		const type = baseType?.toLowerCase() === "private" ? "private" : "public";
-		const channelId = support.discord.getChannel(channelMention) || msg.channel.id;
+		const channelId = msg.channel.id;
 		logger.verbose(
 			JSON.stringify({
 				channel: msg.channel.id,
@@ -20,7 +20,7 @@ const command: CommandDefinition = {
 				tournament: id,
 				command: "addchannel",
 				type,
-				destination: channelId,
+				// destination: channelId, // no longer necessary as must === channel
 				event: "attempt"
 			})
 		);
@@ -33,18 +33,17 @@ const command: CommandDefinition = {
 				tournament: id,
 				command: "addchannel",
 				type,
-				destination: channelId,
+				// destination: channelId,
 				event: "success"
 			})
 		);
-		await support.discord.sendMessage(
-			channelId,
-			`This channel added as a ${type} announcement channel for Tournament ${id}!`
-		);
+		/* No longer required as will always be in same channel as reply
 		await reply(
 			msg,
 			`${support.discord.mentionChannel(channelId)} added as a ${type} announcement channel for Tournament ${id}!`
 		);
+		*/
+		await reply(msg, `This channel added as a ${type} announcement channel for Tournament ${id}!`);
 	}
 };
 

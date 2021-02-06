@@ -113,10 +113,6 @@ export class DiscordInterface {
 		return await this.api.removeUserReaction(channelId, messageId, emoji, userId);
 	}
 
-	public mentionChannel(channelId: string): string {
-		return `<#${channelId}>`;
-	}
-
 	public mentionUser(userId: string): string {
 		return `<@${userId}>`;
 	}
@@ -151,12 +147,6 @@ export class DiscordInterface {
 
 	public async sendDirectMessage(userId: string, content: DiscordMessageOut): Promise<void> {
 		await this.api.sendDirectMessage(userId, content);
-	}
-
-	public getChannel(query: string): string | undefined {
-		const channelRegex = /<#(\d+?)>/g;
-		const channelMatch = channelRegex.exec(query);
-		return channelMatch ? channelMatch[1] : undefined; // capture group ensured by regex
 	}
 }
 
