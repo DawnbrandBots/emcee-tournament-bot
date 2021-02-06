@@ -1,4 +1,5 @@
 import { CommandDefinition } from "../Command";
+import { firstMentionOrFail, reply } from "../util/discord";
 import { UserError } from "../util/errors";
 import { getLogger } from "../util/logger";
 
@@ -9,15 +10,15 @@ const command: CommandDefinition = {
 	requiredArgs: ["id", "score"],
 	executor: async (msg, args, support) => {
 		const [id, score] = args;
-		await support.tournamentManager.authenticateHost(id, msg);
-		const player = support.discord.getMentionedUser(msg);
+		await support.tournamentManager.authenticateHost(id, msg.author.id);
+		const player = firstMentionOrFail(msg);
 		// player is guaranteed, throws if not found
 		const scores = score.split("-").map(s => parseInt(s, 10));
 		logger.verbose(
 			JSON.stringify({
-				channel: msg.channelId,
+				channel: msg.channel.id,
 				message: msg.id,
-				user: msg.author,
+				user: msg.author.id,
 				tournament: id,
 				command: "forcescore",
 				mention: player,
@@ -31,9 +32,9 @@ const command: CommandDefinition = {
 		const response = await support.tournamentManager.submitScoreForce(id, player, scores[0], scores[1]);
 		logger.verbose(
 			JSON.stringify({
-				channel: msg.channelId,
+				channel: msg.channel.id,
 				message: msg.id,
-				user: msg.author,
+				user: msg.author.id,
 				tournament: id,
 				command: "forcescore",
 				mention: player,
@@ -41,7 +42,7 @@ const command: CommandDefinition = {
 				event: "success" // success doesn't necessarily meant a score was submitted
 			})
 		);
-		await msg.reply(response);
+		await reply(msg, response);
 	}
 };
 

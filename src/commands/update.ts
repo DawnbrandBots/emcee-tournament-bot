@@ -1,4 +1,5 @@
 import { CommandDefinition } from "../Command";
+import { reply } from "../util/discord";
 import { getLogger } from "../util/logger";
 
 const logger = getLogger("command:update");
@@ -8,12 +9,12 @@ const command: CommandDefinition = {
 	requiredArgs: ["id", "name", "description"],
 	executor: async (msg, args, support) => {
 		const [id, name, desc] = args;
-		await support.tournamentManager.authenticateHost(id, msg);
+		await support.tournamentManager.authenticateHost(id, msg.author.id);
 		logger.verbose(
 			JSON.stringify({
-				channel: msg.channelId,
+				channel: msg.channel.id,
 				message: msg.id,
-				user: msg.author,
+				user: msg.author.id,
 				tournament: id,
 				command: "update",
 				name,
@@ -25,9 +26,9 @@ const command: CommandDefinition = {
 		// TODO: missing failure path
 		logger.verbose(
 			JSON.stringify({
-				channel: msg.channelId,
+				channel: msg.channel.id,
 				message: msg.id,
-				user: msg.author,
+				user: msg.author.id,
 				tournament: id,
 				command: "update",
 				name,
@@ -35,7 +36,7 @@ const command: CommandDefinition = {
 				event: "success"
 			})
 		);
-		await msg.reply(`Tournament \`${id}\` updated! It now has the name ${name} and the given description.`);
+		await reply(msg, `Tournament \`${id}\` updated! It now has the name ${name} and the given description.`);
 	}
 };
 

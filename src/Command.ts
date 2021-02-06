@@ -1,5 +1,8 @@
-import { DiscordInterface, DiscordMessageIn } from "./discord/interface";
+import { Message } from "eris";
+import { DiscordInterface } from "./discord/interface";
+import { OrganiserRoleProvider } from "./role/organiser";
 import { TournamentInterface } from "./TournamentManager";
+import { reply } from "./util/discord";
 import { UserError } from "./util/errors";
 import { getLogger } from "./util/logger";
 
@@ -8,6 +11,7 @@ const logger = getLogger("command");
 export interface CommandSupport {
 	discord: DiscordInterface;
 	tournamentManager: TournamentInterface;
+	organiserRole: OrganiserRoleProvider;
 }
 
 // This is a composition-over-inheritance approach. In an inheritance model this
@@ -16,7 +20,7 @@ export interface CommandSupport {
 export interface CommandDefinition {
 	name: string;
 	requiredArgs: string[];
-	executor: (message: DiscordMessageIn, args: string[], support: CommandSupport) => Promise<void>;
+	executor: (message: Message, args: string[], support: CommandSupport) => Promise<void>;
 }
 
 export class Command {
@@ -33,9 +37,9 @@ export class Command {
 		return "";
 	}
 
-	protected log(msg: DiscordMessageIn, extra: Record<string, unknown>): string {
+	protected log(msg: Message, extra: Record<string, unknown>): string {
 		return JSON.stringify({
-			channel: msg.channelId,
+			channel: msg.channel.id,
 			message: msg.id,
 			user: msg.author,
 			command: this.definition.name,
@@ -43,12 +47,12 @@ export class Command {
 		});
 	}
 
-	public async run(msg: DiscordMessageIn, args: string[], support: CommandSupport): Promise<void> {
+	public async run(msg: Message, args: string[], support: CommandSupport): Promise<void> {
 		logger.verbose(this.log(msg, { event: "attempt" }));
 		const error = this.checkUsage(args);
 		if (error) {
 			logger.verbose(this.log(msg, { error }));
-			await msg.reply(error).catch(logger.error);
+			await reply(msg, error).catch(logger.error);
 			return;
 		}
 		try {
@@ -58,7 +62,7 @@ export class Command {
 		} catch (e) {
 			if (e instanceof UserError) {
 				logger.verbose(this.log(msg, { error: e.message }));
-				await msg.reply(e.message).catch(logger.error);
+				await reply(msg, e.message).catch(logger.error);
 				return;
 			}
 			logger.error(e); // internal error

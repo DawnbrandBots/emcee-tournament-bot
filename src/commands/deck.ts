@@ -1,5 +1,6 @@
 import { CommandDefinition } from "../Command";
 import { prettyPrint } from "../deck/discordDeck";
+import { firstMentionOrFail, reply } from "../util/discord";
 import { getLogger } from "../util/logger";
 
 const logger = getLogger("command:deck");
@@ -9,13 +10,13 @@ const command: CommandDefinition = {
 	requiredArgs: ["id"],
 	executor: async (msg, args, support) => {
 		const [id] = args;
-		await support.tournamentManager.authenticateHost(id, msg);
-		const player = support.discord.getMentionedUser(msg);
+		await support.tournamentManager.authenticateHost(id, msg.author.id);
+		const player = firstMentionOrFail(msg);
 		logger.verbose(
 			JSON.stringify({
-				channel: msg.channelId,
+				channel: msg.channel.id,
 				message: msg.id,
-				user: msg.author,
+				user: msg.author.id,
 				tournament: id,
 				command: "deck",
 				mention: player,
@@ -25,9 +26,9 @@ const command: CommandDefinition = {
 		const deck = await support.tournamentManager.getPlayerDeck(id, player);
 		logger.verbose(
 			JSON.stringify({
-				channel: msg.channelId,
+				channel: msg.channel.id,
 				message: msg.id,
-				user: msg.author,
+				user: msg.author.id,
 				tournament: id,
 				command: "deck",
 				mention: player,
@@ -35,18 +36,22 @@ const command: CommandDefinition = {
 			})
 		);
 		const name = support.discord.getUsername(player);
-		const [message, attachment] = prettyPrint(deck, `${name}.ydk`);
+		const [message, { filename, contents }] = prettyPrint(deck, `${name}.ydk`);
 		logger.verbose(
 			JSON.stringify({
-				channel: msg.channelId,
+				channel: msg.channel.id,
 				message: msg.id,
-				user: msg.author,
+				user: msg.author.id,
 				command: "deck",
 				mention: player,
 				event: "success"
 			})
 		);
-		await msg.reply(message, attachment);
+		// TODO: replace
+		await reply(msg, typeof message === "string" ? message : { embed: message }, {
+			name: filename,
+			file: contents
+		});
 	}
 };
 

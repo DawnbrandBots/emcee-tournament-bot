@@ -1,11 +1,13 @@
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
+import { Client, Message } from "eris";
 import sinon, { SinonSandbox } from "sinon";
 import sinonChai from "sinon-chai";
 import sinonTest from "sinon-test";
 import { CommandSupport } from "../../src/Command";
 import command from "../../src/commands/finish";
-import { DiscordInterface, DiscordMessageIn } from "../../src/discord/interface";
+import { DiscordInterface } from "../../src/discord/interface";
+import { OrganiserRoleProvider } from "../../src/role/organiser";
 import { DiscordWrapperMock } from "../mocks/discord";
 import { TournamentMock } from "../mocks/tournament";
 
@@ -16,31 +18,21 @@ const test = sinonTest(sinon);
 describe("command:finish", function () {
 	const support: CommandSupport = {
 		discord: new DiscordInterface(new DiscordWrapperMock()),
-		tournamentManager: new TournamentMock()
+		tournamentManager: new TournamentMock(),
+		organiserRole: new OrganiserRoleProvider("MC-TO")
 	};
-	const msg: DiscordMessageIn = {
-		id: "007",
-		content: "irrelevant",
-		attachments: [],
-		author: "creator",
-		channelId: "four",
-		serverId: "six",
-		reply: async () => void 0,
-		react: async () => void 0,
-		edit: async () => void 0
-	};
+	const msg = new Message({ id: "007", channel_id: "foo", author: { id: "0000" } }, new Client("mock"));
 	const args = ["battlecity"];
-	void command;
 	it(
 		"rejects non-hosts",
 		test(function (this: SinonSandbox) {
 			const authStub = this.stub(support.tournamentManager, "authenticateHost").rejects();
 			const finishStub = this.stub(support.tournamentManager, "finishTournament").resolves();
-			const replyStub = this.stub(msg, "reply").resolves();
+			msg.channel.createMessage = this.spy();
 			expect(command.executor(msg, args, support)).to.be.rejected;
 			expect(authStub).to.have.been.called;
 			expect(finishStub).to.not.have.been.called;
-			expect(replyStub).to.not.have.been.called;
+			expect(msg.channel.createMessage).to.not.have.been.called;
 		})
 	);
 	it(
@@ -48,11 +40,13 @@ describe("command:finish", function () {
 		test(async function (this: SinonSandbox) {
 			const authStub = this.stub(support.tournamentManager, "authenticateHost").resolves();
 			const finishStub = this.stub(support.tournamentManager, "finishTournament").resolves();
-			const replyStub = this.stub(msg, "reply").resolves();
+			msg.channel.createMessage = this.spy();
 			await command.executor(msg, args, support);
 			expect(authStub).to.have.been.called;
 			expect(finishStub).to.have.been.calledOnceWithExactly("battlecity", false);
-			expect(replyStub).to.have.been.calledOnceWithExactly("Tournament battlecity successfully finished.");
+			expect(msg.channel.createMessage).to.have.been.calledOnceWithExactly(
+				"Tournament battlecity successfully finished."
+			);
 		})
 	);
 	it(
@@ -60,14 +54,14 @@ describe("command:finish", function () {
 		test(async function (this: SinonSandbox) {
 			const authStub = this.stub(support.tournamentManager, "authenticateHost").resolves();
 			const finishStub = this.stub(support.tournamentManager, "finishTournament").rejects();
-			const replyStub = this.stub(msg, "reply").resolves();
+			msg.channel.createMessage = this.spy();
 			try {
 				await command.executor(msg, args, support);
 				expect.fail();
 			} catch (e) {
 				expect(authStub).to.have.been.called;
 				expect(finishStub).to.have.been.calledOnce;
-				expect(replyStub).to.not.have.been.called;
+				expect(msg.channel.createMessage).to.not.have.been.called;
 			}
 		})
 	);
@@ -76,14 +70,14 @@ describe("command:finish", function () {
 		test(async function (this: SinonSandbox) {
 			const authStub = this.stub(support.tournamentManager, "authenticateHost").resolves();
 			const finishStub = this.stub(support.tournamentManager, "finishTournament").resolves();
-			const replyStub = this.stub(msg, "reply").rejects();
+			msg.channel.createMessage = this.stub().rejects();
 			try {
 				await command.executor(msg, args, support);
 				expect.fail();
 			} catch (e) {
 				expect(authStub).to.have.been.called;
 				expect(finishStub).to.have.been.calledOnce;
-				expect(replyStub).to.have.been.calledOnce;
+				expect(msg.channel.createMessage).to.have.been.calledOnce;
 			}
 		})
 	);

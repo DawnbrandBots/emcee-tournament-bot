@@ -1,4 +1,3 @@
-import { DatabaseTournament } from "../database/interface";
 import { getLogger } from "../util/logger";
 
 const logger = getLogger("discord");
@@ -59,23 +58,15 @@ export interface DiscordReactionHandler {
 }
 
 export interface DiscordWrapper {
-	onMessage: (handler: DiscordMessageHandler) => void;
 	onDelete: (handler: DiscordDeleteHandler) => void;
-	onPing: (hander: DiscordMessageHandler) => void;
 	onReaction: (handler: DiscordReactionHandler) => void;
 	onReactionRemove: (handler: DiscordReactionHandler) => void;
 	removeUserReaction: (channelId: string, messageId: string, emoji: string, userId: string) => Promise<boolean>;
 	getMessage(channelId: string, messageId: string): Promise<DiscordMessageIn | null>;
 	sendMessage(channelId: string, msg: DiscordMessageOut, file?: DiscordAttachmentOut): Promise<DiscordMessageSent>;
 	deleteMessage(channelId: string, messageId: string): Promise<void>;
-	authenticateTO(msg: DiscordMessageIn): Promise<void>;
-	getMentionedUser(msg: DiscordMessageIn): string;
 	getUsername(userId: string): string;
 	getRESTUsername(userId: string): Promise<string | null>;
-	getPlayerRole(tournamentId: string, channelId: string): Promise<string>;
-	grantPlayerRole(userId: string, roleId: string): Promise<void>;
-	removePlayerRole(userId: string, roleId: string): Promise<void>;
-	deletePlayerRole(tournamentId: string, channelId: string): Promise<void>;
 	sendDirectMessage(userId: string, content: DiscordMessageOut): Promise<void>;
 }
 
@@ -85,16 +76,8 @@ export class DiscordInterface {
 		this.api = api;
 	}
 
-	public onMessage(func: DiscordMessageHandler): void {
-		this.api.onMessage(func);
-	}
-
 	public onDelete(func: DiscordDeleteHandler): void {
 		this.api.onDelete(func);
-	}
-
-	public onPing(func: DiscordMessageHandler): void {
-		this.api.onPing(func);
 	}
 
 	public async awaitReaction(
@@ -130,18 +113,6 @@ export class DiscordInterface {
 		return await this.api.removeUserReaction(channelId, messageId, emoji, userId);
 	}
 
-	public async authenticateTO(msg: DiscordMessageIn): Promise<void> {
-		await this.api.authenticateTO(msg);
-		logger.verbose(
-			JSON.stringify({
-				channel: msg.channelId,
-				message: msg.id,
-				user: msg.author,
-				event: `TO authorized ${msg.serverId}`
-			})
-		);
-	}
-
 	public mentionUser(userId: string): string {
 		return `<@${userId}>`;
 	}
@@ -166,10 +137,6 @@ export class DiscordInterface {
 		await this.api.deleteMessage(channelId, messageId);
 	}
 
-	public getMentionedUser(msg: DiscordMessageIn): string {
-		return this.api.getMentionedUser(msg);
-	}
-
 	public getUsername(userId: string): string {
 		return this.api.getUsername(userId);
 	}
@@ -180,22 +147,6 @@ export class DiscordInterface {
 
 	public async sendDirectMessage(userId: string, content: DiscordMessageOut): Promise<void> {
 		await this.api.sendDirectMessage(userId, content);
-	}
-
-	public async getPlayerRole(tournament: DatabaseTournament): Promise<string> {
-		return await this.api.getPlayerRole(tournament.id, tournament.server);
-	}
-
-	public async grantPlayerRole(userId: string, roleId: string): Promise<void> {
-		await this.api.grantPlayerRole(userId, roleId);
-	}
-
-	public async removePlayerRole(userId: string, roleId: string): Promise<void> {
-		await this.api.removePlayerRole(userId, roleId);
-	}
-
-	public async deletePlayerRole(tournament: DatabaseTournament): Promise<void> {
-		await this.api.deletePlayerRole(tournament.id, tournament.server);
 	}
 }
 

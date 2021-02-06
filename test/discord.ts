@@ -1,7 +1,7 @@
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { DatabaseTournament, TournamentStatus } from "../src/database/interface";
-import { DiscordInterface, DiscordMessageHandler, DiscordMessageIn, splitText } from "../src/discord/interface";
+import { DiscordInterface, DiscordMessageIn, splitText } from "../src/discord/interface";
 import { DiscordWrapperMock } from "./mocks/discord";
 chai.use(chaiAsPromised);
 
@@ -25,20 +25,12 @@ const sampleMessage: DiscordMessageIn = {
 };
 
 describe("Simple helpers", function () {
-	it("authenticateTO", async function () {
-		await expect(discord.authenticateTO(sampleMessage)).to.not.be.rejected;
-	});
-
 	it("mentionUser", function () {
 		expect(discord.mentionUser("player")).to.equal("<@player>");
 	});
 
 	it("mentionRole", function () {
 		expect(discord.mentionRole("role")).to.equal("<@&role>");
-	});
-
-	it("getMentionedUser", function () {
-		expect(discord.getMentionedUser(sampleMessage)).to.equal("player1");
 	});
 
 	it("getUsername", function () {
@@ -52,23 +44,9 @@ describe("Callback setups", function () {
 		expect(discordMock.getResponse("pong")).to.be.undefined;
 	});
 
-	it("onMessage", async function () {
-		const handler: DiscordMessageHandler = async msg => msg.reply("pang");
-		discord.onMessage(handler);
-		await discordMock.simMessage("not a command", "pang");
-		expect(discordMock.getResponse("pang")).to.equal("pang");
-	});
-
 	it("onDelete", async function () {
 		// TODO: mock deletion?
 		expect(() => discord.onDelete(noop)).to.not.throw;
-	});
-
-	it("onPing", async function () {
-		const handler: DiscordMessageHandler = async msg => msg.reply("peng");
-		discord.onPing(handler);
-		await discordMock.simPing("peng");
-		expect(discordMock.getResponse("peng")).to.equal("peng");
 	});
 
 	it("awaitReaction", async function () {
@@ -119,24 +97,6 @@ const sampleTournament: DatabaseTournament = {
 		return { discordId: "testPlayer", challongeId: 1, deck: "" };
 	}
 };
-describe("Roles", function () {
-	it("getPlayerRole", async function () {
-		const role = await discord.getPlayerRole(sampleTournament);
-		expect(role).to.equal("role");
-	});
-
-	it("grantPlayerRole", async function () {
-		await expect(discord.grantPlayerRole("testPlayer", "role")).to.not.be.rejected;
-	});
-
-	it("removePlayerRole", async function () {
-		await expect(discord.removePlayerRole("testPlayer", "role")).to.not.be.rejected;
-	});
-
-	it("deletePlayerRole", async function () {
-		await expect(discord.deletePlayerRole(sampleTournament)).to.not.be.rejected;
-	});
-});
 
 describe("Split text", function () {
 	it("Split on new line", function () {

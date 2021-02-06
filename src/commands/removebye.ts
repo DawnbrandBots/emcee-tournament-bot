@@ -1,4 +1,5 @@
 import { CommandDefinition } from "../Command";
+import { firstMentionOrFail, reply } from "../util/discord";
 import { getLogger } from "../util/logger";
 
 const logger = getLogger("command:removebye");
@@ -9,13 +10,13 @@ const command: CommandDefinition = {
 	executor: async (msg, args, support) => {
 		// Mirror of addbye
 		const [id] = args;
-		await support.tournamentManager.authenticateHost(id, msg);
-		const player = support.discord.getMentionedUser(msg);
+		await support.tournamentManager.authenticateHost(id, msg.author.id);
+		const player = firstMentionOrFail(msg);
 		logger.verbose(
 			JSON.stringify({
-				channel: msg.channelId,
+				channel: msg.channel.id,
 				message: msg.id,
-				user: msg.author,
+				user: msg.author.id,
 				tournament: id,
 				command: "removebye",
 				mention: player,
@@ -25,9 +26,9 @@ const command: CommandDefinition = {
 		const byes = await support.tournamentManager.removeBye(id, player);
 		logger.verbose(
 			JSON.stringify({
-				channel: msg.channelId,
+				channel: msg.channel.id,
 				message: msg.id,
-				user: msg.author,
+				user: msg.author.id,
 				tournament: id,
 				command: "removebye",
 				mention: player,
@@ -36,7 +37,7 @@ const command: CommandDefinition = {
 		);
 		const tag = (id: string): string => `${support.discord.mentionUser(id)} (${support.discord.getUsername(id)})`;
 		const names = byes.map(tag).join(", ");
-		await msg.reply(`Bye removed for Player ${tag(player)} in Tournament ${id}!\nAll byes: ${names}`);
+		await reply(msg, `Bye removed for Player ${tag(player)} in Tournament ${id}!\nAll byes: ${names}`);
 	}
 };
 

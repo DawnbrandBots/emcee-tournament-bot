@@ -1,4 +1,5 @@
 import { CommandDefinition } from "../Command";
+import { reply } from "../util/discord";
 import { getLogger } from "../util/logger";
 
 const logger = getLogger("command:cancel");
@@ -9,12 +10,12 @@ const command: CommandDefinition = {
 	executor: async (msg, args, support) => {
 		// This executor's logic is now surprisingly similar to finish
 		const [id] = args;
-		await support.tournamentManager.authenticateHost(id, msg);
+		await support.tournamentManager.authenticateHost(id, msg.author.id);
 		logger.verbose(
 			JSON.stringify({
-				channel: msg.channelId,
+				channel: msg.channel.id,
 				message: msg.id,
-				user: msg.author,
+				user: msg.author.id,
 				tournament: id,
 				command: "cancel",
 				event: "attempt"
@@ -24,15 +25,15 @@ const command: CommandDefinition = {
 		await support.tournamentManager.finishTournament(id, true);
 		logger.verbose(
 			JSON.stringify({
-				channel: msg.channelId,
+				channel: msg.channel.id,
 				message: msg.id,
-				user: msg.author,
+				user: msg.author.id,
 				tournament: id,
 				command: "cancel",
 				event: "success"
 			})
 		);
-		await msg.reply(`Tournament ${id} successfully canceled.`);
+		await reply(msg, `Tournament ${id} successfully canceled.`);
 	}
 };
 

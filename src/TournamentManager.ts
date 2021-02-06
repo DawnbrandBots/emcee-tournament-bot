@@ -1,10 +1,10 @@
-import * as csv from "@fast-csv/format";
 import { Deck } from "ydeck";
-import { DatabaseTournament, TournamentStatus } from "./database/interface";
+import { DatabasePlayer, DatabaseTournament, TournamentStatus } from "./database/interface";
 import { DatabaseWrapperPostgres } from "./database/postgres";
 import { getDeck } from "./deck/deck";
 import { getDeckFromMessage, prettyPrint } from "./deck/discordDeck";
-import { DiscordAttachmentOut, DiscordInterface, DiscordMessageIn, DiscordMessageLimited } from "./discord/interface";
+import { DiscordInterface, DiscordMessageIn, DiscordMessageLimited } from "./discord/interface";
+import { ParticipantRoleProvider } from "./role/participant";
 import { Templater } from "./templates";
 import { PersistentTimer } from "./timer";
 import { BlockedDMsError, ChallongeAPIError, TournamentNotFoundError, UserError } from "./util/errors";
@@ -24,8 +24,8 @@ export interface TournamentInterface {
 	registerPlayer(msg: DiscordMessageIn, playerId: string): Promise<void>;
 	confirmPlayer(msg: DiscordMessageIn): Promise<void>;
 	cleanRegistration(msg: DiscordMessageLimited): Promise<void>;
-	authenticateHost(tournamentId: string, message: DiscordMessageIn): Promise<void>;
-	authenticatePlayer(tournamentId: string, message: DiscordMessageIn): Promise<void>;
+	authenticateHost(tournamentId: string, userId: string): Promise<void>;
+	authenticatePlayer(tournamentId: string, userId: string): Promise<void>;
 	listTournaments(server?: string): Promise<string>;
 	createTournament(hostId: string, serverId: string, name: string, desc: string): Promise<[string, string, string]>;
 	updateTournament(tournamentId: string, name: string, desc: string): Promise<void>;
@@ -39,12 +39,10 @@ export interface TournamentInterface {
 	submitScore(tournamentId: string, playerId: string, scorePlayer: number, scoreOpp: number): Promise<string>;
 	submitScoreForce(tournamentId: string, playerId: string, scorePlayer: number, scoreOpp: number): Promise<string>;
 	nextRound(tournamentId: string, skip?: boolean): Promise<void>;
-	listPlayers(tournamentId: string): Promise<DiscordAttachmentOut>;
 	getPlayerDeck(tournamentId: string, playerId: string): Promise<Deck>;
 	dropPlayer(tournamentId: string, playerId: string, force?: boolean): Promise<void>;
 	syncTournament(tournamentId: string): Promise<void>;
-	generatePieChart(tournamentId: string): Promise<DiscordAttachmentOut>;
-	generateDeckDump(tournamentId: string): Promise<DiscordAttachmentOut>;
+	getConfirmed(tournamentId: string): Promise<DatabasePlayer[]>;
 	registerBye(tournamentId: string, playerId: string): Promise<string[]>;
 	removeBye(tournamentId: string, playerId: string): Promise<string[]>;
 }
@@ -59,7 +57,8 @@ export class TournamentManager implements TournamentInterface {
 		private discord: DiscordInterface,
 		private database: Public<DatabaseWrapperPostgres>,
 		private website: WebsiteInterface,
-		private templater: Templater
+		private templater: Templater,
+		private participantRole: ParticipantRoleProvider
 	) {}
 
 	/// Link seam to override for testing
@@ -115,30 +114,12 @@ export class TournamentManager implements TournamentInterface {
 		logger.info(`Loaded ${count} of ${messages.length} reaction buttons.`);
 	}
 
-	public async authenticateHost(tournamentId: string, message: DiscordMessageIn): Promise<void> {
-		await this.database.authenticateHost(tournamentId, message.author);
-		logger.verbose(
-			JSON.stringify({
-				channel: message.channelId,
-				message: message.id,
-				user: message.author,
-				tournament: tournamentId,
-				event: "host authorized"
-			})
-		);
+	public async authenticateHost(tournamentId: string, userId: string): Promise<void> {
+		await this.database.authenticateHost(tournamentId, userId);
 	}
 
-	public async authenticatePlayer(tournamentId: string, message: DiscordMessageIn): Promise<void> {
-		await this.database.authenticatePlayer(tournamentId, message.author);
-		logger.verbose(
-			JSON.stringify({
-				channel: message.channelId,
-				message: message.id,
-				user: message.author,
-				tournament: tournamentId,
-				event: "player authorized"
-			})
-		);
+	public async authenticatePlayer(tournamentId: string, userId: string): Promise<void> {
+		await this.database.authenticatePlayer(tournamentId, userId);
 	}
 
 	public async listTournaments(server?: string): Promise<string> {
@@ -307,7 +288,7 @@ export class TournamentManager implements TournamentInterface {
 				msg.author
 			);
 			await this.database.confirmPlayer(tournament.id, msg.author, challongeId, deck.url);
-			await this.discord.grantPlayerRole(msg.author, await this.discord.getPlayerRole(tournament));
+			await this.participantRole.grant(msg.author, tournament).catch(logger.error);
 			const channels = tournament.privateChannels;
 			await Promise.all(
 				channels.map(async c => {
@@ -420,10 +401,8 @@ export class TournamentManager implements TournamentInterface {
 		url: string,
 		round: number
 	): Promise<void> {
-		const role = await this.discord.getPlayerRole(tournament);
-		const message = `Round ${round} of ${tournament.name} has begun! ${this.discord.mentionRole(
-			role
-		)}\nPairings will be sent out by Direct Message shortly, or can be found here: ${url}`;
+		const role = this.discord.mentionRole(await this.participantRole.get(tournament));
+		const message = `Round ${round} of ${tournament.name} has begun! ${role}\nPairings will be sent out by Direct Message shortly, or can be found here: ${url}`;
 		await this.discord.sendMessage(channelId, message);
 	}
 
@@ -481,7 +460,7 @@ export class TournamentManager implements TournamentInterface {
 	}
 
 	private async startNewRound(tournament: DatabaseTournament, url: string, skip = false): Promise<void> {
-		const participantRole = this.discord.mentionRole(await this.discord.getPlayerRole(tournament));
+		const role = this.discord.mentionRole(await this.participantRole.get(tournament));
 		await this.cancelTimers(tournament);
 		const round = await this.website.getRound(tournament.id);
 		this.timers[tournament.id] = await Promise.all(
@@ -490,7 +469,7 @@ export class TournamentManager implements TournamentInterface {
 				return await this.createPersistentTimer(
 					new Date(Date.now() + 50 * 60 * 1000), // 50 minutes
 					channelId,
-					`That's time in the round, ${participantRole}! Please end the current phase, then the player with the lower LP must forfeit!`,
+					`That's time in the round, ${role}! Please end the current phase, then the player with the lower LP must forfeit!`,
 					5, // update every 5 seconds
 					tournament.id
 				);
@@ -597,18 +576,18 @@ export class TournamentManager implements TournamentInterface {
 		await this.cancelTimers(tournament);
 
 		await this.database.finishTournament(tournamentId);
+		const role = this.discord.mentionRole(await this.participantRole.get(tournament));
 		await Promise.all(
 			channels.map(async c => {
-				const role = await this.discord.getPlayerRole(tournament);
 				await this.discord.sendMessage(
 					c,
 					`${tournament.name} has ${
 						cancel ? "been cancelled." : "concluded!"
-					} Thank you all for playing! ${this.discord.mentionRole(role)}\nResults: ${webTourn.url}`
+					} Thank you all for playing! ${role}\nResults: ${webTourn.url}`
 				);
 			})
 		);
-		await this.discord.deletePlayerRole(tournament);
+		await this.participantRole.delete(tournament);
 		// this condition both prevents errors with small tournaments
 		// and ensures top cuts don't get their own top cuts
 		if (!cancel && tournament.players.length > 8) {
@@ -628,7 +607,6 @@ export class TournamentManager implements TournamentInterface {
 			}
 
 			const newTournament = await this.database.getTournament(newId);
-			const newRole = await this.discord.getPlayerRole(newTournament);
 			for (const player of top) {
 				const challongeId = await this.website.registerPlayer(
 					newId,
@@ -638,7 +616,7 @@ export class TournamentManager implements TournamentInterface {
 				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 				const deck = tournament.findPlayer(player.discordId)!.deck;
 				await this.database.confirmPlayer(newId, player.discordId, challongeId, deck);
-				await this.discord.grantPlayerRole(player.discordId, newRole);
+				await this.participantRole.grant(player.discordId, newTournament).catch(logger.error);
 			}
 			for (const channel of tournament.publicChannels) {
 				await this.database.addAnnouncementChannel(newId, channel, "public");
@@ -742,22 +720,6 @@ export class TournamentManager implements TournamentInterface {
 		await this.startNewRound(tournament, webTourn.url, skip);
 	}
 
-	public async listPlayers(tournamentId: string): Promise<DiscordAttachmentOut> {
-		const tournament = await this.database.getTournament(tournamentId);
-		const rows = tournament.players.map(player => {
-			const name = this.discord.getUsername(player.discordId);
-			const deck = getDeck(player.deck);
-			const themes = deck.themes.length > 0 ? deck.themes.join("/") : "No themes";
-			return [name, themes];
-		});
-		rows.unshift(["Player", "Theme"]);
-		const contents = await csv.writeToString(rows);
-		return {
-			filename: `${tournament.name}.csv`,
-			contents
-		};
-	}
-
 	public async getPlayerDeck(tournamentId: string, playerId: string): Promise<Deck> {
 		const tourn = await this.database.getTournament(tournamentId);
 		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -816,7 +778,7 @@ export class TournamentManager implements TournamentInterface {
 			}
 		}
 		await this.website.removePlayer(tournament.id, player.challongeId);
-		await this.discord.removePlayerRole(playerId, await this.discord.getPlayerRole(tournament));
+		await this.participantRole.ungrant(playerId, tournament).catch(logger.error);
 		logger.verbose(`User ${playerId} dropped from tournament ${tournament.id}${force ? " by host" : ""}.`);
 		await this.discord.sendDirectMessage(
 			playerId,
@@ -851,46 +813,9 @@ export class TournamentManager implements TournamentInterface {
 		});
 	}
 
-	// utility function, can be moved elsewhere if it turns out to be more universally useful
-	// copied from ydeck/counts.ts, doesn't seem in-scope to expose it
-	private countStrings(list: string[]): { [element: string]: number } {
-		return list.reduce<{ [element: string]: number }>((acc, curr) => {
-			acc[curr] = (acc[curr] || 0) + 1;
-			return acc;
-		}, {});
-	}
-
-	public async generatePieChart(tournamentId: string): Promise<DiscordAttachmentOut> {
+	public async getConfirmed(tournamentId: string): Promise<DatabasePlayer[]> {
 		const tournament = await this.database.getTournament(tournamentId);
-		const themes = tournament.players.map(player => {
-			const deck = getDeck(player.deck);
-			return deck.themes.length > 0 ? deck.themes.join("/") : "No themes";
-		});
-		const counts = this.countStrings(themes);
-		const rows = Object.entries(counts).map(e => [e[0], e[1].toString()]);
-		rows.unshift(["Theme", "Count"]);
-		const contents = await csv.writeToString(rows);
-		return {
-			filename: `${tournament.name} Pie.csv`,
-			contents
-		};
-	}
-
-	public async generateDeckDump(tournamentId: string): Promise<DiscordAttachmentOut> {
-		const tournament = await this.database.getTournament(tournamentId);
-		const rows = tournament.players.map(player => {
-			const deck = getDeck(player.deck);
-			return [
-				this.discord.getUsername(player.discordId),
-				`Main: ${deck.mainText}, Extra: ${deck.extraText}, Side: ${deck.sideText}`.replace(/\n/g, ", ")
-			];
-		});
-		rows.unshift(["Player", "Deck"]);
-		const contents = await csv.writeToString(rows);
-		return {
-			filename: `${tournament.name} Decks.csv`,
-			contents
-		};
+		return tournament.players;
 	}
 
 	public async registerBye(tournamentId: string, playerId: string): Promise<string[]> {

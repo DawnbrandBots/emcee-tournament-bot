@@ -1,4 +1,5 @@
 import { CommandDefinition } from "../Command";
+import { reply } from "../util/discord";
 import { getLogger } from "../util/logger";
 
 const logger = getLogger("command:list");
@@ -8,32 +9,31 @@ const command: CommandDefinition = {
 	requiredArgs: [],
 	executor: async (msg, args, support) => {
 		void args;
-		await support.discord.authenticateTO(msg);
+		await support.organiserRole.authorise(msg);
 		// This log may be meaningless because we perform no parameter processing
-		// and authenticateTO already logs
 		logger.verbose(
 			JSON.stringify({
-				channel: msg.channelId,
+				channel: msg.channel.id,
 				message: msg.id,
-				user: msg.author,
+				user: msg.author.id,
 				command: "list",
 				event: "attempt"
 			})
 		);
-		const list = await support.tournamentManager.listTournaments(msg.serverId);
+		const list = await support.tournamentManager.listTournaments(msg.guildID || "private");
 		logger.verbose(
 			JSON.stringify({
-				channel: msg.channelId,
+				channel: msg.channel.id,
 				message: msg.id,
-				user: msg.author,
+				user: msg.author.id,
 				command: "list",
 				event: "success"
 			})
 		);
 		if (list.length === 0) {
-			await msg.reply("There are no open tournaments you have access to!");
+			await reply(msg, "There are no open tournaments you have access to!");
 		} else {
-			await msg.reply(`\`\`\`\n${list}\`\`\``);
+			await reply(msg, `\`\`\`\n${list}\`\`\``);
 		}
 	}
 };

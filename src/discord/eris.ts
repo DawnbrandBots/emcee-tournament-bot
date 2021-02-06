@@ -1,30 +1,19 @@
 import {
 	Client,
 	Emoji,
-	Guild,
 	GuildChannel,
 	Member,
 	Message,
 	MessageContent,
 	MessageFile,
 	PossiblyUncachedMessage,
-	Role,
 	TextChannel
 } from "eris";
-import { toRole } from "../config/config.json";
-import { discordToken } from "../config/env";
-import {
-	AssertTextChannelError,
-	BlockedDMsError,
-	MiscInternalError,
-	UnauthorisedTOError,
-	UserError
-} from "../util/errors";
+import { AssertTextChannelError, BlockedDMsError } from "../util/errors";
 import { getLogger } from "../util/logger";
 import {
 	DiscordAttachmentOut,
 	DiscordDeleteHandler,
-	DiscordMessageHandler,
 	DiscordMessageIn,
 	DiscordMessageLimited,
 	DiscordMessageOut,
@@ -36,60 +25,20 @@ import {
 const logger = getLogger("eris");
 
 export class DiscordWrapperEris implements DiscordWrapper {
-	private messageHandlers: DiscordMessageHandler[];
-	private pingHandlers: DiscordMessageHandler[];
 	private reactionHandlers: DiscordReactionHandler[];
 	private reactionRemoveHandlers: DiscordReactionHandler[];
 	private deleteHandlers: DiscordDeleteHandler[];
-	private wrappedMessages: { [id: string]: Message };
-	private toRoles: { [guild: string]: string };
-	private playerRoles: { [tournamentId: string]: string };
-	private bot: Client;
-	public ready: Promise<void>;
 
-	constructor() {
-		this.messageHandlers = [];
+	constructor(private bot: Client) {
 		this.deleteHandlers = [];
-		this.pingHandlers = [];
 		this.reactionHandlers = [];
 		this.reactionRemoveHandlers = [];
-		this.wrappedMessages = {};
-		this.toRoles = {};
-		this.playerRoles = {};
-		this.bot = new Client(discordToken, {
-			restMode: true
-		});
-		this.bot.on("warn", (message, shard) => logger.warn(`Shard ${shard}: ${message}`));
-		this.bot.on("error", (message, shard) => logger.error(`Shard ${shard}: ${message}`));
-		this.bot.on("connect", shard => logger.info(`Shard ${shard} connected to Discord`));
-		this.bot.on("disconnect", () => logger.info("Disconnected from Discord"));
-		this.bot.on("shardReady", shard => logger.info(`Shard ${shard} ready`));
-		this.bot.on("shardDisconnect", shard => logger.info(`Shard ${shard} disconnected`));
-		this.bot.on("guildDelete", guild => logger.info(`Guild delete: ${guild}`));
-		this.bot.on("messageCreate", this.handleMessage.bind(this));
 		this.bot.on("messageReactionAdd", this.handleReaction.bind(this));
 		this.bot.on("messageReactionRemove", this.handleReactionRemove.bind(this));
 		this.bot.on("messageDelete", this.handleDelete.bind(this));
-		this.bot.on("guildCreate", async guild => {
-			logger.info(`Guild create: ${guild}`);
-			// TODO: Make this more exposed in the main bot files
-			// but this whole module system is getting overhauled later anyway
-			await this.createTORole(guild);
-		});
-		this.ready = new Promise(resolve => {
-			this.bot.on("ready", () => {
-				logger.info(`Logged in as ${this.bot.user.username} - ${this.bot.user.id}`);
-				resolve();
-			});
-		});
-		this.bot.connect().catch(logger.error);
-		process.once("SIGTERM", () => {
-			this.bot.disconnect({ reconnect: false });
-		});
 	}
 
 	private wrapMessageIn(msg: Message): DiscordMessageIn {
-		this.wrappedMessages[msg.id] = msg;
 		const channel = msg.channel;
 		const guildId = channel instanceof GuildChannel ? channel.guild.id : "private";
 		return {
@@ -155,23 +104,6 @@ export class DiscordWrapperEris implements DiscordWrapper {
 		await this.bot.deleteMessage(channelId, messageId);
 	}
 
-	private async handleMessage(msg: Message): Promise<void> {
-		// Ignore messages from all bots and replies
-		if (msg.author.bot || msg.messageReference) {
-			return;
-		}
-		const wrappedMsg = this.wrapMessageIn(msg);
-		if (msg.mentions.includes(this.bot.user)) {
-			for (const handler of this.pingHandlers) {
-				await handler(wrappedMsg);
-			}
-			return;
-		}
-		for (const handler of this.messageHandlers) {
-			await handler(wrappedMsg);
-		}
-	}
-
 	private wrapMessageLimited(msg: PossiblyUncachedMessage): DiscordMessageLimited {
 		return {
 			channelId: msg.channel.id,
@@ -225,114 +157,8 @@ export class DiscordWrapperEris implements DiscordWrapper {
 		}
 	}
 
-	private async createTORole(guild: Guild): Promise<Role> {
-		const newRole = await guild.createRole(
-			{
-				name: toRole,
-				color: 0x3498db
-			},
-			"Auto-created by Emcee bot."
-		);
-		this.toRoles[guild.id] = newRole.id;
-		logger.verbose(`TO role ${newRole.id} created in ${guild.id}.`);
-		return newRole;
-	}
-
-	private async getTORole(guild: Guild): Promise<string> {
-		if (guild.id in this.toRoles) {
-			return this.toRoles[guild.id];
-		}
-		const role = guild.roles.find(r => r.name === toRole);
-		if (role) {
-			this.toRoles[guild.id] = role.id;
-			return role.id;
-		}
-		const newRole = await this.createTORole(guild);
-		return newRole.id;
-	}
-
-	private async createPlayerRole(guild: Guild, tournamentId: string): Promise<Role> {
-		const newRole = await guild.createRole(
-			{
-				name: `MC-${tournamentId}-player`,
-				color: 0xe67e22
-			},
-			"Auto-created by Emcee bot."
-		);
-		this.toRoles[guild.id] = newRole.id;
-		logger.verbose(`Player role ${newRole.id} created in ${guild.id}.`);
-		return newRole;
-	}
-
-	public async getPlayerRole(tournamentId: string, serverId: string): Promise<string> {
-		if (tournamentId in this.playerRoles) {
-			return this.playerRoles[tournamentId];
-		}
-		const guild = this.bot.guilds.get(serverId);
-		if (!guild) {
-			throw new MiscInternalError(
-				`Could not find server ${serverId} as registered with Tournament ${tournamentId}.`
-			);
-		}
-		const role = guild.roles.find(r => r.name === `MC-${tournamentId}-player`);
-		if (role) {
-			this.playerRoles[tournamentId] = role.id;
-			return role.id;
-		}
-		const newRole = await this.createPlayerRole(guild, tournamentId);
-
-		return newRole.id;
-	}
-
-	/**
-	 * Retrieve the server member object for the user if the user belongs to the server
-	 * that has the the specified role. The user does not have to have the role.
-	 *
-	 * @param userId Discord user snowflake
-	 * @param roleId Query the server by a role snowflake
-	 */
-	private async getServerMember(userId: string, roleId: string): Promise<Member> {
-		const guild = this.bot.guilds.find(g => g.roles.has(roleId));
-		if (!guild) {
-			throw new MiscInternalError(`Could not find guild with role ${roleId}.`);
-		}
-		const cachedMember = guild.members.get(userId);
-		return cachedMember || (await guild.getRESTMember(userId));
-	}
-
-	public async grantPlayerRole(userId: string, roleId: string): Promise<void> {
-		const member = await this.getServerMember(userId, roleId);
-		await member.addRole(roleId);
-	}
-
-	public async removePlayerRole(userId: string, roleId: string): Promise<void> {
-		const member = await this.getServerMember(userId, roleId);
-		await member.removeRole(roleId);
-	}
-
-	public async deletePlayerRole(tournamentId: string, serverId: string): Promise<void> {
-		// yes this creates it just to delete it if it doesn't exist
-		// but that's better than not deleting it if it exists but isn't cached
-		const role = await this.getPlayerRole(tournamentId, serverId);
-		const guild = this.bot.guilds.get(serverId);
-		if (!guild) {
-			throw new MiscInternalError(
-				`Could not find server ${serverId} as registered with Tournament ${tournamentId}.`
-			);
-		}
-		await guild.deleteRole(role);
-	}
-
-	public onMessage(handler: DiscordMessageHandler): void {
-		this.messageHandlers.push(handler);
-	}
-
 	public onDelete(handler: DiscordDeleteHandler): void {
 		this.deleteHandlers.push(handler);
-	}
-
-	public onPing(handler: DiscordMessageHandler): void {
-		this.pingHandlers.push(handler);
 	}
 
 	public onReaction(handler: DiscordReactionHandler): void {
@@ -357,30 +183,6 @@ export class DiscordWrapperEris implements DiscordWrapper {
 			// TODO: check for specific error for message not having the specified reaction/user
 			return false;
 		}
-	}
-
-	public async authenticateTO(m: DiscordMessageIn): Promise<void> {
-		const msg = this.wrappedMessages[m.id];
-		if (!(msg && msg.channel instanceof GuildChannel)) {
-			throw new UnauthorisedTOError(msg.author.id);
-		}
-		const guild = msg.channel.guild;
-		const member = guild.members.get(msg.author.id);
-		if (!member) {
-			throw new UnauthorisedTOError(msg.author.id);
-		}
-		const role = await this.getTORole(guild);
-		if (!member.roles.includes(role)) {
-			throw new UnauthorisedTOError(msg.author.id);
-		}
-	}
-
-	public getMentionedUser(m: DiscordMessageIn): string {
-		const msg = this.wrappedMessages[m.id];
-		if (msg.mentions.length < 1) {
-			throw new UserError(`Message does not mention a user!\n\`${msg.content}\``);
-		}
-		return msg.mentions[0].id;
 	}
 
 	public getUsername(userId: string): string {

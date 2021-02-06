@@ -1,10 +1,13 @@
-import { prefix } from "./config/config.json";
-import { challongeToken, challongeUsername, postgresqlUrl } from "./config/env";
-import { initializeBehaviours } from "./CommandHandler";
+import { Client } from "eris";
+import { prefix, toRole } from "./config/config.json";
+import { challongeToken, challongeUsername, discordToken, postgresqlUrl } from "./config/env";
 import { initializeDatabase } from "./database/postgres";
 import { initializeCardArray } from "./deck/deck";
 import { DiscordWrapperEris } from "./discord/eris";
 import { DiscordInterface } from "./discord/interface";
+import { registerEvents } from "./events";
+import { OrganiserRoleProvider } from "./role/organiser";
+import { ParticipantRoleProvider } from "./role/participant";
 import { Templater } from "./templates";
 import { TournamentManager } from "./TournamentManager";
 import { getLogger } from "./util/logger";
@@ -25,13 +28,28 @@ const logger = getLogger("index");
 	const challonge = new WebsiteWrapperChallonge(challongeUsername, challongeToken);
 	const website = new WebsiteInterface(challonge);
 
-	const eris = new DiscordWrapperEris();
+	const bot = new Client(discordToken, {
+		restMode: true
+	});
+	const eris = new DiscordWrapperEris(bot);
 	const discord = new DiscordInterface(eris);
+	const organiserRole = new OrganiserRoleProvider(toRole, 0x3498db);
+	const participantRole = new ParticipantRoleProvider(bot, 0xe67e22);
+	const tournamentManager = new TournamentManager(discord, database, website, templater, participantRole);
+	registerEvents(bot, prefix, { discord, tournamentManager, organiserRole });
+	discord.onDelete(msg => tournamentManager.cleanRegistration(msg));
 
-	const tournamentManager = new TournamentManager(discord, database, website, templater);
-	initializeBehaviours(prefix, discord, tournamentManager);
-
-	await eris.ready;
-	await tournamentManager.loadTimers();
-	await tournamentManager.loadButtons();
+	let firstReady = true;
+	bot.on("ready", async () => {
+		logger.info(`Logged in as ${bot.user.username} - ${bot.user.id}`);
+		if (firstReady) {
+			firstReady = false;
+			await tournamentManager.loadTimers();
+			await tournamentManager.loadButtons();
+		}
+	});
+	bot.connect().catch(logger.error);
+	process.once("SIGTERM", () => {
+		bot.disconnect({ reconnect: false });
+	});
 })();
