@@ -168,8 +168,8 @@ describe("Tournament flow commands", function () {
 		);
 	});
 	it("Submit score - host", async function () {
-		const response = await tournament.submitScore("tourn2", "player1", 2, 1, true);
-		expect(response).to.equal("");
+		const response = await tournament.submitScoreForce("tourn2", "player1", 2, 1);
+		expect(response).to.equal("Score of 2-1 submitted in favour of <@player1> (player1) in Tournament tourn2!");
 	});
 	it(
 		"Next round",

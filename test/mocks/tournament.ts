@@ -74,6 +74,10 @@ export class TournamentMock implements TournamentInterface {
 		return "For more detail, test the tournament handler!";
 	}
 
+	public async submitScoreForce(): Promise<string> {
+		return "For more detail, test the tournament handler!";
+	}
+
 	public async nextRound(): Promise<void> {
 		return;
 	}

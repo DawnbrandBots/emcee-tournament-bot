@@ -8,7 +8,13 @@ export interface WebsiteWrapper {
 	startTournament(tournamentId: string): Promise<void>;
 	getMatches(tournamentId: string, open?: boolean, playerId?: number): Promise<WebsiteMatch[]>;
 	removePlayer(tournamentId: string, playerId: number): Promise<void>;
-	submitScore(tournamentId: string, winner: number, winnerScore: number, loserScore: number): Promise<void>;
+	submitScore(
+		tournamentId: string,
+		match: WebsiteMatch,
+		winner: number,
+		winnerScore: number,
+		loserScore: number
+	): Promise<void>;
 	finishTournament(tournamentId: string): Promise<void>;
 	getPlayers(tournamentId: string): Promise<WebsitePlayer[]>;
 	setSeed(tournamentId: string, playerId: number, newSeed: number): Promise<void>;
@@ -36,6 +42,7 @@ export interface WebsiteMatch {
 	player1: number;
 	player2: number;
 	matchId: number;
+	open: boolean;
 	round: number;
 }
 
@@ -70,7 +77,7 @@ export class WebsiteInterface {
 		await this.api.startTournament(tournamentId);
 	}
 
-	public async getBye(tournamentId: string): Promise<string | undefined> {
+	public async getBye(tournamentId: string, cachedMatches?: WebsiteMatch[]): Promise<string | undefined> {
 		const tournament = await this.getTournament(tournamentId);
 		// do not count dropped players
 		const activePlayers = tournament.players.filter(p => p.active);
@@ -78,7 +85,7 @@ export class WebsiteInterface {
 			// even number of players means no bye
 			return undefined;
 		}
-		const matches = await this.api.getMatches(tournamentId);
+		const matches = cachedMatches || (await this.api.getMatches(tournamentId));
 		// Find a player for which the following is true
 		const bye = activePlayers.find(p => {
 			// Find a match which includes the player
@@ -96,14 +103,34 @@ export class WebsiteInterface {
 	}
 
 	public async findMatch(tournamentId: string, playerId: number): Promise<WebsiteMatch | undefined> {
+		// an open match will be in the current round
 		const matches = await this.api.getMatches(tournamentId, true, playerId);
 		if (matches.length > 0) {
 			return matches[0];
 		}
 	}
 
-	public async getRound(tournamentId: string): Promise<number> {
-		const matches = await this.api.getMatches(tournamentId, true);
+	// this can also find open matches, but uses a weighter query to include closed matches
+	public async findClosedMatch(tournamentId: string, playerId: number): Promise<WebsiteMatch | undefined> {
+		// don't filter for open so we can submit to closed
+		// don't filter for player so we can get correct round no.
+		const matches = await this.api.getMatches(tournamentId, false);
+		// filter open matches to get round no.
+		const openMatches = matches.filter(m => m.open);
+		// passing an array of matches skips the excessive call
+		const round = await this.getRound(tournamentId, openMatches);
+		const match = matches.find(m => m.round === round && (m.player1 === playerId || m.player2 === playerId));
+		if (!match) {
+			// may have the bye
+			throw new UserError(
+				`Could not find a match with Player ${playerId} in Tournament ${tournamentId}, Round ${round}!`
+			);
+		}
+		return match;
+	}
+
+	public async getRound(tournamentId: string, cachedMatches?: WebsiteMatch[]): Promise<number> {
+		const matches = cachedMatches || (await this.api.getMatches(tournamentId, true));
 		if (matches.length < 1) {
 			throw new UserError(
 				`No matches found for Tournament ${tournamentId}! This likely means the tournament either has not started or is finished!`
@@ -123,11 +150,12 @@ export class WebsiteInterface {
 
 	public async submitScore(
 		tournamentId: string,
+		match: WebsiteMatch,
 		winner: number,
 		winnerScore: number,
 		loserScore: number
 	): Promise<void> {
-		await this.api.submitScore(tournamentId, winner, winnerScore, loserScore);
+		await this.api.submitScore(tournamentId, match, winner, winnerScore, loserScore);
 	}
 
 	public async finishTournament(tournamentId: string): Promise<WebsiteTournament> {
@@ -229,7 +257,7 @@ export class WebsiteInterface {
 				   Considering how slow the startTournament function is, that's not impossible */
 				if (match) {
 					const winner = match.player1 === player.challongeId ? match.player2 : match.player1;
-					await this.api.submitScore(tournamentId, winner, 2, 0);
+					await this.api.submitScore(tournamentId, match, winner, 2, 0);
 				}
 				await this.removePlayer(tournamentId, player.challongeId);
 			}

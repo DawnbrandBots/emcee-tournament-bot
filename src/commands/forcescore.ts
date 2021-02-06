@@ -28,7 +28,7 @@ const command: CommandDefinition = {
 		if (scores.length < 2) {
 			throw new UserError("Must provide score in format `#-#` e.g. `2-1`.");
 		}
-		await support.tournamentManager.submitScore(id, player, scores[0], scores[1], true);
+		const response = await support.tournamentManager.submitScoreForce(id, player, scores[0], scores[1]);
 		logger.verbose(
 			JSON.stringify({
 				channel: msg.channelId,
@@ -38,14 +38,10 @@ const command: CommandDefinition = {
 				command: "forcescore",
 				mention: player,
 				scores,
-				event: "success"
+				event: "success" // success doesn't necessarily meant a score was submitted
 			})
 		);
-		await msg.reply(
-			`Score of ${score} submitted in favour of ${support.discord.mentionUser(
-				player
-			)} (${support.discord.getUsername(player)}) in Tournament ${id}!`
-		);
+		await msg.reply(response);
 	}
 };
 
