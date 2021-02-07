@@ -36,12 +36,12 @@ const logger = getLogger("index");
 	const organiserRole = new OrganiserRoleProvider(toRole, 0x3498db);
 	const participantRole = new ParticipantRoleProvider(bot, 0xe67e22);
 	const tournamentManager = new TournamentManager(discord, database, website, templater, participantRole);
-	registerEvents(bot, prefix, { discord, tournamentManager, organiserRole });
+	registerEvents(bot, prefix, { discord, tournamentManager, organiserRole }, database, website);
 	discord.onDelete(msg => tournamentManager.cleanRegistration(msg));
 
 	let firstReady = true;
 	bot.on("ready", async () => {
-		logger.info(`Logged in as ${bot.user.username} - ${bot.user.id}`);
+		logger.info(`Logged in as ${bot.user.username}#${bot.user.discriminator} - ${bot.user.id}`);
 		if (firstReady) {
 			firstReady = false;
 			await tournamentManager.loadTimers();
