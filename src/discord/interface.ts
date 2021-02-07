@@ -1,7 +1,3 @@
-import { getLogger } from "../util/logger";
-
-const logger = getLogger("discord");
-
 export interface DiscordAttachmentIn {
 	filename: string;
 	url: string;
@@ -42,10 +38,6 @@ export interface DiscordAttachmentOut {
 	filename: string;
 	contents: string;
 }
-
-export type DiscordCommand = (message: DiscordMessageIn, params: string[]) => Promise<void>;
-
-export type DiscordMessageHandler = (msg: DiscordMessageIn) => Promise<void> | void;
 
 export type DiscordDeleteHandler = (msg: DiscordMessageLimited) => Promise<void> | void;
 

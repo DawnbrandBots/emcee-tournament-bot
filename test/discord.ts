@@ -1,7 +1,6 @@
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
-import { DatabaseTournament, TournamentStatus } from "../src/database/interface";
-import { DiscordInterface, DiscordMessageIn, splitText } from "../src/discord/interface";
+import { DiscordInterface, splitText } from "../src/discord/interface";
 import { DiscordWrapperMock } from "./mocks/discord";
 chai.use(chaiAsPromised);
 
@@ -11,18 +10,6 @@ const discord = new DiscordInterface(discordMock);
 async function noop(): Promise<void> {
 	return;
 }
-
-const sampleMessage: DiscordMessageIn = {
-	id: "testMsg",
-	content: "<@player1> <#1101>",
-	attachments: [],
-	author: "testTO",
-	channelId: "testChannel",
-	serverId: "testServer",
-	reply: noop,
-	react: noop,
-	edit: noop
-};
 
 describe("Simple helpers", function () {
 	it("mentionUser", function () {
@@ -81,22 +68,6 @@ describe("Messages", function () {
 		expect(discordMock.getResponse("sentUser")).to.equal("test message");
 	});
 });
-
-const sampleTournament: DatabaseTournament = {
-	id: "test",
-	name: "Test tournament",
-	description: "A sample tournament",
-	status: TournamentStatus.PREPARING,
-	hosts: ["testHost"],
-	players: [],
-	server: "testServer",
-	publicChannels: [],
-	privateChannels: [],
-	byes: [],
-	findPlayer: () => {
-		return { discordId: "testPlayer", challongeId: 1, deck: "" };
-	}
-};
 
 describe("Split text", function () {
 	it("Split on new line", function () {
