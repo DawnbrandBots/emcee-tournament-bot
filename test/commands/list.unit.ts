@@ -1,29 +1,13 @@
-import chai, { expect } from "chai";
-import chaiAsPromised from "chai-as-promised";
-import { Client, Message } from "eris";
-import sinon, { SinonSandbox } from "sinon";
-import sinonChai from "sinon-chai";
-import sinonTest from "sinon-test";
-import { CommandSupport } from "../../src/Command";
+import { expect } from "chai";
+import { Message } from "eris";
+import { SinonSandbox } from "sinon";
 import command from "../../src/commands/list";
-import { DiscordInterface } from "../../src/discord/interface";
-import { OrganiserRoleProvider } from "../../src/role/organiser";
-import { DiscordWrapperMock } from "../mocks/discord";
-import { TournamentMock } from "../mocks/tournament";
-
-chai.use(chaiAsPromised);
-chai.use(sinonChai);
-const test = sinonTest(sinon);
+import { mockBotClient, support, test } from "./common";
 
 describe("command:list", function () {
-	const support: CommandSupport = {
-		discord: new DiscordInterface(new DiscordWrapperMock()),
-		tournamentManager: new TournamentMock(),
-		organiserRole: new OrganiserRoleProvider("MC-TO")
-	};
 	const msg = new Message(
 		{ id: "007", channel_id: "foo", guild_id: "public", author: { id: "0000" } },
-		new Client("mock")
+		mockBotClient
 	);
 	it(
 		"rejects non-TOs",
