@@ -9,55 +9,6 @@ const discord = new DiscordWrapperMock();
 const mockDiscord = new DiscordInterface(discord);
 const mockTournament = new TournamentMock();
 
-describe.skip("Tournament creation commands", function () {
-	it("Create tournament", async function () {
-		await discord.simMessage("mc!create name|desc", "create");
-		const response = discord.getResponse("create");
-		// guide message sent after creation response
-		expect(response).to.equal("Guide: mc!help name");
-	});
-	it("Update tournament", async function () {
-		await discord.simMessage("mc!update name|newName|newDesc", "update");
-		const response = discord.getResponse("update");
-		expect(response).to.equal("Tournament `name` updated! It now has the name newName and the given description.");
-	});
-	it("Add channel - private", async function () {
-		await discord.simMessage("mc!addchannel name|private", "addchannel2");
-		expect(discord.getResponse("addchannel2")).to.equal(
-			`This channel added as a private announcement channel for Tournament name!`
-		);
-	});
-	it("Add channel - unspecified type", async function () {
-		await discord.simMessage("mc!addchannel name", "addchannel3");
-		expect(discord.getResponse("addchannel3")).to.equal(
-			`This channel added as a public announcement channel for Tournament name!`
-		);
-	});
-	it("Remove channel - private/default", async function () {
-		await discord.simMessage("mc!removechannel name|private", "remchannel2");
-		expect(discord.getResponse("remchannel2")).to.equal(
-			`This channel removed as a private announcement channel for Tournament name!`
-		);
-	});
-	it("Remove channel - unspecified type", async function () {
-		await discord.simMessage("mc!removechannel name", "remchannel3");
-		expect(discord.getResponse("remchannel3")).to.equal(
-			`This channel removed as a public announcement channel for Tournament name!`
-		);
-	});
-	it("Add host", async function () {
-		await discord.simMessage("mc!addhost name|<@1101>", "addhost");
-		expect(discord.getResponse("addhost")).to.equal(
-			`${mockDiscord.mentionUser("1101")} added as a host for Tournament name!`
-		);
-	});
-	it("Remove host", async function () {
-		await discord.simMessage("mc!removehost name|<@1101>", "remhost");
-		expect(discord.getResponse("remhost")).to.equal(
-			`${mockDiscord.mentionUser("1101")} removed as a host for Tournament name!`
-		);
-	});
-});
 describe.skip("Tournament flow commands", function () {
 	it("Open tournament", async function () {
 		await discord.simMessage("mc!open name", "open");
