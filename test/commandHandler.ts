@@ -1,13 +1,8 @@
 import { expect } from "chai";
-import { DiscordInterface } from "../src/discord/interface";
 import { DiscordWrapperMock } from "./mocks/discord";
-import { TournamentMock } from "./mocks/tournament";
 
 // this will be the centre of the test, simulating input commands to stimulate output
 const discord = new DiscordWrapperMock();
-
-const mockDiscord = new DiscordInterface(discord);
-const mockTournament = new TournamentMock();
 
 describe.skip("Tournament flow commands", function () {
 	it("Submit score - good input", async function () {
@@ -26,10 +21,6 @@ describe.skip("Tournament flow commands", function () {
 		await discord.simMessage("mc!forcescore name|john won|<@john>", "forcescore2");
 		expect(discord.getResponse("forcescore2")).to.equal("Must provide score in format `#-#` e.g. `2-1`.");
 	});
-	it("Next round", async function () {
-		await discord.simMessage("mc!round name", "round1");
-		expect(discord.getResponse("round1")).to.equal("New round successfully started for Tournament name.");
-	});
 });
 describe.skip("Misc tournament commands", function () {
 	it("List players", async function () {
@@ -42,21 +33,9 @@ describe.skip("Misc tournament commands", function () {
 			contents: "name"
 		});
 	});
-	it("Drop self", async function () {
-		await discord.simMessage("mc!drop name", "drop");
-		expect(discord.getResponse("drop")).to.equal(
-			"Player testUser, you have successfully dropped from Tournament name."
-		);
-	});
 	it("Drop player", async function () {
 		await discord.simMessage("mc!forcedrop name|<@1101>", "forcedrop");
 		expect(discord.getResponse("forcedrop")).to.equal("Player 1101 successfully dropped from Tournament name.");
-	});
-	it("Sync", async function () {
-		await discord.simMessage("mc!sync name", "sync");
-		expect(discord.getResponse("sync")).to.equal(
-			"Tournament name database successfully synchronised with remote website."
-		);
 	});
 	it("Pie chart", async function () {
 		await discord.simMessage("mc!pie name", "pie");
