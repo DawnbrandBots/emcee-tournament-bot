@@ -1,15 +1,15 @@
 import { expect } from "chai";
 import { SinonSandbox } from "sinon";
-import command from "../../src/commands/dump";
+import command from "../../src/commands/players";
 import { initializeCardArray } from "../../src/deck/deck";
 import { itRejectsNonHosts, msg, support, test } from "./common";
 
-describe("command:dump", function () {
+describe("command:players", function () {
 	const args = ["battlecity"];
 	before(initializeCardArray);
 	itRejectsNonHosts(support, command, msg, ["name"]);
 	it(
-		"provides a dump of all decks",
+		"provides a dump of all players",
 		test(async function (this: SinonSandbox) {
 			const authStub = this.stub(support.tournamentManager, "authenticateHost").resolves();
 			const listStub = this.stub(support.tournamentManager, "getConfirmed").resolves([
@@ -22,14 +22,10 @@ describe("command:dump", function () {
 			expect(authStub).to.have.been.called;
 			expect(listStub).to.have.been.calledOnce;
 			expect(msg.channel.createMessage).to.have.been.calledOnceWithExactly(
-				"Player decklists for Tournament battlecity is attached.",
+				"A list of players for tournament battlecity with the theme of their deck is attached.",
 				{
-					name: "battlecity Decks.csv",
-					file:
-						`Player,Deck\n` +
-						`1312,"Main: , Extra: , Side: "\n` +
-						`1314,"Main: , Extra: , Side: "\n` +
-						`1234,"Main: , Extra: , Side: "`
+					name: "battlecity.csv",
+					file: `Player,Theme\n1312,No themes\n1314,No themes\n1234,No themes`
 				}
 			);
 		})
@@ -63,9 +59,9 @@ describe("command:dump", function () {
 				expect(authStub).to.have.been.called;
 				expect(listStub).to.have.been.calledOnce;
 				expect(msg.channel.createMessage).to.have.been.calledOnceWithExactly(
-					"Player decklists for Tournament battlecity is attached.",
+					"A list of players for tournament battlecity with the theme of their deck is attached.",
 					{
-						name: "battlecity Decks.csv",
+						name: "battlecity.csv",
 						file: ""
 					}
 				);
