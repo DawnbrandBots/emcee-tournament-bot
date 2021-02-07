@@ -1,15 +1,15 @@
 import { expect } from "chai";
 import { SinonSandbox } from "sinon";
-import command from "../../src/commands/dump";
+import command from "../../src/commands/pie";
 import { initializeCardArray } from "../../src/deck/deck";
 import { itRejectsNonHosts, msg, support, test } from "./common";
 
-describe("command:dump", function () {
+describe("command:pie", function () {
 	const args = ["battlecity"];
 	before(initializeCardArray);
 	itRejectsNonHosts(support, command, msg, ["name"]);
 	it(
-		"provides a dump of all decks",
+		"provides a dump of all themes",
 		test(async function (this: SinonSandbox) {
 			const authStub = this.stub(support.tournamentManager, "authenticateHost").resolves();
 			const listStub = this.stub(support.tournamentManager, "getConfirmed").resolves([
@@ -22,14 +22,10 @@ describe("command:dump", function () {
 			expect(authStub).to.have.been.called;
 			expect(listStub).to.have.been.calledOnce;
 			expect(msg.channel.createMessage).to.have.been.calledOnceWithExactly(
-				"Player decklists for Tournament battlecity is attached.",
+				"Archetype counts for Tournament battlecity are attached.",
 				{
-					name: "battlecity Decks.csv",
-					file:
-						`Player,Deck\n` +
-						`1312,"Main: , Extra: , Side: "\n` +
-						`1314,"Main: , Extra: , Side: "\n` +
-						`1234,"Main: , Extra: , Side: "`
+					name: "battlecity Pie.csv",
+					file: `Theme,Count\nNo themes,3`
 				}
 			);
 		})
@@ -63,10 +59,10 @@ describe("command:dump", function () {
 				expect(authStub).to.have.been.called;
 				expect(listStub).to.have.been.calledOnce;
 				expect(msg.channel.createMessage).to.have.been.calledOnceWithExactly(
-					"Player decklists for Tournament battlecity is attached.",
+					"Archetype counts for Tournament battlecity are attached.",
 					{
-						name: "battlecity Decks.csv",
-						file: ""
+						name: "battlecity Pie.csv",
+						file: "Theme,Count"
 					}
 				);
 			}
