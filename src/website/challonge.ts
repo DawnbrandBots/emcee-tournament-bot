@@ -1,6 +1,6 @@
-import { WebsiteMatch, WebsitePlayer, WebsiteTournament, WebsiteWrapper } from "./interface";
 import fetch, { Response } from "node-fetch";
 import { ChallongeAPIError } from "../util/errors";
+import { WebsiteMatch, WebsitePlayer, WebsiteTournament, WebsiteWrapper } from "./interface";
 
 type TournamentType = "single elimination" | "double elimination" | "round robin" | "swiss";
 type RankedBy = "match wins" | "game wins" | "points scored" | "points difference" | "custom";
@@ -457,5 +457,10 @@ export class WebsiteWrapperChallonge implements WebsiteWrapper {
 			headers: { "Content-Type": "application/json" }
 		});
 		await this.validateResponse(response);
+	}
+
+	public async getPlayer(tournamentId: string, playerId: number): Promise<WebsitePlayer> {
+		const response = await fetch(`${this.baseUrl}tournaments/${tournamentId}/participants/${playerId}.json`);
+		return this.wrapPlayer((await this.validateResponse(response)) as ChallongeParticipant);
 	}
 }

@@ -18,6 +18,7 @@ export interface WebsiteWrapper {
 	finishTournament(tournamentId: string): Promise<void>;
 	getPlayers(tournamentId: string): Promise<WebsitePlayer[]>;
 	setSeed(tournamentId: string, playerId: number, newSeed: number): Promise<void>;
+	getPlayer(tournamentId: string, playerId: number): Promise<WebsitePlayer>;
 }
 
 export interface WebsitePlayer {
@@ -262,5 +263,9 @@ export class WebsiteInterface {
 				await this.removePlayer(tournamentId, player.challongeId);
 			}
 		}
+	}
+
+	public async getPlayer(...args: Parameters<WebsiteWrapper["getPlayer"]>): ReturnType<WebsiteWrapper["getPlayer"]> {
+		return await this.api.getPlayer(...args);
 	}
 }

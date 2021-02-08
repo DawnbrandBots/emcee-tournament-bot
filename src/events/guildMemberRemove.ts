@@ -51,10 +51,22 @@ export function makeHandler(database: DatabaseWrapperPostgres, discord: DiscordI
 								oppChallonge
 							})
 						);
-						await discord.sendDirectMessage(
-							"OPPONENT DISCORD ID",
-							`Your opponent ${who} has dropped from the tournament, conceding this round to you. You don't need to submit a score for this round.`
+						const { discordId } = await website.getPlayer(tournamentId, oppChallonge);
+						logger.verbose(
+							JSON.stringify({
+								id: member.id,
+								tournament: tournamentId,
+								match: match.matchId,
+								oppChallonge,
+								discordId
+							})
 						);
+						if (discordId !== "DUMMY") {
+							await discord.sendDirectMessage(
+								discordId,
+								`Your opponent ${who} has dropped from the tournament, conceding this round to you. You don't need to submit a score for this round.`
+							);
+						}
 					} catch (error) {
 						if (!(error instanceof BlockedDMsError)) {
 							logger.error(error);
