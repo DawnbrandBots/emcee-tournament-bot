@@ -174,4 +174,7 @@ export class WebsiteWrapperMock implements WebsiteWrapper {
 	async setSeed(): Promise<void> {
 		return;
 	}
+	async getPlayer(): Promise<WebsitePlayer> {
+		throw new Error("Not implemented");
+	}
 }
