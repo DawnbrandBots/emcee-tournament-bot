@@ -7,6 +7,23 @@ import { WebsiteInterface } from "../website/interface";
 
 const logger = getLogger("guildMemberRemove");
 
+type Tail<T extends unknown[]> = T extends [unknown, ...infer R] ? R : never;
+
+/**
+ * Helper function to send the same message to the list of channels and
+ * send any exceptions to the logger.
+ * @nothrow
+ */
+async function messageChannels(
+	discord: DiscordInterface,
+	channels: string[],
+	...args: Tail<Parameters<DiscordInterface["sendMessage"]>>
+): Promise<void> {
+	for (const channel of channels) {
+		await discord.sendMessage(channel, ...args).catch(logger.error);
+	}
+}
+
 export function makeHandler(database: DatabaseWrapperPostgres, discord: DiscordInterface, website: WebsiteInterface) {
 	return async function guildMemberRemove(server: Guild, member: Member | MemberPartial): Promise<void> {
 		if (member.user.bot) {
@@ -29,11 +46,11 @@ export function makeHandler(database: DatabaseWrapperPostgres, discord: DiscordI
 		const who = `<@${member.id}> (${member.user.username}#${member.user.discriminator})`;
 		for (const { tournamentId, privateChannels, challongeId } of dropped) {
 			// For each tournament, inform the private channel that the user left and was dropped.
-			for (const channel of privateChannels) {
-				await discord
-					.sendMessage(channel, `${who} dropped from **${tournamentId}** by leaving the server.`)
-					.catch(logger.error);
-			}
+			await messageChannels(
+				discord,
+				privateChannels,
+				`${who} dropped from **${tournamentId}** by leaving the server.`
+			);
 			// For each tournament in progress, inform the opponent that their opponent dropped
 			if (challongeId !== undefined) {
 				// modified from TournamentManager.sendDropMessage
@@ -71,17 +88,24 @@ export function makeHandler(database: DatabaseWrapperPostgres, discord: DiscordI
 						if (!(error instanceof BlockedDMsError)) {
 							logger.error(error);
 						}
-						for (const channel of privateChannels) {
-							await discord
-								.sendMessage(
-									channel,
-									error instanceof BlockedDMsError
-										? error.message
-										: `Error automatically submitting score for ${who} in **${tournamentId}**. Please manually override later.`
-								)
-								.catch(logger.error);
-						}
+						await messageChannels(
+							discord,
+							privateChannels,
+							error instanceof BlockedDMsError
+								? error.message
+								: `Error automatically submitting score for ${who} in **${tournamentId}**. Please manually override later.`
+						);
 					}
+				}
+				try {
+					await website.removePlayer(tournamentId, challongeId);
+				} catch (e) {
+					logger.error(e);
+					await messageChannels(
+						discord,
+						privateChannels,
+						`FATAL: could not remove ${who} from **${tournamentId}** on Challonge. Please report this bug.`
+					);
 				}
 			}
 		}
