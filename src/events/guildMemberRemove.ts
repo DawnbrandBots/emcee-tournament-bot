@@ -78,7 +78,7 @@ export function makeHandler(database: DatabaseWrapperPostgres, discord: DiscordI
 								discordId
 							})
 						);
-						if (discordId !== "DUMMY") {
+						if (!discordId.length || discordId[0] <= "0" || discordId[0] >= "9") {
 							await discord.sendDirectMessage(
 								discordId,
 								`Your opponent ${who} has dropped from the tournament, conceding this round to you. You don't need to submit a score for this round.`
