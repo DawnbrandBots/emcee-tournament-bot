@@ -1,4 +1,5 @@
 import { DatabaseMessage, DatabasePlayer, DatabaseTournament, TournamentStatus } from "../../src/database/interface";
+import { DatabaseWrapperPostgres } from "../../src/database/postgres";
 import { TournamentNotFoundError, UnauthorisedHostError, UnauthorisedPlayerError } from "../../src/util/errors";
 
 function findPlayer(id: string): DatabasePlayer | undefined {
@@ -282,6 +283,9 @@ export class DatabaseWrapperMock {
 		throw new Error("Not implemented");
 	}
 	async removeBye(): Promise<string[]> {
+		throw new Error("Not implemented");
+	}
+	dropFromAll(): ReturnType<DatabaseWrapperPostgres["dropFromAll"]> {
 		throw new Error("Not implemented");
 	}
 }
