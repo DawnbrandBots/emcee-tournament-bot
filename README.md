@@ -3,9 +3,13 @@
 ![Build](https://github.com/AlphaKretin/emcee-tournament-bot/workflows/Build/badge.svg)&nbsp;
 [![Coverage Status](https://coveralls.io/repos/github/AlphaKretin/emcee-tournament-bot/badge.svg?t=iUM0Et)](https://coveralls.io/github/AlphaKretin/emcee-tournament-bot)
 
-A Discord bot to facilitate organising Yu-Gi-Oh! tournaments online and verify submitted decks. Currently uses [Challonge](https://challonge.com/).
+A Discord bot to facilitate organising Yu-Gi-Oh! tournaments online using [Challonge](https://challonge.com/) and verify submitted decks.
 
 Supports YGOPro deck files (.ydk) and `ydke://` URLs from [Project Ignis: EDOPro](https://github.com/edo9300/edopro).
+
+Currently in use in alpha (no pun intended) for the [Chalislime Monthly](https://youtu.be/iehvqngGxs0) tournament series.
+Thanks to [Joseph Rothschild](https://www.youtube.com/c/MBTYuGiOh) aka [MBT](https://www.twitch.tv/mbtyugioh) for
+sponsoring the development of Emcee. Open beta ETA: April 2021.
 
 ## Usage
 
