@@ -760,20 +760,28 @@ export class TournamentManager implements TournamentInterface {
 		const player = tournament.findPlayer(playerId)!;
 		// if the tournament is in progress, they may have a match we must concede on their behalf
 		if (tournament.status === TournamentStatus.IPR) {
-			const match = await this.website.findMatch(tournament.id, player.challongeId);
-			// if there's no match, their most recent score is already submitted.
+			// function can also find open match
+			const match = await this.website.findClosedMatch(tournament.id, player.challongeId);
+			// if there's no match, the dropping player had the bye
 			if (match) {
 				const oppChallonge = match.player1 === player.challongeId ? match.player2 : match.player1;
-				await this.website.submitScore(tournament.id, match, oppChallonge, 2, 0);
 				const opponent = tournament.players.find(p => p.challongeId === oppChallonge);
-				// should exist but checking is safer than not-null assertion
-				if (opponent) {
-					await this.discord.sendDirectMessage(
-						opponent.discordId,
-						`Your opponent ${this.discord.mentionUser(
-							player.discordId
-						)} has dropped from the tournament, conceding this round to you. You don't need to submit a score for this round.`
-					);
+				// for an open match, the droppng player concedes
+				if (match.open) {
+					await this.website.submitScore(tournament.id, match, oppChallonge, 2, 0);
+					// should exist but checking is safer than not-null assertion
+					if (opponent) {
+						await this.discord.sendDirectMessage(
+							opponent.discordId,
+							`Your opponent ${this.discord.mentionUser(
+								player.discordId
+							)} has dropped from the tournament, conceding this round to you. You don't need to submit a score for this round.`
+						);
+					}
+				} else if (!opponent) {
+					// if the match is closed and the opponent has also dropped, the score needs to be amended to a tie
+					// TODO: keep in mind when we change to tracking dropped players
+					await this.website.submitScore(tournament.id, match, oppChallonge, 0, 0);
 				}
 			}
 		}
