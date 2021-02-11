@@ -1,9 +1,20 @@
 import { getConnection } from "typeorm";
 import { Countdown } from "./database/orm";
-import { DiscordInterface } from "./discord/interface";
 import { getLogger } from "./util/logger";
 
 const logger = getLogger("timer");
+
+export interface PersistentTimerDiscordDelegate {
+	/**
+	 * Sends message to the channel specified by channelId and returns the snowflake
+	 * for the created message. May throw exceptions.
+	 */
+	sendMessage: (channelId: string, message: string) => string | Promise<string>;
+	/**
+	 * Edits the specified message, replacing it with the newMessage. May throw exceptions.
+	 */
+	editMessage: (channelId: string, messageId: string, newMessage: string) => void | Promise<void>;
+}
 
 /**
  * Because this timer is not considered ready until the corresponding Discord
@@ -11,7 +22,7 @@ const logger = getLogger("timer");
  * is not public and only accessible through a static async create function.
  *
  * States of the object:
- *   init: constructor called and the timer is not installed, but the entity is not serialized
+ *   init: constructor called and the timer is installed, but the entity is not serialized
  *   ready: after create returns, everything is ready for use, and isActive()
  *   done: either the timer ran out or was aborted, so do not use the serialized entity
  */
@@ -19,12 +30,12 @@ export class PersistentTimer {
 	protected interval?: NodeJS.Timeout;
 
 	/// This constructor has side effects as it immediately starts the timer!
-	protected constructor(protected discord: DiscordInterface, protected entity: Countdown) {
+	protected constructor(protected entity: Countdown, protected discord: PersistentTimerDiscordDelegate) {
 		this.interval = setInterval(() => this.tick(), 1000);
 	}
 
 	public static async create(
-		discord: DiscordInterface,
+		discord: PersistentTimerDiscordDelegate,
 		end: Date,
 		channelId: string,
 		finalMessage: string,
@@ -35,17 +46,17 @@ export class PersistentTimer {
 		const endMilli = end.getTime();
 		const nowMilli = Date.now();
 		const left = this.formatTime(endMilli - nowMilli);
-		const message = await discord.sendMessage(channelId, `Time left in the round: \`${left}\``);
+		const messageId = await discord.sendMessage(channelId, `Time left in the round: \`${left}\``);
 
 		const entity = new Countdown();
 		entity.end = end;
 		entity.channelId = channelId;
-		entity.messageId = message.id;
+		entity.messageId = messageId;
 		entity.finalMessage = finalMessage;
 		entity.cronIntervalSeconds = cronIntervalSeconds;
 		entity.tournamentId = tournamentId;
 
-		const timer = new PersistentTimer(discord, entity);
+		const timer = new PersistentTimer(entity, discord);
 
 		try {
 			await entity.save();
@@ -57,13 +68,13 @@ export class PersistentTimer {
 		return timer;
 	}
 
-	public static async loadAll(discord: DiscordInterface): Promise<PersistentTimer[]> {
+	public static async loadAll(discord: PersistentTimerDiscordDelegate): Promise<PersistentTimer[]> {
 		const entities = await Countdown.find();
 		const nowMilli = Date.now();
 		// Replace with for-of if too inefficient
 		const active = entities
 			.filter(entity => entity.end.getTime() > nowMilli)
-			.map(entity => new PersistentTimer(discord, entity));
+			.map(entity => new PersistentTimer(entity, discord));
 
 		// Prune expired timers after initializing the active ones
 		try {
@@ -107,17 +118,26 @@ export class PersistentTimer {
 	protected async tick(): Promise<void> {
 		const now = new Date();
 		if (this.entity.end <= now) {
-			await this.discord.sendMessage(this.entity.channelId, this.entity.finalMessage);
+			try {
+				await this.discord.sendMessage(this.entity.channelId, this.entity.finalMessage);
+			} catch (error) {
+				logger.warn(error);
+			}
 			await this.abort();
 		}
 		const secondsRemaining = Math.ceil((now.getTime() - this.entity.end.getTime()) / 1000);
 		if (secondsRemaining % this.entity.cronIntervalSeconds == 0) {
 			const left = PersistentTimer.formatTime(this.entity.end.getTime() - Date.now());
-			const message = await this.discord.getMessage(this.entity.channelId, this.entity.messageId);
-			if (message) {
-				message.edit(`Time left in the round: \`${left}\``);
-			} else {
-				logger.warn(`${this.entity.channelId} ${this.entity.messageId} was removed`);
+			try {
+				await this.discord.editMessage(
+					this.entity.channelId,
+					this.entity.messageId,
+					`Time left in the round: \`${left}\``
+				);
+			} catch (error) {
+				// Most likely culprit: the message was removed
+				logger.warn(`tick: could not edit ${this.entity.channelId} ${this.entity.messageId}`);
+				logger.warn(error);
 			}
 		}
 	}
