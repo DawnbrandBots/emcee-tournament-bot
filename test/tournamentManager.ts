@@ -1,5 +1,6 @@
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
+import dotenv from "dotenv";
 import { Client } from "eris";
 import * as fs from "fs/promises";
 import sinon, { SinonSandbox } from "sinon";
@@ -17,6 +18,7 @@ import { DatabaseWrapperMock } from "./mocks/database";
 import { DiscordWrapperMock } from "./mocks/discord";
 import { WebsiteWrapperMock } from "./mocks/website";
 
+dotenv.config();
 chai.use(chaiAsPromised);
 chai.use(sinonChai);
 const test = sinonTest(sinon);
@@ -59,7 +61,7 @@ sinon.stub(participantRole, "delete").resolves();
 const tournament = new TournamentManagerTest(mockDiscord, mockDb, mockWebsite, templater, participantRole);
 
 before(async () => {
-	await initializeCardArray();
+	await initializeCardArray(process.env.OCTOKIT_TOKEN!);
 	await templater.load("guides");
 });
 
