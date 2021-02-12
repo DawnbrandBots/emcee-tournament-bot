@@ -29,17 +29,6 @@ const persistentTimerStub = ({
 	abort: () => undefined
 } as unknown) as PersistentTimer;
 
-/// Override link seams for test fakes
-class TournamentManagerTest extends TournamentManager {
-	public async createPersistentTimer(): ReturnType<typeof PersistentTimer.create> {
-		return persistentTimerStub;
-	}
-
-	public async loadPersistentTimers(): ReturnType<typeof PersistentTimer.loadAll> {
-		return [];
-	}
-}
-
 const discord = new DiscordWrapperMock(); // will be used to fetch responses in some cases
 const mockDiscord = new DiscordInterface(discord);
 
@@ -56,7 +45,10 @@ sinon.stub(participantRole, "grant").resolves();
 sinon.stub(participantRole, "ungrant").resolves();
 sinon.stub(participantRole, "delete").resolves();
 
-const tournament = new TournamentManagerTest(mockDiscord, mockDb, mockWebsite, templater, participantRole);
+const tournament = new TournamentManager(mockDiscord, mockDb, mockWebsite, templater, participantRole, {
+	create: async () => persistentTimerStub,
+	loadAll: async () => []
+});
 
 before(async () => {
 	await initializeCardArray();

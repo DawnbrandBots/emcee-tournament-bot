@@ -6,7 +6,7 @@ import { getDeckFromMessage, prettyPrint } from "./deck/discordDeck";
 import { DiscordInterface, DiscordMessageIn, DiscordMessageLimited } from "./discord/interface";
 import { ParticipantRoleProvider } from "./role/participant";
 import { Templater } from "./templates";
-import { PersistentTimer, PersistentTimerDiscordDelegate } from "./timer";
+import { PersistentTimer } from "./timer";
 import { BlockedDMsError, ChallongeAPIError, TournamentNotFoundError, UserError } from "./util/errors";
 import { getLogger } from "./util/logger";
 import { WebsiteInterface, WebsiteTournament } from "./website/interface";
@@ -50,44 +50,29 @@ export interface TournamentInterface {
 type Public<T> = Pick<T, keyof T>;
 type Tail<T extends unknown[]> = T extends [unknown, ...infer R] ? R : never;
 
+/// "Link seam" to mock for testing
+interface PersistentTimerDelegate {
+	create: (...args: Tail<Parameters<typeof PersistentTimer.create>>) => ReturnType<typeof PersistentTimer.create>;
+	loadAll: () => ReturnType<typeof PersistentTimer.loadAll>;
+}
+
 export class TournamentManager implements TournamentInterface {
 	private matchScores: Record<number, MatchScore> = {};
 	private timers: Record<string, PersistentTimer[]> = {}; // index: tournament id
-	private timerDelegate: PersistentTimerDiscordDelegate;
 	constructor(
 		private discord: DiscordInterface,
 		private database: Public<DatabaseWrapperPostgres>,
 		private website: WebsiteInterface,
 		private templater: Templater,
-		private participantRole: ParticipantRoleProvider
-	) {
-		// TODO: replace when refactor done
-		this.timerDelegate = {
-			sendMessage: async (...args) => (await this.discord.sendMessage(...args)).id,
-			editMessage: async (channelId, messageId, newMessage) => {
-				const message = await this.discord.getMessage(channelId, messageId);
-				await message?.edit(newMessage);
-			}
-		};
-	}
-
-	/// Link seam to override for testing
-	protected async createPersistentTimer(
-		...args: Tail<Parameters<typeof PersistentTimer.create>>
-	): ReturnType<typeof PersistentTimer.create> {
-		return await PersistentTimer.create(this.timerDelegate, ...args);
-	}
-
-	/// Link seam to override for testing
-	protected async loadPersistentTimers(): ReturnType<typeof PersistentTimer.loadAll> {
-		return await PersistentTimer.loadAll(this.timerDelegate);
-	}
+		private participantRole: ParticipantRoleProvider,
+		private timer: PersistentTimerDelegate
+	) {}
 
 	public async loadTimers(): Promise<void> {
 		if (Object.keys(this.timers).length) {
 			logger.warn(new Error("loadTimers called multiple times"));
 		} else {
-			const timers = await this.loadPersistentTimers();
+			const timers = await this.timer.loadAll();
 			let count = 0;
 			for (const timer of timers) {
 				if (timer.tournament) {
@@ -476,7 +461,7 @@ export class TournamentManager implements TournamentInterface {
 		this.timers[tournament.id] = await Promise.all(
 			tournament.publicChannels.map(async channelId => {
 				await this.sendNewRoundMessage(channelId, tournament, url, round);
-				return await this.createPersistentTimer(
+				return await this.timer.create(
 					new Date(Date.now() + 50 * 60 * 1000), // 50 minutes
 					channelId,
 					`That's time in the round, ${role}! Please end the current phase, then the player with the lower LP must forfeit!`,

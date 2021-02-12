@@ -9,6 +9,7 @@ import { registerEvents } from "./events";
 import { OrganiserRoleProvider } from "./role/organiser";
 import { ParticipantRoleProvider } from "./role/participant";
 import { Templater } from "./templates";
+import { PersistentTimer, PersistentTimerDiscordDelegate } from "./timer";
 import { TournamentManager } from "./TournamentManager";
 import { getLogger } from "./util/logger";
 import { WebsiteWrapperChallonge } from "./website/challonge";
@@ -35,7 +36,14 @@ const logger = getLogger("index");
 	const discord = new DiscordInterface(eris);
 	const organiserRole = new OrganiserRoleProvider(toRole, 0x3498db);
 	const participantRole = new ParticipantRoleProvider(bot, 0xe67e22);
-	const tournamentManager = new TournamentManager(discord, database, website, templater, participantRole);
+	const delegate: PersistentTimerDiscordDelegate = {
+		sendMessage: async (...args) => (await bot.createMessage(...args)).id,
+		editMessage: async (...args) => void (await bot.editMessage(...args))
+	};
+	const tournamentManager = new TournamentManager(discord, database, website, templater, participantRole, {
+		create: async (...args) => await PersistentTimer.create(delegate, ...args),
+		loadAll: async () => await PersistentTimer.loadAll(delegate)
+	});
 	registerEvents(bot, prefix, { discord, tournamentManager, organiserRole }, database, website);
 	discord.onDelete(msg => tournamentManager.cleanRegistration(msg));
 
