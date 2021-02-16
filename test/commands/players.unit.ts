@@ -8,6 +8,7 @@ import { itRejectsNonHosts, msg, support, test } from "./common";
 dotenv.config();
 describe("command:players", function () {
 	const args = ["battlecity"];
+	// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 	before(() => initializeCardArray(process.env.OCTOKIT_TOKEN!));
 	itRejectsNonHosts(support, command, msg, ["name"]);
 	it(
