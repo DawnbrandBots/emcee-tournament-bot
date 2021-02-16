@@ -1,17 +1,30 @@
 import { Message } from "eris";
+import { DatabaseWrapperPostgres } from "./database/postgres";
 import { DiscordInterface } from "./discord/interface";
 import { OrganiserRoleProvider } from "./role/organiser";
 import { TournamentInterface } from "./TournamentManager";
 import { reply } from "./util/discord";
 import { UserError } from "./util/errors";
 import { getLogger } from "./util/logger";
+import { WebsiteInterface } from "./website/interface";
 
 const logger = getLogger("command");
+
+type Public<T> = Pick<T, keyof T>;
+interface MatchScore {
+	playerId: number;
+	playerDiscord: string;
+	playerScore: number;
+	oppScore: number;
+}
 
 export interface CommandSupport {
 	discord: DiscordInterface;
 	tournamentManager: TournamentInterface;
 	organiserRole: OrganiserRoleProvider;
+	database: Public<DatabaseWrapperPostgres>;
+	challonge: WebsiteInterface;
+	scores: Map<string, Map<number, MatchScore>>;
 }
 
 // This is a composition-over-inheritance approach. In an inheritance model this

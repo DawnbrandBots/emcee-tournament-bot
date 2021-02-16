@@ -1,9 +1,8 @@
 import { Guild, Member, MemberPartial } from "eris";
-import { DatabaseWrapperPostgres } from "../database/postgres";
+import { CommandSupport } from "../Command";
 import { DiscordInterface } from "../discord/interface";
 import { BlockedDMsError } from "../util/errors";
 import { getLogger } from "../util/logger";
-import { WebsiteInterface } from "../website/interface";
 
 const logger = getLogger("guildMemberRemove");
 
@@ -24,7 +23,7 @@ async function messageChannels(
 	}
 }
 
-export function makeHandler(database: DatabaseWrapperPostgres, discord: DiscordInterface, website: WebsiteInterface) {
+export function makeHandler({ database, discord, challonge }: CommandSupport) {
 	return async function guildMemberRemove(server: Guild, member: Member | MemberPartial): Promise<void> {
 		if (member.user.bot) {
 			return;
@@ -54,12 +53,12 @@ export function makeHandler(database: DatabaseWrapperPostgres, discord: DiscordI
 			// For each tournament in progress, inform the opponent that their opponent dropped
 			if (challongeId !== undefined) {
 				// modified from TournamentManager.sendDropMessage
-				const match = await website.findMatch(tournamentId, challongeId);
+				const match = await challonge.findMatch(tournamentId, challongeId);
 				// if there's no match, their most recent score is already submitted.
 				if (match) {
 					const oppChallonge = match.player1 === challongeId ? match.player2 : match.player1;
 					try {
-						await website.submitScore(tournamentId, match, oppChallonge, 2, 0);
+						await challonge.submitScore(tournamentId, match, oppChallonge, 2, 0);
 						logger.verbose(
 							JSON.stringify({
 								id: member.id,
@@ -68,7 +67,7 @@ export function makeHandler(database: DatabaseWrapperPostgres, discord: DiscordI
 								oppChallonge
 							})
 						);
-						const { discordId } = await website.getPlayer(tournamentId, oppChallonge);
+						const { discordId } = await challonge.getPlayer(tournamentId, oppChallonge);
 						logger.verbose(
 							JSON.stringify({
 								id: member.id,
@@ -99,7 +98,7 @@ export function makeHandler(database: DatabaseWrapperPostgres, discord: DiscordI
 					}
 				}
 				try {
-					await website.removePlayer(tournamentId, challongeId);
+					await challonge.removePlayer(tournamentId, challongeId);
 				} catch (e) {
 					logger.error(e);
 					await messageChannels(

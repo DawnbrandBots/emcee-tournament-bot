@@ -7,8 +7,11 @@ import { Command, CommandDefinition, CommandSupport } from "../src/Command";
 import { DiscordInterface } from "../src/discord/interface";
 import { OrganiserRoleProvider } from "../src/role/organiser";
 import { UserError } from "../src/util/errors";
+import { WebsiteInterface } from "../src/website/interface";
+import { DatabaseWrapperMock } from "./mocks/database";
 import { DiscordWrapperMock } from "./mocks/discord";
 import { TournamentMock } from "./mocks/tournament";
+import { WebsiteWrapperMock } from "./mocks/website";
 
 chai.use(sinonChai);
 const test = sinonTest(sinon);
@@ -17,7 +20,11 @@ describe("Command class", function () {
 	const support: CommandSupport = {
 		discord: new DiscordInterface(new DiscordWrapperMock()),
 		tournamentManager: new TournamentMock(),
-		organiserRole: new OrganiserRoleProvider("MC-TO")
+		organiserRole: new OrganiserRoleProvider("MC-TO"),
+		// UNUSED
+		database: new DatabaseWrapperMock(),
+		challonge: new WebsiteInterface(new WebsiteWrapperMock()),
+		scores: new Map()
 	};
 	const msg = new Message({ id: "007", channel_id: "foo", author: { id: "0000" } }, new Client("mock"));
 	const testCommand: CommandDefinition = {

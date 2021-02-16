@@ -7,8 +7,11 @@ import sinonTest from "sinon-test";
 import { CommandDefinition, CommandSupport } from "../../src/Command";
 import { DiscordInterface } from "../../src/discord/interface";
 import { OrganiserRoleProvider } from "../../src/role/organiser";
+import { WebsiteInterface } from "../../src/website/interface";
+import { DatabaseWrapperMock } from "../mocks/database";
 import { DiscordWrapperMock } from "../mocks/discord";
 import { TournamentMock } from "../mocks/tournament";
+import { WebsiteWrapperMock } from "../mocks/website";
 
 chai.use(chaiAsPromised);
 chai.use(sinonChai);
@@ -35,7 +38,10 @@ export function itRejectsNonHosts(
 export const support: CommandSupport = {
 	discord: new DiscordInterface(new DiscordWrapperMock()),
 	tournamentManager: new TournamentMock(),
-	organiserRole: new OrganiserRoleProvider("MC-TO")
+	organiserRole: new OrganiserRoleProvider("MC-TO"),
+	database: new DatabaseWrapperMock(),
+	challonge: new WebsiteInterface(new WebsiteWrapperMock()),
+	scores: new Map()
 };
 
 // This is created so we can stub out methods. Most Eris objects also need this as a constructor parameter.
