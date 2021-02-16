@@ -80,11 +80,19 @@ export class DatabaseWrapperPostgres {
 
 	// TODO: remove and replace with alternate implementation
 	// This causes many unnecessary double queries
-	public async authenticateHost(tournamentId: string, hostId: string): Promise<void> {
+	public async authenticateHost(
+		tournamentId: string,
+		hostId: string,
+		assertStatus?: TournamentStatus
+	): Promise<DatabaseTournament> {
 		const tournament = await this.findTournament(tournamentId);
 		if (!tournament.hosts.includes(hostId)) {
 			throw new UnauthorisedHostError(hostId, tournamentId);
 		}
+		if (assertStatus && tournament.status !== assertStatus) {
+			throw new AssertStatusError(tournamentId, assertStatus, tournament.status);
+		}
+		return this.wrap(tournament);
 	}
 
 	// TODO: remove and replace with alternate implementation
@@ -414,6 +422,15 @@ export class DatabaseWrapperPostgres {
 				challongeId: participant.confirmed?.challongeId
 			}));
 		});
+	}
+
+	async getConfirmedPlayer(discordId: string, tournamentId: string): Promise<DatabasePlayer> {
+		const p = await ConfirmedParticipant.findOneOrFail({ discordId, tournamentId });
+		return {
+			discordId: p.discordId,
+			challongeId: p.challongeId,
+			deck: p.deck
+		};
 	}
 }
 

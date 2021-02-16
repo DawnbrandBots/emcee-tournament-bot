@@ -175,10 +175,6 @@ describe("Tournament flow commands", function () {
 			"<@player1> (player1) and <@player2> (player2) have reported their score of 1-2 for Tournament Tournament 2 (tourn2)."
 		);
 	});
-	it("Submit score - host", async function () {
-		const response = await tournament.submitScoreForce("tourn2", "player1", 2, 1);
-		expect(response).to.equal("Score of 2-1 submitted in favour of <@player1> (player1) in Tournament tourn2!");
-	});
 	it(
 		"Next round",
 		test(async function (this: SinonSandbox) {

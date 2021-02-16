@@ -37,7 +37,6 @@ export interface TournamentInterface {
 	startTournament(tournamentId: string): Promise<void>;
 	finishTournament(tournamentId: string, cancel: boolean | undefined): Promise<void>;
 	submitScore(tournamentId: string, playerId: string, scorePlayer: number, scoreOpp: number): Promise<string>;
-	submitScoreForce(tournamentId: string, playerId: string, scorePlayer: number, scoreOpp: number): Promise<string>;
 	nextRound(tournamentId: string, skip?: boolean): Promise<void>;
 	getPlayerDeck(tournamentId: string, playerId: string): Promise<Deck>;
 	dropPlayer(tournamentId: string, playerId: string, force?: boolean): Promise<void>;
@@ -626,27 +625,6 @@ export class TournamentManager implements TournamentInterface {
 			}
 			await this.startTournament(newId);
 		}
-	}
-
-	public async submitScoreForce(
-		tournamentId: string,
-		playerId: string,
-		scorePlayer: number,
-		scoreOpp: number
-	): Promise<string> {
-		const tournament = await this.database.getTournament(tournamentId, TournamentStatus.IPR);
-		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-		const player = tournament.findPlayer(playerId)!;
-		const mention = this.discord.mentionUser(playerId); // prepare for multiple uses below
-		// can also find open matches, just depends on current round
-		const match = await this.website.findClosedMatch(tournamentId, player.challongeId);
-		if (!match) {
-			return `Could not find an open match in Tournament ${tournament.name} including ${mention}.`;
-		}
-		await this.website.submitScore(tournamentId, match, player.challongeId, scorePlayer, scoreOpp);
-		return `Score of ${scorePlayer}-${scoreOpp} submitted in favour of ${mention} (${this.discord.getUsername(
-			playerId
-		)}) in Tournament ${tournamentId}!`;
 	}
 
 	public async submitScore(
