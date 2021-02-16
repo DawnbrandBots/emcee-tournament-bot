@@ -23,6 +23,7 @@ const command: CommandDefinition = {
 		);
 		// TODO: error path, and apparently the Discord logic is in this function
 		await support.tournamentManager.finishTournament(id, true);
+		support.scores.delete(id);
 		logger.verbose(
 			JSON.stringify({
 				channel: msg.channel.id,
