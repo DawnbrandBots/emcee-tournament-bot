@@ -3,14 +3,12 @@ import chaiAsPromised from "chai-as-promised";
 import dotenv from "dotenv";
 import { Client } from "eris";
 import * as fs from "fs/promises";
-import sinon, { SinonSandbox } from "sinon";
+import sinon from "sinon";
 import sinonChai from "sinon-chai";
-import sinonTest from "sinon-test";
 import { initializeCardArray } from "../src/deck/deck";
 import { DiscordAttachmentOut, DiscordEmbed, DiscordInterface, DiscordMessageOut } from "../src/discord/interface";
 import { ParticipantRoleProvider } from "../src/role/participant";
 import { Templater } from "../src/templates";
-import { PersistentTimer } from "../src/timer";
 import { TournamentManager } from "../src/TournamentManager";
 import { UserError } from "../src/util/errors";
 import { WebsiteInterface } from "../src/website/interface";
@@ -21,26 +19,6 @@ import { WebsiteWrapperMock } from "./mocks/website";
 dotenv.config();
 chai.use(chaiAsPromised);
 chai.use(sinonChai);
-const test = sinonTest(sinon);
-
-// Unfortunately, TypeScript considers private and protected members
-// necessary for the type definition as well, so we force a cast
-const persistentTimerStub = ({
-	tournament: undefined,
-	isActive: () => true,
-	abort: () => undefined
-} as unknown) as PersistentTimer;
-
-/// Override link seams for test fakes
-class TournamentManagerTest extends TournamentManager {
-	public async createPersistentTimer(): ReturnType<typeof PersistentTimer.create> {
-		return persistentTimerStub;
-	}
-
-	public async loadPersistentTimers(): ReturnType<typeof PersistentTimer.loadAll> {
-		return [];
-	}
-}
 
 const discord = new DiscordWrapperMock(); // will be used to fetch responses in some cases
 const mockDiscord = new DiscordInterface(discord);
@@ -58,7 +36,15 @@ sinon.stub(participantRole, "grant").resolves();
 sinon.stub(participantRole, "ungrant").resolves();
 sinon.stub(participantRole, "delete").resolves();
 
-const tournament = new TournamentManagerTest(mockDiscord, mockDb, mockWebsite, templater, participantRole);
+const delegate = {
+	create: sinon.stub().resolves({
+		tournament: undefined,
+		isActive: () => true,
+		abort: () => undefined
+	}),
+	loadAll: async () => []
+};
+const tournament = new TournamentManager(mockDiscord, mockDb, mockWebsite, templater, participantRole, delegate);
 
 before(async () => {
 	await initializeCardArray(process.env.OCTOKIT_TOKEN!);
@@ -111,14 +97,11 @@ describe("Tournament flow commands", function () {
 	it("Open tournament - no channels", async function () {
 		await expect(tournament.openTournament("smallTournament")).to.be.rejectedWith(UserError);
 	});
-	it(
-		"Start tournament",
-		test(async function (this: SinonSandbox) {
-			const createSpy = this.spy(tournament, "createPersistentTimer");
-			await tournament.startTournament("tourn1");
-			expect(createSpy).to.have.been.calledOnce;
-		})
-	);
+	it("Start tournament", async function () {
+		delegate.create.resetHistory();
+		await tournament.startTournament("tourn1");
+		expect(delegate.create).to.have.been.calledOnce;
+	});
 	// I have no idea what this test was meant to do
 	it.skip("Start tournament - with bye", async function () {
 		await tournament.startTournament("byeTournament");
@@ -181,14 +164,11 @@ describe("Tournament flow commands", function () {
 		const response = await tournament.submitScoreForce("tourn2", "player1", 2, 1);
 		expect(response).to.equal("Score of 2-1 submitted in favour of <@player1> (player1) in Tournament tourn2!");
 	});
-	it(
-		"Next round",
-		test(async function (this: SinonSandbox) {
-			const createSpy = this.spy(tournament, "createPersistentTimer");
-			await tournament.nextRound("tourn2");
-			expect(createSpy).to.have.been.calledOnce; // new round means new timer
-		})
-	);
+	it("Next round", async function () {
+		delegate.create.resetHistory();
+		await tournament.nextRound("tourn2");
+		expect(delegate.create).to.have.been.calledOnce; // new round means new timer
+	});
 });
 
 describe("Misc commands", function () {
