@@ -1,12 +1,15 @@
 import { expect } from "chai";
+import dotenv from "dotenv";
 import { SinonSandbox } from "sinon";
 import command from "../../src/commands/dump";
 import { initializeCardArray } from "../../src/deck/deck";
 import { itRejectsNonHosts, msg, support, test } from "./common";
 
+dotenv.config();
 describe("command:dump", function () {
 	const args = ["battlecity"];
-	before(initializeCardArray);
+	// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+	before(() => initializeCardArray(process.env.OCTOKIT_TOKEN!));
 	itRejectsNonHosts(support, command, msg, ["name"]);
 	it(
 		"provides a dump of all decks",

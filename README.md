@@ -36,6 +36,8 @@ It uses Eris to talk to Discord and PostgreSQL for persistence.
         CHALLONGE_USERNAME=
         CHALLONGE_TOKEN=
         OCTOKIT_TOKEN=
+        EMCEE_DEFAULT_PREFIX=mc!
+        EMCEE_DEFAULT_TO_ROLE=MC-TO
         ```
 
     - Outside Docker:
@@ -48,6 +50,8 @@ It uses Eris to talk to Discord and PostgreSQL for persistence.
         CHALLONGE_USERNAME=
         CHALLONGE_TOKEN=
         OCTOKIT_TOKEN=
+        EMCEE_DEFAULT_PREFIX=mc!
+        EMCEE_DEFAULT_TO_ROLE=MC-TO
         ```
 
 1. Start Emcee.

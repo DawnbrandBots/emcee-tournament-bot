@@ -1,12 +1,14 @@
 import { expect } from "chai";
+import dotenv from "dotenv";
 import { User } from "eris";
 import sinon from "sinon";
 import command from "../../src/commands/deck";
 import { initializeCardArray } from "../../src/deck/deck";
 import { itRejectsNonHosts, mockBotClient, msg, support } from "./common";
 
+dotenv.config();
 describe("command:deck", function () {
-	before(initializeCardArray);
+	before(() => initializeCardArray(process.env.OCTOKIT_TOKEN!));
 	itRejectsNonHosts(support, command, msg, ["name"]);
 	it("requires a mentioned user", async () => {
 		msg.mentions = [];
