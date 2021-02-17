@@ -97,11 +97,27 @@ export class DatabaseWrapperPostgres {
 
 	// TODO: remove and replace with alternate implementation
 	// This causes many unnecessary double queries
-	public async authenticatePlayer(tournamentId: string, playerId: string): Promise<void> {
-		const tournament = await this.findTournament(tournamentId);
-		if (!tournament.confirmed.find(participant => participant.discordId === playerId)) {
-			throw new UnauthorisedPlayerError(playerId, tournamentId);
+	public async authenticatePlayer(tournamentId: string, discordId: string, assertStatus?: TournamentStatus) {
+		try {
+			// eslint-disable-next-line no-var
+			var participant = await ConfirmedParticipant.findOneOrFail(
+				{ discordId, tournamentId },
+				{ relations: ["tournament"] }
+			);
+		} catch {
+			throw new UnauthorisedPlayerError(discordId, tournamentId);
 		}
+		if (assertStatus && participant.tournament.status !== assertStatus) {
+			throw new AssertStatusError(tournamentId, assertStatus, participant.tournament.status);
+		}
+		return {
+			challongeId: participant.challongeId,
+			deck: participant.deck,
+			tournament: {
+				name: participant.tournament.name,
+				privateChannels: participant.tournament.privateChannels
+			}
+		};
 	}
 
 	async getTournament(tournamentId: string, assertStatus?: TournamentStatus): Promise<DatabaseTournament> {

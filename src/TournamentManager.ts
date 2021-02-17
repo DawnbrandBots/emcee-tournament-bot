@@ -36,7 +36,6 @@ export interface TournamentInterface {
 	openTournament(tournamentId: string): Promise<void>;
 	startTournament(tournamentId: string): Promise<void>;
 	finishTournament(tournamentId: string, cancel: boolean | undefined): Promise<void>;
-	submitScore(tournamentId: string, playerId: string, scorePlayer: number, scoreOpp: number): Promise<string>;
 	nextRound(tournamentId: string, skip?: boolean): Promise<void>;
 	getPlayerDeck(tournamentId: string, playerId: string): Promise<Deck>;
 	dropPlayer(tournamentId: string, playerId: string, force?: boolean): Promise<void>;
@@ -620,69 +619,6 @@ export class TournamentManager implements TournamentInterface {
 			}
 			await this.startTournament(newId);
 		}
-	}
-
-	public async submitScore(
-		tournamentId: string,
-		playerId: string,
-		scorePlayer: number,
-		scoreOpp: number
-	): Promise<string> {
-		const tournament = await this.database.getTournament(tournamentId, TournamentStatus.IPR);
-		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-		const player = tournament.findPlayer(playerId)!;
-		const mention = this.discord.mentionUser(playerId); // prepare for multiple uses below
-		const match = await this.website.findMatch(tournamentId, player.challongeId);
-		if (!match) {
-			return `Could not find an open match in Tournament ${tournament.name} including you, ${mention}. This could mean your opponent dropped, conceding the match. If the score for your current match is incorrect, please ask a host to change it.`;
-		}
-		if (match.matchId in this.matchScores) {
-			const score = this.matchScores[match.matchId];
-			// player double reporting
-			if (score.playerId === player.challongeId) {
-				return `You have already reported your score for this match, ${mention}. Please have your opponent confirm the score.`;
-			}
-			// player correctly confirming
-			if (scorePlayer === score.oppScore && scoreOpp === score.playerScore) {
-				const weWon = scorePlayer > scoreOpp;
-				// in the case of a tie, winnerScore and loserScore will turn out the same
-				const winner = weWon ? player.challongeId : score.playerId;
-				const winnerScore = weWon ? scorePlayer : scoreOpp;
-				const loserScore = weWon ? scoreOpp : scorePlayer;
-				await this.website.submitScore(tournamentId, match, winner, winnerScore, loserScore);
-				// send DM to opponent
-				const opponent = score.playerDiscord;
-				await this.discord.sendDirectMessage(
-					opponent,
-					`Your opponent has successfully confirmed your score of ${scoreOpp}-${scorePlayer} for Tournament ${tournament.name}, so the score has been saved. Thank you.`
-				);
-				// report confirmation to hosts
-				const channels = tournament.privateChannels;
-				const username = this.discord.getUsername(playerId);
-				const oppMention = this.discord.mentionUser(opponent);
-				const oppName = this.discord.getUsername(opponent);
-				await Promise.all(
-					channels.map(async c => {
-						this.discord.sendMessage(
-							c,
-							`${mention} (${username}) and ${oppMention} (${oppName}) have reported their score of ${scorePlayer}-${scoreOpp} for Tournament ${tournament.name} (${tournamentId}).`
-						);
-					})
-				);
-
-				return `You have successfully reported a score of ${scorePlayer}-${scoreOpp}, and it matches your opponent's report, so the score has been saved. Thank you, ${mention}.`;
-			}
-			// player mismatched confirming
-			delete this.matchScores[match.matchId];
-			return `Your score does not match your opponent's reported score of ${score.oppScore}-${score.playerScore}. Both of you will need to report again, ${mention}.`;
-		}
-		this.matchScores[match.matchId] = {
-			playerId: player.challongeId,
-			playerDiscord: player.discordId,
-			playerScore: scorePlayer,
-			oppScore: scoreOpp
-		};
-		return `You have reported a score of ${scorePlayer}-${scoreOpp}, ${mention}. Your opponent still needs to confirm this score. If you want to drop, please wait for your opponent to confirm or you will concede 0-2.`;
 	}
 
 	// specifically only handles telling participants about a new round
