@@ -1,5 +1,6 @@
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
+import dotenv from "dotenv";
 import { Client } from "eris";
 import * as fs from "fs/promises";
 import sinon from "sinon";
@@ -15,6 +16,7 @@ import { DatabaseWrapperMock } from "./mocks/database";
 import { DiscordWrapperMock } from "./mocks/discord";
 import { WebsiteWrapperMock } from "./mocks/website";
 
+dotenv.config();
 chai.use(chaiAsPromised);
 chai.use(sinonChai);
 
@@ -45,7 +47,7 @@ const delegate = {
 const tournament = new TournamentManager(mockDiscord, mockDb, mockWebsite, templater, participantRole, delegate);
 
 before(async () => {
-	await initializeCardArray();
+	await initializeCardArray(process.env.OCTOKIT_TOKEN!);
 	await templater.load("guides");
 });
 

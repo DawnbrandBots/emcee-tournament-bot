@@ -2,13 +2,10 @@ import { Card, CardArray, Deck } from "ydeck";
 import { Card as DataCard, YgoData } from "ygopro-data";
 import cardOpts from "../config/cardOpts.json";
 import dataOpts from "../config/dataOpts.json";
-import { octokitToken } from "../config/env";
 import transOpts from "../config/transOpts.json";
 import { getLogger } from "../util/logger";
 
 const logger = getLogger("deck");
-
-const data = new YgoData(cardOpts, transOpts, dataOpts, "./dbs", octokitToken);
 
 let cardArray: CardArray | undefined;
 
@@ -34,8 +31,10 @@ async function convertCard(card: DataCard): Promise<Card> {
 	return new Card(card.text.en.name, card.data.ot, card.data.type, card.data.setcode, statusMap);
 }
 
-export async function initializeCardArray(): Promise<void> {
+export async function initializeCardArray(octokitToken: string): Promise<void> {
 	if (!cardArray) {
+		logger.info("ygo-data preload for ydeck starting");
+		const data = new YgoData(cardOpts, transOpts, dataOpts, "./dbs", octokitToken);
 		const dataArray = await data.getCardList();
 		cardArray = {};
 		for (const code in dataArray) {

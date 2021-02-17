@@ -1,6 +1,5 @@
 import { Client } from "eris";
-import { prefix, toRole } from "./config/config.json";
-import { challongeToken, challongeUsername, discordToken, postgresqlUrl } from "./config/env";
+import { getConfig } from "./config"; // Must be imported first among first-party modules
 import { initializeDatabase } from "./database/postgres";
 import { initializeCardArray } from "./deck/deck";
 import { DiscordWrapperEris } from "./discord/eris";
@@ -18,23 +17,23 @@ import { WebsiteInterface } from "./website/interface";
 const logger = getLogger("index");
 
 (async () => {
-	const database = await initializeDatabase(postgresqlUrl);
-
-	await initializeCardArray();
+	const config = getConfig();
+	const database = await initializeDatabase(config.postgresqlUrl);
+	await initializeCardArray(config.octokitToken);
 
 	const templater = new Templater();
 	const guides = await templater.load("guides");
 	logger.info(`Loaded ${guides} templates from "guides".`);
 
-	const challonge = new WebsiteWrapperChallonge(challongeUsername, challongeToken);
+	const challonge = new WebsiteWrapperChallonge(config.challongeUsername, config.challongeToken);
 	const website = new WebsiteInterface(challonge);
 
-	const bot = new Client(discordToken, {
+	const bot = new Client(config.discordToken, {
 		restMode: true
 	});
 	const eris = new DiscordWrapperEris(bot);
 	const discord = new DiscordInterface(eris);
-	const organiserRole = new OrganiserRoleProvider(toRole, 0x3498db);
+	const organiserRole = new OrganiserRoleProvider(config.defaultTORole, 0x3498db);
 	const participantRole = new ParticipantRoleProvider(bot, 0xe67e22);
 	const delegate: PersistentTimerDiscordDelegate = {
 		sendMessage: async (...args) => (await bot.createMessage(...args)).id,
@@ -44,7 +43,7 @@ const logger = getLogger("index");
 		create: async (...args) => await PersistentTimer.create(delegate, ...args),
 		loadAll: async () => await PersistentTimer.loadAll(delegate)
 	});
-	registerEvents(bot, prefix, { discord, tournamentManager, organiserRole }, database, website);
+	registerEvents(bot, config.defaultPrefix, { discord, tournamentManager, organiserRole }, database, website);
 	discord.onDelete(msg => tournamentManager.cleanRegistration(msg));
 
 	let firstReady = true;
