@@ -99,6 +99,11 @@ const command: CommandDefinition = {
 				} catch (err) {
 					logger.error(err);
 				}
+				// Notify the caller
+				await reply(
+					msg,
+					`You have successfully reported a score of ${scores[0]}-${scores[1]}, and it matches your opponent's report, so the score has been saved. Thank you, <@${msg.author.id}>.`
+				);
 			} else {
 				await reply(
 					msg,

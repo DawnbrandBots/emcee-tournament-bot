@@ -30,6 +30,14 @@ export interface DatabaseTournament {
 	findPlayer: (id: string) => DatabasePlayer | undefined;
 }
 
+export interface DatabasePlayerWithTournament {
+	challongeId: number;
+	tournament: {
+		name: string;
+		privateChannels: string[];
+	};
+}
+
 export interface SynchroniseTournament {
 	name: string;
 	description: string;

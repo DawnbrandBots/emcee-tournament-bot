@@ -130,36 +130,6 @@ describe("Tournament flow commands", function () {
 		await tournament.finishTournament("bigTournament", false);
 		expect(discord.getResponse("topChannel")).to.equal("Time left in the round: `50:00`"); // timer message posted after new round message
 	});
-	it("Submit score", async function () {
-		const response1 = await tournament.submitScore("tourn2", "player1", 2, 1);
-		expect(response1).to.equal(
-			"You have reported a score of 2-1, <@player1>. Your opponent still needs to confirm this score. If you want to drop, please wait for your opponent to confirm or you will concede 0-2."
-		);
-		const response2 = await tournament.submitScore("tourn2", "player1", 2, 1);
-		expect(response2).to.equal(
-			`You have already reported your score for this match, <@player1>. Please have your opponent confirm the score.`
-		);
-		const response3 = await tournament.submitScore("tourn2", "player2", 2, 1);
-		expect(response3).to.equal(
-			"Your score does not match your opponent's reported score of 1-2. Both of you will need to report again, <@player2>."
-		);
-		const response4 = await tournament.submitScore("tourn2", "player2", 2, 1);
-		expect(response4).to.equal(
-			"You have reported a score of 2-1, <@player2>. Your opponent still needs to confirm this score. If you want to drop, please wait for your opponent to confirm or you will concede 0-2."
-		);
-		const response5 = await tournament.submitScore("tourn2", "player1", 1, 2);
-		expect(response5).to.equal(
-			"You have successfully reported a score of 1-2, and it matches your opponent's report, so the score has been saved. Thank you, <@player1>."
-		);
-		const response6 = discord.getResponse("player2");
-		expect(response6).to.equal(
-			"Your opponent has successfully confirmed your score of 2-1 for Tournament Tournament 2, so the score has been saved. Thank you."
-		);
-		const response7 = discord.getResponse("channel2");
-		expect(response7).to.equal(
-			"<@player1> (player1) and <@player2> (player2) have reported their score of 1-2 for Tournament Tournament 2 (tourn2)."
-		);
-	});
 	it("Next round", async function () {
 		delegate.create.resetHistory();
 		await tournament.nextRound("tourn2");

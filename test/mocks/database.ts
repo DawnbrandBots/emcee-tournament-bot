@@ -1,4 +1,10 @@
-import { DatabaseMessage, DatabasePlayer, DatabaseTournament, TournamentStatus } from "../../src/database/interface";
+import {
+	DatabaseMessage,
+	DatabasePlayer,
+	DatabasePlayerWithTournament,
+	DatabaseTournament,
+	TournamentStatus
+} from "../../src/database/interface";
 import { DatabaseWrapperPostgres } from "../../src/database/postgres";
 import { TournamentNotFoundError, UnauthorisedHostError, UnauthorisedPlayerError } from "../../src/util/errors";
 
@@ -80,10 +86,17 @@ export class DatabaseWrapperMock {
 		}
 		return this.tournaments[0]; // NOT USED
 	}
-	async authenticatePlayer(tournamentId: string, userId: string): Promise<void> {
+	async authenticatePlayer(tournamentId: string, userId: string): Promise<DatabasePlayerWithTournament> {
 		if (userId.startsWith("not")) {
 			throw new UnauthorisedPlayerError(userId, tournamentId);
 		}
+		return {
+			challongeId: NaN,
+			tournament: {
+				name: "Not used",
+				privateChannels: []
+			}
+		};
 	}
 	async createTournament(
 		hostId: string,

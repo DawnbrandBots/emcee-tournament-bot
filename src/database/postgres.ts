@@ -10,6 +10,7 @@ import { getLogger } from "../util/logger";
 import {
 	DatabaseMessage,
 	DatabasePlayer,
+	DatabasePlayerWithTournament,
 	DatabaseTournament,
 	SynchroniseTournament,
 	TournamentStatus
@@ -97,7 +98,11 @@ export class DatabaseWrapperPostgres {
 
 	// TODO: remove and replace with alternate implementation
 	// This causes many unnecessary double queries
-	public async authenticatePlayer(tournamentId: string, discordId: string, assertStatus?: TournamentStatus) {
+	public async authenticatePlayer(
+		tournamentId: string,
+		discordId: string,
+		assertStatus?: TournamentStatus
+	): Promise<DatabasePlayerWithTournament> {
 		try {
 			// eslint-disable-next-line no-var
 			var participant = await ConfirmedParticipant.findOneOrFail(
@@ -112,7 +117,6 @@ export class DatabaseWrapperPostgres {
 		}
 		return {
 			challongeId: participant.challongeId,
-			deck: participant.deck,
 			tournament: {
 				name: participant.tournament.name,
 				privateChannels: participant.tournament.privateChannels
