@@ -680,12 +680,14 @@ export class TournamentManager implements TournamentInterface {
 					await this.website.submitScore(tournament.id, match, oppChallonge, 2, 0);
 					// should exist but checking is safer than not-null assertion
 					if (opponent) {
-						await this.discord.sendDirectMessage(
-							opponent.discordId,
-							`Your opponent ${this.discord.mentionUser(
-								player.discordId
-							)} has dropped from the tournament, conceding this round to you. You don't need to submit a score for this round.`
-						);
+						await this.discord
+							.sendDirectMessage(
+								opponent.discordId,
+								`Your opponent ${this.discord.mentionUser(
+									player.discordId
+								)} has dropped from the tournament, conceding this round to you. You don't need to submit a score for this round.`
+							)
+							.catch(logger.error);
 					}
 				} else if (!opponent) {
 					// if the match is closed and the opponent has also dropped, the score needs to be amended to a tie
@@ -697,12 +699,14 @@ export class TournamentManager implements TournamentInterface {
 		await this.website.removePlayer(tournament.id, player.challongeId);
 		await this.participantRole.ungrant(playerId, tournament).catch(logger.error);
 		logger.verbose(`User ${playerId} dropped from tournament ${tournament.id}${force ? " by host" : ""}.`);
-		await this.discord.sendDirectMessage(
-			playerId,
-			force
-				? `You have been dropped from Tournament ${tournament.name} by the hosts.`
-				: `You have successfully dropped from Tournament ${tournament.name}.`
-		);
+		await this.discord
+			.sendDirectMessage(
+				playerId,
+				force
+					? `You have been dropped from Tournament ${tournament.name} by the hosts.`
+					: `You have successfully dropped from Tournament ${tournament.name}.`
+			)
+			.catch(logger.error);
 		const channels = tournament.privateChannels;
 		await Promise.all(
 			channels.map(
@@ -714,7 +718,7 @@ export class TournamentManager implements TournamentInterface {
 						} from Tournament ${tournament.name} (${tournament.id}).`
 					)
 			)
-		);
+		).catch(logger.error);
 		const messages = await this.database.getRegisterMessages(tournamentId);
 		for (const m of messages) {
 			await this.discord.removeUserReaction(m.channelId, m.messageId, this.CHECK_EMOJI, playerId);
