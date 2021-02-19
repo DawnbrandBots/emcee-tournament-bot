@@ -10,6 +10,7 @@ import { getLogger } from "../util/logger";
 import {
 	DatabaseMessage,
 	DatabasePlayer,
+	DatabasePlayerWithTournament,
 	DatabaseTournament,
 	SynchroniseTournament,
 	TournamentStatus
@@ -80,20 +81,47 @@ export class DatabaseWrapperPostgres {
 
 	// TODO: remove and replace with alternate implementation
 	// This causes many unnecessary double queries
-	public async authenticateHost(tournamentId: string, hostId: string): Promise<void> {
+	public async authenticateHost(
+		tournamentId: string,
+		hostId: string,
+		assertStatus?: TournamentStatus
+	): Promise<DatabaseTournament> {
 		const tournament = await this.findTournament(tournamentId);
 		if (!tournament.hosts.includes(hostId)) {
 			throw new UnauthorisedHostError(hostId, tournamentId);
 		}
+		if (assertStatus && tournament.status !== assertStatus) {
+			throw new AssertStatusError(tournamentId, assertStatus, tournament.status);
+		}
+		return this.wrap(tournament);
 	}
 
 	// TODO: remove and replace with alternate implementation
 	// This causes many unnecessary double queries
-	public async authenticatePlayer(tournamentId: string, playerId: string): Promise<void> {
-		const tournament = await this.findTournament(tournamentId);
-		if (!tournament.confirmed.find(participant => participant.discordId === playerId)) {
-			throw new UnauthorisedPlayerError(playerId, tournamentId);
+	public async authenticatePlayer(
+		tournamentId: string,
+		discordId: string,
+		assertStatus?: TournamentStatus
+	): Promise<DatabasePlayerWithTournament> {
+		try {
+			// eslint-disable-next-line no-var
+			var participant = await ConfirmedParticipant.findOneOrFail(
+				{ discordId, tournamentId },
+				{ relations: ["tournament"] }
+			);
+		} catch {
+			throw new UnauthorisedPlayerError(discordId, tournamentId);
 		}
+		if (assertStatus && participant.tournament.status !== assertStatus) {
+			throw new AssertStatusError(tournamentId, assertStatus, participant.tournament.status);
+		}
+		return {
+			challongeId: participant.challongeId,
+			tournament: {
+				name: participant.tournament.name,
+				privateChannels: participant.tournament.privateChannels
+			}
+		};
 	}
 
 	async getTournament(tournamentId: string, assertStatus?: TournamentStatus): Promise<DatabaseTournament> {
@@ -414,6 +442,15 @@ export class DatabaseWrapperPostgres {
 				challongeId: participant.confirmed?.challongeId
 			}));
 		});
+	}
+
+	async getConfirmedPlayer(discordId: string, tournamentId: string): Promise<DatabasePlayer> {
+		const p = await ConfirmedParticipant.findOneOrFail({ discordId, tournamentId });
+		return {
+			discordId: p.discordId,
+			challongeId: p.challongeId,
+			deck: p.deck
+		};
 	}
 }
 

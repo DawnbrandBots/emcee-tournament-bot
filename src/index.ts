@@ -25,8 +25,9 @@ const logger = getLogger("index");
 	const guides = await templater.load("guides");
 	logger.info(`Loaded ${guides} templates from "guides".`);
 
-	const challonge = new WebsiteWrapperChallonge(config.challongeUsername, config.challongeToken);
-	const website = new WebsiteInterface(challonge);
+	const challonge = new WebsiteInterface(
+		new WebsiteWrapperChallonge(config.challongeUsername, config.challongeToken)
+	);
 
 	const bot = new Client(config.discordToken, {
 		restMode: true
@@ -39,11 +40,18 @@ const logger = getLogger("index");
 		sendMessage: async (...args) => (await bot.createMessage(...args)).id,
 		editMessage: async (...args) => void (await bot.editMessage(...args))
 	};
-	const tournamentManager = new TournamentManager(discord, database, website, templater, participantRole, {
+	const tournamentManager = new TournamentManager(discord, database, challonge, templater, participantRole, {
 		create: async (...args) => await PersistentTimer.create(delegate, ...args),
 		loadAll: async () => await PersistentTimer.loadAll(delegate)
 	});
-	registerEvents(bot, config.defaultPrefix, { discord, tournamentManager, organiserRole }, database, website);
+	registerEvents(bot, config.defaultPrefix, {
+		discord,
+		tournamentManager,
+		organiserRole,
+		database,
+		challonge,
+		scores: new Map()
+	});
 	discord.onDelete(msg => tournamentManager.cleanRegistration(msg));
 
 	let firstReady = true;

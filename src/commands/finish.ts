@@ -22,6 +22,7 @@ const command: CommandDefinition = {
 		);
 		// TODO: error path
 		await support.tournamentManager.finishTournament(id, false);
+		support.scores.delete(id);
 		logger.verbose(
 			JSON.stringify({
 				channel: msg.channel.id,

@@ -1,4 +1,10 @@
-import { DatabaseMessage, DatabasePlayer, DatabaseTournament, TournamentStatus } from "../../src/database/interface";
+import {
+	DatabaseMessage,
+	DatabasePlayer,
+	DatabasePlayerWithTournament,
+	DatabaseTournament,
+	TournamentStatus
+} from "../../src/database/interface";
 import { DatabaseWrapperPostgres } from "../../src/database/postgres";
 import { TournamentNotFoundError, UnauthorisedHostError, UnauthorisedPlayerError } from "../../src/util/errors";
 
@@ -74,15 +80,23 @@ export class DatabaseWrapperMock {
 			}
 		];
 	}
-	async authenticateHost(tournamentId: string, userId: string): Promise<void> {
+	async authenticateHost(tournamentId: string, userId: string): Promise<DatabaseTournament> {
 		if (userId.startsWith("not")) {
 			throw new UnauthorisedHostError(userId, tournamentId);
 		}
+		return this.tournaments[0]; // NOT USED
 	}
-	async authenticatePlayer(tournamentId: string, userId: string): Promise<void> {
+	async authenticatePlayer(tournamentId: string, userId: string): Promise<DatabasePlayerWithTournament> {
 		if (userId.startsWith("not")) {
 			throw new UnauthorisedPlayerError(userId, tournamentId);
 		}
+		return {
+			challongeId: NaN,
+			tournament: {
+				name: "Not used",
+				privateChannels: []
+			}
+		};
 	}
 	async createTournament(
 		hostId: string,
@@ -286,6 +300,9 @@ export class DatabaseWrapperMock {
 		throw new Error("Not implemented");
 	}
 	dropFromAll(): ReturnType<DatabaseWrapperPostgres["dropFromAll"]> {
+		throw new Error("Not implemented");
+	}
+	getConfirmedPlayer(): Promise<DatabasePlayer> {
 		throw new Error("Not implemented");
 	}
 }

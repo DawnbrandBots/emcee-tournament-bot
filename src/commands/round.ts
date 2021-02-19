@@ -21,6 +21,7 @@ const command: CommandDefinition = {
 			})
 		);
 		await support.tournamentManager.nextRound(id, !!skip);
+		support.scores.get(id)?.clear();
 		logger.verbose(
 			JSON.stringify({
 				channel: msg.channel.id,
