@@ -33,15 +33,15 @@ export function makeHandler({ database, discord, challonge }: CommandSupport) {
 		if (!dropped || !dropped.length) {
 			return;
 		}
-		logger.verbose(
-			JSON.stringify({
-				server: server.id,
-				name: server.name,
-				id: member.id,
-				username: `${member.user.username}#${member.user.discriminator}`,
-				tournaments: dropped.map(({ tournamentId, challongeId }) => ({ tournamentId, challongeId }))
-			})
-		);
+		function log(payload: Record<string, unknown>): void {
+			logger.verbose(JSON.stringify({ id: member.id, ...payload }));
+		}
+		log({
+			server: server.id,
+			name: server.name,
+			username: `${member.user.username}#${member.user.discriminator}`,
+			tournaments: dropped.map(({ tournamentId, challongeId }) => ({ tournamentId, challongeId }))
+		});
 		const who = `<@${member.id}> (${member.user.username}#${member.user.discriminator})`;
 		for (const { tournamentId, privateChannels, challongeId } of dropped) {
 			// For each tournament, inform the private channel that the user left and was dropped.
@@ -50,51 +50,60 @@ export function makeHandler({ database, discord, challonge }: CommandSupport) {
 				privateChannels,
 				`${who} dropped from **${tournamentId}** by leaving the server.`
 			);
-			// For each tournament in progress, inform the opponent that their opponent dropped
+			// For each tournament in progress, update the scores and inform the opponent if needed.
 			if (challongeId !== undefined) {
 				// modified from TournamentManager.sendDropMessage
-				const match = await challonge.findMatch(tournamentId, challongeId);
-				// if there's no match, their most recent score is already submitted.
+				const match = await challonge.findClosedMatch(tournamentId, challongeId);
+				// if there's no match, the dropping player had the natural bye
 				if (match) {
 					const oppChallonge = match.player1 === challongeId ? match.player2 : match.player1;
-					try {
-						await challonge.submitScore(tournamentId, match, oppChallonge, 2, 0);
-						logger.verbose(
-							JSON.stringify({
-								id: member.id,
+					// for an open match, the dropping player concedes
+					if (match.open) {
+						try {
+							await challonge.submitScore(tournamentId, match, oppChallonge, 2, 0);
+							log({
 								tournament: tournamentId,
 								match: match.matchId,
 								oppChallonge
-							})
-						);
-						const { discordId } = await challonge.getPlayer(tournamentId, oppChallonge);
-						logger.verbose(
-							JSON.stringify({
-								id: member.id,
+							});
+						} catch (error) {
+							logger.error(error);
+							await messageChannels(
+								discord,
+								privateChannels,
+								`Error automatically submitting score for ${who} in **${tournamentId}**. Please manually override later.`
+							);
+							continue;
+						}
+						try {
+							const { discordId } = await challonge.getPlayer(tournamentId, oppChallonge);
+							log({
 								tournament: tournamentId,
 								match: match.matchId,
 								oppChallonge,
 								discordId
-							})
-						);
-						// Naive guard against non-snowflake values stored on Challonge somehow
-						if (discordId.length && discordId[0] >= "0" && discordId[0] <= "9") {
-							await discord.sendDirectMessage(
-								discordId,
-								`Your opponent ${who} has dropped from the tournament, conceding this round to you. You don't need to submit a score for this round.`
+							});
+							// Naive guard against non-snowflake values stored on Challonge somehow
+							if (discordId.length && discordId[0] >= "0" && discordId[0] <= "9") {
+								await discord.sendDirectMessage(
+									discordId,
+									`Your opponent ${who} has dropped from the tournament, conceding this round to you. You don't need to submit a score for this round.`
+								);
+							}
+						} catch (error) {
+							if (!(error instanceof BlockedDMsError)) {
+								logger.error(error);
+							}
+							await messageChannels(
+								discord,
+								privateChannels,
+								error instanceof BlockedDMsError
+									? error.message
+									: `Failed to get the opponent of ${who} in **${tournamentId}** from Challonge. Please tell them that their opponent dropped.`
 							);
 						}
-					} catch (error) {
-						if (!(error instanceof BlockedDMsError)) {
-							logger.error(error);
-						}
-						await messageChannels(
-							discord,
-							privateChannels,
-							error instanceof BlockedDMsError
-								? error.message
-								: `Error automatically submitting score for ${who} in **${tournamentId}**. Please manually override later.`
-						);
+					} else {
+						// if the match is closed and the opponent has also dropped, the score is amended to a tie
 					}
 				}
 				try {
