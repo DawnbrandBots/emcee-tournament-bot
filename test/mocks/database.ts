@@ -305,4 +305,7 @@ export class DatabaseWrapperMock {
 	getConfirmedPlayer(): Promise<DatabasePlayer> {
 		throw new Error("Not implemented");
 	}
+	getPlayerByChallonge(): Promise<DatabasePlayer> {
+		throw new Error("Not implemented");
+	}
 }
