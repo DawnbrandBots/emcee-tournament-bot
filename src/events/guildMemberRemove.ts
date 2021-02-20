@@ -52,20 +52,18 @@ export function makeHandler({ database, discord, challonge }: CommandSupport) {
 			);
 			// For each tournament in progress, update the scores and inform the opponent if needed.
 			if (challongeId !== undefined) {
-				// modified from TournamentManager.sendDropMessage
-				const match = await challonge.findClosedMatch(tournamentId, challongeId);
-				// if there's no match, the dropping player had the natural bye
+				// modified from TournamentManager.sendDropMessage. TODO: combine
+				const match = await challonge.findClosedMatch(tournamentId, challongeId).catch(logger.error);
+				log({ tournamentId, match });
+				// If there's no match, the dropping player had the natural bye.
 				if (match) {
 					const oppChallonge = match.player1 === challongeId ? match.player2 : match.player1;
-					// for an open match, the dropping player concedes
+					// For an open match, the dropping player concedes.
 					if (match.open) {
+						// Submit a 2-0 score in favour of the opponent. Warn hosts of any errors and skip to the next.
 						try {
 							await challonge.submitScore(tournamentId, match, oppChallonge, 2, 0);
-							log({
-								tournament: tournamentId,
-								match: match.matchId,
-								oppChallonge
-							});
+							log({ tournamentId, matchId: match.matchId, oppChallonge });
 						} catch (error) {
 							logger.error(error);
 							await messageChannels(
@@ -75,14 +73,10 @@ export function makeHandler({ database, discord, challonge }: CommandSupport) {
 							);
 							continue;
 						}
+						// Automatic match concession was successful, so inform the opponent and warn hosts of errors.
 						try {
 							const { discordId } = await challonge.getPlayer(tournamentId, oppChallonge);
-							log({
-								tournament: tournamentId,
-								match: match.matchId,
-								oppChallonge,
-								discordId
-							});
+							log({ tournamentId, matchId: match.matchId, oppChallonge, discordId });
 							// Naive guard against non-snowflake values stored on Challonge somehow
 							if (discordId.length && discordId[0] >= "0" && discordId[0] <= "9") {
 								await discord.sendDirectMessage(
@@ -103,13 +97,34 @@ export function makeHandler({ database, discord, challonge }: CommandSupport) {
 							);
 						}
 					} else {
-						// if the match is closed and the opponent has also dropped, the score is amended to a tie
+						// If the match is closed AND the opponent has also dropped, the score is amended to a tie.
+						// Do not direct message the former opponent but do warn hosts of any errors.
+						// TODO: keep in mind when we change to tracking dropped players
+						const opponent = await database.getPlayerByChallonge(oppChallonge, tournamentId).catch<void>();
+						if (opponent) {
+							log({ tournamentId, oppChallonge, discordId: opponent.discordId });
+						} else {
+							// This will tie scores against round-one byes if that ever happens.
+							try {
+								await challonge.submitScore(tournamentId, match, oppChallonge, 0, 0);
+								log({ tournamentId, matchId: match.matchId, oppChallonge });
+							} catch (error) {
+								logger.error(error);
+								await messageChannels(
+									discord,
+									privateChannels,
+									`Error automatically resetting score for ${who} in **${tournamentId}**. Please manually override later.`
+								);
+								continue;
+							}
+						}
 					}
 				}
+				// There was no problem submitting a score to Challonge, so drop the player from Challonge.
 				try {
 					await challonge.removePlayer(tournamentId, challongeId);
-				} catch (e) {
-					logger.error(e);
+				} catch (error) {
+					logger.error(error);
 					await messageChannels(
 						discord,
 						privateChannels,

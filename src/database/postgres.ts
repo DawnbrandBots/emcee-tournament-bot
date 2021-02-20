@@ -452,6 +452,15 @@ export class DatabaseWrapperPostgres {
 			deck: p.deck
 		};
 	}
+
+	async getPlayerByChallonge(challongeId: number, tournamentId: string): Promise<DatabasePlayer> {
+		const p = await ConfirmedParticipant.findOneOrFail({ challongeId, tournamentId });
+		return {
+			discordId: p.discordId,
+			challongeId: p.challongeId,
+			deck: p.deck
+		};
+	}
 }
 
 export async function initializeDatabase(postgresqlUrl: string): Promise<DatabaseWrapperPostgres> {
