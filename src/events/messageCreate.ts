@@ -1,6 +1,8 @@
 import { Client, GuildChannel, Message, MessageContent, MessageFile } from "eris";
 import { Command, CommandDefinition, CommandSupport } from "../Command";
+import { getLogger } from "../util/logger";
 
+const logger = getLogger("messageCreate");
 // Lifted from Discord wrapper, to be removed when TM.confirmPlayer is fixed
 interface DiscordAttachmentIn {
 	filename: string;
@@ -97,7 +99,7 @@ export function makeHandler(
 			await handlers[cmdName]?.run(msg, args, support);
 		} else {
 			// If this throws, we crash out
-			await support.tournamentManager.confirmPlayer(wrapMessageIn(msg));
+			await support.tournamentManager.confirmPlayer(wrapMessageIn(msg)).catch(logger.error);
 		}
 	};
 }
