@@ -1,16 +1,16 @@
 import { CommandDefinition } from "../Command";
-import { firstMentionOrFail, reply } from "../util/discord";
+import { reply } from "../util/discord";
 import { getLogger } from "../util/logger";
 
 const logger = getLogger("command:forcedrop");
 
 const command: CommandDefinition = {
 	name: "forcedrop",
-	requiredArgs: ["id"],
+	requiredArgs: ["id", "who"],
 	executor: async (msg, args, support) => {
-		const [id] = args;
+		const [id, who] = args;
 		await support.tournamentManager.authenticateHost(id, msg.author.id);
-		const player = firstMentionOrFail(msg);
+		const player = who.startsWith("<@!") && who.endsWith(">") ? who.slice(3, -1) : who;
 		logger.verbose(
 			JSON.stringify({
 				channel: msg.channel.id,
@@ -18,7 +18,7 @@ const command: CommandDefinition = {
 				user: msg.author.id,
 				tournament: id,
 				command: "forcedrop",
-				mention: player,
+				player,
 				event: "attempt"
 			})
 		);
@@ -34,7 +34,7 @@ const command: CommandDefinition = {
 				event: "success"
 			})
 		);
-		const name = support.discord.getUsername(player);
+		const name = await support.discord.getRESTUsername(player);
 		await reply(msg, `Player ${name} successfully dropped from Tournament ${id}.`);
 	}
 };
