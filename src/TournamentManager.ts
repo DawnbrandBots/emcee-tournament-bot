@@ -29,8 +29,6 @@ export interface TournamentInterface {
 	listTournaments(server?: string): Promise<string>;
 	createTournament(hostId: string, serverId: string, name: string, desc: string): Promise<[string, string, string]>;
 	updateTournament(tournamentId: string, name: string, desc: string): Promise<void>;
-	addAnnouncementChannel(tournamentId: string, channelId: string, type: "public" | "private"): Promise<void>;
-	removeAnnouncementChannel(tournamentId: string, channelId: string, type: "public" | "private"): Promise<void>;
 	addHost(tournamentId: string, newHost: string): Promise<void>;
 	removeHost(tournamentId: string, newHost: string): Promise<void>;
 	openTournament(tournamentId: string): Promise<void>;
@@ -172,22 +170,6 @@ export class TournamentManager implements TournamentInterface {
 		// Update DB first because it performs an important check that might throw
 		await this.database.updateTournament(tournamentId, name, desc);
 		await this.website.updateTournament(tournamentId, name, desc);
-	}
-
-	public async addAnnouncementChannel(
-		tournamentId: string,
-		channelId: string,
-		type: "public" | "private"
-	): Promise<void> {
-		await this.database.addAnnouncementChannel(tournamentId, channelId, type);
-	}
-
-	public async removeAnnouncementChannel(
-		tournamentId: string,
-		channelId: string,
-		type: "public" | "private"
-	): Promise<void> {
-		await this.database.removeAnnouncementChannel(tournamentId, channelId, type);
 	}
 
 	public async addHost(tournamentId: string, newHost: string): Promise<void> {

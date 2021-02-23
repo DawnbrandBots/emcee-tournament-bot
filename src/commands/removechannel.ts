@@ -25,7 +25,7 @@ const command: CommandDefinition = {
 				event: "attempt"
 			})
 		);
-		await support.tournamentManager.removeAnnouncementChannel(id, channelId, type);
+		await support.database.removeAnnouncementChannel(id, channelId, type);
 		logger.verbose(
 			JSON.stringify({
 				channel: msg.channel.id,

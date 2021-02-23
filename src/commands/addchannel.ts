@@ -24,7 +24,7 @@ const command: CommandDefinition = {
 				event: "attempt"
 			})
 		);
-		await support.tournamentManager.addAnnouncementChannel(id, channelId, type);
+		await support.database.addAnnouncementChannel(id, channelId, type);
 		logger.verbose(
 			JSON.stringify({
 				channel: msg.channel.id,

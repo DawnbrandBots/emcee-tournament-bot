@@ -70,12 +70,6 @@ describe("Tournament creation commands", async function () {
 	it("Update tournament", async function () {
 		await expect(tournament.updateTournament("name", "newName", "newDesc")).to.not.be.rejected;
 	});
-	it("Add announcement channel", async function () {
-		await expect(tournament.addAnnouncementChannel("create", "testChannel", "public")).to.not.be.rejected;
-	});
-	it("Remove announcement channel", async function () {
-		await expect(tournament.removeAnnouncementChannel("name", "testChannel", "public")).to.not.be.rejected;
-	});
 	it("Add host", async function () {
 		await expect(tournament.addHost("name", "testUser")).to.not.be.rejected;
 	});
