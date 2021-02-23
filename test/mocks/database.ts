@@ -302,6 +302,9 @@ export class DatabaseWrapperMock {
 	dropFromAll(): ReturnType<DatabaseWrapperPostgres["dropFromAll"]> {
 		throw new Error("Not implemented");
 	}
+	async getConfirmed(): Promise<DatabasePlayer[]> {
+		return [];
+	}
 	getConfirmedPlayer(): Promise<DatabasePlayer> {
 		throw new Error("Not implemented");
 	}

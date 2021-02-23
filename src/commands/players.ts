@@ -22,7 +22,7 @@ const command: CommandDefinition = {
 				event: "attempt"
 			})
 		);
-		const players = await support.tournamentManager.getConfirmed(id);
+		const players = await support.database.getConfirmed(id);
 		const rows = players.map(player => {
 			const deck = getDeck(player.deck);
 			return {

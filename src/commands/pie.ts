@@ -22,7 +22,7 @@ const command: CommandDefinition = {
 				event: "attempt"
 			})
 		);
-		const players = await support.tournamentManager.getConfirmed(id);
+		const players = await support.database.getConfirmed(id);
 		// TODO: benchmark performance of map-reduce
 		const themes = players
 			.map(player => {

@@ -1,5 +1,5 @@
 import { Deck } from "ydeck";
-import { DatabasePlayer, DatabaseTournament, TournamentStatus } from "./database/interface";
+import { DatabaseTournament, TournamentStatus } from "./database/interface";
 import { DatabaseWrapperPostgres } from "./database/postgres";
 import { getDeck } from "./deck/deck";
 import { getDeckFromMessage, prettyPrint } from "./deck/discordDeck";
@@ -31,7 +31,6 @@ export interface TournamentInterface {
 	nextRound(tournamentId: string, skip?: boolean): Promise<void>;
 	getPlayerDeck(tournamentId: string, playerId: string): Promise<Deck>;
 	dropPlayer(tournamentId: string, playerId: string, force?: boolean): Promise<void>;
-	getConfirmed(tournamentId: string): Promise<DatabasePlayer[]>;
 }
 
 type Public<T> = Pick<T, keyof T>;
@@ -668,10 +667,5 @@ export class TournamentManager implements TournamentInterface {
 		for (const m of messages) {
 			await this.discord.removeUserReaction(m.channelId, m.messageId, this.CHECK_EMOJI, playerId);
 		}
-	}
-
-	public async getConfirmed(tournamentId: string): Promise<DatabasePlayer[]> {
-		const tournament = await this.database.getTournament(tournamentId);
-		return tournament.players;
 	}
 }
