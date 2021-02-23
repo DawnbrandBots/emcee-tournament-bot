@@ -31,7 +31,6 @@ export interface TournamentInterface {
 	nextRound(tournamentId: string, skip?: boolean): Promise<void>;
 	getPlayerDeck(tournamentId: string, playerId: string): Promise<Deck>;
 	dropPlayer(tournamentId: string, playerId: string, force?: boolean): Promise<void>;
-	syncTournament(tournamentId: string): Promise<void>;
 	getConfirmed(tournamentId: string): Promise<DatabasePlayer[]>;
 }
 
@@ -669,15 +668,6 @@ export class TournamentManager implements TournamentInterface {
 		for (const m of messages) {
 			await this.discord.removeUserReaction(m.channelId, m.messageId, this.CHECK_EMOJI, playerId);
 		}
-	}
-
-	public async syncTournament(tournamentId: string): Promise<void> {
-		const tournamentData = await this.website.getTournament(tournamentId);
-		await this.database.synchronise(tournamentId, {
-			name: tournamentData.name,
-			description: tournamentData.desc,
-			players: tournamentData.players.map(({ challongeId, discordId }) => ({ challongeId, discordId }))
-		});
 	}
 
 	public async getConfirmed(tournamentId: string): Promise<DatabasePlayer[]> {

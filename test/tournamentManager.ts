@@ -150,9 +150,6 @@ describe("Misc commands", function () {
 			"Player <@player1> (player1) has been forcefully dropped from Tournament Tournament 1 (tourn1)."
 		);
 	});
-	it("Sync tournament", async function () {
-		await expect(tournament.syncTournament("tourn1")).to.not.be.rejected;
-	});
 	it.skip("Generate pie chart", async function () {
 		// const file = await tournament.generatePieChart("tourn1");
 		// expect(file.filename).to.equal("Tournament 1 Pie.csv");
