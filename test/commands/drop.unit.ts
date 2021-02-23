@@ -7,7 +7,7 @@ describe("command:drop", function () {
 	it(
 		"rejects non-players",
 		test(function (this: SinonSandbox) {
-			const authStub = this.stub(support.tournamentManager, "authenticatePlayer").rejects();
+			const authStub = this.stub(support.database, "authenticatePlayer").rejects();
 			msg.channel.createMessage = this.spy();
 			expect(command.executor(msg, ["name"], support)).to.be.rejected;
 			expect(authStub).to.have.been.calledOnceWithExactly("name", "0000");

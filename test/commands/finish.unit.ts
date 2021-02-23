@@ -9,7 +9,7 @@ describe("command:finish", function () {
 	it(
 		"finishes the tournament",
 		test(async function (this: SinonSandbox) {
-			const authStub = this.stub(support.tournamentManager, "authenticateHost").resolves();
+			const authStub = this.stub(support.database, "authenticateHost").resolves();
 			const finishStub = this.stub(support.tournamentManager, "finishTournament").resolves();
 			msg.channel.createMessage = this.spy();
 			await command.executor(msg, args, support);
@@ -23,7 +23,7 @@ describe("command:finish", function () {
 	it(
 		"does not catch finishTournament exceptions",
 		test(async function (this: SinonSandbox) {
-			const authStub = this.stub(support.tournamentManager, "authenticateHost").resolves();
+			const authStub = this.stub(support.database, "authenticateHost").resolves();
 			const finishStub = this.stub(support.tournamentManager, "finishTournament").rejects();
 			msg.channel.createMessage = this.spy();
 			try {
@@ -39,7 +39,7 @@ describe("command:finish", function () {
 	it(
 		"does not catch reply exceptions",
 		test(async function (this: SinonSandbox) {
-			const authStub = this.stub(support.tournamentManager, "authenticateHost").resolves();
+			const authStub = this.stub(support.database, "authenticateHost").resolves();
 			const finishStub = this.stub(support.tournamentManager, "finishTournament").resolves();
 			msg.channel.createMessage = this.stub().rejects();
 			try {

@@ -9,7 +9,7 @@ const command: CommandDefinition = {
 	requiredArgs: ["id", "who"],
 	executor: async (msg, args, support) => {
 		const [id, who] = args;
-		await support.tournamentManager.authenticateHost(id, msg.author.id);
+		await support.database.authenticateHost(id, msg.author.id);
 		const player = who.startsWith("<@!") && who.endsWith(">") ? who.slice(3, -1) : who;
 		logger.verbose(
 			JSON.stringify({

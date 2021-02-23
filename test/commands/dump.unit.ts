@@ -14,7 +14,7 @@ describe("command:dump", function () {
 	it(
 		"provides a dump of all decks",
 		test(async function (this: SinonSandbox) {
-			const authStub = this.stub(support.tournamentManager, "authenticateHost").resolves();
+			const authStub = this.stub(support.database, "authenticateHost").resolves();
 			const listStub = this.stub(support.tournamentManager, "getConfirmed").resolves([
 				{ discordId: "1312", deck: "ydke://!!!", challongeId: 1 },
 				{ discordId: "1314", deck: "ydke://!!!", challongeId: 2 },
@@ -40,7 +40,7 @@ describe("command:dump", function () {
 	it(
 		"does not catch intervening exceptions",
 		test(async function (this: SinonSandbox) {
-			const authStub = this.stub(support.tournamentManager, "authenticateHost").resolves();
+			const authStub = this.stub(support.database, "authenticateHost").resolves();
 			const listStub = this.stub(support.tournamentManager, "getConfirmed").rejects();
 			msg.channel.createMessage = this.spy();
 			try {
@@ -56,7 +56,7 @@ describe("command:dump", function () {
 	it(
 		"does not catch reply exceptions",
 		test(async function (this: SinonSandbox) {
-			const authStub = this.stub(support.tournamentManager, "authenticateHost").resolves();
+			const authStub = this.stub(support.database, "authenticateHost").resolves();
 			const listStub = this.stub(support.tournamentManager, "getConfirmed").resolves([]);
 			msg.channel.createMessage = this.stub().rejects();
 			try {
