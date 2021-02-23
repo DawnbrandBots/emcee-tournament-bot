@@ -132,13 +132,6 @@ describe("Tournament flow commands", function () {
 });
 
 describe("Misc commands", function () {
-	it("List tournaments", async function () {
-		const list = await tournament.listTournaments();
-		const expectedList =
-			"ID: tourn1|Name: Tournament 1|Status: preparing|Players: 4\nID: tourn2|Name: Tournament 2|Status: in progress|Players: 3";
-		const testList = list.slice(0, expectedList.length);
-		expect(testList).to.equal(expectedList);
-	});
 	it.skip("List players", async function () {
 		// const file = await tournament.listPlayers("tourn1");
 		// expect(file.filename).to.equal("Tournament 1.csv");

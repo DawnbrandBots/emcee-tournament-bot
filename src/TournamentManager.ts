@@ -24,7 +24,6 @@ export interface TournamentInterface {
 	registerPlayer(msg: DiscordMessageIn, playerId: string): Promise<void>;
 	confirmPlayer(msg: DiscordMessageIn): Promise<void>;
 	cleanRegistration(msg: DiscordMessageLimited): Promise<void>;
-	listTournaments(server?: string): Promise<string>;
 	createTournament(hostId: string, serverId: string, name: string, desc: string): Promise<[string, string, string]>;
 	updateTournament(tournamentId: string, name: string, desc: string): Promise<void>;
 	addHost(tournamentId: string, newHost: string): Promise<void>;
@@ -99,12 +98,6 @@ export class TournamentManager implements TournamentInterface {
 			}
 		}
 		logger.info(`Loaded ${count} of ${messages.length} reaction buttons.`);
-	}
-
-	public async listTournaments(server?: string): Promise<string> {
-		const list = await this.database.getActiveTournaments(server);
-		const text = list.map(t => `ID: ${t.id}|Name: ${t.name}|Status: ${t.status}|Players: ${t.players.length}`);
-		return text.join("\n");
 	}
 
 	private async checkUrlTaken(url: string): Promise<boolean> {
