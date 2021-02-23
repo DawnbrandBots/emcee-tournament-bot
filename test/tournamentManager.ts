@@ -67,9 +67,6 @@ describe("Tournament creation commands", async function () {
 		const [id] = await tournament.createTournament("testUser", "testServer", "create1", "desc");
 		expect(id).to.equal("create10");
 	});
-	it("Update tournament", async function () {
-		await expect(tournament.updateTournament("name", "newName", "newDesc")).to.not.be.rejected;
-	});
 	it("Add host", async function () {
 		await expect(tournament.addHost("name", "testUser")).to.not.be.rejected;
 	});

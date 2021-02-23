@@ -25,7 +25,6 @@ export interface TournamentInterface {
 	confirmPlayer(msg: DiscordMessageIn): Promise<void>;
 	cleanRegistration(msg: DiscordMessageLimited): Promise<void>;
 	createTournament(hostId: string, serverId: string, name: string, desc: string): Promise<[string, string, string]>;
-	updateTournament(tournamentId: string, name: string, desc: string): Promise<void>;
 	addHost(tournamentId: string, newHost: string): Promise<void>;
 	removeHost(tournamentId: string, newHost: string): Promise<void>;
 	openTournament(tournamentId: string): Promise<void>;
@@ -147,12 +146,6 @@ export class TournamentManager implements TournamentInterface {
 		const web = await this.website.createTournament(name, desc, candidateUrl, topCut);
 		await this.database.createTournament(hostId, serverId, web.id, name, desc);
 		return [web.id, web.url, this.templater.format("create", web.id)];
-	}
-
-	public async updateTournament(tournamentId: string, name: string, desc: string): Promise<void> {
-		// Update DB first because it performs an important check that might throw
-		await this.database.updateTournament(tournamentId, name, desc);
-		await this.website.updateTournament(tournamentId, name, desc);
 	}
 
 	public async addHost(tournamentId: string, newHost: string): Promise<void> {
