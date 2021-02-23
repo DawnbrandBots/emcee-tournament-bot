@@ -22,7 +22,7 @@ const command: CommandDefinition = {
 				event: "attempt"
 			})
 		);
-		await support.tournamentManager.addHost(id, newHost);
+		await support.database.addHost(id, newHost);
 		logger.verbose(
 			JSON.stringify({
 				channel: msg.channel.id,

@@ -23,7 +23,7 @@ const command: CommandDefinition = {
 				event: "attempt"
 			})
 		);
-		await support.tournamentManager.removeHost(id, newHost);
+		await support.database.removeHost(id, newHost);
 		logger.verbose(
 			JSON.stringify({
 				channel: msg.channel.id,
