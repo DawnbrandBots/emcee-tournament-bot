@@ -23,7 +23,7 @@ const command: CommandDefinition = {
 				event: "attempt"
 			})
 		);
-		const byes = await support.tournamentManager.removeBye(id, player);
+		const byes = await support.database.removeBye(id, player);
 		logger.verbose(
 			JSON.stringify({
 				channel: msg.channel.id,

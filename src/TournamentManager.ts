@@ -41,8 +41,6 @@ export interface TournamentInterface {
 	dropPlayer(tournamentId: string, playerId: string, force?: boolean): Promise<void>;
 	syncTournament(tournamentId: string): Promise<void>;
 	getConfirmed(tournamentId: string): Promise<DatabasePlayer[]>;
-	registerBye(tournamentId: string, playerId: string): Promise<string[]>;
-	removeBye(tournamentId: string, playerId: string): Promise<string[]>;
 }
 
 type Public<T> = Pick<T, keyof T>;
@@ -737,13 +735,5 @@ export class TournamentManager implements TournamentInterface {
 	public async getConfirmed(tournamentId: string): Promise<DatabasePlayer[]> {
 		const tournament = await this.database.getTournament(tournamentId);
 		return tournament.players;
-	}
-
-	public async registerBye(tournamentId: string, playerId: string): Promise<string[]> {
-		return await this.database.registerBye(tournamentId, playerId);
-	}
-
-	public async removeBye(tournamentId: string, playerId: string): Promise<string[]> {
-		return await this.database.removeBye(tournamentId, playerId);
 	}
 }
