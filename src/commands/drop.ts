@@ -10,7 +10,7 @@ const command: CommandDefinition = {
 	executor: async (msg, args, support) => {
 		// TODO: infer tournamentId from tournament player is in? gotta make player-facing features as simple as possible
 		const [id] = args;
-		await support.tournamentManager.authenticatePlayer(id, msg.author.id);
+		await support.database.authenticatePlayer(id, msg.author.id);
 		logger.verbose(
 			JSON.stringify({
 				channel: msg.channel.id,

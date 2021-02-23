@@ -10,7 +10,7 @@ const command: CommandDefinition = {
 	executor: async (msg, args, support) => {
 		// Mirror of addhost
 		const [id] = args;
-		await support.tournamentManager.authenticateHost(id, msg.author.id);
+		await support.database.authenticateHost(id, msg.author.id);
 		const newHost = firstMentionOrFail(msg);
 		logger.verbose(
 			JSON.stringify({
@@ -23,7 +23,7 @@ const command: CommandDefinition = {
 				event: "attempt"
 			})
 		);
-		await support.tournamentManager.removeHost(id, newHost);
+		await support.database.removeHost(id, newHost);
 		logger.verbose(
 			JSON.stringify({
 				channel: msg.channel.id,

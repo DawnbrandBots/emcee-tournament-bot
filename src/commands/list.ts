@@ -20,7 +20,10 @@ const command: CommandDefinition = {
 				event: "attempt"
 			})
 		);
-		const list = await support.tournamentManager.listTournaments(msg.guildID || "private");
+		const list = await support.database.getActiveTournaments(msg.guildID || "private");
+		const text = list
+			.map(t => `ID: ${t.id}|Name: ${t.name}|Status: ${t.status}|Players: ${t.players.length}`)
+			.join("\n");
 		logger.verbose(
 			JSON.stringify({
 				channel: msg.channel.id,
@@ -30,10 +33,10 @@ const command: CommandDefinition = {
 				event: "success"
 			})
 		);
-		if (list.length === 0) {
+		if (text.length === 0) {
 			await reply(msg, "There are no open tournaments you have access to!");
 		} else {
-			await reply(msg, `\`\`\`\n${list}\`\`\``);
+			await reply(msg, `\`\`\`\n${text}\`\`\``);
 		}
 	}
 };

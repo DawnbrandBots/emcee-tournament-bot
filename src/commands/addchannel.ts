@@ -9,7 +9,7 @@ const command: CommandDefinition = {
 	requiredArgs: ["id"],
 	executor: async (msg, args, support) => {
 		const [id, baseType] = args; // 1 optional and thus potentially undefined
-		await support.tournamentManager.authenticateHost(id, msg.author.id);
+		await support.database.authenticateHost(id, msg.author.id);
 		const type = baseType?.toLowerCase() === "private" ? "private" : "public";
 		const channelId = msg.channel.id;
 		logger.verbose(
@@ -24,7 +24,7 @@ const command: CommandDefinition = {
 				event: "attempt"
 			})
 		);
-		await support.tournamentManager.addAnnouncementChannel(id, channelId, type);
+		await support.database.addAnnouncementChannel(id, channelId, type);
 		logger.verbose(
 			JSON.stringify({
 				channel: msg.channel.id,

@@ -17,7 +17,7 @@ describe("command:removebye", function () {
 		test(async function (this: SinonSandbox) {
 			msg.mentions = [new User({ id: "nova" }, mockBotClient)];
 			msg.channel.createMessage = this.spy();
-			this.stub(support.tournamentManager, "removeBye").resolves([]);
+			this.stub(support.database, "removeBye").resolves([]);
 			await command.executor(msg, ["name"], support);
 			expect(msg.channel.createMessage).to.have.been.calledOnceWithExactly(
 				"Bye removed for Player <@nova> (nova) in Tournament name!\nAll byes: "

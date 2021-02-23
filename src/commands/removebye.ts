@@ -10,7 +10,7 @@ const command: CommandDefinition = {
 	executor: async (msg, args, support) => {
 		// Mirror of addbye
 		const [id] = args;
-		await support.tournamentManager.authenticateHost(id, msg.author.id);
+		await support.database.authenticateHost(id, msg.author.id);
 		const player = firstMentionOrFail(msg);
 		logger.verbose(
 			JSON.stringify({
@@ -23,7 +23,7 @@ const command: CommandDefinition = {
 				event: "attempt"
 			})
 		);
-		const byes = await support.tournamentManager.removeBye(id, player);
+		const byes = await support.database.removeBye(id, player);
 		logger.verbose(
 			JSON.stringify({
 				channel: msg.channel.id,

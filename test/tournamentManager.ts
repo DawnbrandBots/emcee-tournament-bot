@@ -67,21 +67,6 @@ describe("Tournament creation commands", async function () {
 		const [id] = await tournament.createTournament("testUser", "testServer", "create1", "desc");
 		expect(id).to.equal("create10");
 	});
-	it("Update tournament", async function () {
-		await expect(tournament.updateTournament("name", "newName", "newDesc")).to.not.be.rejected;
-	});
-	it("Add announcement channel", async function () {
-		await expect(tournament.addAnnouncementChannel("create", "testChannel", "public")).to.not.be.rejected;
-	});
-	it("Remove announcement channel", async function () {
-		await expect(tournament.removeAnnouncementChannel("name", "testChannel", "public")).to.not.be.rejected;
-	});
-	it("Add host", async function () {
-		await expect(tournament.addHost("name", "testUser")).to.not.be.rejected;
-	});
-	it("Remove host", async function () {
-		await expect(tournament.removeHost("name", "testUser")).to.not.be.rejected;
-	});
 });
 
 describe("Tournament flow commands", function () {
@@ -138,13 +123,6 @@ describe("Tournament flow commands", function () {
 });
 
 describe("Misc commands", function () {
-	it("List tournaments", async function () {
-		const list = await tournament.listTournaments();
-		const expectedList =
-			"ID: tourn1|Name: Tournament 1|Status: preparing|Players: 4\nID: tourn2|Name: Tournament 2|Status: in progress|Players: 3";
-		const testList = list.slice(0, expectedList.length);
-		expect(testList).to.equal(expectedList);
-	});
 	it.skip("List players", async function () {
 		// const file = await tournament.listPlayers("tourn1");
 		// expect(file.filename).to.equal("Tournament 1.csv");
@@ -171,9 +149,6 @@ describe("Misc commands", function () {
 		expect(discord.getResponse("channel2")).to.equal(
 			"Player <@player1> (player1) has been forcefully dropped from Tournament Tournament 1 (tourn1)."
 		);
-	});
-	it("Sync tournament", async function () {
-		await expect(tournament.syncTournament("tourn1")).to.not.be.rejected;
 	});
 	it.skip("Generate pie chart", async function () {
 		// const file = await tournament.generatePieChart("tourn1");
@@ -420,11 +395,5 @@ describe("Misc functions", function () {
 				channelId: "testChannel"
 			})
 		).to.not.be.rejected;
-	});
-	it("Authenticate host", async function () {
-		await expect(tournament.authenticateHost("tourn1", "testUser")).to.not.be.rejected;
-	});
-	it("Authenticate player", async function () {
-		await expect(tournament.authenticatePlayer("tourn1", "player1")).to.not.be.rejected;
 	});
 });

@@ -17,7 +17,7 @@ describe("command:addbye", function () {
 		test(async function (this: SinonSandbox) {
 			msg.mentions = [new User({ id: "nova" }, mockBotClient)];
 			msg.channel.createMessage = this.spy();
-			this.stub(support.tournamentManager, "registerBye").resolves([]);
+			this.stub(support.database, "registerBye").resolves([]);
 			await command.executor(msg, ["name"], support);
 			expect(msg.channel.createMessage).to.have.been.calledOnceWithExactly(
 				"Bye registered for Player <@nova> (nova) in Tournament name!\nAll byes: "

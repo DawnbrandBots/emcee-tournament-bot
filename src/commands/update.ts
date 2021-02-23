@@ -9,7 +9,7 @@ const command: CommandDefinition = {
 	requiredArgs: ["id", "name", "description"],
 	executor: async (msg, args, support) => {
 		const [id, name, desc] = args;
-		await support.tournamentManager.authenticateHost(id, msg.author.id);
+		await support.database.authenticateHost(id, msg.author.id);
 		logger.verbose(
 			JSON.stringify({
 				channel: msg.channel.id,
@@ -22,7 +22,9 @@ const command: CommandDefinition = {
 				event: "attempt"
 			})
 		);
-		await support.tournamentManager.updateTournament(id, name, desc);
+		// Update DB first because it performs an important check that might throw
+		await support.database.updateTournament(id, name, desc);
+		await support.challonge.updateTournament(id, name, desc);
 		// TODO: missing failure path
 		logger.verbose(
 			JSON.stringify({

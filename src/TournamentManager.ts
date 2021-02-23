@@ -1,5 +1,5 @@
 import { Deck } from "ydeck";
-import { DatabasePlayer, DatabaseTournament, TournamentStatus } from "./database/interface";
+import { DatabaseTournament, TournamentStatus } from "./database/interface";
 import { DatabaseWrapperPostgres } from "./database/postgres";
 import { getDeck } from "./deck/deck";
 import { getDeckFromMessage, prettyPrint } from "./deck/discordDeck";
@@ -24,25 +24,13 @@ export interface TournamentInterface {
 	registerPlayer(msg: DiscordMessageIn, playerId: string): Promise<void>;
 	confirmPlayer(msg: DiscordMessageIn): Promise<void>;
 	cleanRegistration(msg: DiscordMessageLimited): Promise<void>;
-	authenticateHost(tournamentId: string, userId: string): Promise<void>;
-	authenticatePlayer(tournamentId: string, userId: string): Promise<void>;
-	listTournaments(server?: string): Promise<string>;
 	createTournament(hostId: string, serverId: string, name: string, desc: string): Promise<[string, string, string]>;
-	updateTournament(tournamentId: string, name: string, desc: string): Promise<void>;
-	addAnnouncementChannel(tournamentId: string, channelId: string, type: "public" | "private"): Promise<void>;
-	removeAnnouncementChannel(tournamentId: string, channelId: string, type: "public" | "private"): Promise<void>;
-	addHost(tournamentId: string, newHost: string): Promise<void>;
-	removeHost(tournamentId: string, newHost: string): Promise<void>;
 	openTournament(tournamentId: string): Promise<void>;
 	startTournament(tournamentId: string): Promise<void>;
 	finishTournament(tournamentId: string, cancel: boolean | undefined): Promise<void>;
 	nextRound(tournamentId: string, skip?: boolean): Promise<void>;
 	getPlayerDeck(tournamentId: string, playerId: string): Promise<Deck>;
 	dropPlayer(tournamentId: string, playerId: string, force?: boolean): Promise<void>;
-	syncTournament(tournamentId: string): Promise<void>;
-	getConfirmed(tournamentId: string): Promise<DatabasePlayer[]>;
-	registerBye(tournamentId: string, playerId: string): Promise<string[]>;
-	removeBye(tournamentId: string, playerId: string): Promise<string[]>;
 }
 
 type Public<T> = Pick<T, keyof T>;
@@ -107,20 +95,6 @@ export class TournamentManager implements TournamentInterface {
 		logger.info(`Loaded ${count} of ${messages.length} reaction buttons.`);
 	}
 
-	public async authenticateHost(tournamentId: string, userId: string): Promise<void> {
-		await this.database.authenticateHost(tournamentId, userId);
-	}
-
-	public async authenticatePlayer(tournamentId: string, userId: string): Promise<void> {
-		await this.database.authenticatePlayer(tournamentId, userId);
-	}
-
-	public async listTournaments(server?: string): Promise<string> {
-		const list = await this.database.getActiveTournaments(server);
-		const text = list.map(t => `ID: ${t.id}|Name: ${t.name}|Status: ${t.status}|Players: ${t.players.length}`);
-		return text.join("\n");
-	}
-
 	private async checkUrlTaken(url: string): Promise<boolean> {
 		try {
 			await this.website.getTournament(url);
@@ -168,36 +142,6 @@ export class TournamentManager implements TournamentInterface {
 		const web = await this.website.createTournament(name, desc, candidateUrl, topCut);
 		await this.database.createTournament(hostId, serverId, web.id, name, desc);
 		return [web.id, web.url, this.templater.format("create", web.id)];
-	}
-
-	public async updateTournament(tournamentId: string, name: string, desc: string): Promise<void> {
-		// Update DB first because it performs an important check that might throw
-		await this.database.updateTournament(tournamentId, name, desc);
-		await this.website.updateTournament(tournamentId, name, desc);
-	}
-
-	public async addAnnouncementChannel(
-		tournamentId: string,
-		channelId: string,
-		type: "public" | "private"
-	): Promise<void> {
-		await this.database.addAnnouncementChannel(tournamentId, channelId, type);
-	}
-
-	public async removeAnnouncementChannel(
-		tournamentId: string,
-		channelId: string,
-		type: "public" | "private"
-	): Promise<void> {
-		await this.database.removeAnnouncementChannel(tournamentId, channelId, type);
-	}
-
-	public async addHost(tournamentId: string, newHost: string): Promise<void> {
-		await this.database.addHost(tournamentId, newHost);
-	}
-
-	public async removeHost(tournamentId: string, newHost: string): Promise<void> {
-		await this.database.removeHost(tournamentId, newHost);
 	}
 
 	private async handleDmFailure(playerId: string, tournament: DatabaseTournament): Promise<void> {
@@ -723,27 +667,5 @@ export class TournamentManager implements TournamentInterface {
 		for (const m of messages) {
 			await this.discord.removeUserReaction(m.channelId, m.messageId, this.CHECK_EMOJI, playerId);
 		}
-	}
-
-	public async syncTournament(tournamentId: string): Promise<void> {
-		const tournamentData = await this.website.getTournament(tournamentId);
-		await this.database.synchronise(tournamentId, {
-			name: tournamentData.name,
-			description: tournamentData.desc,
-			players: tournamentData.players.map(({ challongeId, discordId }) => ({ challongeId, discordId }))
-		});
-	}
-
-	public async getConfirmed(tournamentId: string): Promise<DatabasePlayer[]> {
-		const tournament = await this.database.getTournament(tournamentId);
-		return tournament.players;
-	}
-
-	public async registerBye(tournamentId: string, playerId: string): Promise<string[]> {
-		return await this.database.registerBye(tournamentId, playerId);
-	}
-
-	public async removeBye(tournamentId: string, playerId: string): Promise<string[]> {
-		return await this.database.removeBye(tournamentId, playerId);
 	}
 }

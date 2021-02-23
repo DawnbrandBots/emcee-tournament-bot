@@ -9,7 +9,7 @@ const command: CommandDefinition = {
 	requiredArgs: ["id"],
 	executor: async (msg, args, support) => {
 		const [id] = args;
-		await support.tournamentManager.authenticateHost(id, msg.author.id);
+		await support.database.authenticateHost(id, msg.author.id);
 		logger.verbose(
 			JSON.stringify({
 				channel: msg.channel.id,
@@ -20,7 +20,12 @@ const command: CommandDefinition = {
 				event: "attempt"
 			})
 		);
-		await support.tournamentManager.syncTournament(id);
+		const tournamentData = await support.challonge.getTournament(id);
+		await support.database.synchronise(id, {
+			name: tournamentData.name,
+			description: tournamentData.desc,
+			players: tournamentData.players.map(({ challongeId, discordId }) => ({ challongeId, discordId }))
+		});
 		logger.verbose(
 			JSON.stringify({
 				channel: msg.channel.id,

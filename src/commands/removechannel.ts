@@ -10,7 +10,7 @@ const command: CommandDefinition = {
 	executor: async (msg, args, support) => {
 		// Mirror of addchannel
 		const [id, baseType] = args; // 1 optional and thus potentially undefined
-		await support.tournamentManager.authenticateHost(id, msg.author.id);
+		await support.database.authenticateHost(id, msg.author.id);
 		const type = baseType?.toLowerCase() === "private" ? "private" : "public";
 		const channelId = msg.channel.id;
 		logger.verbose(
@@ -25,7 +25,7 @@ const command: CommandDefinition = {
 				event: "attempt"
 			})
 		);
-		await support.tournamentManager.removeAnnouncementChannel(id, channelId, type);
+		await support.database.removeAnnouncementChannel(id, channelId, type);
 		logger.verbose(
 			JSON.stringify({
 				channel: msg.channel.id,

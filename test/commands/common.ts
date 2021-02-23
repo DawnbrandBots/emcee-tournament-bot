@@ -26,7 +26,7 @@ export function itRejectsNonHosts(
 	it(
 		"rejects non-hosts",
 		test(function (this: SinonSandbox) {
-			const authStub = this.stub(support.tournamentManager, "authenticateHost").rejects();
+			const authStub = this.stub(support.database, "authenticateHost").rejects();
 			msg.channel.createMessage = sinon.spy();
 			expect(command.executor(msg, args, support)).to.be.rejected;
 			expect(authStub).to.have.been.called;

@@ -444,6 +444,10 @@ export class DatabaseWrapperPostgres {
 		});
 	}
 
+	async getConfirmed(tournamentId: string): Promise<DatabasePlayer[]> {
+		return await ConfirmedParticipant.find({ tournamentId });
+	}
+
 	async getConfirmedPlayer(discordId: string, tournamentId: string): Promise<DatabasePlayer> {
 		const p = await ConfirmedParticipant.findOneOrFail({ discordId, tournamentId });
 		return {

@@ -9,7 +9,7 @@ const command: CommandDefinition = {
 	requiredArgs: ["id"],
 	executor: async (msg, args, support) => {
 		const [id] = args;
-		await support.tournamentManager.authenticateHost(id, msg.author.id);
+		await support.database.authenticateHost(id, msg.author.id);
 		const newHost = firstMentionOrFail(msg);
 		logger.verbose(
 			JSON.stringify({
@@ -22,7 +22,7 @@ const command: CommandDefinition = {
 				event: "attempt"
 			})
 		);
-		await support.tournamentManager.addHost(id, newHost);
+		await support.database.addHost(id, newHost);
 		logger.verbose(
 			JSON.stringify({
 				channel: msg.channel.id,
