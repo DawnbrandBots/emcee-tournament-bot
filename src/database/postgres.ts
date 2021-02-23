@@ -445,9 +445,7 @@ export class DatabaseWrapperPostgres {
 	}
 
 	async getConfirmed(tournamentId: string): Promise<DatabasePlayer[]> {
-		// is this how to use select properly? it seems off that it still returns a full tournament object
-		const players = await ChallongeTournament.findOneOrFail(tournamentId, { select: ["confirmed"] });
-		return players.confirmed;
+		return await ConfirmedParticipant.find({ tournamentId });
 	}
 
 	async getConfirmedPlayer(discordId: string, tournamentId: string): Promise<DatabasePlayer> {
