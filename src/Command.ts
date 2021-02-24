@@ -1,5 +1,6 @@
 import { Message } from "eris";
 import { DatabaseWrapperPostgres } from "./database/postgres";
+import { DeckManager } from "./deck";
 import { DiscordInterface } from "./discord/interface";
 import { OrganiserRoleProvider } from "./role/organiser";
 import { TournamentInterface } from "./TournamentManager";
@@ -25,6 +26,7 @@ export interface CommandSupport {
 	database: Public<DatabaseWrapperPostgres>;
 	challonge: WebsiteInterface;
 	scores: Map<string, Map<number, MatchScore>>;
+	decks: DeckManager;
 }
 
 // This is a composition-over-inheritance approach. In an inheritance model this

@@ -1,5 +1,4 @@
 import { CommandDefinition } from "../Command";
-import { prettyPrint } from "../deck/discordDeck";
 import { firstMentionOrFail, reply } from "../util/discord";
 import { getLogger } from "../util/logger";
 
@@ -23,7 +22,8 @@ const command: CommandDefinition = {
 				event: "attempt"
 			})
 		);
-		const deck = await support.tournamentManager.getPlayerDeck(id, player);
+		const playerData = await support.database.getConfirmedPlayer(player, id);
+		const deck = support.decks.getDeck(playerData.deck);
 		logger.verbose(
 			JSON.stringify({
 				channel: msg.channel.id,
@@ -36,7 +36,7 @@ const command: CommandDefinition = {
 			})
 		);
 		const name = support.discord.getUsername(player);
-		const [message, { filename, contents }] = prettyPrint(deck, `${name}.ydk`);
+		const [message, { filename, contents }] = support.decks.prettyPrint(deck, `${name}.ydk`);
 		logger.verbose(
 			JSON.stringify({
 				channel: msg.channel.id,

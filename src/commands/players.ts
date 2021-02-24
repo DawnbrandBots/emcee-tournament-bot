@@ -1,6 +1,5 @@
 import * as csv from "@fast-csv/format";
 import { CommandDefinition } from "../Command";
-import { getDeck } from "../deck/deck";
 import { reply } from "../util/discord";
 import { getLogger } from "../util/logger";
 
@@ -24,7 +23,7 @@ const command: CommandDefinition = {
 		);
 		const players = await support.database.getConfirmed(id);
 		const rows = players.map(player => {
-			const deck = getDeck(player.deck);
+			const deck = support.decks.getDeck(player.deck);
 			return {
 				Player: support.discord.getUsername(player.discordId), // TODO: REST needed
 				Theme: deck.themes.length > 0 ? deck.themes.join("/") : "No themes"

@@ -1,8 +1,6 @@
-import { Deck } from "ydeck";
 import { DatabaseTournament, TournamentStatus } from "./database/interface";
 import { DatabaseWrapperPostgres } from "./database/postgres";
-import { getDeck } from "./deck/deck";
-import { getDeckFromMessage, prettyPrint } from "./deck/discordDeck";
+import { DeckManager } from "./deck";
 import { DiscordInterface, DiscordMessageIn, DiscordMessageLimited } from "./discord/interface";
 import { ParticipantRoleProvider } from "./role/participant";
 import { Templater } from "./templates";
@@ -29,7 +27,6 @@ export interface TournamentInterface {
 	startTournament(tournamentId: string): Promise<void>;
 	finishTournament(tournamentId: string, cancel: boolean | undefined): Promise<void>;
 	nextRound(tournamentId: string, skip?: boolean): Promise<void>;
-	getPlayerDeck(tournamentId: string, playerId: string): Promise<Deck>;
 	dropPlayer(tournamentId: string, playerId: string, force?: boolean): Promise<void>;
 }
 
@@ -51,7 +48,8 @@ export class TournamentManager implements TournamentInterface {
 		private website: WebsiteInterface,
 		private templater: Templater,
 		private participantRole: ParticipantRoleProvider,
-		private timer: PersistentTimerDelegate
+		private timer: PersistentTimerDelegate,
+		private decks: DeckManager
 	) {}
 
 	public async loadTimers(): Promise<void> {
@@ -206,12 +204,12 @@ export class TournamentManager implements TournamentInterface {
 		}
 		if (tournaments.length === 1) {
 			const tournament = tournaments[0];
-			const deck = await getDeckFromMessage(msg);
+			const deck = await this.decks.getDeckFromMessage(msg);
 			if (!deck) {
 				await msg.reply("Must provide either attached `.ydk` file or valid `ydke://` URL!");
 				return;
 			}
-			const [content, file] = prettyPrint(deck, `${this.discord.getUsername(msg.author)}.ydk`);
+			const [content, file] = this.decks.prettyPrint(deck, `${this.discord.getUsername(msg.author)}.ydk`);
 			if (deck.validationErrors.length > 0) {
 				await msg.reply(
 					`Your deck is not legal for Tournament ${tournament.name}. Please see the print out below for all the errors. You have NOT been registered yet, please submit again with a legal deck.`
@@ -257,12 +255,12 @@ export class TournamentManager implements TournamentInterface {
 		if (confirmedTourns.length === 1) {
 			const tournament = confirmedTourns[0];
 			// tournament already confirmed preparing by filter
-			const deck = await getDeckFromMessage(msg);
+			const deck = await this.decks.getDeckFromMessage(msg);
 			if (!deck) {
 				await msg.reply("Must provide either attached `.ydk` file or valid `ydke://` URL!");
 				return;
 			}
-			const [content, file] = prettyPrint(deck, `${this.discord.getUsername(msg.author)}.ydk`);
+			const [content, file] = this.decks.prettyPrint(deck, `${this.discord.getUsername(msg.author)}.ydk`);
 			if (deck.validationErrors.length > 0) {
 				await msg.reply(
 					`Your new deck is not legal for Tournament ${tournament.name}. Please see the print out below for all the errors. Your deck has not been changed.`
@@ -571,13 +569,6 @@ export class TournamentManager implements TournamentInterface {
 		const tournament = await this.database.getTournament(tournamentId, TournamentStatus.IPR);
 		const webTourn = await this.website.getTournament(tournamentId);
 		await this.startNewRound(tournament, webTourn.url, skip);
-	}
-
-	public async getPlayerDeck(tournamentId: string, playerId: string): Promise<Deck> {
-		const tourn = await this.database.getTournament(tournamentId);
-		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-		const player = tourn.findPlayer(playerId)!;
-		return getDeck(player.deck);
 	}
 
 	private async dropPlayerReaction(msg: DiscordMessageLimited, playerId: string): Promise<void> {

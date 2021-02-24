@@ -5,7 +5,7 @@ import { Client } from "eris";
 import * as fs from "fs/promises";
 import sinon from "sinon";
 import sinonChai from "sinon-chai";
-import { initializeCardArray } from "../src/deck/deck";
+import { DeckManager, initializeDeckManager } from "../src/deck";
 import { DiscordAttachmentOut, DiscordEmbed, DiscordInterface, DiscordMessageOut } from "../src/discord/interface";
 import { ParticipantRoleProvider } from "../src/role/participant";
 import { Templater } from "../src/templates";
@@ -44,10 +44,12 @@ const delegate = {
 	}),
 	loadAll: async () => []
 };
-const tournament = new TournamentManager(mockDiscord, mockDb, mockWebsite, templater, participantRole, delegate);
-
+let tournament: TournamentManager;
+let decks: DeckManager;
 before(async () => {
-	await initializeCardArray(process.env.OCTOKIT_TOKEN!);
+	// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+	decks = await initializeDeckManager(process.env.OCTOKIT_TOKEN!);
+	tournament = new TournamentManager(mockDiscord, mockDb, mockWebsite, templater, participantRole, delegate, decks);
 	await templater.load("guides");
 });
 
@@ -127,12 +129,6 @@ describe("Misc commands", function () {
 		// const file = await tournament.listPlayers("tourn1");
 		// expect(file.filename).to.equal("Tournament 1.csv");
 		// TODO: test file contents? sounds scary
-	});
-	it("Get player deck", async function () {
-		const deck = await tournament.getPlayerDeck("tourn1", "player1");
-		expect(deck.url).to.equal(
-			"ydke://5m3qBeZt6gV9+McCffjHAn34xwK8beUDvG3lA7xt5QMfX5ICWvTJAVr0yQFa9MkBrDOdBKwznQSsM50Ey/UzAMv1MwDL9TMAdAxQBQ6wYAKvI94AryPeAK8j3gCmm/QBWXtjBOMavwDjGr8A4xq/AD6kcQGeE8oEnhPKBJ4TygSlLfUDpS31A6Ut9QMiSJkAIkiZACJImQCANVMDgDVTAw==!FtIXALVcnwC1XJ8AiBF2A4gRdgNLTV4Elt0IAMf4TQHCT0EAvw5JAqSaKwD5UX8EweoDA2LO9ATaI+sD!H1+SAg==!"
-		);
 	});
 	it("Drop player - choose", async function () {
 		await tournament.dropPlayer("tourn1", "player1");
