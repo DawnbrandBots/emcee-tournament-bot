@@ -51,7 +51,7 @@ jobs:
           push: ${{ github.event_name == 'push' }}
           tags: ghcr.io/alphakretin/emcee-discord-bot:${{ steps.infer.outputs.tag || 'latest' }}
           build-args:
-            - EMCEE_VERSION: ${{ github.sha }}
+            - EMCEE_VERSION=${{ github.sha }}
           pull: true
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache,mode=max
