@@ -1,6 +1,6 @@
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
-import { DiscordInterface, splitText } from "../src/discord/interface";
+import { DiscordInterface } from "../src/discord/interface";
 import { DiscordWrapperMock } from "./mocks/discord";
 chai.use(chaiAsPromised);
 
@@ -66,28 +66,5 @@ describe("Messages", function () {
 	it("sendDirectMessage", async function () {
 		await discord.sendDirectMessage("sentUser", "test message");
 		expect(discordMock.getResponse("sentUser")).to.equal("test message");
-	});
-});
-
-describe("Split text", function () {
-	it("Split on new line", function () {
-		const text = `aaaaaaaa\n${"a".repeat(2048)}`;
-		const split = splitText(text, 2000);
-		expect(split[0]).to.equal("aaaaaaaa\n");
-	});
-	it("Split on new sentence", function () {
-		const text = `aaaaaaaa.${"a".repeat(2048)}`;
-		const split = splitText(text, 2000);
-		expect(split[0]).to.equal("aaaaaaaa.");
-	});
-	it("Split on new word", function () {
-		const text = `aaaaaaaa ${"a".repeat(2048)}`;
-		const split = splitText(text); // test default cap
-		expect(split[0]).to.equal("aaaaaaaa ");
-	});
-	it("Split on at absolute limit", function () {
-		const text = "a".repeat(2048);
-		const split = splitText(text, 2000);
-		expect(split[1].length).to.equal(48);
 	});
 });

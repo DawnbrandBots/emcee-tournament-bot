@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import { DeckManager, initializeDeckManager } from "../src/deck";
+import { DeckManager, initializeDeckManager, splitText } from "../src/deck";
 import { DiscordEmbed, DiscordMessageIn } from "../src/discord/interface";
 
 async function noop(): Promise<void> {
@@ -94,4 +94,26 @@ describe("Test embeds", function () {
 		expect(errorField.value).to.equal("Main Deck too small! Should be at least 40, is 0!");
 	});
 	it("Deck with archetypes");
+});
+describe("Split text", function () {
+	it("Split on new line", function () {
+		const text = `aaaaaaaa\n${"a".repeat(2048)}`;
+		const split = splitText(text, 2000);
+		expect(split[0]).to.equal("aaaaaaaa\n");
+	});
+	it("Split on new sentence", function () {
+		const text = `aaaaaaaa.${"a".repeat(2048)}`;
+		const split = splitText(text, 2000);
+		expect(split[0]).to.equal("aaaaaaaa.");
+	});
+	it("Split on new word", function () {
+		const text = `aaaaaaaa ${"a".repeat(2048)}`;
+		const split = splitText(text); // test default cap
+		expect(split[0]).to.equal("aaaaaaaa ");
+	});
+	it("Split on at absolute limit", function () {
+		const text = "a".repeat(2048);
+		const split = splitText(text, 2000);
+		expect(split[1].length).to.equal(48);
+	});
 });

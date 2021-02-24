@@ -10,7 +10,7 @@ import { getLogger } from "./util/logger";
 
 const logger = getLogger("deck");
 
-function splitText(outString: string, cap = 2000): string[] {
+export function splitText(outString: string, cap = 2000): string[] {
 	const outStrings: string[] = [];
 	while (outString.length > cap) {
 		let index = outString.slice(0, cap).lastIndexOf("\n");
