@@ -5,10 +5,30 @@ import { Card as DataCard, YgoData } from "ygopro-data";
 import cardOpts from "./config/cardOpts.json";
 import dataOpts from "./config/dataOpts.json";
 import transOpts from "./config/transOpts.json";
-import { DiscordAttachmentOut, DiscordMessageIn, DiscordMessageOut, splitText } from "./discord/interface";
+import { DiscordAttachmentOut, DiscordMessageIn, DiscordMessageOut } from "./discord/interface";
 import { getLogger } from "./util/logger";
 
 const logger = getLogger("deck");
+
+function splitText(outString: string, cap = 2000): string[] {
+	const outStrings: string[] = [];
+	while (outString.length > cap) {
+		let index = outString.slice(0, cap).lastIndexOf("\n");
+		if (index === -1 || index >= cap) {
+			index = outString.slice(0, cap).lastIndexOf(".");
+			if (index === -1 || index >= cap) {
+				index = outString.slice(0, cap).lastIndexOf(" ");
+				if (index === -1 || index >= cap) {
+					index = cap - 1;
+				}
+			}
+		}
+		outStrings.push(outString.slice(0, index + 1));
+		outString = outString.slice(index + 1);
+	}
+	outStrings.push(outString);
+	return outStrings;
+}
 
 async function convertCard(card: DataCard): Promise<Card> {
 	const status = await card.status;
