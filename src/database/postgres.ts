@@ -295,6 +295,24 @@ export class DatabaseWrapperPostgres {
 		}
 	}
 
+	/**
+	 * Removes a participant from the specified tournament, pending or confirmed. Returns null if the participant was
+	 * not found for this tournament, undefined if the participant was pending, or the participant's Challonge ID if
+	 * they were confirmed.
+	 *
+	 * @param tournamentId
+	 * @param discordId The participant's Discord snowflake
+	 */
+	async dropPlayer(tournamentId: string, discordId: string): Promise<number | null | undefined> {
+		const participant = await Participant.findOne({ tournamentId, discordId });
+		if (!participant) {
+			return null;
+		}
+		const challongeId = participant.confirmed?.challongeId;
+		await participant.remove();
+		return challongeId;
+	}
+
 	async startTournament(tournamentId: string): Promise<string[]> {
 		logger.verbose(`startTournament: ${tournamentId}`);
 		const tournament = await this.findTournament(tournamentId);
