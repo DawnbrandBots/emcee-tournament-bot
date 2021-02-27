@@ -3,6 +3,7 @@ import { DatabaseWrapperPostgres } from "./database/postgres";
 import { DeckManager } from "./deck";
 import { DiscordInterface } from "./discord/interface";
 import { OrganiserRoleProvider } from "./role/organiser";
+import { ParticipantRoleProvider } from "./role/participant";
 import { TournamentInterface } from "./TournamentManager";
 import { reply } from "./util/discord";
 import { UserError } from "./util/errors";
@@ -27,6 +28,7 @@ export interface CommandSupport {
 	challonge: WebsiteInterface;
 	scores: Map<string, Map<number, MatchScore>>;
 	decks: DeckManager;
+	participantRole: ParticipantRoleProvider;
 }
 
 // This is a composition-over-inheritance approach. In an inheritance model this
