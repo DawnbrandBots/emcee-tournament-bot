@@ -2,14 +2,11 @@ import { expect } from "chai";
 import dotenv from "dotenv";
 import { SinonSandbox } from "sinon";
 import command from "../../src/commands/pie";
-import { initializeCardArray } from "../../src/deck/deck";
 import { itRejectsNonHosts, msg, support, test } from "./common";
 
 dotenv.config();
 describe("command:pie", function () {
 	const args = ["battlecity"];
-	// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-	before(() => initializeCardArray(process.env.OCTOKIT_TOKEN!));
 	itRejectsNonHosts(support, command, msg, ["name"]);
 	it(
 		"provides a dump of all themes",

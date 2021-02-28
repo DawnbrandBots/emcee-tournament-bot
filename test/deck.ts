@@ -1,7 +1,6 @@
 import { expect } from "chai";
-import { getDeckFromMessage, prettyPrint } from "../src/deck/discordDeck";
+import { DeckManager, initializeDeckManager, splitText } from "../src/deck";
 import { DiscordEmbed, DiscordMessageIn } from "../src/discord/interface";
-import { getDeck } from "../src/deck/deck";
 
 async function noop(): Promise<void> {
 	return;
@@ -19,11 +18,18 @@ const sampleMessage: DiscordMessageIn = {
 	edit: noop
 };
 
+let decks: DeckManager;
+
+before(async () => {
+	// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+	decks = await initializeDeckManager(process.env.OCTOKIT_TOKEN!);
+});
+
 describe("Get deck from message", function () {
 	it("URL", async function () {
 		sampleMessage.content =
 			"ydke://5m3qBeZt6gV9+McCffjHAn34xwK8beUDvG3lA7xt5QMfX5ICWvTJAVr0yQFa9MkBrDOdBKwznQSsM50Ey/UzAMv1MwDL9TMAdAxQBQ6wYAKvI94AryPeAK8j3gCmm/QBWXtjBOMavwDjGr8A4xq/AD6kcQGeE8oEnhPKBJ4TygSlLfUDpS31A6Ut9QMiSJkAIkiZACJImQCANVMDgDVTAw==!FtIXALVcnwC1XJ8AiBF2A4gRdgNLTV4Elt0IAMf4TQHCT0EAvw5JAqSaKwD5UX8EweoDA2LO9ATaI+sD!H1+SAg==!";
-		const deck = await getDeckFromMessage(sampleMessage);
+		const deck = await decks.getDeckFromMessage(sampleMessage);
 		sampleMessage.content = "";
 		expect(deck?.mainSize).to.equal(40); // more details in ydeck tests, just checking we got something
 	});
@@ -35,22 +41,22 @@ describe("Get deck from message", function () {
 					"https://raw.githubusercontent.com/AlphaKretin/AlphaKretin.github.io/297c9154cf29214b65bebdd9a85acbdf68fb5eb0/miscstorage/ABC.ydk"
 			}
 		];
-		const deck = await getDeckFromMessage(sampleMessage);
+		const deck = await decks.getDeckFromMessage(sampleMessage);
 		sampleMessage.attachments = [];
 		expect(deck?.mainSize).to.equal(40); // more details in ydeck tests, just checking we got something
 	});
 	it("None", async function () {
-		const deck = await getDeckFromMessage(sampleMessage);
+		const deck = await decks.getDeckFromMessage(sampleMessage);
 		expect(deck).to.be.null;
 	});
 });
 
 describe("Test embeds", function () {
 	it("Standard ABC test deck", async function () {
-		const deck = await getDeck(
+		const deck = decks.getDeck(
 			"ydke://5m3qBeZt6gV9+McCffjHAn34xwK8beUDvG3lA7xt5QMfX5ICWvTJAVr0yQFa9MkBrDOdBKwznQSsM50Ey/UzAMv1MwDL9TMAdAxQBQ6wYAKvI94AryPeAK8j3gCmm/QBWXtjBOMavwDjGr8A4xq/AD6kcQGeE8oEnhPKBJ4TygSlLfUDpS31A6Ut9QMiSJkAIkiZACJImQCANVMDgDVTAw==!FtIXALVcnwC1XJ8AiBF2A4gRdgNLTV4Elt0IAMf4TQHCT0EAvw5JAqSaKwD5UX8EweoDA2LO9ATaI+sD!H1+SAg==!"
 		);
-		const [out, file] = prettyPrint(deck, "abc.ydk");
+		const [out, file] = decks.prettyPrint(deck, "abc.ydk");
 		expect(file.filename).to.equal("abc.ydk");
 		expect(file.contents).to.equal(
 			"#created by YDeck\n#main\n99249638\n99249638\n46659709\n46659709\n46659709\n65367484\n65367484\n65367484\n43147039\n30012506\n30012506\n30012506\n77411244\n77411244\n77411244\n3405259\n3405259\n3405259\n89132148\n39890958\n14558127\n14558127\n14558127\n32807846\n73628505\n12524259\n12524259\n12524259\n24224830\n80352158\n80352158\n80352158\n66399653\n66399653\n66399653\n10045474\n10045474\n10045474\n55784832\n55784832\n#extra\n1561110\n10443957\n10443957\n58069384\n58069384\n73289035\n581014\n21887175\n4280258\n38342335\n2857636\n75452921\n50588353\n83152482\n65741786\n!side\n43147039\n"
@@ -77,8 +83,8 @@ describe("Test embeds", function () {
 		);
 	});
 	it("Empty deck", async function () {
-		const deck = await getDeck("ydke://!!!");
-		const [out, file] = prettyPrint(deck, "blank.ydk");
+		const deck = decks.getDeck("ydke://!!!");
+		const [out, file] = decks.prettyPrint(deck, "blank.ydk");
 		expect(file.filename).to.equal("blank.ydk");
 		expect(file.contents).to.equal("#created by YDeck\n#main\n#extra\n!side\n");
 		const embed = out as DiscordEmbed;
@@ -88,4 +94,26 @@ describe("Test embeds", function () {
 		expect(errorField.value).to.equal("Main Deck too small! Should be at least 40, is 0!");
 	});
 	it("Deck with archetypes");
+});
+describe("Split text", function () {
+	it("Split on new line", function () {
+		const text = `aaaaaaaa\n${"a".repeat(2048)}`;
+		const split = splitText(text, 2000);
+		expect(split[0]).to.equal("aaaaaaaa\n");
+	});
+	it("Split on new sentence", function () {
+		const text = `aaaaaaaa.${"a".repeat(2048)}`;
+		const split = splitText(text, 2000);
+		expect(split[0]).to.equal("aaaaaaaa.");
+	});
+	it("Split on new word", function () {
+		const text = `aaaaaaaa ${"a".repeat(2048)}`;
+		const split = splitText(text); // test default cap
+		expect(split[0]).to.equal("aaaaaaaa ");
+	});
+	it("Split on at absolute limit", function () {
+		const text = "a".repeat(2048);
+		const split = splitText(text, 2000);
+		expect(split[1].length).to.equal(48);
+	});
 });

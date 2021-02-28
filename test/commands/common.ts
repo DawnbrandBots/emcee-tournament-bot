@@ -5,6 +5,7 @@ import sinon, { SinonSandbox } from "sinon";
 import sinonChai from "sinon-chai";
 import sinonTest from "sinon-test";
 import { CommandDefinition, CommandSupport } from "../../src/Command";
+import { DeckManager } from "../../src/deck";
 import { DiscordInterface } from "../../src/discord/interface";
 import { OrganiserRoleProvider } from "../../src/role/organiser";
 import { WebsiteInterface } from "../../src/website/interface";
@@ -41,7 +42,8 @@ export const support: CommandSupport = {
 	organiserRole: new OrganiserRoleProvider("MC-TO"),
 	database: new DatabaseWrapperMock(),
 	challonge: new WebsiteInterface(new WebsiteWrapperMock()),
-	scores: new Map()
+	scores: new Map(),
+	decks: new DeckManager([])
 };
 
 // This is created so we can stub out methods. Most Eris objects also need this as a constructor parameter.

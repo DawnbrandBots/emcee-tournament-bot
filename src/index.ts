@@ -1,7 +1,7 @@
 import { Client } from "eris";
 import { getConfig } from "./config"; // Must be imported first among first-party modules
 import { initializeDatabase } from "./database/postgres";
-import { initializeCardArray } from "./deck/deck";
+import { initializeDeckManager } from "./deck";
 import { DiscordWrapperEris } from "./discord/eris";
 import { DiscordInterface } from "./discord/interface";
 import { registerEvents } from "./events";
@@ -19,7 +19,7 @@ const logger = getLogger("index");
 (async () => {
 	const config = getConfig();
 	const database = await initializeDatabase(config.postgresqlUrl);
-	await initializeCardArray(config.octokitToken);
+	const decks = await initializeDeckManager(config.octokitToken);
 
 	const templater = new Templater();
 	const guides = await templater.load("guides");
@@ -40,17 +40,26 @@ const logger = getLogger("index");
 		sendMessage: async (...args) => (await bot.createMessage(...args)).id,
 		editMessage: async (...args) => void (await bot.editMessage(...args))
 	};
-	const tournamentManager = new TournamentManager(discord, database, challonge, templater, participantRole, {
-		create: async (...args) => await PersistentTimer.create(delegate, ...args),
-		loadAll: async () => await PersistentTimer.loadAll(delegate)
-	});
+	const tournamentManager = new TournamentManager(
+		discord,
+		database,
+		challonge,
+		templater,
+		participantRole,
+		{
+			create: async (...args) => await PersistentTimer.create(delegate, ...args),
+			loadAll: async () => await PersistentTimer.loadAll(delegate)
+		},
+		decks
+	);
 	registerEvents(bot, config.defaultPrefix, {
 		discord,
 		tournamentManager,
 		organiserRole,
 		database,
 		challonge,
-		scores: new Map()
+		scores: new Map(),
+		decks
 	});
 	discord.onDelete(msg => tournamentManager.cleanRegistration(msg));
 

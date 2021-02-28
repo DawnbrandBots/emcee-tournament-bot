@@ -1,6 +1,5 @@
 import * as csv from "@fast-csv/format";
 import { CommandDefinition } from "../Command";
-import { getDeck } from "../deck/deck";
 import { reply } from "../util/discord";
 import { getLogger } from "../util/logger";
 
@@ -26,7 +25,7 @@ const command: CommandDefinition = {
 		// TODO: benchmark performance of map-reduce
 		const themes = players
 			.map(player => {
-				const deck = getDeck(player.deck);
+				const deck = support.decks.getDeck(player.deck);
 				return deck.themes.length > 0 ? deck.themes.join("/") : "No themes";
 			})
 			.reduce((map, theme) => map.set(theme, (map.get(theme) || 0) + 1), new Map<string, number>());
