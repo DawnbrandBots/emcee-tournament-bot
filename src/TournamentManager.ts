@@ -27,7 +27,6 @@ export type TournamentInterface = Pick<
 	| "cleanRegistration"
 	| "createTournament"
 	| "openTournament"
-	| "startTournament"
 	| "finishTournament"
 	| "nextRound"
 	| "dropPlayer"
@@ -451,51 +450,6 @@ export class TournamentManager implements TournamentInterface {
 				`Round ${round} of ${tournament.name} has begun! You have a bye for this round.`
 			);
 		}
-	}
-
-	public async startTournament(tournamentId: string): Promise<void> {
-		const tournament = await this.database.getTournament(tournamentId, TournamentStatus.PREPARING);
-		if (tournament.players.length < 2) {
-			throw new UserError("Cannot start a tournament without at least 2 confirmed participants!");
-		}
-		// delete register messages
-		// TODO: can be a single transaction instead of relying on onDelete->cleanRegistration,
-		//       a totally unclear relationship without the comment
-		const messages = await this.database.getRegisterMessages(tournamentId);
-		await Promise.all(
-			messages.map(async m => {
-				// onDelete handler will handle database cleanup
-				await this.discord.deleteMessage(m.channelId, m.messageId);
-			})
-		);
-		// drop pending participants
-		const droppedPlayers = await this.database.startTournament(tournamentId);
-		await Promise.all(
-			droppedPlayers.map(async p => {
-				await this.discord.sendDirectMessage(
-					p,
-					`Sorry, Tournament ${tournament.name} has started and you didn't submit a deck, so you have been dropped.`
-				);
-			})
-		);
-		// send command guide to players
-		const channels = tournament.publicChannels;
-		await Promise.all(
-			channels.map(async c => await this.discord.sendMessage(c, this.templater.format("player", tournamentId)))
-		);
-		// send command guide to hosts
-		await Promise.all(
-			tournament.privateChannels.map(
-				async c => await this.discord.sendMessage(c, this.templater.format("start", tournamentId))
-			)
-		);
-		// start tournament on challonge
-		await this.website.assignByes(tournamentId, tournament.byes);
-		await this.website.startTournament(tournamentId);
-		const webTourn = await this.website.getTournament(tournamentId);
-		await this.startNewRound(tournament, webTourn.url);
-		// drop dummy players once the tournament has started to give players with byes the win
-		await this.website.dropByes(tournamentId, tournament.byes.length);
 	}
 
 	public async finishTournament(tournamentId: string, cancel = false): Promise<void> {
