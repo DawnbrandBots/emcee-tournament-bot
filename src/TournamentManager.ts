@@ -18,18 +18,6 @@ interface MatchScore {
 	oppScore: number;
 }
 
-// export interface TournamentInterface {
-// 	registerPlayer(msg: DiscordMessageIn, playerId: string): Promise<void>;
-// 	confirmPlayer(msg: DiscordMessageIn): Promise<void>;
-// 	cleanRegistration(msg: DiscordMessageLimited): Promise<void>;
-// 	createTournament(hostId: string, serverId: string, name: string, desc: string): Promise<[string, string, string]>;
-// 	openTournament(tournamentId: string): Promise<void>;
-// 	startTournament(tournamentId: string): Promise<void>;
-// 	finishTournament(tournamentId: string, cancel: boolean | undefined): Promise<void>;
-// 	nextRound(tournamentId: string, skip?: boolean): Promise<void>;
-// 	dropPlayer(tournamentId: string, playerId: string, force?: boolean): Promise<void>;
-// }
-
 type Public<T> = Pick<T, keyof T>;
 type Tail<T extends unknown[]> = T extends [unknown, ...infer R] ? R : never;
 export type TournamentInterface = Pick<

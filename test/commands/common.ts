@@ -8,6 +8,7 @@ import { CommandDefinition, CommandSupport } from "../../src/Command";
 import { DeckManager } from "../../src/deck";
 import { DiscordInterface } from "../../src/discord/interface";
 import { OrganiserRoleProvider } from "../../src/role/organiser";
+import { ParticipantRoleProvider } from "../../src/role/participant";
 import { WebsiteInterface } from "../../src/website/interface";
 import { DatabaseWrapperMock } from "../mocks/database";
 import { DiscordWrapperMock } from "../mocks/discord";
@@ -36,6 +37,11 @@ export function itRejectsNonHosts(
 	);
 }
 
+// This is created so we can stub out methods. Most Eris objects also need this as a constructor parameter.
+export const mockBotClient = new Client("mock");
+// For the purposes of most commands, most fields don't matter. This is the minimum to make the constructor run.
+export const msg = new Message({ id: "007", channel_id: "foo", author: { id: "0000" } }, mockBotClient);
+
 export const support: CommandSupport = {
 	discord: new DiscordInterface(new DiscordWrapperMock()),
 	tournamentManager: new TournamentMock(),
@@ -43,10 +49,6 @@ export const support: CommandSupport = {
 	database: new DatabaseWrapperMock(),
 	challonge: new WebsiteInterface(new WebsiteWrapperMock()),
 	scores: new Map(),
-	decks: new DeckManager([])
+	decks: new DeckManager([]),
+	participantRole: new ParticipantRoleProvider(mockBotClient)
 };
-
-// This is created so we can stub out methods. Most Eris objects also need this as a constructor parameter.
-export const mockBotClient = new Client("mock");
-// For the purposes of most commands, most fields don't matter. This is the minimum to make the constructor run.
-export const msg = new Message({ id: "007", channel_id: "foo", author: { id: "0000" } }, mockBotClient);
