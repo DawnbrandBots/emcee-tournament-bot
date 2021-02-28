@@ -295,23 +295,51 @@ export class DatabaseWrapperPostgres {
 		}
 	}
 
-	async startTournament(tournamentId: string): Promise<string[]> {
-		logger.verbose(`startTournament: ${tournamentId}`);
-		const tournament = await this.findTournament(tournamentId);
-		logger.verbose(`startTournament: loaded ${tournamentId}`);
-		const participants = await Participant.find({ tournamentId });
-		logger.verbose(`startTournament: loaded ${participants.length} participants for ${tournamentId}`);
-		const ejected = participants.filter(p => !p.confirmed);
-		logger.verbose(`startTournament: filtered for unconfirmed participants`);
-		await getConnection().transaction(async entityManager => {
+	/**
+	 * Called before startTournament to delete register messages and drop any pending players.
+	 * We don't update the tournament status here so we can retry if something on the Challonge
+	 * end goes awry.
+	 *
+	 * @param tournamentId
+	 */
+	async prestartTournament(
+		tournamentId: string
+	): Promise<{ registerMessages: DatabaseMessage[]; ejected: string[] }> {
+		return await getConnection().transaction(async entityManager => {
+			logger.verbose(`prestartTournament: ${tournamentId} transaction`);
+			const registerMessages = await entityManager.getRepository(RegisterMessage).find({ tournamentId });
+			logger.verbose(`prestartTournament: removing ${registerMessages.length} register messages`);
+			for (const message of registerMessages) {
+				await entityManager.remove(message);
+			}
+			logger.verbose(`prestartTournament: searching for pending participants`);
+			const participants = await entityManager.getRepository(Participant).find({ tournamentId });
+			logger.verbose(`prestartTournament: loaded ${participants.length} participants for ${tournamentId}`);
+			const ejected = participants.filter(p => !p.confirmed);
+			logger.verbose(`prestartTournament: filtered ${ejected.length} unconfirmed to eject from ${tournamentId}`);
 			for (const p of ejected) {
 				await entityManager.remove(p);
 			}
-			tournament.status = TournamentStatus.IPR;
-			await entityManager.save(tournament);
+			logger.verbose(`prestartTournament: ${tournamentId} done`);
+			return {
+				registerMessages: registerMessages.map(m => ({
+					channelId: m.channelId,
+					messageId: m.messageId
+				})),
+				ejected: ejected.map(p => p.discordId)
+			};
 		});
-		logger.verbose(`startTournament: transaction complete`);
-		return ejected.map(p => p.discordId);
+	}
+
+	async startTournament(tournamentId: string): Promise<void> {
+		await getConnection()
+			.createQueryBuilder()
+			.update(ChallongeTournament)
+			.set({
+				status: TournamentStatus.IPR
+			})
+			.where("tournamentId = :tournamentId", { tournamentId })
+			.execute();
 	}
 
 	async finishTournament(tournamentId: string): Promise<void> {

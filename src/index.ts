@@ -60,7 +60,8 @@ const logger = getLogger("index");
 		database,
 		challonge,
 		scores: new Map(),
-		decks
+		decks,
+		templater
 	});
 	discord.onDelete(msg => tournamentManager.cleanRegistration(msg));
 
