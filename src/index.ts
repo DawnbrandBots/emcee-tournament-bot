@@ -56,6 +56,7 @@ const logger = getLogger("index");
 		discord,
 		tournamentManager,
 		organiserRole,
+		participantRole,
 		database,
 		challonge,
 		scores: new Map(),
