@@ -18,20 +18,32 @@ interface MatchScore {
 	oppScore: number;
 }
 
-export interface TournamentInterface {
-	registerPlayer(msg: DiscordMessageIn, playerId: string): Promise<void>;
-	confirmPlayer(msg: DiscordMessageIn): Promise<void>;
-	cleanRegistration(msg: DiscordMessageLimited): Promise<void>;
-	createTournament(hostId: string, serverId: string, name: string, desc: string): Promise<[string, string, string]>;
-	openTournament(tournamentId: string): Promise<void>;
-	startTournament(tournamentId: string): Promise<void>;
-	finishTournament(tournamentId: string, cancel: boolean | undefined): Promise<void>;
-	nextRound(tournamentId: string, skip?: boolean): Promise<void>;
-	dropPlayer(tournamentId: string, playerId: string, force?: boolean): Promise<void>;
-}
+// export interface TournamentInterface {
+// 	registerPlayer(msg: DiscordMessageIn, playerId: string): Promise<void>;
+// 	confirmPlayer(msg: DiscordMessageIn): Promise<void>;
+// 	cleanRegistration(msg: DiscordMessageLimited): Promise<void>;
+// 	createTournament(hostId: string, serverId: string, name: string, desc: string): Promise<[string, string, string]>;
+// 	openTournament(tournamentId: string): Promise<void>;
+// 	startTournament(tournamentId: string): Promise<void>;
+// 	finishTournament(tournamentId: string, cancel: boolean | undefined): Promise<void>;
+// 	nextRound(tournamentId: string, skip?: boolean): Promise<void>;
+// 	dropPlayer(tournamentId: string, playerId: string, force?: boolean): Promise<void>;
+// }
 
 type Public<T> = Pick<T, keyof T>;
 type Tail<T extends unknown[]> = T extends [unknown, ...infer R] ? R : never;
+export type TournamentInterface = Pick<
+	TournamentManager,
+	| "registerPlayer"
+	| "confirmPlayer"
+	| "cleanRegistration"
+	| "createTournament"
+	| "openTournament"
+	| "startTournament"
+	| "finishTournament"
+	| "nextRound"
+	| "dropPlayer"
+>;
 
 /// "Link seam" to mock for testing
 interface PersistentTimerDelegate {
@@ -523,44 +535,6 @@ export class TournamentManager implements TournamentInterface {
 			})
 		);
 		await this.participantRole.delete(tournament);
-		// this condition both prevents errors with small tournaments
-		// and ensures top cuts don't get their own top cuts
-		if (!cancel && tournament.players.length > 8) {
-			const top = await this.website.getTopCut(tournamentId, 8);
-			const [newId] = await this.createTournament(
-				tournament.hosts[0], // tournament cannot have 0 hosts by addition on creation and guard on removal
-				tournament.server,
-				`${tournament.name} Top Cut`,
-				`Top Cut for ${tournament.name} (https://challonge.com/${tournamentId})`,
-				true
-			);
-
-			if (tournament.hosts.length > 1) {
-				for (const host of tournament.hosts.slice(1)) {
-					await this.database.addHost(newId, host);
-				}
-			}
-
-			const newTournament = await this.database.getTournament(newId);
-			for (const player of top) {
-				const challongeId = await this.website.registerPlayer(
-					newId,
-					this.discord.getUsername(player.discordId),
-					player.discordId
-				);
-				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-				const deck = tournament.findPlayer(player.discordId)!.deck;
-				await this.database.confirmPlayer(newId, player.discordId, challongeId, deck);
-				await this.participantRole.grant(player.discordId, newTournament).catch(logger.error);
-			}
-			for (const channel of tournament.publicChannels) {
-				await this.database.addAnnouncementChannel(newId, channel, "public");
-			}
-			for (const channel of tournament.privateChannels) {
-				await this.database.addAnnouncementChannel(newId, channel, "private");
-			}
-			await this.startTournament(newId);
-		}
 	}
 
 	// specifically only handles telling participants about a new round
