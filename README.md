@@ -15,6 +15,21 @@ sponsoring the development of Emcee. Open beta ETA: April 2021.
 
 This README file details the source code of this bot. For information on how to use the bot from the perspective of a Discord user, see this repository's [wiki](https://github.com/AlphaKretin/deck-parse-bot/wiki).
 
+## Discord permissions
+
+Please make sure you use an invite link that automatically grants the following permissions.
+
+- Manage Roles: Emcee creates a role to designate Tournament Organisers upon joining a server and will create and delete participant roles for each tournament.
+- Send Messages
+- Embed Links: Emcee sends deck profiles in the form of a Discord rich embed.
+- Attach Files: Emcee attaches a YDK file to deck profiles.
+- Read Message History
+- Add Reactions: Emcee uses a "reaction button" for tournament registration.
+
+Privileged gateway intents required:
+
+- Server members intent: Emcee removes participants from tournaments if they leave the server.
+
 ## Development
 
 Emcee is written in TypeScript. It targets Node.js 14+ and can be run with or without Docker.
