@@ -1,6 +1,6 @@
 import { getConnection } from "typeorm";
-import { Countdown } from "./database/orm";
-import { getLogger } from "./util/logger";
+import { Countdown } from "../database/orm";
+import { getLogger } from "../util/logger";
 
 const logger = getLogger("timer");
 

@@ -20,8 +20,8 @@ const countdownEntityStub = {
 	remove: sinon.stub()
 };
 const Countdown = sinon.stub().returns(countdownEntityStub);
-const { PersistentTimer } = proxyquire("../src/timer", {
-	"./database/orm": { Countdown }
+const { PersistentTimer } = proxyquire("../src/timer/PersistentTimer", {
+	"../database/orm": { Countdown }
 });
 // The strong disadvantage of the proxyquire approach is that we lose all type-safety in tests.
 // Therefore I would not recommend it for other tests, especially if they get more complex than this.
