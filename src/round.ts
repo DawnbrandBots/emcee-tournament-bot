@@ -16,7 +16,7 @@ export function parseTime(time: string): number {
 	switch (parts.length) {
 		case 1: {
 			const minutes = parseInt(time, 10);
-			if (isNaN(minutes) || minutes <= 0) {
+			if (isNaN(minutes) || minutes < 0) {
 				throw new UserError("Round timer must be the second parameter, in the form `mm` or `hh:mm`.");
 			}
 			return minutes;
@@ -25,7 +25,7 @@ export function parseTime(time: string): number {
 			const hours = parseInt(parts[0], 10);
 			const minutes = parseInt(parts[1], 10);
 			const total = hours * 60 + minutes;
-			if (isNaN(total) || total <= 0) {
+			if (isNaN(total) || total < 0) {
 				throw new UserError("Round timer must be the second parameter, in the form `mm` or `hh:mm`.");
 			}
 			return total;
@@ -96,13 +96,15 @@ export async function advanceRoundDiscord(
 			}
 		}
 	}
-	await timeWizard.start(
-		tournament.id,
-		tournament.publicChannels,
-		new Date(Date.now() + minutes * 60 * 1000),
-		`That's time in the round, <@&${role}>! Please end the current phase, then the player with the lower LP must forfeit!`,
-		5 // update every 5 seconds
-	);
+	if (minutes > 0) {
+		await timeWizard.start(
+			tournament.id,
+			tournament.publicChannels,
+			new Date(Date.now() + minutes * 60 * 1000),
+			`That's time in the round, <@&${role}>! Please end the current phase, then the player with the lower LP must forfeit!`,
+			5 // update every 5 seconds
+		);
+	}
 }
 
 /**

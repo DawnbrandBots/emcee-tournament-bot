@@ -27,7 +27,9 @@ const command: CommandDefinition = {
 				user: msg.author.id,
 				tournament: id,
 				command: "round",
-				event: "attempt"
+				event: "attempt",
+				timer,
+				skip
 			})
 		);
 		await advanceRoundDiscord(support, tournament, timer, skip);

@@ -32,7 +32,7 @@ const command: CommandDefinition = {
 				...payload
 			});
 		}
-		logger.verbose(log("attempt"));
+		logger.verbose(log("attempt", { timer, skip }));
 		if (tournament.players.length < 2) {
 			throw new UserError("Cannot start a tournament without at least 2 confirmed participants!");
 		}

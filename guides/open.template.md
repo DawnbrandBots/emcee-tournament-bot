@@ -28,5 +28,8 @@ This will start the first round of play.
 Further details will be sent to private channels.
 ```
 mc!start {}|TIMER|skip```
-Both the timer and skip parameters are optional. The round timer defaults to 50 minutes and must be of the form `mm` or `hh:mm`.
-The skip parameter must come after the timer parameter if provided and be exactly `skip`. It skips sending pairings in DMs.
+Both the timer and skip parameters are optional.
+The round timer defaults to 50 minutes and must be of the form `mm` or `hh:mm`.
+This only applies to round 1 and an explicit zero timer results in no timer.
+The skip parameter must come after the timer parameter if provided and be exactly `skip`.
+It skips sending pairings in DMs.

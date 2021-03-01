@@ -12,8 +12,11 @@ Restarts the timer in public channels and notifies everybody on Discord about th
 This doesn't control Challonge, which advances rounds automatically when all scores are submitted.
 ```
 mc!round {}|TIMER|skip```
-Both the timer and skip parameters are optional. The round timer defaults to 50 minutes and must be of the form `mm` or `hh:mm`.
-The skip parameter must come after the timer parameter if provided and be exactly `skip`. It skips sending pairings in DMs.
+Both the timer and skip parameters are optional.
+The round timer defaults to 50 minutes and must be of the form `mm` or `hh:mm`.
+An explicit zero timer results in no timer.
+The skip parameter must come after the timer parameter if provided and be exactly `skip`.
+It skips sending pairings in DMs.
 **Finish tournament**
 After all scores for all rounds are submitted.
 ```
