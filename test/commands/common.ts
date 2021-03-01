@@ -10,6 +10,7 @@ import { DiscordInterface } from "../../src/discord/interface";
 import { OrganiserRoleProvider } from "../../src/role/organiser";
 import { ParticipantRoleProvider } from "../../src/role/participant";
 import { Templater } from "../../src/templates";
+import { TimeWizard } from "../../src/timer";
 import { WebsiteInterface } from "../../src/website/interface";
 import { DatabaseWrapperMock } from "../mocks/database";
 import { DiscordWrapperMock } from "../mocks/discord";
@@ -52,5 +53,9 @@ export const support: CommandSupport = {
 	scores: new Map(),
 	decks: new DeckManager([]),
 	participantRole: new ParticipantRoleProvider(mockBotClient),
-	templater: new Templater()
+	templater: new Templater(),
+	timeWizard: new TimeWizard({
+		sendMessage: sinon.stub(),
+		editMessage: sinon.stub()
+	})
 };

@@ -9,6 +9,7 @@ import { DiscordInterface } from "../src/discord/interface";
 import { OrganiserRoleProvider } from "../src/role/organiser";
 import { ParticipantRoleProvider } from "../src/role/participant";
 import { Templater } from "../src/templates";
+import { TimeWizard } from "../src/timer";
 import { UserError } from "../src/util/errors";
 import { WebsiteInterface } from "../src/website/interface";
 import { DatabaseWrapperMock } from "./mocks/database";
@@ -30,7 +31,11 @@ describe("Command class", function () {
 		scores: new Map(),
 		decks: new DeckManager([]),
 		participantRole: new ParticipantRoleProvider(new Client("mock")),
-		templater: new Templater()
+		templater: new Templater(),
+		timeWizard: new TimeWizard({
+			sendMessage: sinon.stub(),
+			editMessage: sinon.stub()
+		})
 	};
 	const msg = new Message({ id: "007", channel_id: "foo", author: { id: "0000" } }, new Client("mock"));
 	const testCommand: CommandDefinition = {

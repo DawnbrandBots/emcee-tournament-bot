@@ -9,6 +9,7 @@ import { DeckManager, initializeDeckManager } from "../src/deck";
 import { DiscordAttachmentOut, DiscordEmbed, DiscordInterface, DiscordMessageOut } from "../src/discord/interface";
 import { ParticipantRoleProvider } from "../src/role/participant";
 import { Templater } from "../src/templates";
+import { TimeWizard } from "../src/timer";
 import { TournamentManager } from "../src/TournamentManager";
 import { UserError } from "../src/util/errors";
 import { WebsiteInterface } from "../src/website/interface";
@@ -36,20 +37,23 @@ sinon.stub(participantRole, "grant").resolves();
 sinon.stub(participantRole, "ungrant").resolves();
 sinon.stub(participantRole, "delete").resolves();
 
-const delegate = {
-	create: sinon.stub().resolves({
-		tournament: undefined,
-		isActive: () => true,
-		abort: () => undefined
-	}),
-	loadAll: async () => []
-};
 let tournament: TournamentManager;
 let decks: DeckManager;
 before(async () => {
 	// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 	decks = await initializeDeckManager(process.env.OCTOKIT_TOKEN!);
-	tournament = new TournamentManager(mockDiscord, mockDb, mockWebsite, templater, participantRole, delegate, decks);
+	tournament = new TournamentManager(
+		mockDiscord,
+		mockDb,
+		mockWebsite,
+		templater,
+		participantRole,
+		new TimeWizard({
+			sendMessage: sinon.stub(),
+			editMessage: sinon.stub()
+		}),
+		decks
+	);
 	await templater.load("guides");
 });
 
@@ -84,52 +88,15 @@ describe("Tournament flow commands", function () {
 	it("Open tournament - no channels", async function () {
 		await expect(tournament.openTournament("smallTournament")).to.be.rejectedWith(UserError);
 	});
-	// it("Start tournament", async function () {
-	// 	delegate.create.resetHistory();
-	// 	await tournament.startTournament("tourn1");
-	// 	expect(delegate.create).to.have.been.calledOnce;
-	// });
-	// // I have no idea what this test was meant to do
-	// it.skip("Start tournament - with bye", async function () {
-	// 	await tournament.startTournament("byeTournament");
-	// 	// no difference in output, but ensures bye-related logic doesn't error
-	// 	expect(discord.getResponse("channel1")).to.equal("Time left in the round: `50:00`"); // timer message posted after new round message
-	// });
-	// it("Start tournament - pending players", async function () {
-	// 	await tournament.startTournament("pendingTournament");
-	// 	expect(discord.getResponse("pendingPlayer")).to.equal(
-	// 		"Sorry, Tournament Pending tournament has started and you didn't submit a deck, so you have been dropped."
-	// 	);
-	// });
-	// it("Start tournament - no players", async function () {
-	// 	await expect(tournament.startTournament("smallTournament")).to.be.rejectedWith(UserError);
-	// });
 	it("Cancel tournament", async function () {
 		await tournament.finishTournament("tourn2", true);
 		expect(discord.getResponse("channel1")).to.equal(
 			"Tournament 2 has been cancelled. Thank you all for playing! <@&role>\nResults: https://example.com/url"
 		);
 	});
-	// tournament temporarily disabled because unique ID checking + top cut creation logic
-	// is too complicated to easily mock with this lazy approach
-	// will re-enable this test when tests are reworked with proper stubs
-	it.skip("Finish tournament - top cut", async function () {
-		await tournament.finishTournament("bigTournament", false);
-		expect(discord.getResponse("topChannel")).to.equal("Time left in the round: `50:00`"); // timer message posted after new round message
-	});
-	it("Next round", async function () {
-		delegate.create.resetHistory();
-		await tournament.nextRound("tourn2");
-		expect(delegate.create).to.have.been.calledOnce; // new round means new timer
-	});
 });
 
 describe("Misc commands", function () {
-	it.skip("List players", async function () {
-		// const file = await tournament.listPlayers("tourn1");
-		// expect(file.filename).to.equal("Tournament 1.csv");
-		// TODO: test file contents? sounds scary
-	});
 	it("Drop player - choose", async function () {
 		await tournament.dropPlayer("tourn1", "player1");
 		expect(discord.getResponse("player1")).to.equal("You have successfully dropped from Tournament Tournament 1.");
@@ -145,16 +112,6 @@ describe("Misc commands", function () {
 		expect(discord.getResponse("channel2")).to.equal(
 			"Player <@player1> (player1) has been forcefully dropped from Tournament Tournament 1 (tourn1)."
 		);
-	});
-	it.skip("Generate pie chart", async function () {
-		// const file = await tournament.generatePieChart("tourn1");
-		// expect(file.filename).to.equal("Tournament 1 Pie.csv");
-		// TODO: test file contents? sounds scary
-	});
-	it.skip("Generate deck dump", async function () {
-		// const file = await tournament.generateDeckDump("tourn1");
-		// expect(file.filename).to.equal("Tournament 1 Decks.csv");
-		// TODO: test file contents? sounds scary
 	});
 });
 describe("Confirm player", function () {
