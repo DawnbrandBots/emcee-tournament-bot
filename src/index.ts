@@ -8,7 +8,7 @@ import { registerEvents } from "./events";
 import { OrganiserRoleProvider } from "./role/organiser";
 import { ParticipantRoleProvider } from "./role/participant";
 import { Templater } from "./templates";
-import { PersistentTimer, PersistentTimerDiscordDelegate } from "./timer";
+import { TimeWizard } from "./timer";
 import { TournamentManager } from "./TournamentManager";
 import { getLogger } from "./util/logger";
 import { WebsiteWrapperChallonge } from "./website/challonge";
@@ -36,20 +36,17 @@ const logger = getLogger("index");
 	const discord = new DiscordInterface(eris);
 	const organiserRole = new OrganiserRoleProvider(config.defaultTORole, 0x3498db);
 	const participantRole = new ParticipantRoleProvider(bot, 0xe67e22);
-	const delegate: PersistentTimerDiscordDelegate = {
+	const timeWizard = new TimeWizard({
 		sendMessage: async (...args) => (await bot.createMessage(...args)).id,
 		editMessage: async (...args) => void (await bot.editMessage(...args))
-	};
+	});
 	const tournamentManager = new TournamentManager(
 		discord,
 		database,
 		challonge,
 		templater,
 		participantRole,
-		{
-			create: async (...args) => await PersistentTimer.create(delegate, ...args),
-			loadAll: async () => await PersistentTimer.loadAll(delegate)
-		},
+		timeWizard,
 		decks
 	);
 	registerEvents(bot, config.defaultPrefix, {
@@ -70,7 +67,7 @@ const logger = getLogger("index");
 		logger.info(`Logged in as ${bot.user.username}#${bot.user.discriminator} - ${bot.user.id}`);
 		if (firstReady) {
 			firstReady = false;
-			await tournamentManager.loadTimers();
+			await timeWizard.load();
 			await tournamentManager.loadButtons();
 		}
 	});
