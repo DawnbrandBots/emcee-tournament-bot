@@ -1,5 +1,6 @@
 import { CommandDefinition } from "../Command";
 import { TournamentStatus } from "../database/interface";
+import { advanceRoundDiscord } from "../round";
 import { reply } from "../util/discord";
 import { UserError } from "../util/errors";
 import { getLogger } from "../util/logger";
@@ -57,21 +58,23 @@ const command: CommandDefinition = {
 		}
 		// send command guide to players
 		for (const channel of tournament.publicChannels) {
-			await support.discord.sendMessage(channel, support.templater.format("player", id));
+			await support.discord.sendMessage(channel, support.templater.format("player", id)).catch(logger.error);
 		}
+		logger.verbose(log("public"));
 		// send command guide to hosts
 		for (const channel of tournament.privateChannels) {
-			await support.discord.sendMessage(channel, support.templater.format("start", id));
+			await support.discord.sendMessage(channel, support.templater.format("start", id)).catch(logger.error);
 		}
-
-		// const webTourn = await support.challonge.getTournament(id);
-		// await this.startNewRound(tournament, webTourn.url);
-		// capture errors from start and warn the host
-
+		logger.verbose(log("private"));
+		await advanceRoundDiscord(support, tournament, "TODO", args[1] === "skip");
+		logger.verbose(log("round"));
 		// drop dummy players once the tournament has started to give players with byes the win
 		await support.challonge.dropByes(id, tournament.byes.length);
 		logger.info(log("drop byes"));
-		// await reply(msg, `Tournament ${id} successfully commenced!`);
+		await reply(
+			msg,
+			`Pairings sent out for **${tournament.name}**. Please check the private channels for any failed DMs.`
+		);
 	}
 };
 

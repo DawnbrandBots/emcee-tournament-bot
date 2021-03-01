@@ -13,10 +13,10 @@ export async function advanceRoundDiscord(
 	skip = false
 ): Promise<void> {
 	await timeWizard.cancel(tournament.id);
-	const role = await participantRole.get(tournament);
 	const matches = await challonge.getMatches(tournament.id);
 	const round = await challonge.getRound(tournament.id, matches);
 	const intro = `Round ${round} of ${tournament.name} has begun!`;
+	const role = await participantRole.get(tournament);
 	for (const channel of tournament.publicChannels) {
 		await discord.sendMessage(
 			channel,
