@@ -27,4 +27,6 @@ mc!pie {}```
 This will start the first round of play.
 Further details will be sent to private channels.
 ```
-mc!start {}```
+mc!start {}|TIMER|skip```
+Both the timer and skip parameters are optional. The round timer defaults to 50 minutes and must be of the form `mm` or `hh:mm`.
+The skip parameter must come after the timer parameter if provided and be exactly `skip`. It skips sending pairings in DMs.

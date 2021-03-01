@@ -1,15 +1,44 @@
 import { CommandSupport } from "./Command";
 import { DatabaseTournament } from "./database/interface";
 import { DiscordInterface } from "./discord/interface";
+import { UserError } from "./util/errors";
 import { getLogger } from "./util/logger";
 import { WebsiteInterface } from "./website/interface";
 
 const logger = getLogger("round");
 
+/**
+ * Parses a duration in the form hh:mm OR mm.
+ * @param time
+ */
+export function parseTime(time: string): number {
+	const parts = time.split(":");
+	switch (parts.length) {
+		case 1: {
+			const minutes = parseInt(time, 10);
+			if (isNaN(minutes) || minutes <= 0) {
+				throw new UserError("Round timer must be the second parameter, in the form `mm` or `hh:mm`.");
+			}
+			return minutes;
+		}
+		case 2: {
+			const hours = parseInt(parts[0], 10);
+			const minutes = parseInt(parts[1], 10);
+			const total = hours * 60 + minutes;
+			if (isNaN(total) || total <= 0) {
+				throw new UserError("Round timer must be the second parameter, in the form `mm` or `hh:mm`.");
+			}
+			return total;
+		}
+		default:
+			throw new UserError("Round timer must be the second parameter, in the form `mm` or `hh:mm`.");
+	}
+}
+
 export async function advanceRoundDiscord(
 	{ timeWizard, participantRole, challonge, discord }: CommandSupport,
 	tournament: DatabaseTournament,
-	time: string,
+	minutes: number,
 	skip = false
 ): Promise<void> {
 	await timeWizard.cancel(tournament.id);
@@ -20,56 +49,57 @@ export async function advanceRoundDiscord(
 	for (const channel of tournament.publicChannels) {
 		await discord.sendMessage(
 			channel,
-			`${intro} <@&${role}>\nPairings will be sent out by Direct Message shortly, or can be found here: https://challonge.com/${tournament.id}`
+			skip
+				? `${intro} <@&${role}>\nPairings can be found here: https://challonge.com/${tournament.id}`
+				: `${intro} <@&${role}>\nPairings will be sent out by Direct Message shortly, or can be found here: https://challonge.com/${tournament.id}`
 		);
 	}
-	if (skip) {
-		return;
-	}
-	const players = await getPlayers(challonge, tournament.id);
-	for (const match of matches) {
-		const player1 = players.get(match.player1);
-		const player2 = players.get(match.player2);
-		if (player1 && player2) {
-			const name1 = await getRealUsername(discord, player1);
-			const name2 = await getRealUsername(discord, player2);
-			if (name1) {
-				await sendPairing(discord, intro, player1, player2, name2, tournament);
+	if (!skip) {
+		const players = await getPlayers(challonge, tournament.id);
+		for (const match of matches) {
+			const player1 = players.get(match.player1);
+			const player2 = players.get(match.player2);
+			if (player1 && player2) {
+				const name1 = await getRealUsername(discord, player1);
+				const name2 = await getRealUsername(discord, player2);
+				if (name1) {
+					await sendPairing(discord, intro, player1, player2, name2, tournament);
+				} else {
+					await reportFailure(discord, tournament, player1, player2);
+				}
+				if (name2) {
+					await sendPairing(discord, intro, player2, player1, name1, tournament);
+				} else {
+					await reportFailure(discord, tournament, player2, player1);
+				}
 			} else {
-				await reportFailure(discord, tournament, player1, player2);
+				// This error occuring is an issue on Challonge's end
+				logger.warn(
+					new Error(
+						`Challonge IDs ${match.player1} and/or ${match.player2} found in match ${match.matchId} but not the player list of ${tournament.id}.`
+					)
+				);
 			}
-			if (name2) {
-				await sendPairing(discord, intro, player2, player1, name1, tournament);
-			} else {
-				await reportFailure(discord, tournament, player2, player1);
-			}
-		} else {
-			// This error occuring is an issue on Challonge's end
-			logger.warn(
-				new Error(
-					`Challonge IDs ${match.player1} and/or ${match.player2} found in match ${match.matchId} but not the player list of ${tournament.id}.`
-				)
-			);
+			players.delete(match.player1);
+			players.delete(match.player2);
 		}
-		players.delete(match.player1);
-		players.delete(match.player2);
-	}
-	if (players.size) {
-		for (const bye of players.values()) {
-			try {
-				await discord.sendDirectMessage(bye, `${intro} You have a bye for this round.`);
-			} catch {
-				await reportFailure(discord, tournament, bye, "natural bye");
+		if (players.size) {
+			for (const bye of players.values()) {
+				try {
+					await discord.sendDirectMessage(bye, `${intro} You have a bye for this round.`);
+				} catch {
+					await reportFailure(discord, tournament, bye, "natural bye");
+				}
 			}
-		}
-		if (players.size > 1) {
-			logger.warn(`${players.size} natural byes identified in ${tournament.id}`);
+			if (players.size > 1) {
+				logger.warn(`${players.size} natural byes identified in ${tournament.id}`);
+			}
 		}
 	}
 	await timeWizard.start(
 		tournament.id,
 		tournament.publicChannels,
-		new Date(Date.now() + 50 * 60 * 1000), // 50 minutes
+		new Date(Date.now() + minutes * 60 * 1000),
 		`That's time in the round, <@&${role}>! Please end the current phase, then the player with the lower LP must forfeit!`,
 		5 // update every 5 seconds
 	);

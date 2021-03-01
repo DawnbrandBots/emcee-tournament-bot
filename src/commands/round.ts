@@ -1,6 +1,6 @@
 import { CommandDefinition } from "../Command";
 import { TournamentStatus } from "../database/interface";
-import { advanceRoundDiscord } from "../round";
+import { advanceRoundDiscord, parseTime } from "../round";
 import { reply } from "../util/discord";
 import { getLogger } from "../util/logger";
 
@@ -10,7 +10,15 @@ const command: CommandDefinition = {
 	name: "round",
 	requiredArgs: ["id"],
 	executor: async (msg, args, support) => {
+		// Argument combinations:
+		// id
+		// id|timer
+		// id|skip
+		// id|timer|skip
+		// 50 is the assumed default timer for live tournaments
 		const [id] = args;
+		const skip = args[1] === "skip" || args[2] === "skip";
+		const timer = (args.length === 2 && !skip) || args.length > 2 ? parseTime(args[1]) : 50;
 		const tournament = await support.database.authenticateHost(id, msg.author.id, TournamentStatus.IPR);
 		logger.verbose(
 			JSON.stringify({
@@ -22,7 +30,7 @@ const command: CommandDefinition = {
 				event: "attempt"
 			})
 		);
-		await advanceRoundDiscord(support, tournament, "TODO", args[1] === "skip");
+		await advanceRoundDiscord(support, tournament, timer, skip);
 		support.scores.get(id)?.clear();
 		logger.verbose(
 			JSON.stringify({
