@@ -70,7 +70,7 @@ const command: CommandDefinition = {
 		for (const channel of tournament.privateChannels) {
 			await support.discord.sendMessage(channel, support.templater.format("start", id));
 		}
-		await reply(msg, `Top cut for **${tournament.name} commenced on Challonge! Now sending out pairings.`);
+		await reply(msg, `Top cut for **${tournament.name}** commenced on Challonge! Now sending out pairings.`);
 		// start new round
 	}
 };

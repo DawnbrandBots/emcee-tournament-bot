@@ -61,7 +61,7 @@ const command: CommandDefinition = {
 			await reply(msg, `**${tournament.name}** commenced on Challonge! Now sending out pairings for round 1.`);
 		} catch (err) {
 			logger.error(err);
-			await reply(msg, `Something went wrong in preflight for **${tournament.name}. Please try again later.`);
+			await reply(msg, `Something went wrong in preflight for **${tournament.name}**. Please try again later.`);
 			return;
 		}
 		// send command guide to players
