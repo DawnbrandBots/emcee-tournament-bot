@@ -24,6 +24,11 @@ async function messageChannels(
 	}
 }
 
+/**
+ * Performs all needed steps to drop a participant from the Challonge side, from
+ * resolving outstanding scores to notifying the hosts. Does not throw exceptions
+ * but returns true if and only if the entire process was successfully.
+ */
 export async function dropPlayerChallonge(
 	tournamentId: string,
 	privateChannels: string[],
@@ -33,8 +38,8 @@ export async function dropPlayerChallonge(
 	log: (payload: Record<string, unknown>) => void,
 	discord: DiscordInterface,
 	challonge: WebsiteInterface,
-	database: DatabaseWrapperPostgres
-): Promise<void> {
+	database: Pick<DatabaseWrapperPostgres, "getPlayerByChallonge">
+): Promise<boolean> {
 	// For each tournament in progress, update the scores and inform the opponent if needed.
 	if (status === TournamentStatus.IPR) {
 		// find last closed or open match
@@ -56,7 +61,7 @@ export async function dropPlayerChallonge(
 						privateChannels,
 						`Error automatically submitting score for ${who} in **${tournamentId}**. Please manually override later.`
 					);
-					return;
+					return false;
 				}
 				// Automatic match concession was successful, so inform the opponent and warn hosts of errors.
 				try {
@@ -100,7 +105,7 @@ export async function dropPlayerChallonge(
 							privateChannels,
 							`Error automatically resetting score for ${who} in **${tournamentId}**. Please manually override later.`
 						);
-						return;
+						return false;
 					}
 				}
 			}
@@ -109,12 +114,15 @@ export async function dropPlayerChallonge(
 	// There was no problem submitting a score to Challonge or the tournament hasn't started yet, so drop the player from Challonge.
 	try {
 		await challonge.removePlayer(tournamentId, challongeId);
+		log({ tournamentId, challongeId, event: "challonge" });
+		return true;
 	} catch (error) {
 		logger.error(error);
 		await messageChannels(
 			discord,
 			privateChannels,
-			`FATAL: could not remove ${who} from **${tournamentId}** on Challonge. Please report this bug.`
+			`Could not remove ${who} from **${tournamentId}** on Challonge. Please retry later.`
 		);
+		return false;
 	}
 }

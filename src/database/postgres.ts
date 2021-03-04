@@ -432,36 +432,6 @@ export class DatabaseWrapperPostgres {
 		});
 	}
 
-	async dropFromAll(
-		server: string,
-		playerId: string
-	): Promise<{ tournamentId: string; privateChannels: string[]; challongeId?: number }[]> {
-		return await getConnection().transaction(async entityManager => {
-			// Retrieve corresponding Participant entities for unfinished tournaments belonging to the server.
-			const participants = await entityManager
-				.getRepository(Participant)
-				.createQueryBuilder()
-				// Fill in the tournament relation while filtering only for the relevant tournaments.
-				.innerJoinAndSelect(
-					"Participant.tournament",
-					"T",
-					"(T.status = 'preparing' OR T.status = 'in progress') AND T.owningDiscordServer = :server AND Participant.discordId = :playerId",
-					{ server, playerId }
-				)
-				// Fill in the confirmed relation if possible.
-				.leftJoinAndSelect("Participant.confirmed", "confirmed")
-				.getMany();
-			for (const participant of participants) {
-				await entityManager.remove(participant);
-			}
-			return participants.map(participant => ({
-				tournamentId: participant.tournament.tournamentId,
-				privateChannels: participant.tournament.privateChannels,
-				challongeId: participant.confirmed?.challongeId
-			}));
-		});
-	}
-
 	async getConfirmed(tournamentId: string): Promise<DatabasePlayer[]> {
 		return await ConfirmedParticipant.find({ tournamentId });
 	}
