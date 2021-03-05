@@ -91,6 +91,10 @@ const command: CommandDefinition = {
 			}
 		}
 		await reply(msg, `You have dropped from **${participant.tournament.name}**.`);
+		const messages = await support.database.getRegisterMessages(id);
+		for (const m of messages) {
+			await support.discord.removeUserReaction(m.channelId, m.messageId, "✅", msg.author.id);
+		}
 	}
 };
 
