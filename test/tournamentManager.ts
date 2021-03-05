@@ -130,22 +130,22 @@ describe("Misc commands", function () {
 		// expect(file.filename).to.equal("Tournament 1.csv");
 		// TODO: test file contents? sounds scary
 	});
-	it("Drop player - choose", async function () {
-		await tournament.dropPlayer("tourn1", "player1");
-		expect(discord.getResponse("player1")).to.equal("You have successfully dropped from Tournament Tournament 1.");
-		expect(discord.getResponse("channel2")).to.equal(
-			"Player <@player1> (player1) has chosen to drop from Tournament Tournament 1 (tourn1)."
-		);
-	});
-	it("Drop player - force", async function () {
-		await tournament.dropPlayer("tourn1", "player1", true);
-		expect(discord.getResponse("player1")).to.equal(
-			"You have been dropped from Tournament Tournament 1 by the hosts."
-		);
-		expect(discord.getResponse("channel2")).to.equal(
-			"Player <@player1> (player1) has been forcefully dropped from Tournament Tournament 1 (tourn1)."
-		);
-	});
+	// it("Drop player - choose", async function () {
+	// 	await tournament.dropPlayer("tourn1", "player1");
+	// 	expect(discord.getResponse("player1")).to.equal("You have successfully dropped from Tournament Tournament 1.");
+	// 	expect(discord.getResponse("channel2")).to.equal(
+	// 		"Player <@player1> (player1) has chosen to drop from Tournament Tournament 1 (tourn1)."
+	// 	);
+	// });
+	// it("Drop player - force", async function () {
+	// 	await tournament.dropPlayer("tourn1", "player1", true);
+	// 	expect(discord.getResponse("player1")).to.equal(
+	// 		"You have been dropped from Tournament Tournament 1 by the hosts."
+	// 	);
+	// 	expect(discord.getResponse("channel2")).to.equal(
+	// 		"Player <@player1> (player1) has been forcefully dropped from Tournament Tournament 1 (tourn1)."
+	// 	);
+	// });
 	it.skip("Generate pie chart", async function () {
 		// const file = await tournament.generatePieChart("tourn1");
 		// expect(file.filename).to.equal("Tournament 1 Pie.csv");
