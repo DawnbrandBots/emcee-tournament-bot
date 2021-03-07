@@ -7,6 +7,7 @@ import { Templater } from "./templates";
 import { PersistentTimer } from "./timer";
 import { BlockedDMsError, ChallongeAPIError, TournamentNotFoundError, UserError } from "./util/errors";
 import { getLogger } from "./util/logger";
+import { Public, Tail } from "./util/types";
 import { WebsiteInterface, WebsiteTournament } from "./website/interface";
 
 const logger = getLogger("tournament");
@@ -18,8 +19,6 @@ interface MatchScore {
 	oppScore: number;
 }
 
-type Public<T> = Pick<T, keyof T>;
-type Tail<T extends unknown[]> = T extends [unknown, ...infer R] ? R : never;
 export type TournamentInterface = Pick<
 	TournamentManager,
 	| "registerPlayer"
