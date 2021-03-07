@@ -40,18 +40,10 @@ const logger = getLogger("index");
 		sendMessage: async (...args) => (await bot.createMessage(...args)).id,
 		editMessage: async (...args) => void (await bot.editMessage(...args))
 	};
-	const tournamentManager = new TournamentManager(
-		discord,
-		database,
-		challonge,
-		templater,
-		participantRole,
-		{
-			create: async (...args) => await PersistentTimer.create(delegate, ...args),
-			loadAll: async () => await PersistentTimer.loadAll(delegate)
-		},
-		decks
-	);
+	const tournamentManager = new TournamentManager(discord, database, challonge, templater, participantRole, {
+		create: async (...args) => await PersistentTimer.create(delegate, ...args),
+		loadAll: async () => await PersistentTimer.loadAll(delegate)
+	});
 	registerEvents(bot, config.defaultPrefix, {
 		discord,
 		tournamentManager,

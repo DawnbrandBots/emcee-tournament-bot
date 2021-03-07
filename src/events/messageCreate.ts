@@ -1,74 +1,11 @@
-import { Client, GuildChannel, Message, MessageContent, MessageFile } from "eris";
+import { Client, Message, PrivateChannel } from "eris";
 import { Command, CommandDefinition, CommandSupport } from "../Command";
+import { DatabaseTournament } from "../database/interface";
+import { DeckManager } from "../deck";
+import { reply } from "../util/discord";
 import { getLogger } from "../util/logger";
 
 const logger = getLogger("messageCreate");
-// Lifted from Discord wrapper, to be removed when TM.confirmPlayer is fixed
-interface DiscordAttachmentIn {
-	filename: string;
-	url: string;
-}
-
-interface DiscordAttachmentOut {
-	filename: string;
-	contents: string;
-}
-
-interface DiscordEmbed {
-	title: string;
-	fields: {
-		name: string;
-		value: string;
-	}[];
-}
-
-type DiscordMessageOut = string | DiscordEmbed;
-
-interface DiscordMessageIn {
-	id: string;
-	content: string;
-	attachments: DiscordAttachmentIn[];
-	author: string;
-	channelId: string;
-	serverId: string;
-	reply: (msg: DiscordMessageOut, file?: DiscordAttachmentOut) => Promise<void>;
-	react: (emoji: string) => Promise<void>;
-	edit: (newMsg: DiscordMessageOut) => Promise<void>;
-}
-
-function unwrapMessageOut(msg: DiscordMessageOut): MessageContent {
-	if (typeof msg === "string") {
-		return msg;
-	}
-	// else embed
-	return { embed: msg };
-}
-
-function unwrapFileOut(file?: DiscordAttachmentOut): MessageFile | undefined {
-	return file ? { file: file.contents, name: file.filename } : undefined;
-}
-
-function wrapMessageIn(msg: Message): DiscordMessageIn {
-	const channel = msg.channel;
-	const guildId = channel instanceof GuildChannel ? channel.guild.id : "private";
-	return {
-		id: msg.id,
-		attachments: msg.attachments,
-		content: msg.content,
-		author: msg.author.id,
-		channelId: channel.id,
-		serverId: guildId,
-		reply: async (out: DiscordMessageOut, file?: DiscordAttachmentOut): Promise<void> => {
-			await msg.channel.createMessage(unwrapMessageOut(out), unwrapFileOut(file));
-		},
-		react: async (emoji: string): Promise<void> => {
-			await msg.addReaction(emoji);
-		},
-		edit: async (newMsg: DiscordMessageOut): Promise<void> => {
-			await msg.edit(unwrapMessageOut(newMsg));
-		}
-	};
-}
 
 export function makeHandler(
 	bot: Client,
@@ -97,9 +34,210 @@ export function makeHandler(
 				.split("|")
 				.map(s => s.trim());
 			await handlers[cmdName]?.run(msg, args, support);
-		} else {
-			// If this throws, we crash out
-			await support.tournamentManager.confirmPlayer(wrapMessageIn(msg)).catch(logger.error);
+		} else if (!msg.guildID) {
+			// Checking guildID is likely more performant than instanceof
+			await onDirectMessage(msg as Message<PrivateChannel>, support, bot).catch(logger.error);
 		}
 	};
+}
+
+function log(level: keyof typeof logger, msg: Message<PrivateChannel>, payload: Record<string, unknown>): void {
+	return logger[level](
+		JSON.stringify({
+			handle: `${msg.author.username}#${msg.author.discriminator}`,
+			user: msg.author.id,
+			message: msg.id,
+			...payload
+		})
+	);
+}
+
+// The only allowed exceptions are final reply errors or initial database access failures
+export async function onDirectMessage(
+	msg: Message<PrivateChannel>,
+	support: CommandSupport,
+	bot: Client
+): Promise<void> {
+	let tournaments = await support.database.getPendingTournaments(msg.author.id);
+	if (tournaments.length > 1) {
+		const out = tournaments.map(t => t.name).join(", ");
+		log("info", msg, { event: "pending multiple", tournaments: out });
+		await reply(
+			msg,
+			`You are registering in multiple tournaments. Please register in one at a time by unchecking the reaction on all others.\n${out}`
+		);
+		return;
+	}
+	if (tournaments.length === 1) {
+		const tournament = tournaments[0];
+		log("info", msg, { event: "confirm start", tournament: tournament.id });
+		try {
+			await verifyDeckAndConfirmPending(msg, tournament, support, bot);
+		} catch (error) {
+			log("info", msg, { event: "confirm fail", tournament: tournament.id, error: error.message });
+			await reply(
+				msg,
+				`Must provide a valid attached \`.ydk\` file OR valid \`ydke://\` URL for **${tournament.name}**!`
+			);
+			await reply(msg, error.message);
+		}
+		return;
+	}
+
+	tournaments = await support.database.getConfirmedTournaments(msg.author.id);
+	if (tournaments.length > 1) {
+		const out = tournaments.map(t => t.name).join(", ");
+		log("info", msg, { event: "confirmed multiple", tournaments: out });
+		await reply(
+			msg,
+			`You're trying to update your deck for a tournament, but you're in multiple! Please choose one by dropping and registering again.\n${out}`
+		);
+		return;
+	}
+	if (tournaments.length === 1) {
+		const tournament = tournaments[0];
+		log("info", msg, { event: "update start", tournament: tournament.id });
+		try {
+			await verifyDeckAndUpdateConfirmed(msg, tournament, support, bot);
+		} catch (error) {
+			log("info", msg, { event: "update fail", tournament: tournament.id, error: error.message });
+			await reply(
+				msg,
+				`Must provide a valid attached \`.ydk\` file OR valid \`ydke://\` URL for **${tournament.name}**!`
+			);
+			await reply(msg, error.message);
+		}
+		return;
+	}
+
+	log("verbose", msg, { event: "no context", content: msg.content });
+	await reply(
+		msg,
+		"Emcee's documentation can be found at https://github.com/AlphaKretin/emcee-tournament-bot/wiki. If you're trying to sign up for a tournament, make sure you've registered and I'll let you know how to proceed."
+	);
+}
+
+// Throws on any problem with the deck, and the exception payload should be sent to the user
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+async function verifyDeck(msg: Message<PrivateChannel>, decks: DeckManager) {
+	const deck = await decks.getDeckFromMessage(msg); // throws on network error, YdkConstructionError, UrlConstructionError
+	const formattedDeckMessage = decks.prettyPrint(deck, `${msg.author.username}#${msg.author.discriminator}.ydk`);
+	if (deck.validationErrors.length > 0) {
+		await reply(msg, ...formattedDeckMessage).catch(logger.error);
+		throw new Error(
+			`Your deck is not legal. Please see the print out below for all the errors. You have NOT been registered yet, please submit again with a legal deck.`
+		);
+	}
+	log("verbose", msg, { event: "valid" });
+	return { deck, formattedDeckMessage };
+}
+
+// Should only throw exceptions from verifyDeck
+async function verifyDeckAndConfirmPending(
+	msg: Message<PrivateChannel>,
+	tournament: DatabaseTournament,
+	support: CommandSupport,
+	bot: Client
+): Promise<void> {
+	const { deck, formattedDeckMessage } = await verifyDeck(msg, support.decks);
+	const username = `${msg.author.username}#${msg.author.discriminator}`;
+	try {
+		const challongeId = await support.challonge.registerPlayer(tournament.id, username, msg.author.id);
+		log("verbose", msg, { event: "challonge", tournament: tournament.id });
+		await support.database.confirmPlayer(tournament.id, msg.author.id, challongeId, deck.url);
+		log("verbose", msg, { event: "database", tournament: tournament.id });
+	} catch (error) {
+		logger.error(error);
+		for (const channel of tournament.privateChannels) {
+			await bot
+				.createMessage(
+					channel,
+					`Something went really wrong while trying to register <@${msg.author.id}> (${username}) for **${tournament.name}**!`
+				)
+				.catch(logger.error);
+		}
+		await reply(msg, `Something went really wrong while trying to register for **${tournament.name}**!`).catch(
+			logger.error
+		);
+		return;
+	}
+	let roleGrantWarning = "";
+	try {
+		await support.participantRole.grant(msg.author.id, tournament);
+		log("verbose", msg, { event: "role", tournament: tournament.id });
+	} catch (error) {
+		logger.error(error);
+		roleGrantWarning = "I couldn't assign them a role. Am I missing permissions?";
+	}
+	for (const channel of tournament.privateChannels) {
+		try {
+			await bot.createMessage(
+				channel,
+				`<@${msg.author.id}> (${username}) has signed up for **${tournament.name}** with the following deck! ${roleGrantWarning}`
+			);
+			await bot.createMessage(channel, ...formattedDeckMessage);
+		} catch (error) {
+			logger.error(error);
+		}
+	}
+	log("info", msg, { event: "confirm success", tournament: tournament.id });
+	try {
+		await reply(
+			msg,
+			`You have successfully signed up for **${tournament.name}**! Your deck is below to double-check.`
+		);
+		await reply(msg, ...formattedDeckMessage);
+	} catch (error) {
+		logger.error(error);
+	}
+}
+
+// Should only throw exceptions from verifyDeck
+async function verifyDeckAndUpdateConfirmed(
+	msg: Message<PrivateChannel>,
+	tournament: DatabaseTournament,
+	support: CommandSupport,
+	bot: Client
+): Promise<void> {
+	const { deck, formattedDeckMessage } = await verifyDeck(msg, support.decks);
+	const username = `${msg.author.username}#${msg.author.discriminator}`;
+	try {
+		await support.database.updateDeck(tournament.id, msg.author.id, deck.url);
+		log("verbose", msg, { event: "database", tournament: tournament.id });
+	} catch (error) {
+		logger.error(error);
+		for (const channel of tournament.privateChannels) {
+			await bot
+				.createMessage(
+					channel,
+					`Something went really wrong while trying to update deck of <@${msg.author.id}> (${username}) for **${tournament.name}**!`
+				)
+				.catch(logger.error);
+		}
+		await reply(msg, `Something went really wrong while trying to update deck for **${tournament.name}**!`).catch(
+			logger.error
+		);
+		return;
+	}
+	for (const channel of tournament.privateChannels) {
+		try {
+			await bot.createMessage(
+				channel,
+				`<@${msg.author.id}> (${username}) has updated their deck for **${tournament.name}** to the following!`
+			);
+			await bot.createMessage(channel, ...formattedDeckMessage);
+		} catch (error) {
+			logger.error(error);
+		}
+	}
+	log("info", msg, { event: "update success", tournament: tournament.id });
+	try {
+		await reply(
+			msg,
+			`You have successfully changed your deck for **${tournament.name}**! Your deck is below to double-check.`
+		);
+		await reply(msg, ...formattedDeckMessage);
+	} catch (error) {
+		logger.error(error);
+	}
 }
