@@ -1,9 +1,13 @@
 import { Client, Message, PrivateChannel } from "eris";
 import { Command, CommandDefinition, CommandSupport } from "../Command";
 import { DatabaseTournament } from "../database/interface";
+import { DatabaseWrapperPostgres } from "../database/postgres";
 import { DeckManager } from "../deck";
+import { ParticipantRoleProvider } from "../role/participant";
 import { reply } from "../util/discord";
 import { getLogger } from "../util/logger";
+import { Public } from "../util/types";
+import { WebsiteInterface } from "../website/interface";
 
 const logger = getLogger("messageCreate");
 
@@ -36,7 +40,14 @@ export function makeHandler(
 			await handlers[cmdName]?.run(msg, args, support);
 		} else if (!msg.guildID) {
 			// Checking guildID is likely more performant than instanceof
-			await onDirectMessage(msg as Message<PrivateChannel>, support, bot).catch(logger.error);
+			await onDirectMessage(
+				msg as Message<PrivateChannel>,
+				support.database,
+				support.decks,
+				support.challonge,
+				support.participantRole,
+				bot
+			).catch(logger.error);
 		}
 	};
 }
@@ -55,10 +66,13 @@ function log(level: keyof typeof logger, msg: Message<PrivateChannel>, payload: 
 // The only allowed exceptions are final reply errors or initial database access failures
 export async function onDirectMessage(
 	msg: Message<PrivateChannel>,
-	support: CommandSupport,
+	database: Public<DatabaseWrapperPostgres>,
+	decks: DeckManager,
+	challonge: WebsiteInterface,
+	participantRole: ParticipantRoleProvider,
 	bot: Client
 ): Promise<void> {
-	let tournaments = await support.database.getPendingTournaments(msg.author.id);
+	let tournaments = await database.getPendingTournaments(msg.author.id);
 	if (tournaments.length > 1) {
 		const out = tournaments.map(t => t.name).join(", ");
 		log("info", msg, { event: "pending multiple", tournaments: out });
@@ -72,7 +86,7 @@ export async function onDirectMessage(
 		const tournament = tournaments[0];
 		log("info", msg, { event: "confirm start", tournament: tournament.id });
 		try {
-			await verifyDeckAndConfirmPending(msg, tournament, support, bot);
+			await verifyDeckAndConfirmPending(msg, tournament, database, decks, challonge, participantRole, bot);
 		} catch (error) {
 			log("info", msg, { event: "confirm fail", tournament: tournament.id, error: error.message });
 			await reply(
@@ -84,7 +98,7 @@ export async function onDirectMessage(
 		return;
 	}
 
-	tournaments = await support.database.getConfirmedTournaments(msg.author.id);
+	tournaments = await database.getConfirmedTournaments(msg.author.id);
 	if (tournaments.length > 1) {
 		const out = tournaments.map(t => t.name).join(", ");
 		log("info", msg, { event: "confirmed multiple", tournaments: out });
@@ -98,7 +112,7 @@ export async function onDirectMessage(
 		const tournament = tournaments[0];
 		log("info", msg, { event: "update start", tournament: tournament.id });
 		try {
-			await verifyDeckAndUpdateConfirmed(msg, tournament, support, bot);
+			await verifyDeckAndUpdateConfirmed(msg, tournament, database, decks, bot);
 		} catch (error) {
 			log("info", msg, { event: "update fail", tournament: tournament.id, error: error.message });
 			await reply(
@@ -136,15 +150,18 @@ async function verifyDeck(msg: Message<PrivateChannel>, decks: DeckManager) {
 async function verifyDeckAndConfirmPending(
 	msg: Message<PrivateChannel>,
 	tournament: DatabaseTournament,
-	support: CommandSupport,
+	database: Public<DatabaseWrapperPostgres>,
+	decks: DeckManager,
+	challonge: WebsiteInterface,
+	participantRole: ParticipantRoleProvider,
 	bot: Client
 ): Promise<void> {
-	const { deck, formattedDeckMessage } = await verifyDeck(msg, support.decks);
+	const { deck, formattedDeckMessage } = await verifyDeck(msg, decks);
 	const username = `${msg.author.username}#${msg.author.discriminator}`;
 	try {
-		const challongeId = await support.challonge.registerPlayer(tournament.id, username, msg.author.id);
+		const challongeId = await challonge.registerPlayer(tournament.id, username, msg.author.id);
 		log("verbose", msg, { event: "challonge", tournament: tournament.id });
-		await support.database.confirmPlayer(tournament.id, msg.author.id, challongeId, deck.url);
+		await database.confirmPlayer(tournament.id, msg.author.id, challongeId, deck.url);
 		log("verbose", msg, { event: "database", tournament: tournament.id });
 	} catch (error) {
 		logger.error(error);
@@ -163,7 +180,7 @@ async function verifyDeckAndConfirmPending(
 	}
 	let roleGrantWarning = "";
 	try {
-		await support.participantRole.grant(msg.author.id, tournament);
+		await participantRole.grant(msg.author.id, tournament);
 		log("verbose", msg, { event: "role", tournament: tournament.id });
 	} catch (error) {
 		logger.error(error);
@@ -196,13 +213,14 @@ async function verifyDeckAndConfirmPending(
 async function verifyDeckAndUpdateConfirmed(
 	msg: Message<PrivateChannel>,
 	tournament: DatabaseTournament,
-	support: CommandSupport,
+	database: Public<DatabaseWrapperPostgres>,
+	decks: DeckManager,
 	bot: Client
 ): Promise<void> {
-	const { deck, formattedDeckMessage } = await verifyDeck(msg, support.decks);
+	const { deck, formattedDeckMessage } = await verifyDeck(msg, decks);
 	const username = `${msg.author.username}#${msg.author.discriminator}`;
 	try {
-		await support.database.updateDeck(tournament.id, msg.author.id, deck.url);
+		await database.updateDeck(tournament.id, msg.author.id, deck.url);
 		log("verbose", msg, { event: "database", tournament: tournament.id });
 	} catch (error) {
 		logger.error(error);
