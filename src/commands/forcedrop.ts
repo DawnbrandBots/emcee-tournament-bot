@@ -1,4 +1,6 @@
 import { CommandDefinition } from "../Command";
+import { Participant } from "../database/orm";
+import { dropPlayerChallonge } from "../drop";
 import { reply } from "../util/discord";
 import { getLogger } from "../util/logger";
 
@@ -9,33 +11,87 @@ const command: CommandDefinition = {
 	requiredArgs: ["id", "who"],
 	executor: async (msg, args, support) => {
 		const [id, who] = args;
-		await support.database.authenticateHost(id, msg.author.id);
+		const tournament = await support.database.authenticateHost(id, msg.author.id);
 		const player = who.startsWith("<@!") && who.endsWith(">") ? who.slice(3, -1) : who;
-		logger.verbose(
-			JSON.stringify({
-				channel: msg.channel.id,
-				message: msg.id,
-				user: msg.author.id,
-				tournament: id,
-				command: "forcedrop",
-				player,
-				event: "attempt"
-			})
+		function log(payload: Record<string, unknown>): void {
+			logger.verbose(
+				JSON.stringify({
+					channel: msg.channel.id,
+					message: msg.id,
+					user: msg.author.id,
+					tournament: id,
+					command: "forcedrop",
+					...payload
+				})
+			);
+		}
+		log({ player, event: "attempt" });
+		const participant = await Participant.findOne({ tournamentId: id, discordId: player });
+		const username = await support.discord.getRESTUsername(player);
+		log({ player, exists: !!participant, challongeId: participant?.confirmed?.challongeId, username });
+		const name = username ? `<@${player}> (${username})` : who;
+		if (!participant) {
+			await reply(msg, `${name} not found in **${tournament.name}**.`);
+			return;
+		}
+		if (participant.confirmed) {
+			if (
+				await dropPlayerChallonge(
+					id,
+					tournament.privateChannels,
+					tournament.status,
+					participant.confirmed.challongeId,
+					who,
+					log,
+					support.discord,
+					support.challonge,
+					support.database
+				)
+			) {
+				try {
+					await support.participantRole.ungrant(player, tournament);
+				} catch (error) {
+					logger.warn(error);
+					await reply(msg, `Failed to remove **${tournament.name}** participant role from ${name}.`).catch(
+						logger.error
+					);
+				}
+			} else {
+				await reply(
+					msg,
+					"Something went wrong. Please check private channels for problems and try again later."
+				);
+				return;
+			}
+		}
+		const confirmed = !!participant.confirmed;
+		try {
+			await participant.remove();
+		} catch (error) {
+			logger.error(error);
+			await reply(msg, "Something went wrong. Please check private channels for problems and try again later.");
+			return;
+		}
+		// Notify relevant parties as long as the participant existed
+		await support.discord
+			.sendDirectMessage(player, `You have been dropped from **${tournament.name}** by the hosts.`)
+			.catch(logger.error);
+		for (const channel of tournament.privateChannels) {
+			await support.discord
+				.sendMessage(channel, `${name} has been forcefully dropped from **${tournament.name}**.`)
+				.catch(logger.error);
+		}
+		await reply(
+			msg,
+			confirmed
+				? `${name} was pending and dropped from **${tournament.name}**.`
+				: `${name} successfully dropped from **${tournament.name}**.`
 		);
-		await support.tournamentManager.dropPlayer(id, player, true);
-		logger.verbose(
-			JSON.stringify({
-				channel: msg.channel.id,
-				message: msg.id,
-				user: msg.author.id,
-				tournament: id,
-				command: "forcedrop",
-				mention: player,
-				event: "success"
-			})
-		);
-		const name = await support.discord.getRESTUsername(player);
-		await reply(msg, `Player ${name} successfully dropped from Tournament ${id}.`);
+		log({ player, event: "success" });
+		const messages = await support.database.getRegisterMessages(id);
+		for (const m of messages) {
+			await support.discord.removeUserReaction(m.channelId, m.messageId, "✅", player);
+		}
 	}
 };
 

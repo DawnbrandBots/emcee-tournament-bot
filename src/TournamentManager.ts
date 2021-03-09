@@ -1,7 +1,9 @@
 import { DatabaseTournament, TournamentStatus } from "./database/interface";
+import { Participant, RegisterMessage } from "./database/orm";
 import { DatabaseWrapperPostgres } from "./database/postgres";
 import { DeckManager } from "./deck";
 import { DiscordInterface, DiscordMessageIn, DiscordMessageLimited } from "./discord/interface";
+import { dropPlayerChallonge } from "./drop";
 import { ParticipantRoleProvider } from "./role/participant";
 import { Templater } from "./templates";
 import { PersistentTimer } from "./timer";
@@ -30,7 +32,6 @@ export type TournamentInterface = Pick<
 	| "startTournament"
 	| "finishTournament"
 	| "nextRound"
-	| "dropPlayer"
 >;
 
 /// "Link seam" to mock for testing
@@ -534,91 +535,109 @@ export class TournamentManager implements TournamentInterface {
 	}
 
 	private async dropPlayerReaction(msg: DiscordMessageLimited, playerId: string): Promise<void> {
-		// try to remove pending
-		const droppedTournament = await this.database.removePendingPlayer(msg.channelId, msg.id, playerId);
-		// an unconfirmed player dropping isn't worth reporting to the hosts
-		if (droppedTournament) {
+		const participant = await Participant.createQueryBuilder()
+			.where({ discordId: playerId })
+			.innerJoinAndSelect(RegisterMessage, "M", "M.tournamentId = Participant.tournamentId")
+			.andWhere("M.channelId = :channelId AND M.messageId = :messageId", {
+				channelId: msg.channelId,
+				messageId: msg.id
+			})
+			.leftJoinAndSelect("Participant.tournament", "tournament")
+			.leftJoinAndSelect("Participant.confirmed", "confirmed")
+
+			.getOne();
+		if (!participant) {
+			logger.warn(
+				JSON.stringify({
+					channel: msg.channelId,
+					message: msg.id,
+					user: playerId,
+					event: "drop reaction fail"
+				})
+			);
 			return;
 		}
-		// if wasn't found pending, try to remove confirmed
-		const tournament = await this.database.removeConfirmedPlayerReaction(msg.channelId, msg.id, playerId);
-		if (tournament) {
-			await this.sendDropMessage(tournament, playerId, tournament.id);
+		function log(payload: Record<string, unknown>): void {
+			logger.verbose(
+				JSON.stringify({
+					channel: msg.channelId,
+					message: msg.id,
+					user: playerId,
+					tournament: participant?.tournamentId,
+					...payload
+				})
+			);
 		}
-		// players can only drop by reaction when a tournament is preparing, so we don't have to worry about scores
-	}
-
-	public async dropPlayer(tournamentId: string, playerId: string, force = false): Promise<void> {
-		const tournament = await this.database.removeConfirmedPlayerForce(tournamentId, playerId);
-		if (tournament) {
-			await this.sendDropMessage(tournament, playerId, tournamentId, force);
-		}
-	}
-
-	// TODO: misleading function name, this command handles all drop logic after checking validity
-	private async sendDropMessage(
-		tournament: DatabaseTournament,
-		playerId: string,
-		tournamentId: string,
-		force = false
-	): Promise<void> {
-		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-		const player = tournament.findPlayer(playerId)!;
-		// if the tournament is in progress, they may have a match we must concede on their behalf
-		if (tournament.status === TournamentStatus.IPR) {
-			// function can also find open match
-			const match = await this.website.findClosedMatch(tournament.id, player.challongeId);
-			// if there's no match, the dropping player had the bye
-			if (match) {
-				const oppChallonge = match.player1 === player.challongeId ? match.player2 : match.player1;
-				const opponent = tournament.players.find(p => p.challongeId === oppChallonge);
-				// for an open match, the droppng player concedes
-				if (match.open) {
-					await this.website.submitScore(tournament.id, match, oppChallonge, 2, 0);
-					// should exist but checking is safer than not-null assertion
-					if (opponent) {
+		const who = `<@${playerId}>`; // TODO: username + discriminator should be known when we remove the wrapper
+		if (participant.confirmed) {
+			if (
+				await dropPlayerChallonge(
+					participant.tournamentId,
+					participant.tournament.privateChannels,
+					participant.tournament.status,
+					participant.confirmed.challongeId,
+					who,
+					log,
+					this.discord,
+					this.website,
+					this.database
+				)
+			) {
+				try {
+					await this.participantRole.ungrant(playerId, {
+						id: participant.tournamentId,
+						server: participant.tournament.owningDiscordServer
+					});
+				} catch (error) {
+					logger.warn(error);
+					for (const channel of participant.tournament.privateChannels) {
 						await this.discord
-							.sendDirectMessage(
-								opponent.discordId,
-								`Your opponent ${this.discord.mentionUser(
-									player.discordId
-								)} has dropped from the tournament, conceding this round to you. You don't need to submit a score for this round.`
+							.sendMessage(
+								channel,
+								`Failed to remove **${participant.tournament.name}** participant role from ${who}.`
 							)
 							.catch(logger.error);
 					}
-				} else if (!opponent) {
-					// if the match is closed and the opponent has also dropped, the score needs to be amended to a tie
-					// TODO: keep in mind when we change to tracking dropped players
-					await this.website.submitScore(tournament.id, match, oppChallonge, 0, 0);
 				}
+			} else {
+				await this.discord.sendDirectMessage(
+					playerId,
+					`Something went wrong with dropping from **${participant.tournament.name}**. Please try again later or ask your hosts how to proceed.`
+				);
+				return;
 			}
 		}
-		await this.website.removePlayer(tournament.id, player.challongeId);
-		await this.participantRole.ungrant(playerId, tournament).catch(logger.error);
-		logger.verbose(`User ${playerId} dropped from tournament ${tournament.id}${force ? " by host" : ""}.`);
-		await this.discord
-			.sendDirectMessage(
-				playerId,
-				force
-					? `You have been dropped from Tournament ${tournament.name} by the hosts.`
-					: `You have successfully dropped from Tournament ${tournament.name}.`
-			)
-			.catch(logger.error);
-		const channels = tournament.privateChannels;
-		await Promise.all(
-			channels.map(
-				async c =>
-					await this.discord.sendMessage(
-						c,
-						`Player ${this.discord.mentionUser(playerId)} (${this.discord.getUsername(playerId)}) has ${
-							force ? "been forcefully dropped" : "chosen to drop"
-						} from Tournament ${tournament.name} (${tournament.id}).`
+		const confirmed = !!participant.confirmed;
+		try {
+			await participant.remove();
+		} catch (error) {
+			logger.error(error);
+			for (const channel of participant.tournament.privateChannels) {
+				await this.discord
+					.sendMessage(
+						channel,
+						`Failed to drop ${who} from **${participant.tournament.name}** upon request. Please try again later.`
 					)
-			)
-		).catch(logger.error);
-		const messages = await this.database.getRegisterMessages(tournamentId);
-		for (const m of messages) {
-			await this.discord.removeUserReaction(m.channelId, m.messageId, this.CHECK_EMOJI, playerId);
+					.catch(logger.error);
+			}
+			await this.discord
+				.sendDirectMessage(
+					playerId,
+					`Something went wrong with dropping from **${participant.tournament.name}**. Please try again later or ask your hosts how to proceed.`
+				)
+				.catch(logger.error);
+			return;
 		}
+		log({ event: "success" });
+		if (confirmed) {
+			for (const channel of participant.tournament.privateChannels) {
+				await this.discord
+					.sendMessage(channel, `**${participant.tournament.name}** drop: ${who}`)
+					.catch(logger.error);
+			}
+		}
+		await this.discord
+			.sendDirectMessage(playerId, `You have dropped from **${participant.tournament.name}**.`)
+			.catch(logger.error);
 	}
 }
