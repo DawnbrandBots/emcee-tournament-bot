@@ -66,7 +66,7 @@ describe("Direct message submissions", function () {
 			await onDirectMessage(sampleMessage, database, decks, challonge, participantRole, mockBotClient);
 			expect(mockBotClient.createMessage).to.have.been.calledWith(
 				"channel2",
-				"<@testUser> (undefined#undefined) has signed up for **Tournament 1** with the following deck! "
+				"<@testUser> (undefined#undefined) has signed up for **Tournament 1** with the following deck!"
 			);
 			expect(mockBotClient.createMessage).to.have.been.calledWith("channel2", {}, { name: "mock", file: "mock" });
 			expect(sampleMessage.channel.createMessage).to.have.been.calledWith(

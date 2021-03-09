@@ -184,13 +184,13 @@ async function verifyDeckAndConfirmPending(
 		log("verbose", msg, { event: "role", tournament: tournament.id });
 	} catch (error) {
 		logger.error(error);
-		roleGrantWarning = "I couldn't assign them a role. Am I missing permissions?";
+		roleGrantWarning = " I couldn't assign them a role. Am I missing permissions?";
 	}
 	for (const channel of tournament.privateChannels) {
 		try {
 			await bot.createMessage(
 				channel,
-				`<@${msg.author.id}> (${username}) has signed up for **${tournament.name}** with the following deck! ${roleGrantWarning}`
+				`<@${msg.author.id}> (${username}) has signed up for **${tournament.name}** with the following deck!${roleGrantWarning}`
 			);
 			await bot.createMessage(channel, ...formattedDeckMessage);
 		} catch (error) {
