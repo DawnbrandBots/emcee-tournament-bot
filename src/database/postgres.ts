@@ -297,6 +297,14 @@ export class DatabaseWrapperPostgres {
 		});
 	}
 
+	async updateDeck(tournamentId: string, discordId: string, deck: string): Promise<void> {
+		await ConfirmedParticipant.createQueryBuilder()
+			.update()
+			.set({ deck })
+			.where({ tournamentId, discordId })
+			.execute();
+	}
+
 	async getActiveTournaments(server?: string): Promise<DatabaseTournament[]> {
 		const owningDiscordServer = server || Not(IsNull());
 		const tournaments = await ChallongeTournament.find({

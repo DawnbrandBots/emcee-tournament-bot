@@ -307,4 +307,7 @@ export class DatabaseWrapperMock {
 	getPlayerByChallonge(): Promise<DatabasePlayer> {
 		throw new Error("Not implemented");
 	}
+	updateDeck(): Promise<void> {
+		throw new Error("Not implemented");
+	}
 }

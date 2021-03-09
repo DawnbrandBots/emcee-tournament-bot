@@ -5,10 +5,9 @@ import { Participant } from "../database/orm";
 import { DiscordInterface } from "../discord/interface";
 import { dropPlayerChallonge } from "../drop";
 import { getLogger } from "../util/logger";
+import { Tail } from "../util/types";
 
 const logger = getLogger("guildMemberRemove");
-
-type Tail<T extends unknown[]> = T extends [unknown, ...infer R] ? R : never;
 
 /**
  * Helper function to send the same message to the list of channels and

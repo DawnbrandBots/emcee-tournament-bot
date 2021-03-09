@@ -1,7 +1,6 @@
 import { DatabaseTournament, TournamentStatus } from "./database/interface";
 import { Participant, RegisterMessage } from "./database/orm";
 import { DatabaseWrapperPostgres } from "./database/postgres";
-import { DeckManager } from "./deck";
 import { DiscordInterface, DiscordMessageIn, DiscordMessageLimited } from "./discord/interface";
 import { dropPlayerChallonge } from "./drop";
 import { ParticipantRoleProvider } from "./role/participant";
@@ -9,23 +8,14 @@ import { Templater } from "./templates";
 import { PersistentTimer } from "./timer";
 import { BlockedDMsError, ChallongeAPIError, TournamentNotFoundError, UserError } from "./util/errors";
 import { getLogger } from "./util/logger";
+import { Public, Tail } from "./util/types";
 import { WebsiteInterface, WebsiteTournament } from "./website/interface";
 
 const logger = getLogger("tournament");
 
-interface MatchScore {
-	playerId: number;
-	playerDiscord: string;
-	playerScore: number;
-	oppScore: number;
-}
-
-type Public<T> = Pick<T, keyof T>;
-type Tail<T extends unknown[]> = T extends [unknown, ...infer R] ? R : never;
 export type TournamentInterface = Pick<
 	TournamentManager,
 	| "registerPlayer"
-	| "confirmPlayer"
 	| "cleanRegistration"
 	| "createTournament"
 	| "openTournament"
@@ -41,7 +31,6 @@ interface PersistentTimerDelegate {
 }
 
 export class TournamentManager implements TournamentInterface {
-	private matchScores: Record<number, MatchScore> = {};
 	private timers: Record<string, PersistentTimer[]> = {}; // index: tournament id
 	constructor(
 		private discord: DiscordInterface,
@@ -49,8 +38,7 @@ export class TournamentManager implements TournamentInterface {
 		private website: WebsiteInterface,
 		private templater: Templater,
 		private participantRole: ParticipantRoleProvider,
-		private timer: PersistentTimerDelegate,
-		private decks: DeckManager
+		private timer: PersistentTimerDelegate
 	) {}
 
 	public async loadTimers(): Promise<void> {
@@ -187,112 +175,6 @@ export class TournamentManager implements TournamentInterface {
 					throw e;
 				}
 			}
-		}
-	}
-
-	public async confirmPlayer(msg: DiscordMessageIn): Promise<void> {
-		// only check decklists in DMs
-		if (msg.serverId !== "private") {
-			return;
-		}
-		const tournaments = await this.database.getPendingTournaments(msg.author);
-		if (tournaments.length > 1) {
-			const out = tournaments.map(t => t.name).join(", ");
-			await msg.reply(
-				`You are registering in multiple tournaments. Please register in one at a time by unchecking the reaction on all others.\n${out}`
-			);
-			return;
-		}
-		if (tournaments.length === 1) {
-			const tournament = tournaments[0];
-			const deck = await this.decks.getDeckFromMessage(msg);
-			if (!deck) {
-				await msg.reply("Must provide either attached `.ydk` file or valid `ydke://` URL!");
-				return;
-			}
-			const [content, file] = this.decks.prettyPrint(deck, `${this.discord.getUsername(msg.author)}.ydk`);
-			if (deck.validationErrors.length > 0) {
-				await msg.reply(
-					`Your deck is not legal for Tournament ${tournament.name}. Please see the print out below for all the errors. You have NOT been registered yet, please submit again with a legal deck.`
-				);
-				await msg.reply(content, file);
-				return;
-			}
-			const challongeId = await this.website.registerPlayer(
-				tournament.id,
-				this.discord.getUsername(msg.author),
-				msg.author
-			);
-			await this.database.confirmPlayer(tournament.id, msg.author, challongeId, deck.url);
-			await this.participantRole.grant(msg.author, tournament).catch(logger.error);
-			const channels = tournament.privateChannels;
-			await Promise.all(
-				channels.map(async c => {
-					await this.discord.sendMessage(
-						c,
-						`Player ${this.discord.mentionUser(msg.author)} (${this.discord.getUsername(
-							msg.author
-						)}) has signed up for Tournament ${tournament.name} (${tournament.id}) with the following deck!`
-					);
-					await this.discord.sendMessage(c, content, file);
-				})
-			);
-			logger.verbose(`User ${msg.author} confirmed for tournament ${tournament.id}.`);
-			await msg.reply(
-				`You have successfully signed up for Tournament ${tournament.name}! Your deck is below to double-check.`
-			);
-			await msg.reply(content, file);
-			return;
-		}
-		// allow confirmed user to resubmit
-		const confirmedTourns = await this.database.getConfirmedTournaments(msg.author);
-		if (confirmedTourns.length > 1) {
-			const out = confirmedTourns.map(t => t.name).join(", ");
-			await msg.reply(
-				`You're trying to update your deck for a tournament, but you're in multiple! Please choose one by dropping and registering again.\n${out}`
-			);
-			return;
-		}
-		if (confirmedTourns.length === 1) {
-			const tournament = confirmedTourns[0];
-			// tournament already confirmed preparing by filter
-			const deck = await this.decks.getDeckFromMessage(msg);
-			if (!deck) {
-				await msg.reply("Must provide either attached `.ydk` file or valid `ydke://` URL!");
-				return;
-			}
-			const [content, file] = this.decks.prettyPrint(deck, `${this.discord.getUsername(msg.author)}.ydk`);
-			if (deck.validationErrors.length > 0) {
-				await msg.reply(
-					`Your new deck is not legal for Tournament ${tournament.name}. Please see the print out below for all the errors. Your deck has not been changed.`
-				);
-				await msg.reply(content, file);
-				return;
-			}
-			// already registered on website
-			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-			const player = tournament.findPlayer(msg.author)!;
-			// running for a confirmed player updates the deck
-			await this.database.confirmPlayer(tournament.id, msg.author, player.challongeId, deck.url);
-			const channels = tournament.privateChannels;
-			await Promise.all(
-				channels.map(async c => {
-					await this.discord.sendMessage(
-						c,
-						`Player ${this.discord.mentionUser(msg.author)} (${this.discord.getUsername(
-							msg.author
-						)}) has updated their deck for Tournament ${tournament.name} (${
-							tournament.id
-						}) to the following!`
-					);
-					await this.discord.sendMessage(c, content, file);
-				})
-			);
-			logger.verbose(`User ${msg.author} updated deck for tournament ${tournament.id}.`);
-			await msg.reply(
-				`You have successfully changed your deck for Tournament ${tournament.name}! Your deck is below to double-check.`
-			);
-			await msg.reply(content, file);
 		}
 	}
 
