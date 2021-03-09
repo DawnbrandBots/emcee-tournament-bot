@@ -19,10 +19,8 @@ async function destroy(id: string): Promise<void> {
 	}
 }
 
-// list of tournament ids to delete, fill out before running
-const list: string[] = [];
-
 async function go(): Promise<void> {
+	const list = process.argv.slice(2); // first two args are "~/ts-node" and "~/clean.ts"
 	for (const id of list) {
 		await destroy(id);
 	}
