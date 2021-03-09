@@ -5,6 +5,7 @@ import {
 	DatabaseTournament,
 	TournamentStatus
 } from "../../src/database/interface";
+import { DatabaseWrapperPostgres } from "../../src/database/postgres";
 import { TournamentNotFoundError, UnauthorisedHostError, UnauthorisedPlayerError } from "../../src/util/errors";
 
 function findPlayer(id: string): DatabasePlayer | undefined {
@@ -274,11 +275,8 @@ export class DatabaseWrapperMock {
 	removeConfirmedPlayerForce(tournamentId: string): Promise<DatabaseTournament | undefined> {
 		return this.getTournament(tournamentId);
 	}
-	async startTournament(tournamentId: string): Promise<string[]> {
-		if (tournamentId.startsWith("pend")) {
-			return ["pendingPlayer"];
-		}
-		return [];
+	startTournament(): Promise<void> {
+		throw new Error("Not implemented");
 	}
 	async nextRound(tournamentId: string): Promise<number> {
 		if (tournamentId === "tourn2") {
@@ -305,6 +303,9 @@ export class DatabaseWrapperMock {
 		throw new Error("Not implemented");
 	}
 	getPlayerByChallonge(): Promise<DatabasePlayer> {
+		throw new Error("Not implemented");
+	}
+	prestartTournament(): ReturnType<DatabaseWrapperPostgres["prestartTournament"]> {
 		throw new Error("Not implemented");
 	}
 	updateDeck(): Promise<void> {

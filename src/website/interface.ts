@@ -78,26 +78,6 @@ export class WebsiteInterface {
 		await this.api.startTournament(tournamentId);
 	}
 
-	public async getBye(tournamentId: string, cachedMatches?: WebsiteMatch[]): Promise<string | undefined> {
-		const tournament = await this.getTournament(tournamentId);
-		// do not count dropped players
-		const activePlayers = tournament.players.filter(p => p.active);
-		if (activePlayers.length % 2 === 0) {
-			// even number of players means no bye
-			return undefined;
-		}
-		const matches = cachedMatches || (await this.api.getMatches(tournamentId));
-		// Find a player for which the following is true
-		const bye = activePlayers.find(p => {
-			// Find a match which includes the player
-			const match = matches.find(m => m.player1 === p.challongeId || m.player2 === p.challongeId);
-			// Negate: if we found a match, this player doesn't have the bye.
-			return !match;
-		});
-		// This finds a player not in any match - i.e., they have the bye
-		return bye?.discordId;
-	}
-
 	// public interface is expected to get open matches
 	public async getMatches(tournamentId: string): Promise<WebsiteMatch[]> {
 		return await this.api.getMatches(tournamentId, true);

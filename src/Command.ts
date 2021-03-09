@@ -4,6 +4,8 @@ import { DeckManager } from "./deck";
 import { DiscordInterface } from "./discord/interface";
 import { OrganiserRoleProvider } from "./role/organiser";
 import { ParticipantRoleProvider } from "./role/participant";
+import { Templater } from "./templates";
+import { TimeWizard } from "./timer";
 import { TournamentInterface } from "./TournamentManager";
 import { reply } from "./util/discord";
 import { UserError } from "./util/errors";
@@ -29,6 +31,8 @@ export interface CommandSupport {
 	scores: Map<string, Map<number, MatchScore>>;
 	decks: DeckManager;
 	participantRole: ParticipantRoleProvider;
+	templater: Templater;
+	timeWizard: TimeWizard;
 }
 
 // This is a composition-over-inheritance approach. In an inheritance model this

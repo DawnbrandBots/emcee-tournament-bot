@@ -1,4 +1,6 @@
 import { CommandDefinition } from "../Command";
+import { TournamentStatus } from "../database/interface";
+import { advanceRoundDiscord, parseTime } from "../round";
 import { reply } from "../util/discord";
 import { getLogger } from "../util/logger";
 
@@ -8,8 +10,16 @@ const command: CommandDefinition = {
 	name: "round",
 	requiredArgs: ["id"],
 	executor: async (msg, args, support) => {
-		const [id, skip] = args; // second is optional and may be undefined
-		await support.database.authenticateHost(id, msg.author.id);
+		// Argument combinations:
+		// id
+		// id|timer
+		// id|skip
+		// id|timer|skip
+		// 50 is the assumed default timer for live tournaments
+		const [id] = args;
+		const skip = args[1] === "skip" || args[2] === "skip";
+		const timer = (args.length === 2 && !skip) || args.length > 2 ? parseTime(args[1]) : 50;
+		const tournament = await support.database.authenticateHost(id, msg.author.id, TournamentStatus.IPR);
 		logger.verbose(
 			JSON.stringify({
 				channel: msg.channel.id,
@@ -17,10 +27,12 @@ const command: CommandDefinition = {
 				user: msg.author.id,
 				tournament: id,
 				command: "round",
-				event: "attempt"
+				event: "attempt",
+				timer,
+				skip
 			})
 		);
-		await support.tournamentManager.nextRound(id, !!skip);
+		await advanceRoundDiscord(support, tournament, timer, skip);
 		support.scores.get(id)?.clear();
 		logger.verbose(
 			JSON.stringify({
@@ -32,7 +44,10 @@ const command: CommandDefinition = {
 				event: "success"
 			})
 		);
-		await reply(msg, `New round successfully started for Tournament ${id}.`);
+		await reply(
+			msg,
+			`Pairings sent out for **${tournament.name}**. Please check the private channels for any failed DMs.`
+		);
 	}
 };
 

@@ -1,6 +1,6 @@
 import { getConnection } from "typeorm";
-import { Countdown } from "./database/orm";
-import { getLogger } from "./util/logger";
+import { Countdown } from "../database/orm";
+import { getLogger } from "../util/logger";
 
 const logger = getLogger("timer");
 
@@ -143,8 +143,16 @@ export class PersistentTimer {
 	}
 
 	public static formatTime(milli: number): string {
-		const minutes = Math.floor(milli / 1000 / 60);
+		let minutes = Math.floor(milli / 1000 / 60);
 		const seconds = Math.floor(milli / 1000) % 60;
-		return `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
+		if (minutes <= 60) {
+			return `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
+		} else {
+			const hours = Math.floor(minutes / 60)
+				.toString()
+				.padStart(2, "0");
+			minutes = minutes % 60;
+			return `${hours}:${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
+		}
 	}
 }

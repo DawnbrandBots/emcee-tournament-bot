@@ -1,7 +1,7 @@
 import chai, { expect } from "chai";
+import chaiAsPromised from "chai-as-promised";
 import { WebsiteInterface } from "../src/website/interface";
 import { WebsiteWrapperMock } from "./mocks/website";
-import chaiAsPromised from "chai-as-promised";
 chai.use(chaiAsPromised);
 
 const websiteMock = new WebsiteWrapperMock();
@@ -45,16 +45,6 @@ describe("Tournament creation commands", function () {
 describe("Tournament flow commands", function () {
 	it("startTournament", async function () {
 		await expect(website.startTournament("test")).to.not.be.rejected;
-	});
-
-	it("getBye - no bye", async function () {
-		const bye = await website.getBye("test");
-		expect(bye).to.be.undefined;
-	});
-
-	it("getBye - there is a bye", async function () {
-		const bye = await website.getBye("bye");
-		expect(bye).to.equal("bye");
 	});
 
 	it("findMatch", async function () {

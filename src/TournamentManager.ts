@@ -5,61 +5,28 @@ import { DiscordInterface, DiscordMessageIn, DiscordMessageLimited } from "./dis
 import { dropPlayerChallonge } from "./drop";
 import { ParticipantRoleProvider } from "./role/participant";
 import { Templater } from "./templates";
-import { PersistentTimer } from "./timer";
+import { TimeWizard } from "./timer";
 import { BlockedDMsError, ChallongeAPIError, TournamentNotFoundError, UserError } from "./util/errors";
 import { getLogger } from "./util/logger";
-import { Public, Tail } from "./util/types";
+import { Public } from "./util/types";
 import { WebsiteInterface, WebsiteTournament } from "./website/interface";
 
 const logger = getLogger("tournament");
 
 export type TournamentInterface = Pick<
 	TournamentManager,
-	| "registerPlayer"
-	| "cleanRegistration"
-	| "createTournament"
-	| "openTournament"
-	| "startTournament"
-	| "finishTournament"
-	| "nextRound"
+	"registerPlayer" | "cleanRegistration" | "createTournament" | "openTournament" | "finishTournament"
 >;
 
-/// "Link seam" to mock for testing
-interface PersistentTimerDelegate {
-	create: (...args: Tail<Parameters<typeof PersistentTimer.create>>) => ReturnType<typeof PersistentTimer.create>;
-	loadAll: () => ReturnType<typeof PersistentTimer.loadAll>;
-}
-
 export class TournamentManager implements TournamentInterface {
-	private timers: Record<string, PersistentTimer[]> = {}; // index: tournament id
 	constructor(
 		private discord: DiscordInterface,
 		private database: Public<DatabaseWrapperPostgres>,
 		private website: WebsiteInterface,
 		private templater: Templater,
 		private participantRole: ParticipantRoleProvider,
-		private timer: PersistentTimerDelegate
+		private timeWizard: TimeWizard
 	) {}
-
-	public async loadTimers(): Promise<void> {
-		if (Object.keys(this.timers).length) {
-			logger.warn(new Error("loadTimers called multiple times"));
-		} else {
-			const timers = await this.timer.loadAll();
-			let count = 0;
-			for (const timer of timers) {
-				if (timer.tournament) {
-					this.timers[timer.tournament] = (this.timers[timer.tournament] || []).concat(timer);
-					count++;
-				} else {
-					logger.warn(new Error("Aborting orphaned timer"));
-					await timer.abort();
-				}
-			}
-			const tournaments = Object.keys(this.timers).length;
-			logger.info(`Loaded ${count} of ${timers.length} PersistentTimers for ${tournaments} tournaments.`);
-		}
-	}
 
 	public async loadButtons(): Promise<void> {
 		// TODO: check for repeated calls.
@@ -211,176 +178,6 @@ export class TournamentManager implements TournamentInterface {
 		);
 	}
 
-	// we could have logic for sending matchups in DMs in this function,
-	// but we want this to send first and leave it largely self-contained
-	private async sendNewRoundMessage(
-		channelId: string,
-		tournament: DatabaseTournament,
-		url: string,
-		round: number
-	): Promise<void> {
-		const role = this.discord.mentionRole(await this.participantRole.get(tournament));
-		const message = `Round ${round} of ${tournament.name} has begun! ${role}\nPairings will be sent out by Direct Message shortly, or can be found here: ${url}`;
-		await this.discord.sendMessage(channelId, message);
-	}
-
-	private async cancelTimers(tournament: DatabaseTournament): Promise<void> {
-		for (const timer of this.timers[tournament.id] || []) {
-			await timer.abort();
-		}
-		this.timers[tournament.id] = [];
-	}
-
-	private async sendMatchupDM(
-		tournament: DatabaseTournament,
-		receiverId: string,
-		opponentId: string,
-		opponentName: string | null,
-		round: number
-	): Promise<void> {
-		let message = `Round ${round} of ${tournament.name} has begun! `;
-		message += opponentName
-			? `Your opponent is ${this.discord.mentionUser(
-					opponentId
-			  )} (${opponentName}). Make sure to report your score after the match is over!`
-			: "I couldn't find your opponent. If you don't think you should have a bye for this round, please check the pairings.";
-		try {
-			await this.discord.sendDirectMessage(receiverId, message);
-		} catch (e) {
-			await this.reportMatchDMFailure(tournament, receiverId, opponentId);
-		}
-	}
-
-	private async reportMatchDMFailure(
-		tournament: DatabaseTournament,
-		userId: string,
-		opponent: string
-	): Promise<void> {
-		for (const channel of tournament.privateChannels) {
-			await this.discord.sendMessage(
-				channel,
-				`I couldn't send a DM to ${this.discord.mentionUser(userId)} (${userId}) about their matchup for ${
-					tournament.name
-				}. If they're not a human player, this is normal, but otherwise please tell them their opponent is ${this.discord.mentionUser(
-					opponent
-				)} (${this.discord.getUsername(opponent)}), and vice versa.`
-			);
-		}
-	}
-
-	private async getRealUsername(userId: string): Promise<string | null> {
-		// Naive check for an obviously invalid snowflake, such as the BYE# or DUMMY# we insert
-		// This saves the overhead of an HTTP request
-		if (!userId.length || userId[0] <= "0" || userId[0] >= "9") {
-			return null;
-		}
-		return await this.discord.getRESTUsername(userId);
-	}
-
-	private async startNewRound(tournament: DatabaseTournament, url: string, skip = false): Promise<void> {
-		const role = this.discord.mentionRole(await this.participantRole.get(tournament));
-		await this.cancelTimers(tournament);
-		const round = await this.website.getRound(tournament.id);
-		this.timers[tournament.id] = await Promise.all(
-			tournament.publicChannels.map(async channelId => {
-				await this.sendNewRoundMessage(channelId, tournament, url, round);
-				return await this.timer.create(
-					new Date(Date.now() + 50 * 60 * 1000), // 50 minutes
-					channelId,
-					`That's time in the round, ${role}! Please end the current phase, then the player with the lower LP must forfeit!`,
-					5, // update every 5 seconds
-					tournament.id
-				);
-			})
-		);
-		// can skip sending DMs
-		if (skip) {
-			return;
-		}
-		// direct message matchups to players
-		const matches = await this.website.getMatches(tournament.id);
-		const players = await this.website.getPlayers(tournament.id);
-		await Promise.all(
-			matches.map(async match => {
-				const player1 = players.find(p => p.challongeId === match.player1)?.discordId;
-				const player2 = players.find(p => p.challongeId === match.player2)?.discordId;
-				if (player1 && player2) {
-					const name1 = await this.getRealUsername(player1);
-					const name2 = await this.getRealUsername(player2);
-					if (name1) {
-						await this.sendMatchupDM(tournament, player1, player2, name2, round);
-					} else {
-						await this.reportMatchDMFailure(tournament, player1, player2);
-					}
-					if (name2) {
-						await this.sendMatchupDM(tournament, player2, player1, name1, round);
-					} else {
-						await this.reportMatchDMFailure(tournament, player2, player1);
-					}
-				} else {
-					// This error occuring is an issue on Challonge's end
-					logger.warn(
-						new Error(
-							`Challonge IDs ${player1} and/or ${player2} found in match ${match.matchId} but not the player list.`
-						)
-					);
-				}
-			})
-		);
-		const bye = await this.website.getBye(tournament.id, matches);
-		if (bye) {
-			await this.discord.sendDirectMessage(
-				bye,
-				`Round ${round} of ${tournament.name} has begun! You have a bye for this round.`
-			);
-		}
-	}
-
-	public async startTournament(tournamentId: string): Promise<void> {
-		const tournament = await this.database.getTournament(tournamentId, TournamentStatus.PREPARING);
-		if (tournament.players.length < 2) {
-			throw new UserError("Cannot start a tournament without at least 2 confirmed participants!");
-		}
-		// delete register messages
-		// TODO: can be a single transaction instead of relying on onDelete->cleanRegistration,
-		//       a totally unclear relationship without the comment
-		const messages = await this.database.getRegisterMessages(tournamentId);
-		await Promise.all(
-			messages.map(async m => {
-				// onDelete handler will handle database cleanup
-				await this.discord.deleteMessage(m.channelId, m.messageId);
-			})
-		);
-		// drop pending participants
-		const droppedPlayers = await this.database.startTournament(tournamentId);
-		await Promise.all(
-			droppedPlayers.map(async p => {
-				await this.discord.sendDirectMessage(
-					p,
-					`Sorry, Tournament ${tournament.name} has started and you didn't submit a deck, so you have been dropped.`
-				);
-			})
-		);
-		// send command guide to players
-		const channels = tournament.publicChannels;
-		await Promise.all(
-			channels.map(async c => await this.discord.sendMessage(c, this.templater.format("player", tournamentId)))
-		);
-		// send command guide to hosts
-		await Promise.all(
-			tournament.privateChannels.map(
-				async c => await this.discord.sendMessage(c, this.templater.format("start", tournamentId))
-			)
-		);
-		// start tournament on challonge
-		await this.website.assignByes(tournamentId, tournament.byes);
-		await this.website.startTournament(tournamentId);
-		const webTourn = await this.website.getTournament(tournamentId);
-		await this.startNewRound(tournament, webTourn.url);
-		// drop dummy players once the tournament has started to give players with byes the win
-		await this.website.dropByes(tournamentId, tournament.byes.length);
-	}
-
 	public async finishTournament(tournamentId: string, cancel = false): Promise<void> {
 		const tournament = await this.database.getTournament(tournamentId, TournamentStatus.IPR);
 		const channels = tournament.publicChannels;
@@ -391,7 +188,7 @@ export class TournamentManager implements TournamentInterface {
 			// TODO: edit description to say cancelled?
 			webTourn = await this.website.getTournament(tournamentId);
 		}
-		await this.cancelTimers(tournament);
+		await this.timeWizard.cancel(tournament.id);
 
 		await this.database.finishTournament(tournamentId);
 		const role = this.discord.mentionRole(await this.participantRole.get(tournament));
@@ -406,14 +203,6 @@ export class TournamentManager implements TournamentInterface {
 			})
 		);
 		await this.participantRole.delete(tournament);
-	}
-
-	// specifically only handles telling participants about a new round
-	// hosts should handle outstanding scores individually with forcescore
-	public async nextRound(tournamentId: string, skip = false): Promise<void> {
-		const tournament = await this.database.getTournament(tournamentId, TournamentStatus.IPR);
-		const webTourn = await this.website.getTournament(tournamentId);
-		await this.startNewRound(tournament, webTourn.url, skip);
 	}
 
 	private async dropPlayerReaction(msg: DiscordMessageLimited, playerId: string): Promise<void> {
