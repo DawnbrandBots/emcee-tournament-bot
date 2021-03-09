@@ -7,6 +7,9 @@ Players report their own score.
 If you need, you can also report scores. Mention the winner.
 ```
 mc!forcescore {}|2-1|@Winner```
+If you have a lot of unfinished matches at the end of the round, you can make them all ties at once.
+```
+mc!tie {}```
 **Advance round**
 Restarts the timer in public channels and notifies everybody on Discord about the current round and their pairings.
 This doesn't control Challonge, which advances rounds automatically when all scores are submitted.
