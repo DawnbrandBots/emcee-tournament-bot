@@ -46,8 +46,7 @@ const logger = getLogger("index");
 		challonge,
 		templater,
 		participantRole,
-		timeWizard,
-		decks
+		timeWizard
 	);
 	registerEvents(bot, config.defaultPrefix, {
 		discord,

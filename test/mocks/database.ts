@@ -296,9 +296,6 @@ export class DatabaseWrapperMock {
 	async removeBye(): Promise<string[]> {
 		throw new Error("Not implemented");
 	}
-	dropFromAll(): ReturnType<DatabaseWrapperPostgres["dropFromAll"]> {
-		throw new Error("Not implemented");
-	}
 	async getConfirmed(): Promise<DatabasePlayer[]> {
 		return [];
 	}
@@ -309,6 +306,9 @@ export class DatabaseWrapperMock {
 		throw new Error("Not implemented");
 	}
 	prestartTournament(): ReturnType<DatabaseWrapperPostgres["prestartTournament"]> {
+		throw new Error("Not implemented");
+	}
+	updateDeck(): Promise<void> {
 		throw new Error("Not implemented");
 	}
 }

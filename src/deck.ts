@@ -1,11 +1,11 @@
+import { AdvancedMessageContent, Attachment, Message, MessageFile } from "eris";
 import fetch from "node-fetch";
-import { Card, CardArray, Deck, UrlConstructionError } from "ydeck";
+import { Card, CardArray, Deck } from "ydeck";
 import { DeckError } from "ydeck/dist/validation";
 import { Card as DataCard, YgoData } from "ygopro-data";
 import cardOpts from "./config/cardOpts.json";
 import dataOpts from "./config/dataOpts.json";
 import transOpts from "./config/transOpts.json";
-import { DiscordAttachmentOut, DiscordMessageIn, DiscordMessageOut } from "./discord/interface";
 import { getLogger } from "./util/logger";
 
 const logger = getLogger("deck");
@@ -65,34 +65,28 @@ export async function initializeDeckManager(octokitToken: string): Promise<DeckM
 }
 
 export class DeckManager {
-	private deckCache: { [url: string]: Deck } = {};
+	// TODO: what is the lifetime of this cache?
+	private deckCache = new Map<string, Deck>(); // key: ydke URL
 	constructor(private cardArray: CardArray) {}
 
 	public getDeck(url: string, limiter?: string): Deck {
-		if (!this.deckCache[url]) {
-			this.deckCache[url] = new Deck(url, this.cardArray, limiter);
+		if (!this.deckCache.has(url)) {
+			this.deckCache.set(url, new Deck(url, this.cardArray, limiter));
 		}
-		return this.deckCache[url];
+		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+		return this.deckCache.get(url)!;
 	}
 
-	public async getDeckFromMessage(msg: DiscordMessageIn): Promise<Deck | null> {
+	public async getDeckFromMessage(msg: Message): Promise<Deck> {
 		if (msg.attachments.length > 0 && msg.attachments[0].filename.endsWith(".ydk")) {
-			const ydk = await this.extractYdk(msg);
-			const url = Deck.ydkToUrl(ydk);
-			return this.getDeck(url);
+			const ydk = await this.extractYdk(msg.attachments[0]); // throws on network error
+			const url = Deck.ydkToUrl(ydk); // throws YdkConstructionError
+			return this.getDeck(url); // no throw since the url is the output of ydke.js
 		}
-		try {
-			return this.getDeck(msg.content); // This function will parse out a ydke URL if present
-		} catch (e) {
-			if (e instanceof UrlConstructionError) {
-				return null;
-			} else {
-				throw e;
-			}
-		}
+		return this.getDeck(msg.content); // throws: UrlConstructionError
 	}
 
-	public prettyPrint(deck: Deck, filename: string): [DiscordMessageOut, DiscordAttachmentOut] {
+	public prettyPrint(deck: Deck, filename: string): [AdvancedMessageContent, MessageFile] {
 		const title = "Contents of your deck:\n";
 		let mainHeader = `Main Deck (${deck.mainSize} cards - `;
 		const mainHeaderParts: string[] = [];
@@ -136,46 +130,41 @@ export class DeckManager {
 		}
 		sideHeader += `${sideHeaderParts.join(", ")})`;
 
-		const embed: DiscordMessageOut = { title, fields: [] };
+		const fields = [];
 
 		if (deck.mainSize > 0) {
 			const mainOuts = splitText(deck.mainText, 1024);
 			for (let i = 0; i < mainOuts.length; i++) {
-				embed.fields.push({ name: mainHeader + (i > 0 ? " (Continued)" : ""), value: mainOuts[i] });
+				fields.push({ name: mainHeader + (i > 0 ? " (Continued)" : ""), value: mainOuts[i] });
 			}
 		}
 		if (deck.extraSize > 0) {
 			const extraOuts = splitText(deck.extraText, 1024);
 			for (let i = 0; i < extraOuts.length; i++) {
-				embed.fields.push({ name: extraHeader + (i > 0 ? " (Continued)" : ""), value: extraOuts[i] });
+				fields.push({ name: extraHeader + (i > 0 ? " (Continued)" : ""), value: extraOuts[i] });
 			}
 		}
 		if (deck.sideSize > 0) {
 			const sideOuts = splitText(deck.sideText, 1024);
 			for (let i = 0; i < sideOuts.length; i++) {
-				embed.fields.push({ name: sideHeader + (i > 0 ? " (Continued)" : ""), value: sideOuts[i] });
+				fields.push({ name: sideHeader + (i > 0 ? " (Continued)" : ""), value: sideOuts[i] });
 			}
 		}
 		if (deck.themes.length > 0) {
-			embed.fields.push({ name: "Archetypes", value: deck.themes.join(",") });
+			fields.push({ name: "Archetypes", value: deck.themes.join(",") });
 		}
-		embed.fields.push({ name: "YDKE URL", value: deck.url });
+		fields.push({ name: "YDKE URL", value: deck.url });
 		if (deck.validationErrors.length > 0) {
-			embed.fields.push({
+			fields.push({
 				name: "Deck is illegal!",
 				value: deck.validationErrors.map(d => this.parseDeckError(d)).join("\n")
 			});
 		}
 
-		const file: DiscordAttachmentOut = {
-			contents: deck.ydk,
-			filename: filename
-		};
-		return [embed, file];
+		return [{ embed: { title, fields } }, { file: deck.ydk, name: filename }];
 	}
 
-	private async extractYdk(msg: DiscordMessageIn): Promise<string> {
-		const attach = msg.attachments[0]; // msg having attachments is checked before this function is called
+	private async extractYdk(attach: Attachment): Promise<string> {
 		const file = await fetch(attach.url);
 		const ydk = await file.text();
 		return ydk;

@@ -10,11 +10,11 @@ import { TournamentInterface } from "./TournamentManager";
 import { reply } from "./util/discord";
 import { UserError } from "./util/errors";
 import { getLogger } from "./util/logger";
+import { Public } from "./util/types";
 import { WebsiteInterface } from "./website/interface";
 
 const logger = getLogger("command");
 
-type Public<T> = Pick<T, keyof T>;
 interface MatchScore {
 	playerId: number;
 	playerDiscord: string;
