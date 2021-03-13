@@ -9,9 +9,13 @@ replace them with an appropriate value when you use these commands!
 
 ## Index
 
+<!--
+GitHub creates IDs for headings by replacing spaces with hyphens.
+They may be truncated with length. Make sure to update these if you change a heading!
+--->
 ### Main tournament workflow
 1. [mc!create](#create-tournament)
-1. mc!addhost
+1. [mc!addhost](#add-host)
 1. mc!addchannel
 1. mc!addchannel private
 1. mc!open
@@ -33,7 +37,7 @@ replace them with an appropriate value when you use these commands!
 
 ### Before starting a tournament
 1. mc!update
-1. mc!removehost
+1. [mc!removehost](#remove-host)
 1. mc!removechannel
 1. mc!addbye
 1. mc!removebye
@@ -60,12 +64,29 @@ so it should be fairly detailed.
 
 Emcee will respond with a link to the Challonge page and an ID for the tournament to use with future commands,
 which is generated from the provided name for the tournament. It will also respond with a guide for recommended
-commands for the next step.
+commands for the next step of the [main tournament workflow](#main-tournament-workflow).
 
-### Update tournament information
-Usage: `mc!update id|name|description`
+### Add host
+```
+mc!addhost id|@user
+```
+**Caller permission level**: host for the tournament identified by _id_
 
-Updates the name and description of the given tournament before it is opened for registration.
+`@user` must be a valid Discord mention of a user that pings them.
+
+The user is added as a host for the specified tournament, granting them the same permissions as you.
+
+### Remove host
+```
+mc!removehost id|@user
+```
+**Caller permission level**: host for the tournament identified by _id_
+
+`@user` must be a valid Discord mention of a user that pings them.
+
+The user is deauthorised as a host for the specified tournament, losing all corresponding permissions.
+You cannot remove yourself if you are the only host; there must always be one host to manage the tournament.
+
 ### Add announcement channel
 Usage: `mc!addchannel id|type`
 
@@ -80,20 +101,10 @@ Permissions: Host
 
 Removes the channel the message is sent in as an announcement channel for the given tournament, as was added by the above command. As with the above command, if `type` is not specified as "private", Emcee will assume you are trying to remove a public channel.
 
-### Add host
-Usage: `mc!addhost id|@user` OR `mc!addorganizer id|@user`
+### Update tournament information
+Usage: `mc!update id|name|description`
 
-Permissions: Host
-
-Adds the mentioned user as a host for the given tournament, authorising them to use management commands for it. `@user` should be a valid Discord mention of a user.
-
-### Remove host
-Usage: `mc!removehost id|@user` OR `mc!removeorganizer id|@user`
-
-Permissions: Host
-
-Removes the mentioned user as a host from the given tournament, deauthorising them to use management commands for it. `@user` should be a valid Discord mention of a user. You cannot remove yourself.
-
+Updates the name and description of the given tournament before it is opened for registration.
 ### Open tournament
 Usage: `mc!open id`
 
