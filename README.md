@@ -11,6 +11,8 @@ Supports YGOPro deck files (.ydk) and `ydke://` URLs from [Project Ignis: EDOPro
 
 Emcee automates the tedious tasks of the sign-up process, deck checks, and tracking match scores for tournament hosts.
 This frees up hosts to focus on the overall flow of the tournament and any disputes instead of a lot of repetitive work.
+It currently supports hosting Swiss tournaments of up to 256 participants (a limitation of Challonge's [standard tier](https://challonge.com/pricing))
+with an 8-member single-elimination top cut (to be made configurable).
 
 Currently in use in alpha (no pun intended) for the [Chalislime Monthly](https://youtu.be/iehvqngGxs0) tournament series.
 Thanks to [Joseph Rothschild](https://www.youtube.com/c/MBTYuGiOh) aka [MBT](https://www.twitch.tv/mbtyugioh) for

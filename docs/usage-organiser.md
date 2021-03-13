@@ -16,9 +16,9 @@ They may be truncated with length. Make sure to update these if you change a hea
 ### Main tournament workflow
 1. [mc!create](#create-tournament)
 1. [mc!addhost](#add-host)
-1. mc!addchannel
-1. mc!addchannel private
-1. mc!open
+1. [mc!addchannel public](#add-announcement-channel)
+1. [mc!addchannel private](#add-announcement-channel)
+1. [mc!open](#open-tournament-for-registrations)
 1. mc!start
 1. mc!round
 1. mc!finish
@@ -36,9 +36,9 @@ They may be truncated with length. Make sure to update these if you change a hea
 1. mc!pie
 
 ### Before starting a tournament
-1. mc!update
+1. [mc!update](#update-tournament-information)
 1. [mc!removehost](#remove-host)
-1. mc!removechannel
+1. [mc!removechannel](#remove-announcement-channel)
 1. mc!addbye
 1. mc!removebye
 
@@ -88,29 +88,58 @@ The user is deauthorised as a host for the specified tournament, losing all corr
 You cannot remove yourself if you are the only host; there must always be one host to manage the tournament.
 
 ### Add announcement channel
-Usage: `mc!addchannel id|type`
+```
+mc!addchannel id|type
+```
+**Caller permission level**: host for the tournament identified by _id_
 
-Permissions: Host
+`type` must be either `private` or `public`. It may be omitted, in which case `public` is assumed.
 
-Records the channel the message is sent in as a Discord channel for the given tournament where announcements will be sent. If `type` is "private", then it will be a private channel intended only for hosts, where the decklists of registered users are sent. If it is anything else or left off, it will be a public channel where sign-up and new round announcements are posted.
+The current channel is added as a channel of the specified type for the specified tournament.
+
+Private channels are intended only for hosts and should not be visible to participants. Deck lists from registrations
+are broadcast here, along with any diagnostic messages from tournament operation, like score submissions and drops.
+Please monitor this channel during tournament operation in case of errors or warnings.
+
+Public channels are where sign-up messages and new round announcements are posted. Make sure your
+to-be participants and participants can read this channel! Participants will be role-pinged for each round.
+
+At least one private and one public channel must be registered before opening a tournament for sign-ups.
 
 ### Remove announcement channel
-Usage: `mc!removechannel id|type`
+```
+mc!removechannel id|type
+```
+**Caller permission level**: host for the tournament identified by _id_
 
-Permissions: Host
+`type` must be either `private` or `public`. It may be omitted, in which case `public` is assumed.
 
-Removes the channel the message is sent in as an announcement channel for the given tournament, as was added by the above command. As with the above command, if `type` is not specified as "private", Emcee will assume you are trying to remove a public channel.
+If the current channel is registered for the specified tournament as a channel of the specified type,
+it is removed and Emcee will no longer send announcement messages here. Please note that the type
+must be correct as it was originally added via [`mc!addchannel`](#add-announcement-channel)!
 
 ### Update tournament information
-Usage: `mc!update id|name|description`
+```
+mc!update id|name|description
+```
+**Caller permission level**: host for the tournament identified by _id_
 
-Updates the name and description of the given tournament before it is opened for registration.
-### Open tournament
-Usage: `mc!open id`
+The specified tournament be in the preparing stage and not have been started.
+Updates the name and description for the tournament, affecting the Challonge page
+and future sign-up messages.
 
-Permissions: Host
+### Open tournament for registrations
+```
+mc!open id
+```
+**Caller permission level**: host for the tournament identified by _id_
 
-Opens the given tournament for registration, by posting a message with its name and description in all public announcement channels, and adding a "✅" reaction that users can click to begin the registration process.
+The specified tournament be in the preparing stage and not have been started.
+If at least one private and one public channel have been registered for the specified tournament,
+the tournament is opened for registration by posting a message with its name and description
+in all public announcement channels. This message will have a ✅ reaction button for users
+to click to begin the sign-up process.
+
 ### Start tournament
 Usage: `mc!start id`
 
