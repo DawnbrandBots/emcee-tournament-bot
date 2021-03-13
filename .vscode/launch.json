@@ -5,6 +5,19 @@
 	"version": "0.2.0",
 	"configurations": [
 		{
+      "name": "Debug Byes",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["--nolazy", "-r", "ts-node/register/transpile-only"],
+
+      "args": ["util/bye.ts"],
+
+      "cwd": "${workspaceRoot}",
+      "internalConsoleOptions": "openOnSessionStart",
+      "skipFiles": ["<node_internals>/**", "node_modules/**"]
+    },
+		{
 			"type": "node",
 			"request": "launch",
 			"name": "Debug Emcee",

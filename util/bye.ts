@@ -26,7 +26,7 @@ function assignByes(playersToBye: string[], players: string[]): string[] {
 		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 		const lastPlayer = playersToBye.pop()!; // modifying this array won't have long-term consequences on the database
 		players.splice(players.indexOf(lastPlayer), 1);
-		players.splice(maxSeed, 0, lastPlayer);
+		players.splice(maxSeed - 1, 0, lastPlayer); // - 1 compared to challonge algo bc of 0 index
 		// this may have been the only bye, in which case we're mercifully done
 		if (playersToBye.length < 1) {
 			return players;
@@ -47,8 +47,8 @@ function assignByes(playersToBye: string[], players: string[]): string[] {
 		// no need to disturb their seed if they're already in place
 		if (seed > newSeed) {
 			players.splice(seed, 1);
-			players.splice(newSeed, 0, player);
-			seed = newSeed;
+			players.splice(newSeed - 1, 0, player);
+			seed = newSeed - 1;
 		}
 		topSeeds.push(seed);
 	}
@@ -62,8 +62,8 @@ function assignByes(playersToBye: string[], players: string[]): string[] {
 		   In particular, if N + B is even we want something to be moved down to the natural bye. */
 		const oppSeed = topSeeds[i] + Math.floor(maxSeed / 2);
 		// we've set discord IDs to this
-		players.splice(players.indexOf(byePlayers[i]));
-		players.splice(oppSeed, 0, byePlayers[i]);
+		players.splice(players.indexOf(byePlayers[i]), 1);
+		players.splice(oppSeed, 0, byePlayers[i]); // seed here comes from index given so we don't nee the same 0-compensation
 	}
 
 	return players;
@@ -92,7 +92,8 @@ function matchups(players: string[]): string[] {
 function go(playerCt: number, byes: string[]): void {
 	console.log(`${playerCt} Players, Byes: ${byes}`);
 	const players = generatePlayers(playerCt);
-	// const origMatches = matchups(players);
+	const origMatches = matchups(players);
+	console.dir(origMatches);
 	const newPlayers = assignByes(byes, players);
 	const newMatches = matchups(newPlayers);
 	console.dir(newMatches);
@@ -100,3 +101,5 @@ function go(playerCt: number, byes: string[]): void {
 
 go(125, ["10", "25", "68", "90"]);
 go(125, ["10", "25", "68", "90", "102"]);
+go(124, ["10", "25", "68", "90"]);
+go(124, ["10", "25", "68", "90", "102"]);
