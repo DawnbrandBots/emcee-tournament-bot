@@ -67,18 +67,18 @@ Usage: `mc!update id|name|description`
 
 Updates the name and description of the given tournament before it is opened for registration.
 ### Add announcement channel
-Usage: `mc!addchannel id|type|#channel`
+Usage: `mc!addchannel id|type`
 
 Permissions: Host
 
-Records a Discord channel for the given tournament where announcements will be sent. If `type` is "private", then it will be a private channel intended only for hosts, where the decklists of registered users are sent. If it is anything else or left off, it will be a public channel where sign-up and new round announcements are posted. #channel should be a mention of a valid Discord text channel if it is provided, however, it is optional and if no such mention is found Emcee will add the current channel the command was sent in.
+Records the channel the message is sent in as a Discord channel for the given tournament where announcements will be sent. If `type` is "private", then it will be a private channel intended only for hosts, where the decklists of registered users are sent. If it is anything else or left off, it will be a public channel where sign-up and new round announcements are posted.
 
 ### Remove announcement channel
-Usage: `mc!removechannel id|type|#channel`
+Usage: `mc!removechannel id|type`
 
 Permissions: Host
 
-Removes an announcement channel for the given tournament, as was added by the above command. As with the above command, if `type` is not specified as "private", Emcee will assume you are trying to remove a public channel. As with the above command, #channel should be a mention of a valid Discord text channel if it is provided, however, it is optional and if no such mention is found Emcee will remove the current channel the command was sent in.
+Removes the channel the message is sent in as an announcement channel for the given tournament, as was added by the above command. As with the above command, if `type` is not specified as "private", Emcee will assume you are trying to remove a public channel.
 
 ### Add host
 Usage: `mc!addhost id|@user` OR `mc!addorganizer id|@user`
