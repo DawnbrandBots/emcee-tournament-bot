@@ -1,5 +1,7 @@
 # [Project Ignis](https://github.com/ProjectIgnis): Emcee
 
+[<img src="https://cdn.discordapp.com/avatars/691882968809209917/1ffd7675f6fb2a4c21b1b356b7856279.png" alt="Emcee avatar" style="float: right;" />](https://yugipedia.com/wiki/MC)
+
 ![Build](https://github.com/AlphaKretin/emcee-tournament-bot/workflows/Build/badge.svg)&nbsp;
 [![Coverage Status](https://coveralls.io/repos/github/AlphaKretin/emcee-tournament-bot/badge.svg?t=iUM0Et)](https://coveralls.io/github/AlphaKretin/emcee-tournament-bot)
 
@@ -44,8 +46,9 @@ rename the role, or create another role with the same name &mdash; Emcee will lo
 recreate it, or worse, identify authorised hosts with the incorrect role.
 
 The default prefix for all Emcee commands is `mc!`. For developers, this can be changed by the `EMCEE_DEFAULT_PREFIX`
-environment variable. In the future, this will also be configurable per server. We do not expect to
-support Discord slash commands that were introduced in early 2021, but you could make a case for it!
+environment variable. In the future, this will also be configurable per server. We may add support for
+Discord slash commands in future when [Eris](https://github.com/abalabahaha/eris), our underlying library
+for interfacing with Discord, supports it.
 
 - [Commands for tournament hosts](https://github.com/AlphaKretin/emcee-tournament-bot/blob/master/docs/usage-organiser.md)
 - [Commands for participants](https://github.com/AlphaKretin/emcee-tournament-bot/blob/master/docs/usage-participant.md)
