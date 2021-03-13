@@ -19,28 +19,28 @@ They may be truncated with length. Make sure to update these if you change a hea
 1. [mc!addchannel public](#add-announcement-channel)
 1. [mc!addchannel private](#add-announcement-channel)
 1. [mc!open](#open-tournament-for-registrations)
-1. mc!start
-1. mc!round
-1. mc!finish
-1. mc!topcut
+1. [mc!start](#start-tournament)
+1. [mc!round](#proceed-to-the-next-round)
+1. [mc!finish](#finish-tournament)
+1. [mc!topcut](#start-top-cut-tournament)
 
 ### Tournament administration
-1. mc!forcescore
-1. mc!forcedrop
-1. mc!cancel
+1. [mc!forcescore](#override-score)
+1. [mc!forcedrop](#drop-participant)
+1. [mc!cancel](#cancel-tournament)
 
 ### Informational
-1. mc!deck
-1. mc!players
-1. mc!dump
-1. mc!pie
+1. [mc!deck](#show-participant-deck)
+1. [mc!players](#list-participants-with-deck-themes)
+1. [mc!dump](#list-participants-with-deck-lists)
+1. [mc!pie](#count-participants-by-deck-themes)
 
 ### Before starting a tournament
 1. [mc!update](#update-tournament-information)
 1. [mc!removehost](#remove-host)
 1. [mc!removechannel](#remove-announcement-channel)
-1. mc!addbye
-1. mc!removebye
+1. [mc!addbye](#add-artificial-round-one-bye)
+1. [mc!removebye](#remove-artificial-round-one-bye)
 
 ## Reference
 
@@ -140,26 +140,17 @@ the tournament is opened for registration by posting a message with its name and
 in all public announcement channels. This message will have a ✅ reaction button for users
 to click to begin the sign-up process.
 
-### Start tournament
-Usage: `mc!start id`
+### Add artificial round-one bye
 
-Permissions: Host
+### Remove artificial round-one bye
+
+### Start tournament
+```
+mc!start id
+```
+**Caller permission level**: host for the tournament identified by _id_
 
 Starts the given tournament once it is open for registration. This removes all pending participants, that have checked the "✅" but not submitted a valid deck, deletes the registration message from all public announcement channels, changes the status of the tournament on Challonge to "in progress", and posts the announcement for the first round to all public announcement channels.
-
-### Cancel tournament
-Usage: `mc!cancel id`
-
-Permissions: Host
-
-Cancels the given tournament. This removes the participant role in each server, changes the status of the tournament on Challonge to "finished", and posts an announcement that the tournament is over to all public announcement channels. To end the tournament naturally, instead use the "next round" command during the final round.
-
-### Submit score
-Usage: `mc!score id|score|@winner`
-
-Permissions: Host
-
-Records a score for the current round of the given tournament. `@winner` should be a valid Discord mention of the user who won the match. If it is a tie, do not record the score with this command and it will automatically be handled upon proceeding to the next round. The score should be reported in the format `#-#`, e.g. `2-1`, with the winner's score first.
 
 ### Proceed to the next round
 Usage: `mc!round id`
@@ -168,12 +159,29 @@ Permissions: Host
 
 Proceeds to the next round of the given tournament. This records all outstanding matches for the round as a tie and sends a message announcing the next round to all public announcement channels. If it was the final round, it concludes the tournament, removing the participant role in each server, changing the status of the tournament on Challonge to "finished", and posting an announcement that the tournament is over to all public announcement channels.
 
-### List tournament participants
-Usage: `mc!players id`
+### Finish tournament
+
+### Start top cut tournament
+### Cancel tournament
+Usage: `mc!cancel id`
 
 Permissions: Host
 
-Provides a list of all confirmed participants in the given tournament.
+Cancels the given tournament. This removes the participant role in each server, changes the status of the tournament on Challonge to "finished", and posts an announcement that the tournament is over to all public announcement channels. To end the tournament naturally, instead use the "next round" command during the final round.
+
+### Override score
+Usage: `mc!score id|score|@winner`
+
+Permissions: Host
+
+Records a score for the current round of the given tournament. `@winner` should be a valid Discord mention of the user who won the match. If it is a tie, do not record the score with this command and it will automatically be handled upon proceeding to the next round. The score should be reported in the format `#-#`, e.g. `2-1`, with the winner's score first.
+
+### Drop participant
+Usage: `mc!drop id|@user`
+
+Permissions: Host
+
+Removes the mentioned user from participating in the given tournament. `@user` should be a valid Discord mention of a user playing in the tournament.
 
 ### Show participant deck
 Usage: `mc!deck id|@user`
@@ -182,12 +190,16 @@ Permissions: Host
 
 Reposts the deck profile for the given user in the given tournament. `@user` should be a valid Discord mention of a user playing in the tournament.
 
-### Drop participant
-Usage: `mc!drop id|@user`
+### List participants with deck themes
+Usage: `mc!players id`
 
 Permissions: Host
 
-Removes the mentioned user from participating in the given tournament. `@user` should be a valid Discord mention of a user playing in the tournament.
+Provides a list of all confirmed participants in the given tournament.
+
+### List participants with deck lists
+
+### Count participants by deck themes
 
 ### Synchronise tournament info
 Usage: `mc!sync id`
