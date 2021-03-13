@@ -9,7 +9,8 @@
 		"cover": "nyc report",
 		"lint": "eslint . --ext .js,.jsx,.ts,.tsx",
 		"build": "tsc",
-		"clean": "ts-node util/clean.ts"
+		"clean": "ts-node util/clean.ts",
+		"byes": "ts-node util/bye.ts"
 	},
 	"author": "Luna Brand",
 	"contributors": [
