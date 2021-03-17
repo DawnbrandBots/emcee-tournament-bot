@@ -11,3 +11,4 @@ Fixes #
 - [ ] I am following the [contributing guidelines](https://github.com/AlphaKretin/emcee-tournament-bot/blob/master/.github/CONTRIBUTING.md).
 - [ ] I have updated any relevant [user guides](https://github.com/AlphaKretin/emcee-tournament-bot/blob/master/guides).
 - [ ] I have updated any relevant [documentation](https://github.com/AlphaKretin/emcee-tournament-bot/blob/master/docs).
+- [ ] I have updated the [changelog](https://github.com/AlphaKretin/emcee-tournament-bot/blob/master/changelog.md), or this change is not user-facing.
