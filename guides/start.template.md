@@ -1,5 +1,6 @@
+All **View deck** commands continue to work.
 **Drop players**
-As before, you can still manually drop players. All **View deck** commands continue to work.
+As before, you can still manually drop players.
 ```
 mc!forcedrop {}|@User
 mc!forcedrop {}|id```

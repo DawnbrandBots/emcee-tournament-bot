@@ -221,9 +221,9 @@ mc!finish id
 **Caller permission level**: host for the tournament identified by _id_
 
 If the tournament is in progress and all scores for every round have been submitted,
-the tournament is marked as finished on Challonge. An announcement is sent to
-all public channels, pinging all participants, and then the participant role for
-this tournament is deleted.
+the tournament is marked as finished on Challonge. All round timers are stopped.
+An announcement is sent to all public channels, pinging all participants, and then
+the participant role for this tournament is deleted.
 
 ### Start top cut tournament
 ```
@@ -240,13 +240,26 @@ This should be called as soon as possible after [`mc!finish`](#finish-tournament
 breaks permitting, lest any participants leave the server.
 
 ### Cancel tournament
-Usage: `mc!cancel id`
+```
+mc!cancel id
+```
+**Caller permission level**: host for the tournament identified by _id_
 
-Permissions: Host
-
-Cancels the given tournament. This removes the participant role in each server, changes the status of the tournament on Challonge to "finished", and posts an announcement that the tournament is over to all public announcement channels. To end the tournament naturally, instead use the "next round" command during the final round.
+If the tournament is in progress, the tournament is marked as finished on Challonge
+and Emcee. All round timers are stopped. An announcement is sent to all public channels, pinging all participants, and then the participant role for this tournament is deleted.
+The tournament is not restartable.
 
 ### Tie round
+```
+mc!tie id
+```
+**Caller permission level**: host for the tournament identified by _id_
+
+If the tournament is in progress, sets the score for all outstanding matches in the
+current round to a `0-0` draw. Challonge will automatically advance to the next round,
+if any. This is mostly useful for skipping extra final rounds induced by
+[artificial round-one byes](#add-artificial-round-one-bye) or calling the tournament
+early without cancelling.
 
 ### Override score
 Usage: `mc!score id|score|@winner`
