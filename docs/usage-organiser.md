@@ -28,6 +28,7 @@ They may be truncated with length. Make sure to update these if you change a hea
 1. [mc!forcescore](#override-score)
 1. [mc!forcedrop](#drop-participant)
 1. [mc!cancel](#cancel-tournament)
+1. [mc!tie](#tie-round)
 
 ### Informational
 1. [mc!deck](#show-participant-deck)
@@ -141,8 +142,32 @@ in all public announcement channels. This message will have a ✅ reaction butto
 to click to begin the sign-up process.
 
 ### Add artificial round-one bye
+```
+mc!addbye id|@user
+```
+**Caller permission level**: host for the tournament identified by _id_
+
+`@user` must be a valid Discord mention of a user that pings them.
+
+The specified tournament be in the preparing stage and not have been started.
+If the specified user has confirmed their deck for the specified tournament, they will now
+receive a free win in round 1 of Swiss. This may end up adding more rounds to the
+tournament on Challonge than expected for a standard Swiss tournament, because this is
+implemented by adding a fake player that immediately drops when round 1 begins, so
+in that event, you should [tie](#tie-round) the extra final round.
 
 ### Remove artificial round-one bye
+```
+mc!removebye id|@user
+```
+**Caller permission level**: host for the tournament identified by _id_
+
+`@user` must be a valid Discord mention of a user that pings them.
+
+The specified tournament be in the preparing stage and not have been started.
+If the specified user has confirmed their deck for the specified tournament and was
+assigned a round-one bye per the [above command](#add-artificial-round-one-bye),
+the round-one bye is removed.
 
 ### Start tournament
 ```
@@ -168,6 +193,8 @@ Usage: `mc!cancel id`
 Permissions: Host
 
 Cancels the given tournament. This removes the participant role in each server, changes the status of the tournament on Challonge to "finished", and posts an announcement that the tournament is over to all public announcement channels. To end the tournament naturally, instead use the "next round" command during the final round.
+
+### Tie round
 
 ### Override score
 Usage: `mc!score id|score|@winner`
