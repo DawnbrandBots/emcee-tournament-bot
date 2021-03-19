@@ -262,18 +262,37 @@ if any. This is mostly useful for skipping extra final rounds induced by
 early without cancelling.
 
 ### Override score
-Usage: `mc!score id|score|@winner`
+```
+mc!forcescore id|score|@winner
+```
+**Caller permission level**: host for the tournament identified by _id_
 
-Permissions: Host
+`score` must be of the form `#-#`, e.g. `2-1`, with the winner's score first.
 
-Records a score for the current round of the given tournament. `@winner` should be a valid Discord mention of the user who won the match. If it is a tie, do not record the score with this command and it will automatically be handled upon proceeding to the next round. The score should be reported in the format `#-#`, e.g. `2-1`, with the winner's score first.
+`@winner` must be a valid Discord mention of a user that pings them.
+
+If the tournament is in progress and the user tagged is a participant, the score
+for the last match involving the participant is set to `score`, in their favour.
+Draws can also be specified, in which case the mention can be either participant.
+
+This command can submit both outstanding scores and overwrite already-submitted ones.
+Please note that if the winner's score is lower, Challonge will happily accept
+the match outcome, as if playing golf.
 
 ### Drop participant
-Usage: `mc!drop id|@user`
+```
+mc!forcedrop id|@user
+```
+**Caller permission level**: host for the tournament identified by _id_
 
-Permissions: Host
+`@user` can be a Discord mention, though it does not have to ping, or the user's ID.
 
-Removes the mentioned user from participating in the given tournament. `@user` should be a valid Discord mention of a user playing in the tournament.
+If the specified user exists and is pending or confirmed for the specified tournament,
+they are dropped. Pending participants are removed from the queue and confirmed participants
+are unconfirmed. If the tournament is in progress, the match is automatically forfeit to
+the opponent `2-0` unless they have also dropped, in which case it is amended to a `0-0` draw.
+
+The participant is informed of the removal via direct message.
 
 ### Show participant deck
 Usage: `mc!deck id|@user`
