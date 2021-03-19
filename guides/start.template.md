@@ -1,7 +1,8 @@
 **Drop players**
-As before, you can also manually drop players. All **View deck** commands continue to work.
+As before, you can still manually drop players. All **View deck** commands continue to work.
 ```
-mc!forcedrop {}|@User```
+mc!forcedrop {}|@User
+mc!forcedrop {}|id```
 **Report score**
 Players report their own score.
 If you need, you can also report scores. Mention the winner.

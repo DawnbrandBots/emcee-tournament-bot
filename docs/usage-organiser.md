@@ -175,17 +175,44 @@ mc!start id
 ```
 **Caller permission level**: host for the tournament identified by _id_
 
-Starts the given tournament once it is open for registration. This removes all pending participants, that have checked the "✅" but not submitted a valid deck, deletes the registration message from all public announcement channels, and changes the status of the tournament on Challonge to "in progress". While the first round
+The specified tournament must be in the preparing stage. Removes all pending participants
+who started the sign-up process but did not submit a deck, deletes all
+registration messages created by [`mc!open`](#open-tournament-for-registrations),
+and changes the status of the tournament on Challonge to "in progress". While the first round
 automatically begins on Challonge, and Challonge will automatically advance rounds without waiting for
 explicit human intervention, Emcee does not announce the first round until you explicitly run the
 following command.
 
 ### Proceed to the next round
-Usage: `mc!round id`
+```
+mc!round id|timer|skip
+```
+**Caller permission level**: host for the tournament identified by _id_
 
-Permissions: Host
+Both the `timer` and `skip` parameters are optional.
 
-Proceeds to the next round of the given tournament. This records all outstanding matches for the round as a tie and sends a message announcing the next round to all public announcement channels. If it was the final round, it concludes the tournament, removing the participant role in each server, changing the status of the tournament on Challonge to "finished", and posting an announcement that the tournament is over to all public announcement channels.
+The round timer defaults to 50 minutes and must be of the form `mm` or `hh:mm`.
+An explicit zero timer results in no timer.
+
+The skip parameter must come after the timer parameter if provided and be exactly `skip`.
+It skips sending pairings in DMs.
+
+If the tournament is in progress, stop all previous round timers for the tournament.
+Announce to all public channels the current round and the Challonge hyperlink.
+
+Pairings, round-one byes, and natural byes are sent out to each participant in
+direct messages if `skip` is not specified. This may take some time due to Discord API
+rate limits. Any problems are reported to private channels, such as blocked DMs.
+
+Finally, a round timer message is sent out to all public channels if not explicitly
+zeroed. It will count down every five seconds. When the timer reaches 0, a follow-up
+announcement will ping all participants that the round is over. Hosts may trigger
+the next round or run this command again regardless of the state of the timer.
+
+Please note that this does not advance the round on Challonge. Challonge will
+automatically advance rounds without waiting for explicit human intervention.
+This command is exclusively for announcing the start of rounds and starting the
+timer so participants play in regulation.
 
 ### Finish tournament
 
