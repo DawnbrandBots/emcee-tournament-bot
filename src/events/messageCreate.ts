@@ -1,5 +1,6 @@
 import { Client, Message, PrivateChannel } from "eris";
 import { Command, CommandDefinition, CommandSupport } from "../Command";
+import { helpMessage } from "../config";
 import { DatabaseTournament } from "../database/interface";
 import { DatabaseWrapperPostgres } from "../database/postgres";
 import { DeckManager } from "../deck";
@@ -27,7 +28,8 @@ export function makeHandler(
 			return;
 		}
 		if (msg.mentions.includes(bot.user)) {
-			return await handlers["help"]?.run(msg, [], support);
+			await reply(msg, helpMessage).catch(logger.error);
+			return;
 		}
 		if (msg.content.startsWith(prefix)) {
 			const terms = msg.content.split(" ");
@@ -127,7 +129,7 @@ export async function onDirectMessage(
 	log("verbose", msg, { event: "no context", content: msg.content });
 	await reply(
 		msg,
-		"Emcee's documentation can be found at https://github.com/AlphaKretin/emcee-tournament-bot/wiki. If you're trying to sign up for a tournament, make sure you've registered and I'll let you know how to proceed."
+		`${helpMessage}\nIf you're trying to sign up for a tournament, make sure you've registered and I'll let you know how to proceed.`
 	);
 }
 
