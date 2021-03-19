@@ -215,8 +215,30 @@ This command is exclusively for announcing the start of rounds and starting the
 timer so participants play in regulation.
 
 ### Finish tournament
+```
+mc!finish id
+```
+**Caller permission level**: host for the tournament identified by _id_
+
+If the tournament is in progress and all scores for every round have been submitted,
+the tournament is marked as finished on Challonge. An announcement is sent to
+all public channels, pinging all participants, and then the participant role for
+this tournament is deleted.
 
 ### Start top cut tournament
+```
+mc!topcut id
+```
+**Caller permission level**: host for the tournament identified by _id_
+
+If the tournament is finished and has more than eight participants, a new single-elimination
+top cut tournament is started on Challonge with the top eight participants. The same
+hosts, decks, and announcement channels are retained, and a new participant role
+is granted to these users.
+
+This should be called as soon as possible after [`mc!finish`](#finish-tournament),
+breaks permitting, lest any participants leave the server.
+
 ### Cancel tournament
 Usage: `mc!cancel id`
 
