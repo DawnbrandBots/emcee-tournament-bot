@@ -21,7 +21,7 @@ You can change the name and description.
 ```
 mc!update {}|New Name|A new description```
 **Open sign-ups**
-This post the registration message to all public channels.
+This posts the registration message to all public channels.
 Further details on your next steps will be sent to private channels.
 ```
 mc!open {}```

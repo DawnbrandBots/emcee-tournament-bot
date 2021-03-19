@@ -125,7 +125,7 @@ mc!update id|name|description
 ```
 **Caller permission level**: host for the tournament identified by _id_
 
-The specified tournament be in the preparing stage and not have been started.
+The specified tournament must be in the preparing stage and not have been started.
 Updates the name and description for the tournament, affecting the Challonge page
 and future sign-up messages.
 
@@ -135,7 +135,7 @@ mc!open id
 ```
 **Caller permission level**: host for the tournament identified by _id_
 
-The specified tournament be in the preparing stage and not have been started.
+The specified tournament must be in the preparing stage and not have been started.
 If at least one private and one public channel have been registered for the specified tournament,
 the tournament is opened for registration by posting a message with its name and description
 in all public announcement channels. This message will have a ✅ reaction button for users
@@ -149,7 +149,7 @@ mc!addbye id|@user
 
 `@user` must be a valid Discord mention of a user that pings them.
 
-The specified tournament be in the preparing stage and not have been started.
+The specified tournament must be in the preparing stage and not have been started.
 If the specified user has confirmed their deck for the specified tournament, they will now
 receive a free win in round 1 of Swiss. This may end up adding more rounds to the
 tournament on Challonge than expected for a standard Swiss tournament, because this is
@@ -164,7 +164,7 @@ mc!removebye id|@user
 
 `@user` must be a valid Discord mention of a user that pings them.
 
-The specified tournament be in the preparing stage and not have been started.
+The specified tournament must be in the preparing stage and not have been started.
 If the specified user has confirmed their deck for the specified tournament and was
 assigned a round-one bye per the [above command](#add-artificial-round-one-bye),
 the round-one bye is removed.
@@ -175,7 +175,10 @@ mc!start id
 ```
 **Caller permission level**: host for the tournament identified by _id_
 
-Starts the given tournament once it is open for registration. This removes all pending participants, that have checked the "✅" but not submitted a valid deck, deletes the registration message from all public announcement channels, changes the status of the tournament on Challonge to "in progress", and posts the announcement for the first round to all public announcement channels.
+Starts the given tournament once it is open for registration. This removes all pending participants, that have checked the "✅" but not submitted a valid deck, deletes the registration message from all public announcement channels, and changes the status of the tournament on Challonge to "in progress". While the first round
+automatically begins on Challonge, and Challonge will automatically advance rounds without waiting for
+explicit human intervention, Emcee does not announce the first round until you explicitly run the
+following command.
 
 ### Proceed to the next round
 Usage: `mc!round id`
