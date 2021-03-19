@@ -295,28 +295,64 @@ the opponent `2-0` unless they have also dropped, in which case it is amended to
 The participant is informed of the removal via direct message.
 
 ### Show participant deck
-Usage: `mc!deck id|@user`
+```
+mc!deck id|@user
+```
+**Caller permission level**: host for the tournament identified by _id_
 
-Permissions: Host
+`@user` can be a Discord mention, though it does not have to ping, or the user's ID.
 
-Reposts the deck profile for the given user in the given tournament. `@user` should be a valid Discord mention of a user playing in the tournament.
+Reposts the deck profile for the mentioned user if they are confirmed for this tournament.
 
 ### List participants with deck themes
-Usage: `mc!players id`
+```
+mc!players id
+```
+**Caller permission level**: host for the tournament identified by _id_
 
-Permissions: Host
-
-Provides a list of all confirmed participants in the given tournament.
+Generates a CSV of the form
+```csv
+Player,Theme
+User#0000,DetectedTheme1/DetectedTheme2
+User2#0000,No themes
+```
 
 ### List participants with deck lists
+```
+mc!dump id
+```
+**Caller permission level**: host for the tournament identified by _id_
+
+Generates a CSV of the form
+```csv
+Player,Deck
+User#0000,Main: Card 1, Card 2, Extra: Card 3, Card 4, Side: Card 5, Card 6
+```
 
 ### Count participants by deck themes
+```
+mc!pie id
+```
+**Caller permission level**: host for the tournament identified by _id_
+
+Generates a CSV of the form
+```csv
+Theme,Count
+DetectedTheme1,2
+DetectedTheme1/DetectedTheme2,1
+No themes,1
+```
 
 ### Synchronise tournament info
-Usage: `mc!sync id`
+```
+mc!sync id
+```
+**Caller permission level**: host for the tournament identified by _id_
 
-Permissions: Host
+Synchronises the tournament name, description, and participant list stored in
+Emcee with those stored in the Challonge API. Useful for testing in development
+when changes are made to a tournament on Challonge without going through Emcee.
 
-Synchronises tournament data by querying the Challonge API. Run this any time you make changes to a tournament on the Challonge website without going through Emcee.
+---
 
 [Back to main](https://github.com/AlphaKretin/emcee-tournament-bot#project-ignis-emcee)
