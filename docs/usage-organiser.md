@@ -292,7 +292,7 @@ they are dropped. Pending participants are removed from the queue and confirmed 
 are unconfirmed. If the tournament is in progress, the match is automatically forfeit to
 the opponent `2-0` unless they have also dropped, in which case it is amended to a `0-0` draw.
 
-The participant is informed of the removal via direct message.
+This is irreversible. The participant is informed of the removal via direct message.
 
 ### Show participant deck
 ```
