@@ -19,10 +19,12 @@ before(async () => {
 	decks = await initializeDeckManager(process.env.OCTOKIT_TOKEN!);
 });
 
+const sampleDeck =
+	"ydke://o6lXBaOpVwWjqVcFep21BXqdtQV6nbUF8GFdAvBhXQLwYV0CLdjxAS3Y8QEt2PEBiWdgA4lnYAOJZ2AD0hVTAtIVUwLSFVMC9slUAvbJVAL2yVQCKYF+BSmBfgUpgX4FYW7uA2Fu7gNhbu4DlDaLBJQ2iwSUNosE0GpSAtBqUgLQalICTIHIAEyByABMgcgAXu5QBV7uUAVe7lAFsdjfAQ==!yV+/A8lfvwPJX78D!sdjfAbHY3wE=!";
+
 describe("Get deck from message", function () {
 	it("URL", async function () {
-		sampleMessage.content =
-			"ydke://5m3qBeZt6gV9+McCffjHAn34xwK8beUDvG3lA7xt5QMfX5ICWvTJAVr0yQFa9MkBrDOdBKwznQSsM50Ey/UzAMv1MwDL9TMAdAxQBQ6wYAKvI94AryPeAK8j3gCmm/QBWXtjBOMavwDjGr8A4xq/AD6kcQGeE8oEnhPKBJ4TygSlLfUDpS31A6Ut9QMiSJkAIkiZACJImQCANVMDgDVTAw==!FtIXALVcnwC1XJ8AiBF2A4gRdgNLTV4Elt0IAMf4TQHCT0EAvw5JAqSaKwD5UX8EweoDA2LO9ATaI+sD!H1+SAg==!";
+		sampleMessage.content = sampleDeck;
 		const deck = await decks.getDeckFromMessage(sampleMessage);
 		sampleMessage.content = "";
 		expect(deck?.mainSize).to.equal(40); // more details in ydeck tests, just checking we got something
@@ -50,34 +52,28 @@ describe("Get deck from message", function () {
 });
 
 describe("Test embeds", function () {
-	it("Standard ABC test deck", async function () {
-		const deck = decks.getDeck(
-			"ydke://5m3qBeZt6gV9+McCffjHAn34xwK8beUDvG3lA7xt5QMfX5ICWvTJAVr0yQFa9MkBrDOdBKwznQSsM50Ey/UzAMv1MwDL9TMAdAxQBQ6wYAKvI94AryPeAK8j3gCmm/QBWXtjBOMavwDjGr8A4xq/AD6kcQGeE8oEnhPKBJ4TygSlLfUDpS31A6Ut9QMiSJkAIkiZACJImQCANVMDgDVTAw==!FtIXALVcnwC1XJ8AiBF2A4gRdgNLTV4Elt0IAMf4TQHCT0EAvw5JAqSaKwD5UX8EweoDA2LO9ATaI+sD!H1+SAg==!"
-		);
-		const [{ embed }, { name, file }] = decks.prettyPrint(deck, "abc.ydk");
-		expect(name).to.equal("abc.ydk");
+	it("Standard test deck", async function () {
+		const deck = decks.getDeck(sampleDeck);
+		const [{ embed }, { name, file }] = decks.prettyPrint(deck, "test.ydk");
+		expect(name).to.equal("test.ydk");
 		expect(file).to.equal(
-			"#created by YDeck\n#main\n99249638\n99249638\n46659709\n46659709\n46659709\n65367484\n65367484\n65367484\n43147039\n30012506\n30012506\n30012506\n77411244\n77411244\n77411244\n3405259\n3405259\n3405259\n89132148\n39890958\n14558127\n14558127\n14558127\n32807846\n73628505\n12524259\n12524259\n12524259\n24224830\n80352158\n80352158\n80352158\n66399653\n66399653\n66399653\n10045474\n10045474\n10045474\n55784832\n55784832\n#extra\n1561110\n10443957\n10443957\n58069384\n58069384\n73289035\n581014\n21887175\n4280258\n38342335\n2857636\n75452921\n50588353\n83152482\n65741786\n!side\n43147039\n"
+			"#created by YDeck\n#main\n89631139\n89631139\n89631139\n95788410\n95788410\n95788410\n39674352\n39674352\n39674352\n32626733\n32626733\n32626733\n56649609\n56649609\n56649609\n38999506\n38999506\n38999506\n39111158\n39111158\n39111158\n92176681\n92176681\n92176681\n65957473\n65957473\n65957473\n76232340\n76232340\n76232340\n38955728\n38955728\n38955728\n13140300\n13140300\n13140300\n89189982\n89189982\n89189982\n31447217\n#extra\n62873545\n62873545\n62873545\n!side\n31447217\n31447217\n"
 		);
 		expect(embed?.title).to.equal("Contents of your deck:\n");
 		const mainField = embed?.fields?.[0];
-		expect(mainField?.name).to.equal("Main Deck (40 cards - 25 Monsters, 12 Spells, 3 Traps)");
+		expect(mainField?.name).to.equal("Main Deck (40 cards - 40 Monsters)");
 		expect(mainField?.value).to.equal(
-			"2 Union Driver\n3 Galaxy Soldier\n3 Photon Thrasher\n1 Photon Vanisher\n3 A-Assault Core\n3 B-Buster Drake\n3 C-Crush Wyvern\n1 Photon Orbital\n1 Heavy Mech Support Armor\n3 Ash Blossom & Joyous Spring\n1 Reinforcement of the Army\n1 Terraforming\n3 Unauthorized Reactivation\n1 Called by the Grave\n3 Magnet Reverse\n3 Union Hangar\n3 Infinite Impermanence\n2 Morinphen"
+			"3 Blue-Eyes White Dragon\n3 Rabidragon\n3 Gogiga Gagagigo\n3 Spiral Serpent\n3 Phantasm Spiral Dragon\n3 Cosmo Queen\n3 Tri-Horned Dragon\n3 Suppression Collider\n3 Metal Armored Bug\n3 Sengenjin\n3 Dragon Core Hexer\n3 Hieratic Seal of the Sun Dragon Overlord\n3 Metaphys Armed Dragon\n1 Wingweaver"
 		);
 		const extraField = embed?.fields?.[1];
-		expect(extraField?.name).to.equal("Extra Deck (15 cards - 1 Fusion, 6 Xyz, 8 Link)");
-		expect(extraField?.value).to.equal(
-			"1 ABC-Dragon Buster\n2 Cyber Dragon Infinity\n2 Cyber Dragon Nova\n1 Bujintei Tsukuyomi\n1 Daigusto Emeral\n1 Mekk-Knight Crusadia Avramax\n1 Apollousa, Bow of the Goddess\n1 Knightmare Unicorn\n1 Knightmare Phoenix\n1 Knightmare Cerberus\n1 Crystron Halqifibrax\n1 Union Carrier\n1 I:P Masquerena"
-		);
+		expect(extraField?.name).to.equal("Extra Deck (3 cards - 3 Fusion)");
+		expect(extraField?.value).to.equal("3 Dragon Master Knight");
 		const sideField = embed?.fields?.[2];
-		expect(sideField?.name).to.equal("Side Deck (1 cards - 1 Monsters)");
-		expect(sideField?.value).to.equal("1 Photon Vanisher");
+		expect(sideField?.name).to.equal("Side Deck (2 cards - 2 Monsters)");
+		expect(sideField?.value).to.equal("2 Wingweaver");
 		const ydkeField = embed?.fields?.[3];
 		expect(ydkeField?.name).to.equal("YDKE URL");
-		expect(ydkeField?.value).to.equal(
-			"ydke://5m3qBeZt6gV9+McCffjHAn34xwK8beUDvG3lA7xt5QMfX5ICWvTJAVr0yQFa9MkBrDOdBKwznQSsM50Ey/UzAMv1MwDL9TMAdAxQBQ6wYAKvI94AryPeAK8j3gCmm/QBWXtjBOMavwDjGr8A4xq/AD6kcQGeE8oEnhPKBJ4TygSlLfUDpS31A6Ut9QMiSJkAIkiZACJImQCANVMDgDVTAw==!FtIXALVcnwC1XJ8AiBF2A4gRdgNLTV4Elt0IAMf4TQHCT0EAvw5JAqSaKwD5UX8EweoDA2LO9ATaI+sD!H1+SAg==!"
-		);
+		expect(ydkeField?.value).to.equal(sampleDeck);
 	});
 	it("Empty deck", async function () {
 		const deck = decks.getDeck("ydke://!!!");
