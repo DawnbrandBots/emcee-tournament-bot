@@ -4,6 +4,7 @@
 
 ### New Features
 - Emcee reports its current version in the `mc!help` command.
+- Starting the timer and sending the pairing for round 1 no longer happens automatically after `mc!start` and requires a manual call of `mc!round`. This is to allow for intervention if something goes wrong with the start process, before telling players to play.
 - Creating the Top Cut for a tournament is a separate `mc!topcut` command that can be called on a tournament after `mc!finish` is used. This allows taking a break between the end of Swiss and the start of Top Cut.
 - New `mc!tie` command changes all open matches in the current round to a tie. This is useful when a number of matches are outstanding at the end of a round or tournament.
 - A custom timer length can now be specified for `mc!round` and `mc!start` (for the first round).
