@@ -42,9 +42,11 @@ export async function advanceRoundDiscord(
 	skip = false
 ): Promise<void> {
 	await timeWizard.cancel(tournament.id);
+	logger.info(JSON.stringify({ tournament: tournament.id, minutes, skip }));
 	const matches = await challonge.getMatches(tournament.id);
 	const round = await challonge.getRound(tournament.id, matches);
 	const intro = `Round ${round} of ${tournament.name} has begun!`;
+	logger.info(JSON.stringify({ tournament: tournament.id, round }));
 	const role = await participantRole.get(tournament);
 	for (const channel of tournament.publicChannels) {
 		await discord.sendMessage(
@@ -56,12 +58,14 @@ export async function advanceRoundDiscord(
 	}
 	if (!skip) {
 		const players = await getPlayers(challonge, tournament.id);
+		logger.info(JSON.stringify({ tournament: tournament.id, players: players.size, matches: matches.length }));
 		for (const match of matches) {
 			const player1 = players.get(match.player1);
 			const player2 = players.get(match.player2);
 			if (player1 && player2) {
 				const name1 = await getRealUsername(discord, player1);
 				const name2 = await getRealUsername(discord, player2);
+				logger.verbose({ tournament: tournament.id, match: match.matchId, player1, player2, name1, name2 });
 				if (name1) {
 					await sendPairing(discord, intro, player1, player2, name2, tournament);
 				} else {
@@ -87,6 +91,7 @@ export async function advanceRoundDiscord(
 			for (const bye of players.values()) {
 				try {
 					await discord.sendDirectMessage(bye, `${intro} You have a bye for this round.`);
+					logger.info(JSON.stringify({ tournament: tournament.id, bye }));
 				} catch {
 					await reportFailure(discord, tournament, bye, "natural bye");
 				}
@@ -163,6 +168,7 @@ async function reportFailure(
 	opponentId: string
 ): Promise<void> {
 	for (const channel of tournament.privateChannels) {
+		logger.warn(JSON.stringify({ tournament: tournament.id, userId, opponentId, event: "direct message fail" }));
 		await discord
 			.sendMessage(
 				channel,
