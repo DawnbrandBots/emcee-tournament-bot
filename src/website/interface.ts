@@ -1,4 +1,5 @@
 import { ChallongeIDConflictError, UserError } from "../util/errors";
+import { getLogger } from "../util/logger";
 
 export interface WebsiteWrapper {
 	createTournament(name: string, desc: string, url: string, topCut?: boolean): Promise<WebsiteTournament>;
@@ -46,6 +47,8 @@ export interface WebsiteMatch {
 	open: boolean;
 	round: number;
 }
+
+const logger = getLogger("website");
 
 export class WebsiteInterface {
 	constructor(private api: WebsiteWrapper) {}
@@ -161,6 +164,20 @@ export class WebsiteInterface {
 		}
 
 		const players = await this.api.getPlayers(tournamentId);
+
+		// detailed logging
+		logger.verbose(
+			JSON.stringify({
+				tournament: tournamentId,
+				command: "assignByes",
+				event: "before",
+				players: players.map(p => {
+					return { discord: p.discordId, challonge: p.challongeId, seed: p.seed };
+				}),
+				byes: inPlayersToBye
+			})
+		);
+
 		const numPlayers = players.length;
 		const numToBye = playersToBye.length;
 		/* With 1 bye left to distribute, if the current number of players is even, we need to add another player
@@ -221,6 +238,21 @@ export class WebsiteInterface {
 			// we've set discord IDs to this
 			await this.setSeed(tournamentId, byePlayers[i], oppSeed);
 		}
+
+		// detailed logging
+		// update array after challonge changes. REMOVE AFTER LOGS NOT NEEDED
+		const newPlayers = await this.api.getPlayers(tournamentId);
+		logger.verbose(
+			JSON.stringify({
+				tournament: tournamentId,
+				command: "assignByes",
+				event: "after",
+				players: newPlayers.map(p => {
+					return { discord: p.discordId, challonge: p.challongeId, seed: p.seed };
+				}),
+				byes: inPlayersToBye
+			})
+		);
 	}
 
 	public async dropByes(tournamentId: string, numByes: number): Promise<void> {
