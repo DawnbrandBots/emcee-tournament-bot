@@ -58,7 +58,7 @@ When the tournament begins, Emcee will also post a guide for the exact commands 
 you should use during the tournament to report your scores or drop. You can send these
 commands in a server channel or in direct messages with Emcee.
 
-To report your score, both you and your opponent need to use the `mc!score` command. The round message will have the tournament ID, and you need to submit with the command `mc!score id|your score-opp's score`. For example, if you won the match 2-1 in the tournament "example", you need to use `mc!score mc_example|2-1` and your opponent needs to use `mc!score mc_example|1-2`.
+To report your score, both you and your opponent need to use the `mc!score` command. The round message will have the tournament ID, and you need to submit with the command `mc!score id|your score-opp's score`. For example, if you won the match 2-1 in the tournament "example", you need to use `mc!score example|2-1` and your opponent needs to use `mc!score example|1-2`.
 
 ### Submitting scores
 ```
