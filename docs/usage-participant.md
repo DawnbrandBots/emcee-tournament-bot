@@ -58,8 +58,6 @@ When the tournament begins, Emcee will also post a guide for the exact commands 
 you should use during the tournament to report your scores or drop. You can send these
 commands in a server channel or in direct messages with Emcee.
 
-To report your score, both you and your opponent need to use the `mc!score` command. The round message will have the tournament ID, and you need to submit with the command `mc!score id|your score-opp's score`. For example, if you won the match 2-1 in the tournament "example", you need to use `mc!score example|2-1` and your opponent needs to use `mc!score example|1-2`.
-
 ### Submitting scores
 ```
 mc!score id|score
@@ -72,6 +70,10 @@ This is NOT the name of the tournament.
 _score_ should be the score in your favour. Ties are accepted in Swiss.
 For example, if the score for the match was `2-1` in your favour, you should
 report a `2-1` and your opponent should report a `1-2`.
+
+Each round, after the match is over, both you and your opponent need to use
+this command to submit your scores to tournament hosts and Challonge.
+If your scores disagree, both of you will need to resubmit.
 
 You can copy and paste the exact command for your tournament from the **Report scores**
 guide that Emcee posts in the announcement channel when the tournament begins.
