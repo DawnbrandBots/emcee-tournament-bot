@@ -10,7 +10,7 @@ const command: CommandDefinition = {
 	executor: async (msg, args, support) => {
 		// This executor's logic is now surprisingly similar to finish
 		const [id] = args;
-		await support.database.authenticateHost(id, msg.author.id);
+		await support.database.authenticateHost(id, msg.author.id, msg.guildID);
 		logger.verbose(
 			JSON.stringify({
 				channel: msg.channel.id,

@@ -9,7 +9,7 @@ const command: CommandDefinition = {
 	requiredArgs: ["id", "name", "description"],
 	executor: async (msg, args, support) => {
 		const [id, name, desc] = args;
-		await support.database.authenticateHost(id, msg.author.id);
+		await support.database.authenticateHost(id, msg.author.id, msg.guildID);
 		logger.verbose(
 			JSON.stringify({
 				channel: msg.channel.id,

@@ -19,7 +19,12 @@ const command: CommandDefinition = {
 		const [id] = args;
 		const skip = args[1] === "skip" || args[2] === "skip";
 		const timer = (args.length === 2 && !skip) || args.length > 2 ? parseTime(args[1]) : 50;
-		const tournament = await support.database.authenticateHost(id, msg.author.id, TournamentStatus.IPR);
+		const tournament = await support.database.authenticateHost(
+			id,
+			msg.author.id,
+			msg.guildID,
+			TournamentStatus.IPR
+		);
 		logger.verbose(
 			JSON.stringify({
 				channel: msg.channel.id,
