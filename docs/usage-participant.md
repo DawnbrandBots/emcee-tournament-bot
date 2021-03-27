@@ -20,20 +20,72 @@ This also shows what revision of Emcee's code is currently running, which is mor
 useful for developer diagnostics.
 
 ### Signing up for a tournament
-When a tournament is started by a tournament host, a message will be posted by Emcee to a designated channel in the server, with a "✅" reaction on it. Clicking this reaction will sign you up for the tournament, and you'll get a Direct Message from Emcee instructing you to submit a deck. You can submit either a YDK deck file by uploading it to Discord, or a YDKE URL by replying with it in a message. Emcee will then respond by showing you your deck profile. If the deck is illegal, this profile will tell you what the issues are so you can fix them, you will not be signed up for the tournament and Emcee will instruct you to resubmit. If the deck is legal, you will be signed up for the tournament, you will receive a tournament participant role, and your deck will be forwarded to the tournament hosts. If you want to change your deck, you can send Emcee a new deck file and it will send your new deck to the tournament hosts. If you change your mind about playing, you can uncheck the "✅" reaction to drop from the tournament. If the tournament starts, and you have checked the "✅" reaction but not yet submitted a deck, Emcee will inform you that you have been dropped.
+
+When a tournament host opens a tournament hosted through Emcee for registration, Emcee will
+post a sign-up message to a designated announcement channel on the server for the tournament.
+This message will have a ✅ reaction and clicking on it will begin the sign-up process.
+
+![Sample sign-up message](registration.png)
+
+Make sure you allow direct messages from Emcee! After reacting with ✅, you will receive a
+direct message from Emcee instructing you to submit a deck. You can submit either a YDK deck file
+by uploading it to Discord in the conversation, or reply with a `ydke://` URL.
+
+Emcee will respond with your deck profile and any problems that make your deck illegal for
+the tournament. If your deck is illegal, Emcee will instruct you to resubmit a legal deck.
+If your deck is legal, you will be registered for the tournament and receive a participant
+role for the tournament on the server. Your deck will be forwarded to the tournament hosts.
+
+If you want to change your deck at any time before the tournament starts, you can submit
+again to Emcee and the above process will be repeated. If you accidentally submit an
+illegal deck this way, you will not be unregistered, though the deck will not be updated.
+
+If you change your mind about playing, you can uncheck the ✅ reaction to drop from the tournament.
+If the tournament starts, but you have yet to submit a deck, Emcee will inform you that you have been dropped.
 
 ### During a tournament
-When each round of the tournament begins, a message will be posted to the same channel you signed up from with a link to the bracket on Challonge. From there, it's up to you to contact your opponent and play your match within the round's time limit. Emcee will post a 50-minute timer that counts down every 5 seconds, and will tag all players instructing them to finish the round. To report your score, both you and your opponent need to use the `mc!score` command. The round message will have the tournament ID, and you need to submit with the command `mc!score id|your score-opp's score`. For example, if you won the match 2-1 in the tournament "example", you need to use `mc!score mc_example|2-1` and your opponent needs to use `mc!score mc_example|1-2`.
+
+The tournament host decides when each round of a tournament begins. When a round begins, you will
+be pinged from the same channel you signed up from with a link to the bracket on Challonge.
+If the hosts choose to do so, Emcee will try to direct message you and your opponent about
+your pairing, but it's up to you to contact your opponent and play your match within the round's
+time limit, if any.
+
+If there is a round time limit for this tournament, Emcee will also post it to the same channel
+and count down every 5 seconds. All participants will be pinged when the time limit is reached.
+
+When the tournament begins, Emcee will also post a guide for the exact commands below that
+you should use during the tournament to report your scores or drop. You can send these
+commands in a server channel or in direct messages with Emcee.
+
+To report your score, both you and your opponent need to use the `mc!score` command. The round message will have the tournament ID, and you need to submit with the command `mc!score id|your score-opp's score`. For example, if you won the match 2-1 in the tournament "example", you need to use `mc!score mc_example|2-1` and your opponent needs to use `mc!score mc_example|1-2`.
 
 ### Submitting scores
 ```
 mc!score id|score
 ```
+Replace _id_ and _score_ with the appropriate parameters below.
+
+_id_ should be the Challonge ID for the tournament as reported by Emcee.
+This is NOT the name of the tournament.
+
+_score_ should be the score in your favour. Ties are accepted in Swiss.
+For example, if the score for the match was `2-1` in your favour, you should
+report a `2-1` and your opponent should report a `1-2`.
+
+You can copy and paste the exact command for your tournament from the **Report scores**
+guide that Emcee posts in the announcement channel when the tournament begins.
 
 ### Dropping
 ```
 mc!drop id
 ```
+_id_ should be the Challonge ID for the tournament as reported by Emcee.
+This is NOT the name of the tournament.
+
+Use this if you want to stop playing.
+If you're in the middle of a round, this will concede the current match.
+Be careful, this **removes you from the tournament permanently.**
 
 ---
 

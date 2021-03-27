@@ -129,7 +129,7 @@ export async function onDirectMessage(
 	log("verbose", msg, { event: "no context", content: msg.content });
 	await reply(
 		msg,
-		`${helpMessage}\nIf you're trying to sign up for a tournament, make sure you've registered and I'll let you know how to proceed.`
+		`${helpMessage}\nIf you're trying to sign up for a tournament, make sure you've clicked ✅ on a sign-up message and I'll let you know how to proceed.`
 	);
 }
 
