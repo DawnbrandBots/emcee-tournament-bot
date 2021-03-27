@@ -7,7 +7,7 @@
 - Starting the timer and sending the pairing for round 1 no longer happens automatically after `mc!start` and requires a manual call of `mc!round`. This is to allow for intervention if something goes wrong with the start process, before telling players to play.
 - Creating the Top Cut for a tournament is a separate `mc!topcut` command that can be called on a tournament after `mc!finish` is used. This allows taking a break between the end of Swiss and the start of Top Cut.
 - New `mc!tie` command changes all open matches in the current round to a tie. This is useful when a number of matches are outstanding at the end of a round or tournament.
-- A custom timer length can now be specified for `mc!round` and `mc!start` (for the first round).
+- A custom timer length can now be specified for `mc!round`.
 - Documentation is now up-to-date in this repository, replacing the wiki.
 ### Bug Fixes
 - The behaviour of dropping a player is now more reliable and consistent between a player using a command, a player unchecking their reaction, a host using `mc!forcedrop`, and a player leaving the server.
