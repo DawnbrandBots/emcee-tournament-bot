@@ -1,6 +1,6 @@
 # Changelog
 
-## 2021-03-?? (In Progress)
+## 2021-03-28 ([Chalislime Monthly March 2021](https://challonge.com/csmmar21))
 
 ### New Features
 - Emcee reports its current version in the `mc!help` command.
@@ -11,6 +11,7 @@
 ### Bug Fixes
 - The behaviour of dropping a player is now more reliable and consistent between a player using a command, a player unchecking their reaction, a host using `mc!forcedrop`, and a player leaving the server.
 - Deck submission should be more reliable and report errors.
+- Correctly identifies the natural bye, where it previously thought dropped players were still in the running.
 - Misc. stability updates including tournament commencement and identifying byes.
 
 ## 2021-02-21 ([Chalislime Monthly February 2021](https://challonge.com/csmfeb21))
