@@ -123,7 +123,9 @@ async function getPlayers(challonge: WebsiteInterface, tournamentId: string): Pr
 	const raw = await challonge.getPlayers(tournamentId);
 	const players = new Map();
 	for (const player of raw) {
-		players.set(player.challongeId, player.discordId);
+		if (player.active) {
+			players.set(player.challongeId, player.discordId);
+		}
 	}
 	return players;
 }
