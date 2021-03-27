@@ -3,13 +3,14 @@ Players can sign up now.
 Players can drop themselves.
 If you need, you can also drop players.
 ```
-mc!forcedrop {}|@User```
+mc!forcedrop {}|@User
+mc!forcedrop {}|id```
 **Add bye**
 Players with a bye don't play in round 1.
 This gives them a free win.
 ```
 mc!addbye {}|@User
-mc!removebye {}|@Sample```
+mc!removebye {}|@User```
 **View decks**
 You can view a single player's deck.
 ```

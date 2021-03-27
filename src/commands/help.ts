@@ -1,14 +1,12 @@
 import { CommandDefinition } from "../Command";
+import { helpMessage } from "../config";
 import { reply } from "../util/discord";
 
 const command: CommandDefinition = {
 	name: "help",
 	requiredArgs: [],
 	executor: async message => {
-		await reply(
-			message,
-			`Emcee's documentation can be found at https://github.com/AlphaKretin/emcee-tournament-bot/wiki.\nRevision: **${process.env.EMCEE_REVISION}**`
-		);
+		await reply(message, helpMessage);
 	}
 };
 
