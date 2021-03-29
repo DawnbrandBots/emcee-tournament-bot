@@ -7,6 +7,9 @@
 - `mc!topcut` supports arbitrary size top cuts instead of specifically 8. The size is now required. (#231)
 - `mc!removehost` supports IDs to allow removing hosts who leave the server. (#234)
 
+### Bug Fixes
+- Fix a typo in `mc!forcedrop` success message where it indicated confirmed participants were pending. (#236)
+
 ## 2021-03-28 ([Chalislime Monthly March 2021](https://challonge.com/csmmar21))
 
 ### New Features
