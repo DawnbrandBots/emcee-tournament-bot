@@ -4,6 +4,7 @@
 
 ### New Features
 - `mc!topcut` supports arbitrary size top cuts instead of specifically 8. The size is now required.
+- `mc!removehost` supports IDs to allow removing hosts who leave the server. (#234)
 
 ## 2021-03-28 ([Chalislime Monthly March 2021](https://challonge.com/csmmar21))
 
