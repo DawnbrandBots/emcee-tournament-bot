@@ -230,12 +230,14 @@ the participant role for this tournament is deleted.
 
 ### Start top cut tournament
 ```
-mc!topcut id
+mc!topcut id|size
 ```
 **Caller permission level**: host for the tournament identified by _id_
 
-If the tournament is finished and has more than eight participants, a new single-elimination
-top cut tournament is started on Challonge with the top eight participants. The same
+_size_ should be a positive integer that makes sense for the tournament.
+
+If the tournament is finished and has at least _size_ participants, a new single-elimination
+top cut tournament is started on Challonge with the top _size_ participants. The same
 hosts, decks, and announcement channels are retained, and a new participant role
 is granted to these users.
 
