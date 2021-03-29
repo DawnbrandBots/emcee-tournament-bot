@@ -6,18 +6,20 @@ import { itRejectsNonHosts, mockBotClient, msg, support } from "./common";
 
 describe("command:removehost", function () {
 	itRejectsNonHosts(support, command, msg, ["name"]);
-	it("requires a mentioned user", async () => {
+	it("supports mentioned users", async () => {
 		msg.mentions = [];
 		msg.channel.createMessage = sinon.spy();
-		expect(command.executor(msg, ["name"], support)).to.be.rejectedWith("Message does not mention a user!");
-		expect(msg.channel.createMessage).to.not.have.been.called;
+		await command.executor(msg, ["name", "<@!snowflake>"], support);
+		expect(msg.channel.createMessage).to.have.been.calledOnceWithExactly(
+			"<@snowflake> removed as a host for Tournament name!"
+		);
 	});
-	it("removes the mentioned user", async () => {
+	it("supports user ids", async () => {
 		msg.mentions = [new User({ id: "nova" }, mockBotClient)];
 		msg.channel.createMessage = sinon.spy();
-		await command.executor(msg, ["name"], support);
+		await command.executor(msg, ["name", "raw-snowflake"], support);
 		expect(msg.channel.createMessage).to.have.been.calledOnceWithExactly(
-			"<@nova> removed as a host for Tournament name!"
+			"<@raw-snowflake> removed as a host for Tournament name!"
 		);
 	});
 });

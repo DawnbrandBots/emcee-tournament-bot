@@ -83,10 +83,13 @@ mc!removehost id|@user
 ```
 **Caller permission level**: host for the tournament identified by _id_
 
-`@user` must be a valid Discord mention of a user that pings them.
+`@user` can be a Discord mention, though it does not have to ping, or the user's ID.
 
 The user is deauthorised as a host for the specified tournament, losing all corresponding permissions.
 You cannot remove yourself if you are the only host; there must always be one host to manage the tournament.
+
+If a host leaves the tournament server, they are not automatically removed and will regain
+powers for their tournaments if they return.
 
 ### Add announcement channel
 ```
@@ -295,6 +298,9 @@ are unconfirmed. If the tournament is in progress, the match is automatically fo
 the opponent `2-0` unless they have also dropped, in which case it is amended to a `0-0` draw.
 
 This is irreversible. The participant is informed of the removal via direct message.
+
+If a confirmed participant leaves the server for a tournament while Emcee is online,
+they should be automatically dropped from the tournament by Emcee.
 
 ### Show participant deck
 ```
