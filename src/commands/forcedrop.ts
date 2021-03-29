@@ -84,8 +84,8 @@ const command: CommandDefinition = {
 		await reply(
 			msg,
 			confirmed
-				? `${name} was pending and dropped from **${tournament.name}**.`
-				: `${name} successfully dropped from **${tournament.name}**.`
+				? `${name} successfully dropped from **${tournament.name}**.`
+				: `${name} was pending and dropped from **${tournament.name}**.`
 		);
 		log({ player, event: "success" });
 		const messages = await support.database.getRegisterMessages(id);
