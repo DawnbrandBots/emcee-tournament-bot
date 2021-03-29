@@ -1,5 +1,10 @@
 # Changelog
 
+## HEAD
+
+### New Features
+- `mc!topcut` supports arbitrary size top cuts instead of specifically 8. The size is now required.
+
 ## 2021-03-28 ([Chalislime Monthly March 2021](https://challonge.com/csmmar21))
 
 ### New Features
