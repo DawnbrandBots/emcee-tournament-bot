@@ -3,7 +3,8 @@
 ## HEAD
 
 ### New Features
-- `mc!topcut` supports arbitrary size top cuts instead of specifically 8. The size is now required.
+- Deck resubmission policy is explicitly stated on submission. This was a frequently-asked question. (#230)
+- `mc!topcut` supports arbitrary size top cuts instead of specifically 8. The size is now required. (#231)
 
 ## 2021-03-28 ([Chalislime Monthly March 2021](https://challonge.com/csmmar21))
 
