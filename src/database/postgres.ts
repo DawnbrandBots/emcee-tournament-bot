@@ -105,6 +105,7 @@ export class DatabaseWrapperPostgres {
 	public async authenticatePlayer(
 		tournamentId: string,
 		discordId: string,
+		serverId?: string,
 		assertStatus?: TournamentStatus
 	): Promise<DatabasePlayerWithTournament> {
 		try {
@@ -115,6 +116,9 @@ export class DatabaseWrapperPostgres {
 			);
 		} catch {
 			throw new UnauthorisedPlayerError(discordId, tournamentId);
+		}
+		if (serverId && serverId !== participant.tournament.owningDiscordServer) {
+			throw new TournamentNotFoundError(tournamentId);
 		}
 		if (assertStatus && participant.tournament.status !== assertStatus) {
 			throw new AssertStatusError(tournamentId, assertStatus, participant.tournament.status);
