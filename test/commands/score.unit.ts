@@ -11,7 +11,7 @@ describe("command:score", function () {
 			const replySpy = (msg.channel.createMessage = sinon.spy());
 			const authStub = this.stub(support.database, "authenticatePlayer").rejects();
 			expect(command.executor(msg, ["name", "2-0"], support)).to.be.rejected;
-			expect(authStub).to.have.been.calledOnceWithExactly("name", "0000", TournamentStatus.IPR);
+			expect(authStub).to.have.been.calledOnceWithExactly("name", "0000", undefined, TournamentStatus.IPR);
 			expect(replySpy).to.not.have.been.called;
 		})
 	);
