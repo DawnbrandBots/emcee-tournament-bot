@@ -84,9 +84,13 @@ export class DatabaseWrapperPostgres {
 	public async authenticateHost(
 		tournamentId: string,
 		hostId: string,
+		serverId?: string,
 		assertStatus?: TournamentStatus
 	): Promise<DatabaseTournament> {
 		const tournament = await this.findTournament(tournamentId);
+		if (tournament.owningDiscordServer !== serverId) {
+			throw new TournamentNotFoundError(tournamentId);
+		}
 		if (!tournament.hosts.includes(hostId)) {
 			throw new UnauthorisedHostError(hostId, tournamentId);
 		}

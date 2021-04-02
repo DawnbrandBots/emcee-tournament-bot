@@ -10,7 +10,7 @@ const command: CommandDefinition = {
 	executor: async (msg, args, support) => {
 		// Mirror of addhost
 		const [id, who] = args;
-		await support.database.authenticateHost(id, msg.author.id);
+		await support.database.authenticateHost(id, msg.author.id, msg.guildID);
 		const newHost = who.startsWith("<@!") && who.endsWith(">") ? who.slice(3, -1) : who;
 		logger.verbose(
 			JSON.stringify({

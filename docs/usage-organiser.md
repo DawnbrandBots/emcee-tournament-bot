@@ -7,6 +7,10 @@ these are separated from each other by a pipe `|`, and from the command name by 
 following, any words that are separated by `|` refer to the _name_ of the parameter, and you should
 replace them with an appropriate value when you use these commands!
 
+All host commands are scoped to the current server and do not work in direct messages.
+Tournaments can only be managed from the server that they were created in;
+they cannot be accessed from other servers.
+
 ## Index
 
 <!--

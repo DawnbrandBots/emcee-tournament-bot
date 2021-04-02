@@ -10,7 +10,7 @@ const command: CommandDefinition = {
 	executor: async (msg, args, support) => {
 		// Mirror of addchannel
 		const [id, baseType] = args; // 1 optional and thus potentially undefined
-		await support.database.authenticateHost(id, msg.author.id);
+		await support.database.authenticateHost(id, msg.author.id, msg.guildID);
 		const type = baseType?.toLowerCase() === "private" ? "private" : "public";
 		const channelId = msg.channel.id;
 		logger.verbose(

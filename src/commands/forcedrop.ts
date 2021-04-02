@@ -11,7 +11,7 @@ const command: CommandDefinition = {
 	requiredArgs: ["id", "who"],
 	executor: async (msg, args, support) => {
 		const [id, who] = args;
-		const tournament = await support.database.authenticateHost(id, msg.author.id);
+		const tournament = await support.database.authenticateHost(id, msg.author.id, msg.guildID);
 		const player = who.startsWith("<@!") && who.endsWith(">") ? who.slice(3, -1) : who;
 		function log(payload: Record<string, unknown>): void {
 			logger.verbose(

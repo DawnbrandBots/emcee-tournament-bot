@@ -14,7 +14,12 @@ const command: CommandDefinition = {
 		if (isNaN(size) || size < 2) {
 			await reply(msg, `Bad top cut size of ${sizeRaw}.`);
 		}
-		const tournament = await support.database.authenticateHost(id, msg.author.id, TournamentStatus.COMPLETE);
+		const tournament = await support.database.authenticateHost(
+			id,
+			msg.author.id,
+			msg.guildID,
+			TournamentStatus.COMPLETE
+		);
 		logger.verbose(
 			JSON.stringify({
 				channel: msg.channel.id,

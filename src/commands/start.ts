@@ -17,7 +17,12 @@ const command: CommandDefinition = {
 		// id|timer|skip
 		// 50 is the assumed default timer for live tournaments
 		const [id] = args;
-		const tournament = await support.database.authenticateHost(id, msg.author.id, TournamentStatus.PREPARING);
+		const tournament = await support.database.authenticateHost(
+			id,
+			msg.author.id,
+			msg.guildID,
+			TournamentStatus.PREPARING
+		);
 		function log(event: string, payload?: Record<string, unknown>): string {
 			return JSON.stringify({
 				channel: msg.channel.id,

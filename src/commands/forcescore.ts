@@ -29,7 +29,12 @@ const command: CommandDefinition = {
 			throw new UserError("Must provide score in format `#-#` e.g. `2-1`.");
 		}
 		// Check command syntax first to avoid a database round trip
-		const tournament = await support.database.authenticateHost(id, msg.author.id, TournamentStatus.IPR);
+		const tournament = await support.database.authenticateHost(
+			id,
+			msg.author.id,
+			msg.guildID,
+			TournamentStatus.IPR
+		);
 		try {
 			// eslint-disable-next-line no-var
 			var { challongeId } = await support.database.getConfirmedPlayer(player, id);
