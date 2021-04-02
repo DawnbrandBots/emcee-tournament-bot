@@ -9,7 +9,10 @@
 		"cover": "nyc report",
 		"lint": "eslint . --ext .js,.jsx,.ts,.tsx",
 		"build": "tsc",
-		"clean": "ts-node util/clean.ts"
+		"delete": "ts-node src/cli/delete",
+		"delete:docker": "node --enable-source-maps --unhandled-rejections=strict cli/delete",
+		"leave": "ts-nde src/cli/leave",
+		"leave:docker": "node --enable-source-maps --unhandled-rejections=strict cli/leave"
 	},
 	"author": "Luna Brand",
 	"contributors": [
