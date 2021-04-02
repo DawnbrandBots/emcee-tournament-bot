@@ -10,6 +10,7 @@
 ### Bug Fixes
 - Fix a typo in `mc!forcedrop` success message where it indicated confirmed participants were pending. (#236)
 - Fix a bug with users with IDs starting with 9 not receiving pairing direct messages. (#237)
+- Host commands can no longer be run in direct messages or other servers
 
 ## 2021-03-28 ([Chalislime Monthly March 2021](https://challonge.com/csmmar21))
 
