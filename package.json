@@ -11,7 +11,7 @@
 		"build": "tsc",
 		"delete": "ts-node src/cli/delete",
 		"delete:docker": "node --enable-source-maps --unhandled-rejections=strict cli/delete",
-		"leave": "ts-nde src/cli/leave",
+		"leave": "ts-node src/cli/leave",
 		"leave:docker": "node --enable-source-maps --unhandled-rejections=strict cli/leave"
 	},
 	"author": "Luna Brand",
