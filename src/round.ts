@@ -131,7 +131,7 @@ async function getPlayers(challonge: WebsiteInterface, tournamentId: string): Pr
 }
 
 function notSnowflake(userId: string): boolean {
-	return !userId.length || userId[0] <= "0" || userId[0] >= "9";
+	return !userId.length || userId[0] < "0" || userId[0] > "9";
 }
 
 async function getRealUsername(discord: DiscordInterface, userId: string): Promise<string | null> {
@@ -158,7 +158,7 @@ async function sendPairing(
 				? `${intro} Your opponent is <@${opponentId}> (${opponentName}). Make sure to report your score after the match is over!`
 				: `${intro} I couldn't find your opponent. If you don't think you should have a bye for this round, please check the pairings.`
 		);
-	} catch {
+	} catch (err) {
 		await reportFailure(discord, tournament, receiverId, opponentId);
 	}
 }
