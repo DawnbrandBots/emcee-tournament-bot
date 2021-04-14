@@ -34,6 +34,7 @@ const command: CommandDefinition = {
 			return;
 		}
 		if (participant.tournament.status === TournamentStatus.COMPLETE) {
+			log({ event: "already complete" });
 			await reply(msg, `**${participant.tournament.name}** has already concluded!`);
 			return;
 		}
