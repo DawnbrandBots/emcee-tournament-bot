@@ -166,7 +166,7 @@ export class WebsiteInterface {
 		const players = await this.api.getPlayers(tournamentId);
 
 		// detailed logging
-		logger.verbose(
+		/*logger.verbose(
 			JSON.stringify({
 				tournament: tournamentId,
 				command: "assignByes",
@@ -176,7 +176,7 @@ export class WebsiteInterface {
 				}),
 				byes: inPlayersToBye
 			})
-		);
+		);*/
 
 		const numPlayers = players.length;
 		const numToBye = playersToBye.length;
@@ -241,7 +241,7 @@ export class WebsiteInterface {
 
 		// detailed logging
 		// update array after challonge changes. REMOVE AFTER LOGS NOT NEEDED
-		const newPlayers = await this.api.getPlayers(tournamentId);
+		/*const newPlayers = await this.api.getPlayers(tournamentId);
 		logger.verbose(
 			JSON.stringify({
 				tournament: tournamentId,
@@ -252,7 +252,7 @@ export class WebsiteInterface {
 				}),
 				byes: inPlayersToBye
 			})
-		);
+		);*/
 	}
 
 	public async dropByes(tournamentId: string, numByes: number): Promise<void> {
