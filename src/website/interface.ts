@@ -1,5 +1,5 @@
 import { ChallongeIDConflictError, UserError } from "../util/errors";
-import { getLogger } from "../util/logger";
+// import { getLogger } from "../util/logger";
 
 export interface WebsiteWrapper {
 	createTournament(name: string, desc: string, url: string, topCut?: boolean): Promise<WebsiteTournament>;
@@ -48,7 +48,7 @@ export interface WebsiteMatch {
 	round: number;
 }
 
-const logger = getLogger("website");
+// const logger = getLogger("website");
 
 export class WebsiteInterface {
 	constructor(private api: WebsiteWrapper) {}
@@ -165,6 +165,12 @@ export class WebsiteInterface {
 
 		const players = await this.api.getPlayers(tournamentId);
 
+		// sort players with byes by their seed so that their paths don't cross when we change their seed
+		playersToBye.sort(
+			(a, b) =>
+				(players.find(p => p.discordId === a)?.seed || 0) - (players.find(p => p.discordId === b)?.seed || 0)
+		);
+
 		// detailed logging
 		/*logger.verbose(
 			JSON.stringify({
@@ -232,6 +238,7 @@ export class WebsiteInterface {
 			/* Since the topSeeds are all in the top half, we know adding half the max will stay in bounds.
 			   We set the seeds from top to bottom since we're moving from the bottom,
 			   this means they won't disturb anything above where they land.
+			   This is only true because we sorted the players by seed initially.
 			   Things below where they land are either going to be moved themselves or don't matter.
 			   In particular, if N + B is even we want something to be moved down to the natural bye. */
 			const oppSeed = topSeeds[i] + Math.floor(maxSeed / 2);
