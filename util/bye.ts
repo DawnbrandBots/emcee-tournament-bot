@@ -2,6 +2,7 @@ function assignByes(playersToBye: string[], players: string[]): string[] {
 	if (playersToBye.length < 1) {
 		return players;
 	}
+	playersToBye.sort((a, b) => players.findIndex(p => p === a) - players.findIndex(p => p === b));
 
 	const numPlayers = players.length;
 	const numToBye = playersToBye.length;
@@ -99,7 +100,4 @@ function go(playerCt: number, byes: string[]): void {
 	console.dir(newMatches);
 }
 
-go(125, ["10", "25", "68", "90"]);
-go(125, ["10", "25", "68", "90", "102"]);
-go(124, ["10", "25", "68", "90"]);
-go(124, ["10", "25", "68", "90", "102"]);
+go(176, ["21", "159", "145", "1", "116", "69"]);
