@@ -11,7 +11,7 @@ describe("command:removehost", function () {
 		msg.channel.createMessage = sinon.spy();
 		await command.executor(msg, ["name", "<@!snowflake>"], support);
 		expect(msg.channel.createMessage).to.have.been.calledOnceWithExactly(
-			"<@snowflake> removed as a host for Tournament name!"
+			sinon.match({ content: "<@snowflake> removed as a host for Tournament name!" })
 		);
 	});
 	it("supports user ids", async () => {
@@ -19,7 +19,7 @@ describe("command:removehost", function () {
 		msg.channel.createMessage = sinon.spy();
 		await command.executor(msg, ["name", "raw-snowflake"], support);
 		expect(msg.channel.createMessage).to.have.been.calledOnceWithExactly(
-			"<@raw-snowflake> removed as a host for Tournament name!"
+			sinon.match({ content: "<@raw-snowflake> removed as a host for Tournament name!" })
 		);
 	});
 });

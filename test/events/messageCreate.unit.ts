@@ -70,9 +70,15 @@ describe("Direct message submissions", function () {
 			);
 			expect(mockBotClient.createMessage).to.have.been.calledWith("channel2", {}, { name: "mock", file: "mock" });
 			expect(sampleMessage.channel.createMessage).to.have.been.calledWith(
-				"You have successfully signed up for **Tournament 1**! Your deck is below to double-check. You may resubmit at any time before the tournament starts."
+				sinon.match({
+					content:
+						"You have successfully signed up for **Tournament 1**! Your deck is below to double-check. You may resubmit at any time before the tournament starts."
+				})
 			);
-			expect(sampleMessage.channel.createMessage).to.have.been.calledWith({}, { name: "mock", file: "mock" });
+			expect(sampleMessage.channel.createMessage).to.have.been.calledWith(sinon.match.any, {
+				name: "mock",
+				file: "mock"
+			});
 		})
 	);
 	it(
@@ -85,7 +91,10 @@ describe("Direct message submissions", function () {
 			sampleMessage.channel.createMessage = this.spy();
 			await onDirectMessage(sampleMessage, database, decks, challonge, participantRole, mockBotClient);
 			expect(sampleMessage.channel.createMessage).to.have.been.calledWith(
-				"You are registering in multiple tournaments. Please register in one at a time by unchecking the reaction on all others.\nTournament 1, Tournament 2"
+				sinon.match({
+					content:
+						"You are registering in multiple tournaments. Please register in one at a time by unchecking the reaction on all others.\nTournament 1, Tournament 2"
+				})
 			);
 		})
 	);
@@ -97,7 +106,10 @@ describe("Direct message submissions", function () {
 			sampleMessage.channel.createMessage = this.spy();
 			await onDirectMessage(sampleMessage, database, decks, challonge, participantRole, mockBotClient);
 			expect(sampleMessage.channel.createMessage).to.have.been.calledWith(
-				"Emcee's documentation can be found at https://github.com/AlphaKretin/emcee-tournament-bot/blob/master/README.md.\nRevision: **undefined**\nIf you're trying to sign up for a tournament, make sure you've clicked ✅ on a sign-up message and I'll let you know how to proceed."
+				sinon.match({
+					content:
+						"Emcee's documentation can be found at https://github.com/AlphaKretin/emcee-tournament-bot/blob/master/README.md.\nRevision: **undefined**\nIf you're trying to sign up for a tournament, make sure you've clicked ✅ on a sign-up message and I'll let you know how to proceed."
+				})
 			);
 		})
 	);
@@ -125,7 +137,10 @@ describe("Direct message submissions", function () {
 			sampleMessage.channel.createMessage = this.spy();
 			await onDirectMessage(sampleMessage, database, decks, challonge, participantRole, mockBotClient);
 			expect(sampleMessage.channel.createMessage).to.have.been.calledWith(
-				"You're trying to update your deck for a tournament, but you're in multiple! Please choose one by dropping and registering again.\nTournament 1, Tournament 3"
+				sinon.match({
+					content:
+						"You're trying to update your deck for a tournament, but you're in multiple! Please choose one by dropping and registering again.\nTournament 1, Tournament 3"
+				})
 			);
 		})
 	);
@@ -161,9 +176,15 @@ describe("Direct message submissions", function () {
 			);
 			expect(mockBotClient.createMessage).to.have.been.calledWith("channel2", {}, { name: "mock", file: "mock" });
 			expect(sampleMessage.channel.createMessage).to.have.been.calledWith(
-				"You have successfully changed your deck for **Tournament 1**! Your deck is below to double-check. You may resubmit at any time before the tournament starts."
+				sinon.match({
+					content:
+						"You have successfully changed your deck for **Tournament 1**! Your deck is below to double-check. You may resubmit at any time before the tournament starts."
+				})
 			);
-			expect(sampleMessage.channel.createMessage).to.have.been.calledWith({}, { name: "mock", file: "mock" });
+			expect(sampleMessage.channel.createMessage).to.have.been.calledWith(sinon.match.any, {
+				name: "mock",
+				file: "mock"
+			});
 		})
 	);
 	it(

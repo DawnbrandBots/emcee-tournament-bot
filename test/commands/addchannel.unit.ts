@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import { SinonSandbox } from "sinon";
+import sinon, { SinonSandbox } from "sinon";
 import command from "../../src/commands/addchannel";
 import { itRejectsNonHosts, msg, support, test } from "./common";
 
@@ -17,7 +17,7 @@ describe("command:addchannel", function () {
 				"public"
 			);
 			expect(msg.channel.createMessage).to.have.been.calledOnceWithExactly(
-				"This channel added as a public announcement channel for Tournament name!"
+				sinon.match({ content: "This channel added as a public announcement channel for Tournament name!" })
 			);
 		})
 	);
@@ -33,7 +33,7 @@ describe("command:addchannel", function () {
 				"public"
 			);
 			expect(msg.channel.createMessage).to.have.been.calledOnceWithExactly(
-				"This channel added as a public announcement channel for Tournament name!"
+				sinon.match({ content: "This channel added as a public announcement channel for Tournament name!" })
 			);
 		})
 	);
@@ -49,7 +49,7 @@ describe("command:addchannel", function () {
 				"private"
 			);
 			expect(msg.channel.createMessage).to.have.been.calledOnceWithExactly(
-				"This channel added as a private announcement channel for Tournament name!"
+				sinon.match({ content: "This channel added as a private announcement channel for Tournament name!" })
 			);
 		})
 	);
