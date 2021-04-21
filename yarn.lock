@@ -713,10 +713,10 @@
   dependencies:
     "@types/chai" "*"
 
-"@types/chai@*", "@types/chai@^4.2.15":
-  version "4.2.15"
-  resolved "https://registry.yarnpkg.com/@types/chai/-/chai-4.2.15.tgz#b7a6d263c2cecf44b6de9a051cf496249b154553"
-  integrity sha512-rYff6FI+ZTKAPkJUoyz7Udq3GaoDZnxYDEvdEdFZASiA7PoErltHezDishqQiSDWrGxvxmplH304jyzQmjp0AQ==
+"@types/chai@*", "@types/chai@^4.2.16":
+  version "4.2.16"
+  resolved "https://registry.yarnpkg.com/@types/chai/-/chai-4.2.16.tgz#f09cc36e18d28274f942e7201147cce34d97e8c8"
+  integrity sha512-vI5iOAsez9+roLS3M3+Xx7w+WRuDtSmF8bQkrbcIJ2sC1PcDgVoA0WGpa+bIrJ+y8zqY2oi//fUctkxtIcXJCw==
 
 "@types/debug@^4.1.5":
   version "4.1.5"
@@ -733,10 +733,10 @@
   resolved "https://registry.yarnpkg.com/@types/mocha/-/mocha-8.2.2.tgz#91daa226eb8c2ff261e6a8cbf8c7304641e095e0"
   integrity sha512-Lwh0lzzqT5Pqh6z61P3c3P5nm6fzQK/MMHl9UKeneAeInVflBSz1O2EkX6gM6xfJd7FBXBY5purtLx7fUiZ7Hw==
 
-"@types/node-fetch@^2.5.8":
-  version "2.5.8"
-  resolved "https://registry.yarnpkg.com/@types/node-fetch/-/node-fetch-2.5.8.tgz#e199c835d234c7eb0846f6618012e558544ee2fb"
-  integrity sha512-fbjI6ja0N5ZA8TV53RUqzsKNkl9fv8Oj3T7zxW7FGv1GSH7gwJaNF8dzCjrqKaxKeUpTz4yT1DaJFq/omNpGfw==
+"@types/node-fetch@^2.5.10":
+  version "2.5.10"
+  resolved "https://registry.yarnpkg.com/@types/node-fetch/-/node-fetch-2.5.10.tgz#9b4d4a0425562f9fcea70b12cb3fcdd946ca8132"
+  integrity sha512-IpkX0AasN44hgEad0gEF/V6EgR5n69VEqPEgnmoM8GsIGro3PowbWs4tR6IhxUTyPLpOn+fiGG6nrQhcmoCuIQ==
   dependencies:
     "@types/node" "*"
     form-data "^3.0.0"
@@ -3386,10 +3386,10 @@ sinon-chai@^3.5.0:
   resolved "https://registry.yarnpkg.com/sinon-chai/-/sinon-chai-3.6.0.tgz#25bd59a37ef8990245e085a40f1f79d6bf023b7a"
   integrity sha512-bk2h+0xyKnmvazAnc7HE5esttqmCerSMcBtuB2PS2T4tG6x8woXAxZeJaOJWD+8reXHngnXn0RtIbfEW9OTHFg==
 
-sinon-test@^3.0.0:
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/sinon-test/-/sinon-test-3.0.0.tgz#5d8083fe4673a02fa32e077aaad2911e2fee67f7"
-  integrity sha512-k2V042JwIS6SC3M8Ih3Uo6+6mlL5FKqvvobxoWQobFkACr61WpyAMKsfqXecLL+DrDD3s9T+eYSZdVQzMH1pkA==
+sinon-test@^3.0.1:
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/sinon-test/-/sinon-test-3.0.1.tgz#b926ae891878e4f36a97393c39fccedac0d700c2"
+  integrity sha512-1wq0EfPqpep4dh+cGbABjHwTz0gBJQpF260gVme+Vqur0SOgW052ww/IW8lC3VaPcPK79NodQpOD6GF1mjFaSQ==
 
 sinon@^9.2.4:
   version "9.2.4"
