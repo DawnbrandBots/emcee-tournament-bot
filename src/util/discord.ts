@@ -1,31 +1,25 @@
-import { Message, MessageContent, Textable } from "eris";
+import { Message, Textable } from "eris";
 import { UserError } from "./errors";
 
 export async function reply(
 	msg: Message,
 	...args: Parameters<Textable["createMessage"]>
 ): ReturnType<Textable["createMessage"]> {
-	const [content, file] = args;
-	if (typeof content === "string") {
-		return await msg.channel.createMessage(
-			{
-				content,
-				message_reference: {
-					message_id: msg.id
-				}
-			} as MessageContent,
-			file
-		);
+	const mixin = {
+		messageReferenceID: msg.id,
+		allowedMentions: {
+			repliedUser: true
+		}
+	};
+	if (typeof args[0] === "string") {
+		args[0] = {
+			content: args[0],
+			...mixin
+		};
+	} else {
+		args[0] = { ...args[0], ...mixin };
 	}
-	return await msg.channel.createMessage(
-		{
-			...content,
-			message_reference: {
-				message_id: msg.id
-			}
-		} as MessageContent,
-		file
-	);
+	return await msg.channel.createMessage(...args);
 }
 
 export function firstMentionOrFail(msg: Message): string {
