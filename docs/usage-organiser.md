@@ -7,6 +7,10 @@ these are separated from each other by a pipe `|`, and from the command name by 
 following, any words that are separated by `|` refer to the _name_ of the parameter, and you should
 replace them with an appropriate value when you use these commands!
 
+All host commands are scoped to the current server and do not work in direct messages.
+Tournaments can only be managed from the server that they were created in;
+they cannot be accessed from other servers.
+
 ## Index
 
 <!--
@@ -83,10 +87,13 @@ mc!removehost id|@user
 ```
 **Caller permission level**: host for the tournament identified by _id_
 
-`@user` must be a valid Discord mention of a user that pings them.
+`@user` can be a Discord mention, though it does not have to ping, or the user's ID.
 
 The user is deauthorised as a host for the specified tournament, losing all corresponding permissions.
 You cannot remove yourself if you are the only host; there must always be one host to manage the tournament.
+
+If a host leaves the tournament server, they are not automatically removed and will regain
+powers for their tournaments if they return.
 
 ### Add announcement channel
 ```
@@ -227,12 +234,14 @@ the participant role for this tournament is deleted.
 
 ### Start top cut tournament
 ```
-mc!topcut id
+mc!topcut id|size
 ```
 **Caller permission level**: host for the tournament identified by _id_
 
-If the tournament is finished and has more than eight participants, a new single-elimination
-top cut tournament is started on Challonge with the top eight participants. The same
+_size_ should be a positive integer that makes sense for the tournament.
+
+If the tournament is finished and has at least _size_ participants, a new single-elimination
+top cut tournament is started on Challonge with the top _size_ participants. The same
 hosts, decks, and announcement channels are retained, and a new participant role
 is granted to these users.
 
@@ -293,6 +302,9 @@ are unconfirmed. If the tournament is in progress, the match is automatically fo
 the opponent `2-0` unless they have also dropped, in which case it is amended to a `0-0` draw.
 
 This is irreversible. The participant is informed of the removal via direct message.
+
+If a confirmed participant leaves the server for a tournament while Emcee is online,
+they should be automatically dropped from the tournament by Emcee.
 
 ### Show participant deck
 ```

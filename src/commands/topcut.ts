@@ -7,10 +7,19 @@ const logger = getLogger("command:topcut");
 
 const command: CommandDefinition = {
 	name: "topcut",
-	requiredArgs: ["id"],
+	requiredArgs: ["id", "size"],
 	executor: async (msg, args, support) => {
-		const [id] = args;
-		const tournament = await support.database.authenticateHost(id, msg.author.id, TournamentStatus.COMPLETE);
+		const [id, sizeRaw] = args;
+		const size = parseInt(sizeRaw, 10);
+		if (isNaN(size) || size < 2) {
+			await reply(msg, `Bad top cut size of ${sizeRaw}.`);
+		}
+		const tournament = await support.database.authenticateHost(
+			id,
+			msg.author.id,
+			msg.guildID,
+			TournamentStatus.COMPLETE
+		);
 		logger.verbose(
 			JSON.stringify({
 				channel: msg.channel.id,
@@ -19,14 +28,15 @@ const command: CommandDefinition = {
 				tournament: id,
 				command: "topcut",
 				pool: tournament.players.length,
+				size,
 				event: "attempt"
 			})
 		);
-		if (tournament.players.length <= 8) {
+		if (tournament.players.length < size) {
 			await reply(msg, `**${tournament.name}** only has ${tournament.players.length} participants!`);
 			return;
 		}
-		const top = await support.challonge.getTopCut(id, 8);
+		const top = await support.challonge.getTopCut(id, size);
 		const [newId] = await support.tournamentManager.createTournament(
 			tournament.hosts[0], // tournament cannot have 0 hosts by addition on creation and guard on removal
 			tournament.server,

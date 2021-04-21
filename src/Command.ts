@@ -62,7 +62,7 @@ export class Command {
 		return JSON.stringify({
 			channel: msg.channel.id,
 			message: msg.id,
-			user: msg.author,
+			user: msg.author.id,
 			command: this.definition.name,
 			...extra
 		});

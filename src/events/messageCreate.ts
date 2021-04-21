@@ -203,7 +203,7 @@ async function verifyDeckAndConfirmPending(
 	try {
 		await reply(
 			msg,
-			`You have successfully signed up for **${tournament.name}**! Your deck is below to double-check.`
+			`You have successfully signed up for **${tournament.name}**! Your deck is below to double-check. You may resubmit at any time before the tournament starts.`
 		);
 		await reply(msg, ...formattedDeckMessage);
 	} catch (error) {
@@ -254,7 +254,7 @@ async function verifyDeckAndUpdateConfirmed(
 	try {
 		await reply(
 			msg,
-			`You have successfully changed your deck for **${tournament.name}**! Your deck is below to double-check.`
+			`You have successfully changed your deck for **${tournament.name}**! Your deck is below to double-check. You may resubmit at any time before the tournament starts.`
 		);
 		await reply(msg, ...formattedDeckMessage);
 	} catch (error) {

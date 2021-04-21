@@ -1,4 +1,5 @@
 import { CommandDefinition } from "../Command";
+import { TournamentStatus } from "../database/interface";
 import { reply } from "../util/discord";
 import { getLogger } from "../util/logger";
 
@@ -9,7 +10,7 @@ const command: CommandDefinition = {
 	requiredArgs: ["id", "name", "description"],
 	executor: async (msg, args, support) => {
 		const [id, name, desc] = args;
-		await support.database.authenticateHost(id, msg.author.id);
+		const tournament = await support.database.authenticateHost(id, msg.author.id, msg.guildID);
 		logger.verbose(
 			JSON.stringify({
 				channel: msg.channel.id,
@@ -22,6 +23,22 @@ const command: CommandDefinition = {
 				event: "attempt"
 			})
 		);
+		if (tournament.status === TournamentStatus.COMPLETE) {
+			logger.verbose(
+				JSON.stringify({
+					channel: msg.channel.id,
+					message: msg.id,
+					user: msg.author.id,
+					tournament: id,
+					command: "update",
+					name,
+					desc,
+					event: "already complete"
+				})
+			);
+			await reply(msg, `**${tournament.name}** has already concluded!`);
+			return;
+		}
 		// Update DB first because it performs an important check that might throw
 		await support.database.updateTournament(id, name, desc);
 		await support.challonge.updateTournament(id, name, desc);

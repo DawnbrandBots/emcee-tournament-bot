@@ -1,4 +1,5 @@
 import { CommandDefinition } from "../Command";
+import { TournamentStatus } from "../database/interface";
 import { Participant } from "../database/orm";
 import { dropPlayerChallonge } from "../drop";
 import { reply } from "../util/discord";
@@ -11,7 +12,7 @@ const command: CommandDefinition = {
 	requiredArgs: ["id", "who"],
 	executor: async (msg, args, support) => {
 		const [id, who] = args;
-		const tournament = await support.database.authenticateHost(id, msg.author.id);
+		const tournament = await support.database.authenticateHost(id, msg.author.id, msg.guildID);
 		const player = who.startsWith("<@!") && who.endsWith(">") ? who.slice(3, -1) : who;
 		function log(payload: Record<string, unknown>): void {
 			logger.verbose(
@@ -32,6 +33,11 @@ const command: CommandDefinition = {
 		const name = username ? `<@${player}> (${username})` : who;
 		if (!participant) {
 			await reply(msg, `${name} not found in **${tournament.name}**.`);
+			return;
+		}
+		if (participant.tournament.status === TournamentStatus.COMPLETE) {
+			log({ player, event: "already complete" });
+			await reply(msg, `**${participant.tournament.name}** has already concluded!`);
 			return;
 		}
 		if (participant.confirmed) {
@@ -84,8 +90,8 @@ const command: CommandDefinition = {
 		await reply(
 			msg,
 			confirmed
-				? `${name} was pending and dropped from **${tournament.name}**.`
-				: `${name} successfully dropped from **${tournament.name}**.`
+				? `${name} successfully dropped from **${tournament.name}**.`
+				: `${name} was pending and dropped from **${tournament.name}**.`
 		);
 		log({ player, event: "success" });
 		const messages = await support.database.getRegisterMessages(id);

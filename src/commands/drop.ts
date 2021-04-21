@@ -1,4 +1,5 @@
 import { CommandDefinition } from "../Command";
+import { TournamentStatus } from "../database/interface";
 import { Participant } from "../database/orm";
 import { dropPlayerChallonge } from "../drop";
 import { reply } from "../util/discord";
@@ -19,15 +20,22 @@ const command: CommandDefinition = {
 					channel: msg.channel.id,
 					message: msg.id,
 					user: msg.author.id,
+					server: msg.guildID,
 					tournament: id,
+					tournamentServer: participant?.tournament.owningDiscordServer,
 					command: "drop",
 					...payload
 				})
 			);
 		}
 		log({ event: "attempt" });
-		if (!participant) {
+		if (!participant || (msg.guildID && msg.guildID !== participant.tournament.owningDiscordServer)) {
 			await reply(msg, `You are not signed up for __${id}__ or that tournament doesn't exist!`);
+			return;
+		}
+		if (participant.tournament.status === TournamentStatus.COMPLETE) {
+			log({ event: "already complete" });
+			await reply(msg, `**${participant.tournament.name}** has already concluded!`);
 			return;
 		}
 		const who = `<@${msg.author.id}> (${msg.author.username}#${msg.author.discriminator})`;

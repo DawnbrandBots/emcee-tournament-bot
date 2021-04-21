@@ -70,7 +70,7 @@ describe("Direct message submissions", function () {
 			);
 			expect(mockBotClient.createMessage).to.have.been.calledWith("channel2", {}, { name: "mock", file: "mock" });
 			expect(sampleMessage.channel.createMessage).to.have.been.calledWith(
-				"You have successfully signed up for **Tournament 1**! Your deck is below to double-check."
+				"You have successfully signed up for **Tournament 1**! Your deck is below to double-check. You may resubmit at any time before the tournament starts."
 			);
 			expect(sampleMessage.channel.createMessage).to.have.been.calledWith({}, { name: "mock", file: "mock" });
 		})
@@ -161,7 +161,7 @@ describe("Direct message submissions", function () {
 			);
 			expect(mockBotClient.createMessage).to.have.been.calledWith("channel2", {}, { name: "mock", file: "mock" });
 			expect(sampleMessage.channel.createMessage).to.have.been.calledWith(
-				"You have successfully changed your deck for **Tournament 1**! Your deck is below to double-check."
+				"You have successfully changed your deck for **Tournament 1**! Your deck is below to double-check. You may resubmit at any time before the tournament starts."
 			);
 			expect(sampleMessage.channel.createMessage).to.have.been.calledWith({}, { name: "mock", file: "mock" });
 		})

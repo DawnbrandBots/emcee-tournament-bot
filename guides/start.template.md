@@ -31,5 +31,5 @@ If you need to stop early, you can cancel.
 mc!cancel {}```
 **Top cut**
 ```
-mc!topcut {}```
-Fires off top cut for a completed tournament.
+mc!topcut {}|size```
+Fires off a top cut with the given size for a completed tournament.

@@ -1,17 +1,17 @@
 import { CommandDefinition } from "../Command";
-import { firstMentionOrFail, reply } from "../util/discord";
+import { reply } from "../util/discord";
 import { getLogger } from "../util/logger";
 
 const logger = getLogger("command:removehost");
 
 const command: CommandDefinition = {
 	name: "removehost",
-	requiredArgs: ["id"],
+	requiredArgs: ["id", "who"],
 	executor: async (msg, args, support) => {
 		// Mirror of addhost
-		const [id] = args;
-		await support.database.authenticateHost(id, msg.author.id);
-		const newHost = firstMentionOrFail(msg);
+		const [id, who] = args;
+		await support.database.authenticateHost(id, msg.author.id, msg.guildID);
+		const newHost = who.startsWith("<@!") && who.endsWith(">") ? who.slice(3, -1) : who;
 		logger.verbose(
 			JSON.stringify({
 				channel: msg.channel.id,
