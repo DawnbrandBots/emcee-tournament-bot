@@ -37,9 +37,14 @@ describe("command:create", function () {
 			expect(createStub).to.have.been.calledOnce;
 			expect(msg.channel.createMessage).to.have.been.calledTwice;
 			expect(msg.channel.createMessage).to.have.been.calledWithExactly(
-				"Tournament battlecity created! You can find it at https://example.com/battlecity. For future commands, refer to this tournament by the id `battlecity`."
+				sinon.match({
+					content:
+						"Tournament battlecity created! You can find it at https://example.com/battlecity. For future commands, refer to this tournament by the id `battlecity`."
+				})
 			);
-			expect(msg.channel.createMessage).to.have.been.calledWithExactly("Guide: mc!help battlecity");
+			expect(msg.channel.createMessage).to.have.been.calledWithExactly(
+				sinon.match({ content: "Guide: mc!help battlecity" })
+			);
 		})
 	);
 	it(
