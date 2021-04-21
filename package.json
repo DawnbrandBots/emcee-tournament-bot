@@ -31,7 +31,7 @@
 		"node-fetch": "^2.6.1",
 		"pg": "^8.5.1",
 		"reflect-metadata": "^0.1.13",
-		"supports-color": "^8.1.1",
+		"supports-color": "^9.0.0",
 		"typeorm": "^0.2.31",
 		"ydeck": "^0.1.8",
 		"ydke": "^1.1.0",
