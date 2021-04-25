@@ -25,6 +25,7 @@ export class DatabaseWrapperPostgres {
 			id: tournament.tournamentId,
 			name: tournament.name,
 			description: tournament.description,
+			format: tournament.format,
 			status: tournament.status,
 			hosts: tournament.hosts.slice(),
 			players: tournament.confirmed.map(p => ({
