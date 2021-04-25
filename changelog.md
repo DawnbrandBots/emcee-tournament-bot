@@ -13,6 +13,7 @@
 - Host commands can no longer be run in direct messages or other servers. (#223)
 - Participant commands can only be run in direct messages or the same server. (#238)
 - Tournaments can no longer be modified or dropped from after they finish. (#248)
+- Fix a bug with register messages not being deleted and dropped pending players not being notified on tournament start (#259)
 
 ## 2021-03-28 ([Chalislime Monthly March 2021](https://challonge.com/csmmar21))
 
