@@ -13,6 +13,7 @@ import {
 	DatabasePlayerWithTournament,
 	DatabaseTournament,
 	SynchroniseTournament,
+	TournamentFormat,
 	TournamentStatus
 } from "./interface";
 import { ChallongeTournament, ConfirmedParticipant, initializeConnection, Participant, RegisterMessage } from "./orm";
@@ -56,13 +57,17 @@ export class DatabaseWrapperPostgres {
 		serverId: string,
 		tournamentId: string,
 		name: string,
-		description: string
+		description: string,
+		topCut = false
 	): Promise<DatabaseTournament> {
 		const tournament = new ChallongeTournament();
 		tournament.tournamentId = tournamentId;
 		tournament.name = name;
 		tournament.description = description;
 		tournament.owningDiscordServer = serverId;
+		if (topCut) {
+			tournament.format = TournamentFormat.SINGLE_ELIMINATION;
+		}
 		tournament.hosts = [hostId];
 		// This is known but TypeORM won't populate it as it wasn't part of the original query,
 		// which means wrap would break since it assumes not null.

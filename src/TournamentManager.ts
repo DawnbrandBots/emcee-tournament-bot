@@ -94,7 +94,7 @@ export class TournamentManager implements TournamentInterface {
 		}
 
 		const web = await this.website.createTournament(name, desc, candidateUrl, topCut);
-		await this.database.createTournament(hostId, serverId, web.id, name, desc);
+		await this.database.createTournament(hostId, serverId, web.id, name, desc, topCut);
 		return [web.id, web.url, this.templater.format("create", web.id)];
 	}
 

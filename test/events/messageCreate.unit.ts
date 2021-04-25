@@ -3,7 +3,7 @@ import { Client, Message, PrivateChannel } from "eris";
 import sinon, { SinonSandbox } from "sinon";
 import sinonChai from "sinon-chai";
 import sinonTest from "sinon-test";
-import { TournamentStatus } from "../../src/database/interface";
+import { TournamentFormat, TournamentStatus } from "../../src/database/interface";
 import { DeckManager, initializeDeckManager } from "../../src/deck";
 import { onDirectMessage } from "../../src/events/messageCreate";
 import { ParticipantRoleProvider } from "../../src/role/participant";
@@ -47,6 +47,7 @@ describe("Direct message submissions", function () {
 					id: "tourn1",
 					name: "Tournament 1",
 					description: "The first tournament",
+					format: TournamentFormat.SWISS,
 					status: TournamentStatus.PREPARING,
 					hosts: ["host1"],
 					players: [],
@@ -138,6 +139,7 @@ describe("Direct message submissions", function () {
 					id: "tourn1",
 					name: "Tournament 1",
 					description: "The first tournament",
+					format: TournamentFormat.SWISS,
 					status: TournamentStatus.PREPARING,
 					hosts: ["host1"],
 					players: [],
@@ -175,6 +177,7 @@ describe("Direct message submissions", function () {
 					id: "tourn1",
 					name: "Tournament 1",
 					description: "The first tournament",
+					format: TournamentFormat.SWISS,
 					status: TournamentStatus.PREPARING,
 					hosts: ["host1"],
 					players: [],
