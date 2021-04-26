@@ -6,7 +6,7 @@
 - Deck resubmission policy is explicitly stated on submission. This was a frequently-asked question. (#230)
 - `mc!topcut` supports arbitrary size top cuts instead of specifically 8. The size is now required. (#231)
 - `mc!removehost` supports IDs to allow removing hosts who leave the server. (#234)
-
+- Responses use Discord replies where possible (#235)
 ### Bug Fixes
 - Fix a typo in `mc!forcedrop` success message where it indicated confirmed participants were pending. (#236)
 - Fix a bug with users with IDs starting with 9 not receiving pairing direct messages. (#237)
