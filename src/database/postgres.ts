@@ -271,27 +271,26 @@ export class DatabaseWrapperPostgres {
 	): Promise<{ registerMessages: DatabaseMessage[]; ejected: string[] }> {
 		return await getConnection().transaction(async entityManager => {
 			logger.verbose(`prestartTournament: ${tournamentId} transaction`);
-			const registerMessages = await entityManager.getRepository(RegisterMessage).find({ tournamentId });
+			const registerMessageEntities = await entityManager.getRepository(RegisterMessage).find({ tournamentId });
+			const registerMessages = registerMessageEntities.map(m => ({
+				channelId: m.channelId,
+				messageId: m.messageId
+			}));
 			logger.verbose(`prestartTournament: removing ${registerMessages.length} register messages`);
-			for (const message of registerMessages) {
+			for (const message of registerMessageEntities) {
 				await entityManager.remove(message);
 			}
 			logger.verbose(`prestartTournament: searching for pending participants`);
 			const participants = await entityManager.getRepository(Participant).find({ tournamentId });
 			logger.verbose(`prestartTournament: loaded ${participants.length} participants for ${tournamentId}`);
-			const ejected = participants.filter(p => !p.confirmed);
+			const ejectEntities = participants.filter(p => !p.confirmed);
+			const ejected = ejectEntities.map(p => p.discordId);
 			logger.verbose(`prestartTournament: filtered ${ejected.length} unconfirmed to eject from ${tournamentId}`);
-			for (const p of ejected) {
-				await entityManager.remove(p);
+			for (const participant of ejectEntities) {
+				await entityManager.remove(participant);
 			}
 			logger.verbose(`prestartTournament: ${tournamentId} done`);
-			return {
-				registerMessages: registerMessages.map(m => ({
-					channelId: m.channelId,
-					messageId: m.messageId
-				})),
-				ejected: ejected.map(p => p.discordId)
-			};
+			return { registerMessages, ejected };
 		});
 	}
 
