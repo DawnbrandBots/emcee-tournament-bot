@@ -25,7 +25,7 @@ describe("command:forcescore", function () {
 		sinon.stub(support.discord, "getRESTUsername").resolves("nova#0000");
 		await command.executor(msg, ["name", "2-1"], support);
 		expect(msg.channel.createMessage).to.have.been.calledOnceWithExactly(
-			"Score of 2-1 submitted in favour of <@nova> (nova#0000) in **Tournament 1**!"
+			sinon.match({ content: "Score of 2-1 submitted in favour of <@nova> (nova#0000) in **Tournament 1**!" })
 		);
 	});
 	it("rejects bad scores", () => {

@@ -9,7 +9,9 @@ describe("command:update", function () {
 		msg.channel.createMessage = sinon.spy();
 		await command.executor(msg, ["name", "newName", "newDesc"], support);
 		expect(msg.channel.createMessage).to.have.been.calledOnceWithExactly(
-			"Tournament `name` updated! It now has the name newName and the given description."
+			sinon.match({
+				content: "Tournament `name` updated! It now has the name newName and the given description."
+			})
 		);
 	});
 	it(

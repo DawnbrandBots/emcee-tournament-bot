@@ -1,6 +1,6 @@
 import { expect } from "chai";
 import dotenv from "dotenv";
-import { SinonSandbox } from "sinon";
+import sinon, { SinonSandbox } from "sinon";
 import command from "../../src/commands/pie";
 import { itRejectsNonHosts, msg, support, test } from "./common";
 
@@ -22,7 +22,7 @@ describe("command:pie", function () {
 			expect(authStub).to.have.been.called;
 			expect(listStub).to.have.been.calledOnce;
 			expect(msg.channel.createMessage).to.have.been.calledOnceWithExactly(
-				"Archetype counts for Tournament battlecity are attached.",
+				sinon.match({ content: "Archetype counts for Tournament battlecity are attached." }),
 				{
 					name: "battlecity Pie.csv",
 					file: `Theme,Count\nNo themes,3`
@@ -59,7 +59,7 @@ describe("command:pie", function () {
 				expect(authStub).to.have.been.called;
 				expect(listStub).to.have.been.calledOnce;
 				expect(msg.channel.createMessage).to.have.been.calledOnceWithExactly(
-					"Archetype counts for Tournament battlecity are attached.",
+					sinon.match({ content: "Archetype counts for Tournament battlecity are attached." }),
 					{
 						name: "battlecity Pie.csv",
 						file: "Theme,Count"

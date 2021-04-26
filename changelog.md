@@ -6,6 +6,7 @@
 - Deck resubmission policy is explicitly stated on submission. This was a frequently-asked question. (#230)
 - `mc!topcut` supports arbitrary size top cuts instead of specifically 8. The size is now required. (#231)
 - `mc!removehost` supports IDs to allow removing hosts who leave the server. (#234)
+- Responses use Discord replies where possible (#235)
 
 ### Bug Fixes
 - Fix a typo in `mc!forcedrop` success message where it indicated confirmed participants were pending. (#236)
@@ -13,6 +14,7 @@
 - Host commands can no longer be run in direct messages or other servers. (#223)
 - Participant commands can only be run in direct messages or the same server. (#238)
 - Tournaments can no longer be modified or dropped from after they finish. (#248)
+- Round 1 byes should now be assigned to the correct players consistently. (#249)
 - Fix a bug with register messages not being deleted and dropped pending players not being notified on tournament start (#259)
 
 ## 2021-03-28 ([Chalislime Monthly March 2021](https://challonge.com/csmmar21))

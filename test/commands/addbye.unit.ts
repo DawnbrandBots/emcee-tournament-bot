@@ -20,7 +20,9 @@ describe("command:addbye", function () {
 			this.stub(support.database, "registerBye").resolves([]);
 			await command.executor(msg, ["name"], support);
 			expect(msg.channel.createMessage).to.have.been.calledOnceWithExactly(
-				"Bye registered for Player <@nova> (nova) in Tournament name!\nAll byes: "
+				sinon.match({
+					content: "Bye registered for Player <@nova> (nova) in Tournament name!\nAll byes: "
+				})
 			);
 		})
 	);

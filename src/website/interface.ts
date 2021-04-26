@@ -1,5 +1,5 @@
 import { ChallongeIDConflictError, UserError } from "../util/errors";
-import { getLogger } from "../util/logger";
+// import { getLogger } from "../util/logger";
 
 export interface WebsiteWrapper {
 	createTournament(name: string, desc: string, url: string, topCut?: boolean): Promise<WebsiteTournament>;
@@ -48,7 +48,7 @@ export interface WebsiteMatch {
 	round: number;
 }
 
-const logger = getLogger("website");
+// const logger = getLogger("website");
 
 export class WebsiteInterface {
 	constructor(private api: WebsiteWrapper) {}
@@ -163,10 +163,14 @@ export class WebsiteInterface {
 			return;
 		}
 
-		const players = await this.api.getPlayers(tournamentId);
+		const playerArray = await this.api.getPlayers(tournamentId);
+		const players = new Map(playerArray.map(p => [p.discordId, p]));
+
+		// sort players with byes by their seed so that their paths don't cross when we change their seed
+		playersToBye.sort((a, b) => (players.get(a)?.seed || 0) - (players.get(b)?.seed || 0));
 
 		// detailed logging
-		logger.verbose(
+		/*logger.verbose(
 			JSON.stringify({
 				tournament: tournamentId,
 				command: "assignByes",
@@ -176,9 +180,9 @@ export class WebsiteInterface {
 				}),
 				byes: inPlayersToBye
 			})
-		);
+		);*/
 
-		const numPlayers = players.length;
+		const numPlayers = players.size;
 		const numToBye = playersToBye.length;
 		/* With 1 bye left to distribute, if the current number of players is even, we need to add another player
 		   This will have the consequence later of a floating natural bye we want to assign to a player not involved with byes
@@ -200,7 +204,7 @@ export class WebsiteInterface {
 			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 			const lastPlayerDiscord = playersToBye.pop()!; // modifying this array won't have long-term consequences on the database
 			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-			const lastPlayer = players.find(p => p.discordId === lastPlayerDiscord)!;
+			const lastPlayer = players.get(lastPlayerDiscord)!;
 			await this.setSeed(tournamentId, lastPlayer.challongeId, maxSeed);
 			// this may have been the only bye, in which case we're mercifully done
 			if (playersToBye.length < 1) {
@@ -217,7 +221,7 @@ export class WebsiteInterface {
 			   If N + B is odd we've put something there, and if N + B is even we want something to be left there. */
 			const newSeed = Math.floor(maxSeed / 2) - playersToBye.length + i + 1;
 			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-			const player = players.find(p => p.discordId === playersToBye[i])!;
+			const player = players.get(playersToBye[i])!;
 			let seed = player.seed;
 			// no need to disturb their seed if they're already in place
 			if (seed > newSeed) {
@@ -232,6 +236,7 @@ export class WebsiteInterface {
 			/* Since the topSeeds are all in the top half, we know adding half the max will stay in bounds.
 			   We set the seeds from top to bottom since we're moving from the bottom,
 			   this means they won't disturb anything above where they land.
+			   This is only true because we sorted the players by seed initially.
 			   Things below where they land are either going to be moved themselves or don't matter.
 			   In particular, if N + B is even we want something to be moved down to the natural bye. */
 			const oppSeed = topSeeds[i] + Math.floor(maxSeed / 2);
@@ -241,7 +246,7 @@ export class WebsiteInterface {
 
 		// detailed logging
 		// update array after challonge changes. REMOVE AFTER LOGS NOT NEEDED
-		const newPlayers = await this.api.getPlayers(tournamentId);
+		/*const newPlayers = await this.api.getPlayers(tournamentId);
 		logger.verbose(
 			JSON.stringify({
 				tournament: tournamentId,
@@ -252,7 +257,7 @@ export class WebsiteInterface {
 				}),
 				byes: inPlayersToBye
 			})
-		);
+		);*/
 	}
 
 	public async dropByes(tournamentId: string, numByes: number): Promise<void> {
