@@ -1,4 +1,5 @@
 import { CommandDefinition } from "../Command";
+import { TournamentStatus } from "../database/interface";
 import { reply } from "../util/discord";
 import { getLogger } from "../util/logger";
 
@@ -10,7 +11,7 @@ const command: CommandDefinition = {
 	executor: async (msg, args, support) => {
 		// Mirror of addchannel
 		const [id, baseType] = args; // 1 optional and thus potentially undefined
-		await support.database.authenticateHost(id, msg.author.id, msg.guildID);
+		const tournament = await support.database.authenticateHost(id, msg.author.id, msg.guildID);
 		const type = baseType?.toLowerCase() === "private" ? "private" : "public";
 		const channelId = msg.channel.id;
 		logger.verbose(
@@ -25,6 +26,10 @@ const command: CommandDefinition = {
 				event: "attempt"
 			})
 		);
+		if (tournament.status === TournamentStatus.COMPLETE) {
+			await reply(msg, `**${tournament.name}** has already concluded!`);
+			return;
+		}
 		await support.database.removeAnnouncementChannel(id, channelId, type);
 		logger.verbose(
 			JSON.stringify({

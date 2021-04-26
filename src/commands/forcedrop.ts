@@ -1,4 +1,5 @@
 import { CommandDefinition } from "../Command";
+import { TournamentStatus } from "../database/interface";
 import { Participant } from "../database/orm";
 import { dropPlayerChallonge } from "../drop";
 import { reply } from "../util/discord";
@@ -32,6 +33,11 @@ const command: CommandDefinition = {
 		const name = username ? `<@${player}> (${username})` : who;
 		if (!participant) {
 			await reply(msg, `${name} not found in **${tournament.name}**.`);
+			return;
+		}
+		if (participant.tournament.status === TournamentStatus.COMPLETE) {
+			log({ player, event: "already complete" });
+			await reply(msg, `**${participant.tournament.name}** has already concluded!`);
 			return;
 		}
 		if (participant.confirmed) {
