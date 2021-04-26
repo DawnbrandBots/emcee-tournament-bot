@@ -1,6 +1,6 @@
 import { expect } from "chai";
 import dotenv from "dotenv";
-import { SinonSandbox } from "sinon";
+import sinon, { SinonSandbox } from "sinon";
 import command from "../../src/commands/dump";
 import { itRejectsNonHosts, msg, support, test } from "./common";
 
@@ -22,7 +22,7 @@ describe("command:dump", function () {
 			expect(authStub).to.have.been.called;
 			expect(listStub).to.have.been.calledOnce;
 			expect(msg.channel.createMessage).to.have.been.calledOnceWithExactly(
-				"Player decklists for Tournament battlecity is attached.",
+				sinon.match({ content: "Player decklists for Tournament battlecity is attached." }),
 				{
 					name: "battlecity Decks.csv",
 					file:
@@ -63,7 +63,7 @@ describe("command:dump", function () {
 				expect(authStub).to.have.been.called;
 				expect(listStub).to.have.been.calledOnce;
 				expect(msg.channel.createMessage).to.have.been.calledOnceWithExactly(
-					"Player decklists for Tournament battlecity is attached.",
+					sinon.match({ content: "Player decklists for Tournament battlecity is attached." }),
 					{
 						name: "battlecity Decks.csv",
 						file: ""

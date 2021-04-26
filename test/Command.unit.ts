@@ -72,7 +72,7 @@ describe("Command class", function () {
 			];
 			for (const args of fails) {
 				await command.run(msg, args, support);
-				expect(msg.channel.createMessage).to.have.been.calledOnceWithExactly(usage);
+				expect(msg.channel.createMessage).to.have.been.calledOnceWithExactly(sinon.match({ content: usage }));
 				expect(execStub).to.not.have.been.called;
 				replySpy.resetHistory();
 			}
@@ -93,7 +93,9 @@ describe("Command class", function () {
 		test(async function (this: SinonSandbox) {
 			msg.channel.createMessage = this.spy();
 			await command.run(msg, ["fail", "user"], support);
-			expect(msg.channel.createMessage).to.have.been.calledOnceWithExactly("induced-user");
+			expect(msg.channel.createMessage).to.have.been.calledOnceWithExactly(
+				sinon.match({ content: "induced-user" })
+			);
 		})
 	);
 	it(

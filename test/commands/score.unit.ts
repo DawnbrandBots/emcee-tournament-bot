@@ -43,26 +43,38 @@ describe("command:score", function () {
 
 		await command.executor(msg, ["name", "2-1"], support);
 		expect(replySpy).to.have.been.calledOnceWithExactly(
-			"You have reported a score of 2-1, <@0000>. Your opponent still needs to confirm this score. If you want to drop, please wait for your opponent to confirm or you will concede 0-2."
+			sinon.match({
+				content:
+					"You have reported a score of 2-1, <@0000>. Your opponent still needs to confirm this score. If you want to drop, please wait for your opponent to confirm or you will concede 0-2."
+			})
 		);
 
 		msg.author.id = "zeus";
 		await command.executor(msg, ["name", "2-1"], support);
 		expect(replySpy).to.have.been.calledWith(
-			"Your score does not match your opponent's reported score of 1-2. Both of you will need to report again, <@zeus>."
+			sinon.match({
+				content:
+					"Your score does not match your opponent's reported score of 1-2. Both of you will need to report again, <@zeus>."
+			})
 		);
 
 		replySpy.resetHistory();
 		msg.author.id = "0000";
 		await command.executor(msg, ["name", "2-1"], support);
 		expect(replySpy).to.have.been.calledOnceWithExactly(
-			"You have reported a score of 2-1, <@0000>. Your opponent still needs to confirm this score. If you want to drop, please wait for your opponent to confirm or you will concede 0-2."
+			sinon.match({
+				content:
+					"You have reported a score of 2-1, <@0000>. Your opponent still needs to confirm this score. If you want to drop, please wait for your opponent to confirm or you will concede 0-2."
+			})
 		);
 
 		msg.author.id = "zeus";
 		await command.executor(msg, ["name", "1-2"], support);
 		expect(replySpy).to.have.been.calledWith(
-			"You have successfully reported a score of 1-2, and it matches your opponent's report, so the score has been saved. Thank you, <@zeus>."
+			sinon.match({
+				content:
+					"You have successfully reported a score of 1-2, and it matches your opponent's report, so the score has been saved. Thank you, <@zeus>."
+			})
 		);
 		expect(support.discord.sendDirectMessage).to.have.been.calledOnceWithExactly(
 			"0000",

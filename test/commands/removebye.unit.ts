@@ -20,7 +20,7 @@ describe("command:removebye", function () {
 			this.stub(support.database, "removeBye").resolves([]);
 			await command.executor(msg, ["name"], support);
 			expect(msg.channel.createMessage).to.have.been.calledOnceWithExactly(
-				"Bye removed for Player <@nova> (nova) in Tournament name!\nAll byes: "
+				sinon.match({ content: "Bye removed for Player <@nova> (nova) in Tournament name!\nAll byes: " })
 			);
 		})
 	);
