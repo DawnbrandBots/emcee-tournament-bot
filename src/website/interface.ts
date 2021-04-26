@@ -163,13 +163,11 @@ export class WebsiteInterface {
 			return;
 		}
 
-		const players = await this.api.getPlayers(tournamentId);
+		const playerArray = await this.api.getPlayers(tournamentId);
+		const players = new Map(playerArray.map(p => [p.discordId, p]));
 
 		// sort players with byes by their seed so that their paths don't cross when we change their seed
-		playersToBye.sort(
-			(a, b) =>
-				(players.find(p => p.discordId === a)?.seed || 0) - (players.find(p => p.discordId === b)?.seed || 0)
-		);
+		playersToBye.sort((a, b) => (players.get(a)?.seed || 0) - (players.get(b)?.seed || 0));
 
 		// detailed logging
 		/*logger.verbose(
@@ -184,7 +182,7 @@ export class WebsiteInterface {
 			})
 		);*/
 
-		const numPlayers = players.length;
+		const numPlayers = players.size;
 		const numToBye = playersToBye.length;
 		/* With 1 bye left to distribute, if the current number of players is even, we need to add another player
 		   This will have the consequence later of a floating natural bye we want to assign to a player not involved with byes
@@ -206,7 +204,7 @@ export class WebsiteInterface {
 			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 			const lastPlayerDiscord = playersToBye.pop()!; // modifying this array won't have long-term consequences on the database
 			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-			const lastPlayer = players.find(p => p.discordId === lastPlayerDiscord)!;
+			const lastPlayer = players.get(lastPlayerDiscord)!;
 			await this.setSeed(tournamentId, lastPlayer.challongeId, maxSeed);
 			// this may have been the only bye, in which case we're mercifully done
 			if (playersToBye.length < 1) {
@@ -223,7 +221,7 @@ export class WebsiteInterface {
 			   If N + B is odd we've put something there, and if N + B is even we want something to be left there. */
 			const newSeed = Math.floor(maxSeed / 2) - playersToBye.length + i + 1;
 			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-			const player = players.find(p => p.discordId === playersToBye[i])!;
+			const player = players.get(playersToBye[i])!;
 			let seed = player.seed;
 			// no need to disturb their seed if they're already in place
 			if (seed > newSeed) {
