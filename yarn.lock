@@ -3411,10 +3411,10 @@ sinon-chai@^3.5.0:
   resolved "https://registry.yarnpkg.com/sinon-chai/-/sinon-chai-3.6.0.tgz#25bd59a37ef8990245e085a40f1f79d6bf023b7a"
   integrity sha512-bk2h+0xyKnmvazAnc7HE5esttqmCerSMcBtuB2PS2T4tG6x8woXAxZeJaOJWD+8reXHngnXn0RtIbfEW9OTHFg==
 
-sinon-test@^3.0.1:
-  version "3.0.1"
-  resolved "https://registry.yarnpkg.com/sinon-test/-/sinon-test-3.0.1.tgz#b926ae891878e4f36a97393c39fccedac0d700c2"
-  integrity sha512-1wq0EfPqpep4dh+cGbABjHwTz0gBJQpF260gVme+Vqur0SOgW052ww/IW8lC3VaPcPK79NodQpOD6GF1mjFaSQ==
+sinon-test@^3.1.0:
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/sinon-test/-/sinon-test-3.1.0.tgz#25a3f4d9a9deb172252407041d577d67b73fefd5"
+  integrity sha512-aGQwq6Xl9eJg/8Ugv4Ko4LQWUqjwRYNI8UtxnKa9hmcMEz3HBTR3nnzYrbW4isuRLsJWFuJTUcPGuz7f4XvODg==
 
 sinon@^9.2.4:
   version "9.2.4"
