@@ -4,6 +4,14 @@ export enum TournamentStatus {
 	COMPLETE = "complete"
 }
 
+export enum TournamentFormat {
+	SINGLE_ELIMINATION = "single elimination",
+	DOUBLE_ELIMINATION = "double elimination",
+	ROUND_ROBIN = "round robin",
+	SWISS = "swiss",
+	FREE_FOR_ALL = "free for all"
+}
+
 export interface DatabasePlayer {
 	discordId: string;
 	challongeId: number;
@@ -20,6 +28,7 @@ export interface DatabaseTournament {
 	id: string;
 	name: string;
 	description: string;
+	format: TournamentFormat;
 	status: TournamentStatus;
 	hosts: string[];
 	players: DatabasePlayer[];

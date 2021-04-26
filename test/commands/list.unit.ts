@@ -2,7 +2,7 @@ import { expect } from "chai";
 import { Message } from "eris";
 import sinon, { SinonSandbox } from "sinon";
 import command from "../../src/commands/list";
-import { DatabaseTournament, TournamentStatus } from "../../src/database/interface";
+import { DatabaseTournament, TournamentFormat, TournamentStatus } from "../../src/database/interface";
 import { mockBotClient, support, test } from "./common";
 
 const fakeTournaments: DatabaseTournament[] = [
@@ -13,6 +13,7 @@ const fakeTournaments: DatabaseTournament[] = [
 		players: [],
 		// below are irrelevant
 		description: "",
+		format: TournamentFormat.SWISS,
 		hosts: [],
 		server: "",
 		publicChannels: [],

@@ -1,5 +1,5 @@
 import { CommandSupport } from "./Command";
-import { DatabaseTournament } from "./database/interface";
+import { DatabaseTournament, TournamentFormat } from "./database/interface";
 import { DiscordInterface } from "./discord/interface";
 import { UserError } from "./util/errors";
 import { getLogger } from "./util/logger";
@@ -87,7 +87,7 @@ export async function advanceRoundDiscord(
 			players.delete(match.player1);
 			players.delete(match.player2);
 		}
-		if (players.size) {
+		if (tournament.format === TournamentFormat.SWISS && players.size) {
 			for (const bye of players.values()) {
 				try {
 					await discord.sendDirectMessage(bye, `${intro} You have a bye for this round.`);

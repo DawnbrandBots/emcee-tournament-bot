@@ -1,5 +1,5 @@
 import { BaseEntity, Column, Entity, OneToMany, PrimaryColumn } from "typeorm";
-import { TournamentStatus } from "../interface";
+import { TournamentFormat, TournamentStatus } from "../interface";
 import { ConfirmedParticipant } from "./ConfirmedParticipant";
 import { Countdown } from "./Countdown";
 import { Participant } from "./Participant";
@@ -25,6 +25,10 @@ export class ChallongeTournament extends BaseEntity {
 	/// Discord server snowflake. A uint64 is at most 20 digits in decimal.
 	@Column({ length: 20 })
 	owningDiscordServer!: string;
+
+	/// Formats supported by Challonge, named the same way.
+	@Column({ type: "enum", enum: TournamentFormat, default: TournamentFormat.SWISS })
+	format!: TournamentFormat;
 
 	/// An array of Discord user snowflakes. Whenever hosts are queried, the rest
 	/// of the tournament information is wanted anyway. Should be distinct.

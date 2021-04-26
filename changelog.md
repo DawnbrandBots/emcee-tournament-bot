@@ -16,6 +16,7 @@
 - Tournaments can no longer be modified or dropped from after they finish. (#248)
 - Round 1 byes should now be assigned to the correct players consistently. (#249)
 - Fix a bug with register messages not being deleted and dropped pending players not being notified on tournament start (#259)
+- Fix eliminated players in top cut receiving direct messages about having a bye. (#260)
 
 ## 2021-03-28 ([Chalislime Monthly March 2021](https://challonge.com/csmmar21))
 
