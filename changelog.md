@@ -13,6 +13,7 @@
 - Host commands can no longer be run in direct messages or other servers. (#223)
 - Participant commands can only be run in direct messages or the same server. (#238)
 - Tournaments can no longer be modified or dropped from after they finish. (#248)
+- Round 1 byes should now be assigned to the correct players consistently. (#249)
 
 ## 2021-03-28 ([Chalislime Monthly March 2021](https://challonge.com/csmmar21))
 
