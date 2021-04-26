@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import { SinonSandbox } from "sinon";
+import sinon, { SinonSandbox } from "sinon";
 import command from "../../src/commands/finish";
 import { itRejectsNonHosts, msg, support, test } from "./common";
 
@@ -16,7 +16,7 @@ describe("command:finish", function () {
 			expect(authStub).to.have.been.called;
 			expect(finishStub).to.have.been.calledOnceWithExactly("battlecity", false);
 			expect(msg.channel.createMessage).to.have.been.calledOnceWithExactly(
-				"Tournament battlecity successfully finished."
+				sinon.match({ content: "Tournament battlecity successfully finished." })
 			);
 		})
 	);

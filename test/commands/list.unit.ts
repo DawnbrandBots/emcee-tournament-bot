@@ -1,6 +1,6 @@
 import { expect } from "chai";
 import { Message } from "eris";
-import { SinonSandbox } from "sinon";
+import sinon, { SinonSandbox } from "sinon";
 import command from "../../src/commands/list";
 import { DatabaseTournament, TournamentStatus } from "../../src/database/interface";
 import { mockBotClient, support, test } from "./common";
@@ -51,7 +51,7 @@ describe("command:list", function () {
 			expect(authStub).to.have.been.called;
 			expect(listStub).to.have.been.calledOnceWithExactly(msg.guildID);
 			expect(msg.channel.createMessage).to.have.been.calledOnceWithExactly(
-				"```\nID: foo|Name: foo tournament|Status: preparing|Players: 0```"
+				sinon.match({ content: "```\nID: foo|Name: foo tournament|Status: preparing|Players: 0```" })
 			);
 		})
 	);
@@ -65,7 +65,7 @@ describe("command:list", function () {
 			expect(authStub).to.have.been.called;
 			expect(listStub).to.have.been.calledOnceWithExactly(msg.guildID);
 			expect(msg.channel.createMessage).to.have.been.calledOnceWithExactly(
-				"There are no open tournaments you have access to!"
+				sinon.match({ content: "There are no open tournaments you have access to!" })
 			);
 		})
 	);

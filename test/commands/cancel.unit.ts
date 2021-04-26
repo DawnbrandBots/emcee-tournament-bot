@@ -8,6 +8,8 @@ describe("command:cancel", function () {
 	it("cancels the tournament", async () => {
 		msg.channel.createMessage = sinon.spy();
 		await command.executor(msg, ["name"], support);
-		expect(msg.channel.createMessage).to.have.been.calledOnceWithExactly("Tournament name successfully canceled.");
+		expect(msg.channel.createMessage).to.have.been.calledOnceWithExactly(
+			sinon.match({ content: "Tournament name successfully canceled." })
+		);
 	});
 });

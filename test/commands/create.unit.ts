@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import { SinonSandbox } from "sinon";
+import sinon, { SinonSandbox } from "sinon";
 import command from "../../src/commands/create";
 import { ChallongeIDConflictError } from "../../src/util/errors";
 import { msg, support, test } from "./common";
@@ -37,9 +37,14 @@ describe("command:create", function () {
 			expect(createStub).to.have.been.calledOnce;
 			expect(msg.channel.createMessage).to.have.been.calledTwice;
 			expect(msg.channel.createMessage).to.have.been.calledWithExactly(
-				"Tournament battlecity created! You can find it at https://example.com/battlecity. For future commands, refer to this tournament by the id `battlecity`."
+				sinon.match({
+					content:
+						"Tournament battlecity created! You can find it at https://example.com/battlecity. For future commands, refer to this tournament by the id `battlecity`."
+				})
 			);
-			expect(msg.channel.createMessage).to.have.been.calledWithExactly("Guide: mc!help battlecity");
+			expect(msg.channel.createMessage).to.have.been.calledWithExactly(
+				sinon.match({ content: "Guide: mc!help battlecity" })
+			);
 		})
 	);
 	it(
@@ -57,7 +62,10 @@ describe("command:create", function () {
 				expect(authStub).to.have.been.called;
 				expect(createStub).to.have.been.calledOnce;
 				expect(msg.channel.createMessage).to.have.been.calledOnceWithExactly(
-					"Tournament ID battlecity already taken on Challonge. This is an error with Emcee, so please report it, but in the meantime, try using a different tournament name."
+					sinon.match({
+						content:
+							"Tournament ID battlecity already taken on Challonge. This is an error with Emcee, so please report it, but in the meantime, try using a different tournament name."
+					})
 				);
 			}
 		})

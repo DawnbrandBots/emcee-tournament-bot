@@ -1,6 +1,6 @@
 import { expect } from "chai";
 import dotenv from "dotenv";
-import { SinonSandbox } from "sinon";
+import sinon, { SinonSandbox } from "sinon";
 import command from "../../src/commands/players";
 import { itRejectsNonHosts, msg, support, test } from "./common";
 
@@ -22,7 +22,9 @@ describe("command:players", function () {
 			expect(authStub).to.have.been.called;
 			expect(listStub).to.have.been.calledOnce;
 			expect(msg.channel.createMessage).to.have.been.calledOnceWithExactly(
-				"A list of players for tournament battlecity with the theme of their deck is attached.",
+				sinon.match({
+					content: "A list of players for tournament battlecity with the theme of their deck is attached."
+				}),
 				{
 					name: "battlecity.csv",
 					file: `Player,Theme\n1312,No themes\n1314,No themes\n1234,No themes`
@@ -59,7 +61,9 @@ describe("command:players", function () {
 				expect(authStub).to.have.been.called;
 				expect(listStub).to.have.been.calledOnce;
 				expect(msg.channel.createMessage).to.have.been.calledOnceWithExactly(
-					"A list of players for tournament battlecity with the theme of their deck is attached.",
+					sinon.match({
+						content: "A list of players for tournament battlecity with the theme of their deck is attached."
+					}),
 					{
 						name: "battlecity.csv",
 						file: ""
