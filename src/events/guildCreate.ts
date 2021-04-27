@@ -6,7 +6,7 @@ const logger = getLogger("guildCreate");
 
 export function makeHandler(organiserRole: OrganiserRoleProvider) {
 	return async function guildCreate(server: Guild): Promise<void> {
-		logger.info(`${server.id}: ${server.name}`);
+		logger.notify(`${server.id}: ${server.name}`);
 		await organiserRole.create(server).catch(logger.error);
 	};
 }
