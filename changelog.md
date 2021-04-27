@@ -7,6 +7,7 @@
 - `mc!topcut` supports arbitrary size top cuts instead of specifically 8. The size is now required. (#231)
 - `mc!removehost` supports IDs to allow removing hosts who leave the server. (#234)
 - Responses use Discord replies where possible (#235)
+- Player seeds are shuffled before starting a tournament so that early sign-ups are not given an arbitrary advantage by their seed. (#266)
 
 ### Bug Fixes
 - Fix a typo in `mc!forcedrop` success message where it indicated confirmed participants were pending. (#236)
