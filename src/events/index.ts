@@ -1,6 +1,7 @@
 import { Client } from "eris";
 import { CommandSupport } from "../Command";
 import * as commands from "../commands";
+import { serializeServer } from "../util";
 import { getLogger } from "../util/logger";
 import * as guildCreate from "./guildCreate";
 import * as guildMemberRemove from "./guildMemberRemove";
@@ -15,7 +16,7 @@ export function registerEvents(bot: Client, prefix: string, support: CommandSupp
 	bot.on("disconnect", () => logger.notify("Disconnected from Discord"));
 	bot.on("shardReady", shard => logger.notify(`Shard ${shard} ready`));
 	bot.on("shardDisconnect", shard => logger.notify(`Shard ${shard} disconnected`));
-	bot.on("guildDelete", guild => logger.notify(`Guild delete: ${guild}`));
+	bot.on("guildDelete", guild => logger.notify(`Guild delete: ${serializeServer(guild)}`));
 	bot.on("guildCreate", guildCreate.makeHandler(support.organiserRole));
 	bot.on("messageCreate", messageCreate.makeHandler(bot, prefix, commands, support));
 	bot.on("guildMemberRemove", guildMemberRemove.makeHandler(support));
