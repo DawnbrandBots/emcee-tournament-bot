@@ -20,6 +20,7 @@ export interface WebsiteWrapper {
 	getPlayers(tournamentId: string): Promise<WebsitePlayer[]>;
 	setSeed(tournamentId: string, playerId: number, newSeed: number): Promise<void>;
 	getPlayer(tournamentId: string, playerId: number): Promise<WebsitePlayer>;
+	shufflePlayers(tournamentId: string): Promise<void>;
 }
 
 export interface WebsitePlayer {
@@ -284,5 +285,9 @@ export class WebsiteInterface {
 
 	public async getPlayer(...args: Parameters<WebsiteWrapper["getPlayer"]>): ReturnType<WebsiteWrapper["getPlayer"]> {
 		return await this.api.getPlayer(...args);
+	}
+
+	public async shufflePlayers(tournamentId: string): Promise<void> {
+		await this.api.shufflePlayers(tournamentId);
 	}
 }
