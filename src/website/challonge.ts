@@ -457,4 +457,10 @@ export class WebsiteWrapperChallonge implements WebsiteWrapper {
 		);
 		return this.wrapPlayer(response);
 	}
+
+	public async shufflePlayers(tournamentId: string): Promise<void> {
+		await this.fetch(`${this.baseUrl}tournaments/${tournamentId}/participants/randomize.json`, {
+			method: "POST"
+		});
+	}
 }

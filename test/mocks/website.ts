@@ -177,4 +177,7 @@ export class WebsiteWrapperMock implements WebsiteWrapper {
 	async getPlayer(): Promise<WebsitePlayer> {
 		throw new Error("Not implemented");
 	}
+	async shufflePlayers(): Promise<void> {
+		return;
+	}
 }

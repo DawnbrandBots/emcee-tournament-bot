@@ -54,6 +54,8 @@ const command: CommandDefinition = {
 					.catch(logger.warn);
 			}
 			logger.verbose(log("notify ejected"));
+			await support.challonge.shufflePlayers(id); // must happen before byes assigned!
+			logger.verbose(log("shuffle players"));
 			await support.challonge.assignByes(id, tournament.byes);
 			logger.info(log("assign byes"));
 			await support.challonge.startTournament(id);
