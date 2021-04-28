@@ -64,7 +64,7 @@ const logger = getLogger("index");
 
 	let firstReady = true;
 	bot.on("ready", async () => {
-		logger.info(`Logged in as ${bot.user.username}#${bot.user.discriminator} - ${bot.user.id}`);
+		logger.notify(`Logged in as ${bot.user.username}#${bot.user.discriminator} - ${bot.user.id}`);
 		if (firstReady) {
 			firstReady = false;
 			await timeWizard.load();
