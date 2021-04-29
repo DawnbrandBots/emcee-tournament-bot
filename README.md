@@ -1,4 +1,4 @@
-# [Project Ignis](https://github.com/ProjectIgnis): Emcee
+# Emcee [<img src="https://img.shields.io/static/v1?label=invite%20to&message=Discord&color=informational&style=for-the-badge" alt="Invite to Discord" align="right" />](https://discord.com/api/oauth2/authorize?client_id=691882968809209917&permissions=268552256&scope=bot)
 
 <!-- Unfortunately, GitHub Markdown sanitizes style attributes, so we will have to use a deprecated HTML attribute. -->
 [<img src="https://cdn.discordapp.com/avatars/691882968809209917/1ffd7675f6fb2a4c21b1b356b7856279.png" alt="Emcee avatar" align="right" />](https://yugipedia.com/wiki/MC)
@@ -14,13 +14,13 @@ This frees up hosts to focus on the overall flow of the tournament and any dispu
 It currently supports hosting Swiss tournaments of up to 256 participants (a limitation of Challonge's [standard tier](https://challonge.com/pricing))
 with an optional single-elimination top cut of configurable size.
 
-Currently in use in alpha (no pun intended) for the [Chalislime Monthly](https://youtu.be/iehvqngGxs0) tournament series.
+Currently in use for the [Chalislime Monthly](https://youtu.be/iehvqngGxs0) tournament series.
 Thanks to [Joseph Rothschild](https://www.youtube.com/c/MBTYuGiOh) aka [MBT](https://www.twitch.tv/mbtyugioh) for
-sponsoring the development of Emcee. Open beta ETA: April 2021.
+sponsoring the development of Emcee.
 
 ## Discord permissions
 
-Please make sure you use an invite link that automatically grants the following permissions.
+Please make sure you use an [invite link](https://discord.com/api/oauth2/authorize?client_id=691882968809209917&permissions=268552256&scope=bot) that automatically grants the following permissions.
 
 - Manage Roles: Emcee creates a role to designate Tournament Organisers upon joining a server and will create and delete participant roles for each tournament.
 - Send Messages
@@ -35,7 +35,7 @@ Privileged gateway intents required:
 
 ## Usage
 
-After Emcee joins your server, you can ping it as a sanity check to confirm that it is working.
+After Emcee joins your server, you can ping it to confirm that it is working.
 You can set permissions for Emcee so it is allowed to access only specific channels and locked out of the rest.
 If you do not want people to use Emcee in a channel, deny Emcee access to the channel.
 However, if Emcee does have access to a channel, make sure it has the full range of permissions listed above.
@@ -50,11 +50,14 @@ recreate it, or worse, identify authorised hosts with the incorrect role.
 
 The default prefix for all Emcee commands is `mc!`. For developers, this can be changed by the `EMCEE_DEFAULT_PREFIX`
 environment variable. In the future, this will also be configurable per server. We may add support for
-Discord slash commands in future when [Eris](https://github.com/abalabahaha/eris), our underlying library
-for interfacing with Discord, supports it.
+Discord slash commands in future when the feature is stable in Discord.
 
 - [Commands for tournament hosts](https://github.com/AlphaKretin/emcee-tournament-bot/blob/master/docs/usage-organiser.md)
 - [Commands for participants](https://github.com/AlphaKretin/emcee-tournament-bot/blob/master/docs/usage-participant.md)
+
+## Support server
+
+[![Support server invite](https://discordapp.com/api/guilds/381294999729340417/widget.png?style=banner3)](https://discord.gg/c3BPj2xESR)
 
 ## Development
 
