@@ -69,7 +69,7 @@ export class DeckManager {
 	private deckCache = new Map<string, Deck>(); // key: ydke URL
 	constructor(private cardArray: CardArray) {}
 
-	public getDeck(url: string, limiter?: string): Deck {
+	public getDeck(url: string, limiter = "TCGANGU"): Deck {
 		if (!this.deckCache.has(url)) {
 			this.deckCache.set(url, new Deck(url, this.cardArray, limiter));
 		}
