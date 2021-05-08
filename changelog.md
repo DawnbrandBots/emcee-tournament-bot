@@ -1,6 +1,6 @@
 # Changelog
 
-## HEAD
+## 2021-05-06 ([Chalislime Monthly April 2021](https://challonge.com/csmapr2021))
 
 ### New Features
 - Deck resubmission policy is explicitly stated on submission. This was a frequently-asked question. (#230)
@@ -8,6 +8,7 @@
 - `mc!removehost` supports IDs to allow removing hosts who leave the server. (#234)
 - Responses use Discord replies where possible (#235)
 - Player seeds are shuffled before starting a tournament so that early sign-ups are not given an arbitrary advantage by their seed. (#266)
+- Apply a temporary fix to allow ANGU cards in decks.
 
 ### Bug Fixes
 - Fix a typo in `mc!forcedrop` success message where it indicated confirmed participants were pending. (#236)
