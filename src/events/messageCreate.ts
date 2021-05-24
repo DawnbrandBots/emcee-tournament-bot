@@ -136,9 +136,13 @@ export async function onDirectMessage(
 // Throws on any problem with the deck, and the exception payload should be sent to the user
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 async function verifyDeck(msg: Message<PrivateChannel>, decks: DeckManager) {
-	const deck = await decks.getDeckFromMessage(msg); // throws on network error, YdkConstructionError, UrlConstructionError
-	const formattedDeckMessage = decks.prettyPrint(deck, `${msg.author.username}#${msg.author.discriminator}.ydk`);
-	if (deck.validationErrors.length > 0) {
+	const [deck, errors] = await decks.getDeckFromMessage(msg); // throws on network error, YDKParseError, UrlConstructionError
+	const formattedDeckMessage = decks.prettyPrint(
+		deck,
+		`${msg.author.username}.${msg.author.discriminator}.ydk`,
+		errors
+	);
+	if (errors.length > 0) {
 		await reply(msg, ...formattedDeckMessage).catch(logger.error);
 		throw new Error(
 			`Your deck is not legal. Please see the print out below for all the errors. You have NOT been registered yet, please submit again with a legal deck.`
