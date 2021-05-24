@@ -6,6 +6,7 @@ import { Card as DataCard, YgoData } from "ygopro-data";
 import cardOpts from "./config/cardOpts.json";
 import dataOpts from "./config/dataOpts.json";
 import transOpts from "./config/transOpts.json";
+import { UserError } from "./util/errors";
 import { getLogger } from "./util/logger";
 
 const logger = getLogger("deck");
@@ -64,6 +65,8 @@ export async function initializeDeckManager(octokitToken: string): Promise<DeckM
 	return new DeckManager(cardArray);
 }
 
+const MAX_BYTES = 1024;
+
 export class DeckManager {
 	// TODO: what is the lifetime of this cache?
 	private deckCache = new Map<string, Deck>(); // key: ydke URL
@@ -79,6 +82,12 @@ export class DeckManager {
 
 	public async getDeckFromMessage(msg: Message): Promise<Deck> {
 		if (msg.attachments.length > 0 && msg.attachments[0].filename.endsWith(".ydk")) {
+			// cap filezie for security
+			if (msg.attachments[0].size > MAX_BYTES) {
+				// report potential abuse internally
+				logger.notify(`Potential abuse warning! User ${msg.author} submitted oversized deck file of ${msg.attachments[0].size}B.`)
+				throw new UserError("YDK file too large! Please try again with a smaller file.")
+			}
 			const ydk = await this.extractYdk(msg.attachments[0]); // throws on network error
 			const url = Deck.ydkToUrl(ydk); // throws YdkConstructionError
 			return this.getDeck(url); // no throw since the url is the output of ydke.js
