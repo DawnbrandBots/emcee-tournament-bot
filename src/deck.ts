@@ -85,8 +85,11 @@ export class DeckManager {
 			// cap filezie for security
 			if (msg.attachments[0].size > MAX_BYTES) {
 				// report potential abuse internally
-				logger.notify(`Potential abuse warning! User ${msg.author} submitted oversized deck file of ${msg.attachments[0].size}B.`)
-				throw new UserError("YDK file too large! Please try again with a smaller file.")
+				// TODO: Would be useful to report tournament and server, but we don't have that data in this scope
+				logger.notify(
+					`Potential abuse warning! User ${msg.author.id} (@${msg.author.username}#${msg.author.discriminator}) submitted oversized deck file of ${msg.attachments[0].size}B.`
+				);
+				throw new UserError("YDK file too large! Please try again with a smaller file.");
 			}
 			const ydk = await this.extractYdk(msg.attachments[0]); // throws on network error
 			const url = Deck.ydkToUrl(ydk); // throws YdkConstructionError
