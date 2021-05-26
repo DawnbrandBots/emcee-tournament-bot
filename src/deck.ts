@@ -1,8 +1,7 @@
 import { AdvancedMessageContent, Attachment, Message, MessageFile } from "eris";
 import fetch from "node-fetch";
-import { Card, CardArray, Deck } from "ydeck";
-import { DeckError } from "ydeck/dist/validation";
-import { Card as DataCard, YgoData } from "ygopro-data";
+import { CardIndex, CardVector, createAllowVector, Deck, DeckError, ICard } from "ydeck";
+import { Card, enums, YgoData } from "ygopro-data";
 import cardOpts from "./config/cardOpts.json";
 import dataOpts from "./config/dataOpts.json";
 import transOpts from "./config/transOpts.json";
@@ -31,56 +30,71 @@ export function splitText(outString: string, cap = 2000): string[] {
 	return outStrings;
 }
 
-async function convertCard(card: DataCard): Promise<Card> {
+async function convertCard(card: Card): Promise<ICard> {
 	const status = await card.status;
-	const scopeReg = /([a-zA-Z]+): (\d)/g;
-	const statusMap: { [scope: number]: number } = {};
-	let result = scopeReg.exec(status);
+	const scopeRegex = /([a-zA-Z]+): (\d)/g;
+	let limitTCG = NaN,
+		limitOCG = NaN;
+	let result = scopeRegex.exec(status);
 	while (result !== null) {
 		const scope = result[1];
-		const count = parseInt(result[2], 10); // 2 capture groups ensured by regex
-		// 3 copies is the default fallback
-		if (count < 3) {
-			// TODO: Less hardcode
-			if (scope === "OCG") {
-				statusMap[0x1] = count;
-			} else if (scope === "TCG") {
-				statusMap[0x2] = count;
-			}
+		const count = parseInt(result[2], 10);
+		if (scope === "OCG") {
+			limitOCG = count;
+		} else if (scope === "TCG") {
+			limitTCG = count;
 		}
-		result = scopeReg.exec(status);
+		result = scopeRegex.exec(status);
 	}
-	return new Card(card.text.en.name, card.data.ot, card.data.type, card.data.setcode, statusMap);
+	return {
+		name: card.text.en.name,
+		type: card.data.type,
+		setcode: card.data.setcode,
+		alias: card.data.alias || undefined,
+		limitTCG,
+		limitOCG,
+		isPrerelease: !!(card.data.ot & 0x100)
+	};
 }
 
 export async function initializeDeckManager(octokitToken: string): Promise<DeckManager> {
 	logger.info("ygo-data preload for ydeck starting");
 	const data = new YgoData(cardOpts, transOpts, dataOpts, "./dbs", octokitToken);
-	const dataArray = await data.getCardList();
-	const cardArray: CardArray = {};
-	for (const code in dataArray) {
-		cardArray[code] = await convertCard(dataArray[code]);
+	const cardList = await data.getCardList();
+	const cardIndex: ConstructorParameters<typeof DeckManager>[0] = new Map();
+	for (const password in cardList) {
+		if (
+			cardList[password].data.ot & (enums.ot.OT_OCG | enums.ot.OT_TCG) &&
+			!(cardList[password].data.type & enums.type.TYPE_TOKEN)
+		) {
+			cardIndex.set(Number(password), await convertCard(cardList[password]));
+		}
 	}
-	logger.info("ygo-data preload for ydeck complete");
-	return new DeckManager(cardArray);
+	logger.notify("ygo-data preload for ydeck complete");
+	return new DeckManager(cardIndex);
 }
 
 const MAX_BYTES = 1024;
 
 export class DeckManager {
 	// TODO: what is the lifetime of this cache?
-	private deckCache = new Map<string, Deck>(); // key: ydke URL
-	constructor(private cardArray: CardArray) {}
+	private readonly deckCache = new Map<string, Deck>(); // key: ydke URL
+	private readonly tcgAllowVector: CardVector;
+	constructor(private readonly cardIndex: CardIndex) {
+		this.tcgAllowVector = createAllowVector(cardIndex, card =>
+			isNaN(card.limitTCG) || card.isPrerelease ? 0 : card.limitTCG
+		);
+	}
 
-	public getDeck(url: string, limiter = "TCGANGU"): Deck {
+	public getDeck(url: string): Deck {
 		if (!this.deckCache.has(url)) {
-			this.deckCache.set(url, new Deck(url, this.cardArray, limiter));
+			this.deckCache.set(url, new Deck(this.cardIndex, { url }));
 		}
 		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 		return this.deckCache.get(url)!;
 	}
 
-	public async getDeckFromMessage(msg: Message): Promise<Deck> {
+	public async getDeckFromMessage(msg: Message): Promise<[Deck, DeckError[]]> {
 		if (msg.attachments.length > 0 && msg.attachments[0].filename.endsWith(".ydk")) {
 			// cap filezie for security
 			if (msg.attachments[0].size > MAX_BYTES) {
@@ -92,15 +106,17 @@ export class DeckManager {
 				throw new UserError("YDK file too large! Please try again with a smaller file.");
 			}
 			const ydk = await this.extractYdk(msg.attachments[0]); // throws on network error
-			const url = Deck.ydkToUrl(ydk); // throws YdkConstructionError
-			return this.getDeck(url); // no throw since the url is the output of ydke.js
+			const deck = new Deck(this.cardIndex, { ydk }); // throws YDKParseError
+			this.deckCache.set(deck.url, deck);
+			return [deck, deck.validate(this.tcgAllowVector)];
 		}
-		return this.getDeck(msg.content); // throws: UrlConstructionError
+		const deck = this.getDeck(msg.content);
+		return [deck, deck.validate(this.tcgAllowVector)]; // throws: UrlConstructionError
 	}
 
-	public prettyPrint(deck: Deck, filename: string): [AdvancedMessageContent, MessageFile] {
-		const title = "Contents of your deck:\n";
-		let mainHeader = `Main Deck (${deck.mainSize} cards - `;
+	public prettyPrint(deck: Deck, filename: string, errors: DeckError[] = []): [AdvancedMessageContent, MessageFile] {
+		const title = `Themes: ${deck.themes.join(",") || "none"}`;
+		let mainHeader = `Main Deck (${deck.contents.main.length} cards — `;
 		const mainHeaderParts: string[] = [];
 		if (deck.mainTypeCounts.monster > 0) {
 			mainHeaderParts.push(`${deck.mainTypeCounts.monster} Monsters`);
@@ -113,7 +129,7 @@ export class DeckManager {
 		}
 		mainHeader += `${mainHeaderParts.join(", ")})`;
 
-		let extraHeader = `Extra Deck (${deck.extraSize} cards - `;
+		let extraHeader = `Extra Deck (${deck.contents.extra.length} cards — `;
 		const extraHeaderParts: string[] = [];
 		if (deck.extraTypeCounts.fusion > 0) {
 			extraHeaderParts.push(`${deck.extraTypeCounts.fusion} Fusion`);
@@ -129,7 +145,7 @@ export class DeckManager {
 		}
 		extraHeader += `${extraHeaderParts.join(", ")})`;
 
-		let sideHeader = `Side Deck (${deck.sideSize} cards - `;
+		let sideHeader = `Side Deck (${deck.contents.side.length} cards — `;
 		const sideHeaderParts: string[] = [];
 		if (deck.sideTypeCounts.monster > 0) {
 			sideHeaderParts.push(`${deck.sideTypeCounts.monster} Monsters`);
@@ -143,33 +159,30 @@ export class DeckManager {
 		sideHeader += `${sideHeaderParts.join(", ")})`;
 
 		const fields = [];
-
-		if (deck.mainSize > 0) {
+		// text splitting probably never happens now due to file size checks
+		if (deck.contents.main.length) {
 			const mainOuts = splitText(deck.mainText, 1024);
 			for (let i = 0; i < mainOuts.length; i++) {
-				fields.push({ name: mainHeader + (i > 0 ? " (Continued)" : ""), value: mainOuts[i] });
+				fields.push({ name: mainHeader + (i > 0 ? " [continued]" : ""), value: mainOuts[i] });
 			}
 		}
-		if (deck.extraSize > 0) {
+		if (deck.contents.extra.length) {
 			const extraOuts = splitText(deck.extraText, 1024);
 			for (let i = 0; i < extraOuts.length; i++) {
-				fields.push({ name: extraHeader + (i > 0 ? " (Continued)" : ""), value: extraOuts[i] });
+				fields.push({ name: extraHeader + (i > 0 ? " [continued]" : ""), value: extraOuts[i] });
 			}
 		}
-		if (deck.sideSize > 0) {
+		if (deck.contents.side.length) {
 			const sideOuts = splitText(deck.sideText, 1024);
 			for (let i = 0; i < sideOuts.length; i++) {
-				fields.push({ name: sideHeader + (i > 0 ? " (Continued)" : ""), value: sideOuts[i] });
+				fields.push({ name: sideHeader + (i > 0 ? " [continued]" : ""), value: sideOuts[i] });
 			}
 		}
-		if (deck.themes.length > 0) {
-			fields.push({ name: "Archetypes", value: deck.themes.join(",") });
-		}
 		fields.push({ name: "YDKE URL", value: deck.url });
-		if (deck.validationErrors.length > 0) {
+		if (errors.length > 0) {
 			fields.push({
 				name: "Deck is illegal!",
-				value: deck.validationErrors.map(d => this.parseDeckError(d)).join("\n")
+				value: errors.map(d => this.formatDeckError(d)).join("\n")
 			});
 		}
 
@@ -186,7 +199,7 @@ export class DeckManager {
 		return str.charAt(0).toUpperCase() + str.slice(1);
 	}
 
-	private parseDeckError(err: DeckError): string {
+	private formatDeckError(err: DeckError): string {
 		if (err.type === "size") {
 			return `${this.capFirst(err.target)} Deck too ${err.min ? "small" : "large"}! Should be at ${
 				err.min ? `least ${err.min}` : `most ${err.max}`

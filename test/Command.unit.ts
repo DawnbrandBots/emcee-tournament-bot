@@ -29,7 +29,7 @@ describe("Command class", function () {
 		database: new DatabaseWrapperMock(),
 		challonge: new WebsiteInterface(new WebsiteWrapperMock()),
 		scores: new Map(),
-		decks: new DeckManager([]),
+		decks: new DeckManager(new Map()),
 		participantRole: new ParticipantRoleProvider(new Client("mock")),
 		templater: new Templater(),
 		timeWizard: new TimeWizard({
