@@ -1,4 +1,8 @@
 # Changelog
+## HEAD
+
+### New Features
+ - Submitted YDK files must now come in under a file size cap, for security. (#278)
 
 ## 2021-05-06 ([Chalislime Monthly April 2021](https://challonge.com/csmapr2021))
 
