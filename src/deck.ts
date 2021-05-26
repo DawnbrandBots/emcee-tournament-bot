@@ -1,6 +1,6 @@
 import { AdvancedMessageContent, Attachment, Message, MessageFile } from "eris";
 import fetch from "node-fetch";
-import { CardVector, createAllowVector, Deck, DeckError, ICard } from "ydeck";
+import { CardIndex, CardVector, createAllowVector, Deck, DeckError, ICard } from "ydeck";
 import { Card, enums, YgoData } from "ygopro-data";
 import cardOpts from "./config/cardOpts.json";
 import dataOpts from "./config/dataOpts.json";
@@ -29,11 +29,7 @@ export function splitText(outString: string, cap = 2000): string[] {
 	return outStrings;
 }
 
-interface ICardWithText extends ICard {
-	name: string;
-}
-
-async function convertCard(card: Card): Promise<ICardWithText> {
+async function convertCard(card: Card): Promise<ICard> {
 	const status = await card.status;
 	const scopeRegex = /([a-zA-Z]+): (\d)/g;
 	let limitTCG = NaN,
@@ -81,7 +77,7 @@ export class DeckManager {
 	// TODO: what is the lifetime of this cache?
 	private readonly deckCache = new Map<string, Deck>(); // key: ydke URL
 	private readonly tcgAllowVector: CardVector;
-	constructor(private readonly cardIndex: Map<number, ICardWithText>) {
+	constructor(private readonly cardIndex: CardIndex) {
 		this.tcgAllowVector = createAllowVector(cardIndex, card =>
 			isNaN(card.limitTCG) || card.isPrerelease ? 0 : card.limitTCG
 		);
