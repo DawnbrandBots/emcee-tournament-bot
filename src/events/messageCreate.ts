@@ -136,7 +136,7 @@ export async function onDirectMessage(
 // Throws on any problem with the deck, and the exception payload should be sent to the user
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 async function verifyDeck(msg: Message<PrivateChannel>, decks: DeckManager) {
-	const [deck, errors] = await decks.getDeckFromMessage(msg); // throws on network error, YDKParseError, UrlConstructionError
+	const [deck, errors] = await decks.getDeckFromMessage(msg); // throws on network error, YDKParseError, bad YDKE URL, filesize too big
 	const formattedDeckMessage = decks.prettyPrint(
 		deck,
 		`${msg.author.username}.${msg.author.discriminator}.ydk`,

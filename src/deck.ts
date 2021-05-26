@@ -5,6 +5,7 @@ import { Card, enums, YgoData } from "ygopro-data";
 import cardOpts from "./config/cardOpts.json";
 import dataOpts from "./config/dataOpts.json";
 import transOpts from "./config/transOpts.json";
+import { UserError } from "./util/errors";
 import { getLogger } from "./util/logger";
 
 const logger = getLogger("deck");
@@ -73,6 +74,8 @@ export async function initializeDeckManager(octokitToken: string): Promise<DeckM
 	return new DeckManager(cardIndex);
 }
 
+const MAX_BYTES = 1024;
+
 export class DeckManager {
 	// TODO: what is the lifetime of this cache?
 	private readonly deckCache = new Map<string, Deck>(); // key: ydke URL
@@ -93,6 +96,15 @@ export class DeckManager {
 
 	public async getDeckFromMessage(msg: Message): Promise<[Deck, DeckError[]]> {
 		if (msg.attachments.length > 0 && msg.attachments[0].filename.endsWith(".ydk")) {
+			// cap filezie for security
+			if (msg.attachments[0].size > MAX_BYTES) {
+				// report potential abuse internally
+				// TODO: Would be useful to report tournament and server, but we don't have that data in this scope
+				logger.notify(
+					`Potential abuse warning! User ${msg.author.id} (@${msg.author.username}#${msg.author.discriminator}) submitted oversized deck file of ${msg.attachments[0].size}B.`
+				);
+				throw new UserError("YDK file too large! Please try again with a smaller file.");
+			}
 			const ydk = await this.extractYdk(msg.attachments[0]); // throws on network error
 			const deck = new Deck(this.cardIndex, { ydk }); // throws YDKParseError
 			this.deckCache.set(deck.url, deck);
