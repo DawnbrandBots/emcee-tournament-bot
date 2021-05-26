@@ -206,9 +206,6 @@ export class DeckManager {
 			}, is ${err.actual}!`;
 		}
 		// else type is limit
-		const name = this.cardIndex.has(err.target)
-			? `"${this.cardIndex.get(err.target)?.name}" (${err.target})`
-			: `"${err.target}"`;
-		return `Too many copies of ${name}! Should be at most ${err.max}, is ${err.actual}!`;
+		return `Too many copies of card ${err.name} (${err.target})! Should be at most ${err.max}, is ${err.actual}!`;
 	}
 }
