@@ -103,7 +103,7 @@ export class DeckManager {
 	}
 
 	public prettyPrint(deck: Deck, filename: string, errors: DeckError[] = []): [AdvancedMessageContent, MessageFile] {
-		const title = `Themes: ${deck.themes.join(",")}`;
+		const title = `Themes: ${deck.themes.join(",") || "none"}`;
 		let mainHeader = `Main Deck (${deck.contents.main.length} cards — `;
 		const mainHeaderParts: string[] = [];
 		if (deck.mainTypeCounts.monster > 0) {
