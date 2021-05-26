@@ -1,8 +1,12 @@
 # Changelog
-## HEAD
+## HEAD ([Chalislime Monthly May 2021](https://challonge.com/csmmay2021))
 
 ### New Features
- - Submitted YDK files must now come in under a file size cap, for security. (#278)
+- Submitted YDK files must now come in under a file size cap, for security. (#278)
+
+### Bug Fixes
+- Deck lists in private channels no longer display as "your deck". (#280)
+- Alternate artworks and other aliased cards are treated as the same card. (#280)
 
 ## 2021-05-06 ([Chalislime Monthly April 2021](https://challonge.com/csmapr2021))
 
