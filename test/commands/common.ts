@@ -51,7 +51,7 @@ export const support: CommandSupport = {
 	database: new DatabaseWrapperMock(),
 	challonge: new WebsiteInterface(new WebsiteWrapperMock()),
 	scores: new Map(),
-	decks: new DeckManager([]),
+	decks: new DeckManager(new Map()),
 	participantRole: new ParticipantRoleProvider(mockBotClient),
 	templater: new Templater(),
 	timeWizard: new TimeWizard({
