@@ -74,13 +74,16 @@ const command: CommandDefinition = {
 		await support.database.startTournament(newId);
 		// send command guide to players
 		for (const channel of tournament.publicChannels) {
-			await support.discord.sendMessage(channel, support.templater.format("player", id));
+			await support.discord.sendMessage(channel, support.templater.format("player", newId));
 		}
 		// send command guide to hosts
 		for (const channel of tournament.privateChannels) {
-			await support.discord.sendMessage(channel, support.templater.format("start", id));
+			await support.discord.sendMessage(channel, support.templater.format("start", newId));
 		}
-		await reply(msg, `Top cut for **${tournament.name}** commenced on Challonge! Now sending out pairings.`);
+		await reply(
+			msg,
+			`Top cut for **${tournament.name}** commenced on Challonge! Use \`mc!round ${newId}\` to send out pairings and start the timer for round 1.`
+		);
 		// start new round
 	}
 };
