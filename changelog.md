@@ -7,7 +7,7 @@
 ### Bug Fixes
 - Deck lists in private channels no longer display as "your deck". (#280)
 - Alternate artworks and other aliased cards are treated as the same card. (#280)
-- Guides for top cut now use the correct tournament id. (#281)
+- Guides for top cut now use the correct tournament id. (#282)
 
 ## 2021-05-06 ([Chalislime Monthly April 2021](https://challonge.com/csmapr2021))
 
