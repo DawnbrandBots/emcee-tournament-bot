@@ -21,5 +21,6 @@ export { default as round } from "./round";
 export { default as score } from "./score";
 export { default as start } from "./start";
 export { default as sync } from "./sync";
+export { default as tie } from "./tie";
 export { default as topcut } from "./topcut";
 export { default as update } from "./update";
