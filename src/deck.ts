@@ -81,9 +81,15 @@ export class DeckManager {
 	private readonly deckCache = new Map<string, Deck>(); // key: ydke URL
 	private readonly tcgAllowVector: CardVector;
 	constructor(private readonly cardIndex: CardIndex) {
-		this.tcgAllowVector = createAllowVector(cardIndex, card =>
-			isNaN(card.limitTCG) || card.isPrerelease ? 0 : card.limitTCG
-		);
+		this.tcgAllowVector = createAllowVector(cardIndex, card => {
+			if (isNaN(card.limitTCG) || card.isPrerelease) {
+				return 0;
+			} else if (card.alias) {
+				return -1;
+			} else {
+				return card.limitTCG;
+			}
+		});
 	}
 
 	public getDeck(url: string): Deck {
