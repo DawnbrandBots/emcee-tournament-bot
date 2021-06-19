@@ -1,4 +1,5 @@
 import { getConnection, IsNull, Not } from "typeorm";
+import { CardVector } from "ydeck";
 import {
 	AssertStatusError,
 	TournamentNotFoundError,
@@ -154,6 +155,36 @@ export class DatabaseWrapperPostgres {
 		}
 		tournament.name = name;
 		tournament.description = desc;
+		await tournament.save();
+	}
+
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-module-boundary-types
+	async setAllowVector(tournamentId: string, raw: any): Promise<void> {
+		const tournament = await this.findTournament(tournamentId);
+		if (tournament.status !== TournamentStatus.PREPARING) {
+			throw new AssertStatusError(tournamentId, TournamentStatus.PREPARING, tournament.status);
+		}
+		if (Array.isArray(raw)) {
+			if (
+				raw.every(
+					e => Array.isArray(e) && e.length === 2 && typeof e[0] === "number" && typeof e[1] === "number"
+				)
+			) {
+				tournament.allowVector = new Map(raw);
+			} else {
+				throw new TypeError("Bad entries-list format for CardVector.");
+			}
+		} else {
+			const allowVector: CardVector = new Map();
+			for (const password in raw) {
+				const key = Number(password);
+				if (isNaN(key) || typeof raw[password] !== "number") {
+					throw new TypeError("Bad object format for CardVector.");
+				}
+				allowVector.set(Number(password), raw[password]);
+			}
+			tournament.allowVector = allowVector;
+		}
 		await tournament.save();
 	}
 

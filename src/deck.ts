@@ -79,7 +79,7 @@ const MAX_BYTES = 1024;
 export class DeckManager {
 	// TODO: what is the lifetime of this cache?
 	private readonly deckCache = new Map<string, Deck>(); // key: ydke URL
-	private readonly tcgAllowVector: CardVector;
+	public readonly tcgAllowVector: CardVector;
 	constructor(private readonly cardIndex: CardIndex) {
 		this.tcgAllowVector = createAllowVector(cardIndex, card => {
 			if (isNaN(card.limitTCG) || card.isPrerelease) {
