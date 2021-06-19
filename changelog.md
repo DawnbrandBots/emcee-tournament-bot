@@ -4,6 +4,7 @@
 
 ### New Features
 - Enable configuring custom card pools through `mc!banlist` (#290)
+- If submitted scores disagree, the first submitter is notified (#296)
 
 ### Bug Fixes
 - Restore tie command (#287)
