@@ -389,8 +389,8 @@ the quantity of that card to allow.
 
 **OR**
 
-An array of integer pairs of the form accepted by the [JavaScript Map] constructor]
-(https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map)
+An array of integer pairs of the form accepted by the
+[JavaScript Map constructor](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map)
 ```json
 [[10000, 3], [10000000, -1]]
 ```
