@@ -189,10 +189,18 @@ export class DeckManager {
 		}
 		fields.push({ name: "YDKE URL", value: deck.url });
 		if (errors.length > 0) {
+			const payload = errors.map(d => this.formatDeckError(d)).join("\n");
+			const [first, ...rest] = splitText(payload, 1024);
 			fields.push({
 				name: "Deck is illegal!",
-				value: errors.map(d => this.formatDeckError(d)).join("\n")
+				value: first
 			});
+			for (const text of rest) {
+				fields.push({
+					name: "Deck is illegal! (continued)",
+					value: text
+				});
+			}
 		}
 
 		return [{ embed: { title, fields } }, { file: deck.ydk, name: filename }];

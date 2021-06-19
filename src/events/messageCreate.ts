@@ -146,7 +146,7 @@ async function verifyDeck(msg: Message<PrivateChannel>, decks: DeckManager, allo
 	if (errors.length > 0) {
 		await reply(msg, ...formattedDeckMessage).catch(logger.error);
 		throw new Error(
-			`Your deck is not legal. Please see the print out below for all the errors. You have NOT been registered yet, please submit again with a legal deck.`
+			`Your deck is not legal. Please see the print out for all the errors. You have NOT been registered yet, please submit again with a legal deck.`
 		);
 	}
 	log("verbose", msg, { event: "valid" });
