@@ -84,5 +84,6 @@ describe("command:score", function () {
 			"123",
 			"<@zeus> (nova#0000) and <@0000> (nova#0000) have reported their score of 1-2 for **foo** (name)."
 		);
+		sinon.resetBehavior();
 	});
 });
