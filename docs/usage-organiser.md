@@ -46,6 +46,7 @@ They may be truncated with length. Make sure to update these if you change a hea
 1. [mc!removechannel](#remove-announcement-channel)
 1. [mc!addbye](#add-artificial-round-one-bye)
 1. [mc!removebye](#remove-artificial-round-one-bye)
+1. [mc!banlist](#set-custom-allowed-card-pool-experimental) (experimental)
 
 ## Reference
 
@@ -364,6 +365,43 @@ mc!sync id
 Synchronises the tournament name, description, and participant list stored in
 Emcee with those stored in the Challonge API. Useful for testing in development
 when changes are made to a tournament on Challonge without going through Emcee.
+
+### Set custom allowed card pool (experimental)
+```
+mc!banlist id
+```
+**Caller permission level**: host for the tournament identified by _id_
+
+If no attachment is provided, the default TCG allowed card pool is uploaded as
+an attachment along with the SHA256 checksum of the file.
+
+If exactly one JSON attachment is provided, the allowed card pool for the
+tournament is set to the card pool described by the JSON, assuming it is valid.
+The JSON must be an allow vector.
+
+#### Allow vector draft specification
+An object of the form
+```json
+{ "password": 3, "password": -1 }
+```
+where _password_ is an integer card password quoted in a string and the value is
+the quantity of that card to allow.
+
+**OR**
+
+An array of integer pairs of the form accepted by the [JavaScript Map] constructor]
+(https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map)
+```json
+[[10000, 3], [10000000, -1]]
+```
+where the first element of each pair is the card password and the second element
+is the quantity of that card to allow.
+
+Passwords not in the vector will not be allowed. To allow an alias (alternate
+artwork or card always treated as the same name), use a negative for its
+quantity value. To forbid the main card but allow an alias (to enforce an
+alternate erratum), exclude the main or set it to 0 and set the alias to 3 (or
+any other desired restriction).
 
 ---
 
