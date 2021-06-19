@@ -1,4 +1,5 @@
 import { BaseEntity, Column, Entity, OneToMany, PrimaryColumn } from "typeorm";
+import { CardVector } from "ydeck";
 import { TournamentFormat, TournamentStatus } from "../interface";
 import { ConfirmedParticipant } from "./ConfirmedParticipant";
 import { Countdown } from "./Countdown";
@@ -54,6 +55,15 @@ export class ChallongeTournament extends BaseEntity {
 	/// Optional maximum capacity of this tournament. 0 indicates no limit. Negatives invalid.
 	@Column({ default: 0 })
 	participantLimit!: number;
+
+	@Column("text", {
+		nullable: true,
+		transformer: {
+			from: (raw: string) => new Map(JSON.parse(raw)),
+			to: (entity: CardVector) => JSON.stringify([...entity.entries()])
+		}
+	})
+	allowVector?: CardVector;
 
 	/// The ORM relationship to the registration messages that identify this tournament.
 	@OneToMany(() => RegisterMessage, rm => rm.tournament, { cascade: true, onDelete: "CASCADE" })
