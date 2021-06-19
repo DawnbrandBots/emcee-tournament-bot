@@ -188,17 +188,14 @@ export class DeckManager {
 			}
 		}
 		fields.push({ name: "YDKE URL", value: deck.url });
-		if (errors.length > 0) {
+		if (errors.length) {
+			const heading = `Deck is illegal! (${errors.length})`;
 			const payload = errors.map(d => this.formatDeckError(d)).join("\n");
-			const [first, ...rest] = splitText(payload, 1024);
-			fields.push({
-				name: "Deck is illegal!",
-				value: first
-			});
-			for (const text of rest) {
+			const parts = splitText(payload, 1024);
+			for (let i = 0; i < parts.length; i++) {
 				fields.push({
-					name: "Deck is illegal! [continued]",
-					value: text
+					name: heading + (i > 0 ? " [continued]" : ""),
+					value: parts[i]
 				});
 			}
 		}
