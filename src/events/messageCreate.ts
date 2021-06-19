@@ -1,4 +1,5 @@
 import { Client, Message, PrivateChannel } from "eris";
+import { CardVector } from "ydeck";
 import { Command, CommandDefinition, CommandSupport } from "../Command";
 import { helpMessage } from "../config";
 import { DatabaseTournament } from "../database/interface";
@@ -135,8 +136,8 @@ export async function onDirectMessage(
 
 // Throws on any problem with the deck, and the exception payload should be sent to the user
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-async function verifyDeck(msg: Message<PrivateChannel>, decks: DeckManager) {
-	const [deck, errors] = await decks.getDeckFromMessage(msg); // throws on network error, YDKParseError, bad YDKE URL, filesize too big
+async function verifyDeck(msg: Message<PrivateChannel>, decks: DeckManager, allowVector?: CardVector) {
+	const [deck, errors] = await decks.getDeckFromMessage(msg, allowVector); // throws on network error, YDKParseError, bad YDKE URL, filesize too big
 	const formattedDeckMessage = decks.prettyPrint(
 		deck,
 		`${msg.author.username}.${msg.author.discriminator}.ydk`,
@@ -145,7 +146,7 @@ async function verifyDeck(msg: Message<PrivateChannel>, decks: DeckManager) {
 	if (errors.length > 0) {
 		await reply(msg, ...formattedDeckMessage).catch(logger.error);
 		throw new Error(
-			`Your deck is not legal. Please see the print out below for all the errors. You have NOT been registered yet, please submit again with a legal deck.`
+			`Your deck is not legal. Please see the print out for all the errors. You have NOT been registered yet, please submit again with a legal deck.`
 		);
 	}
 	log("verbose", msg, { event: "valid" });
@@ -162,7 +163,7 @@ async function verifyDeckAndConfirmPending(
 	participantRole: ParticipantRoleProvider,
 	bot: Client
 ): Promise<void> {
-	const { deck, formattedDeckMessage } = await verifyDeck(msg, decks);
+	const { deck, formattedDeckMessage } = await verifyDeck(msg, decks, tournament.allowVector);
 	const username = `${msg.author.username}#${msg.author.discriminator}`;
 	try {
 		const challongeId = await challonge.registerPlayer(tournament.id, username, msg.author.id);
@@ -223,7 +224,7 @@ async function verifyDeckAndUpdateConfirmed(
 	decks: DeckManager,
 	bot: Client
 ): Promise<void> {
-	const { deck, formattedDeckMessage } = await verifyDeck(msg, decks);
+	const { deck, formattedDeckMessage } = await verifyDeck(msg, decks, tournament.allowVector);
 	const username = `${msg.author.username}#${msg.author.discriminator}`;
 	try {
 		await database.updateDeck(tournament.id, msg.author.id, deck.url);

@@ -1,5 +1,14 @@
 # Changelog
-## HEAD ([Chalislime Monthly May 2021](https://challonge.com/csmmay2021))
+
+## HEAD
+
+### New Features
+- Enable configuring custom card pools through `mc!banlist` (#290)
+
+### Bug Fixes
+- Restore tie command (#287)
+
+## 2021-05-28 ([Chalislime Monthly May 2021](https://challonge.com/csmmay2021))
 
 ### New Features
 - Submitted YDK files must now come in under a file size cap, for security. (#278)

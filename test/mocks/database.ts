@@ -321,4 +321,7 @@ export class DatabaseWrapperMock {
 	updateDeck(): Promise<void> {
 		throw new Error("Not implemented");
 	}
+	setAllowVector(): Promise<void> {
+		throw new Error("Not implemented");
+	}
 }

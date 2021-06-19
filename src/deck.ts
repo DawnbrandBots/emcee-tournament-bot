@@ -79,11 +79,17 @@ const MAX_BYTES = 1024;
 export class DeckManager {
 	// TODO: what is the lifetime of this cache?
 	private readonly deckCache = new Map<string, Deck>(); // key: ydke URL
-	private readonly tcgAllowVector: CardVector;
+	public readonly tcgAllowVector: CardVector;
 	constructor(private readonly cardIndex: CardIndex) {
-		this.tcgAllowVector = createAllowVector(cardIndex, card =>
-			isNaN(card.limitTCG) || card.isPrerelease ? 0 : card.limitTCG
-		);
+		this.tcgAllowVector = createAllowVector(cardIndex, card => {
+			if (isNaN(card.limitTCG) || card.isPrerelease) {
+				return 0;
+			} else if (card.alias) {
+				return -1;
+			} else {
+				return card.limitTCG;
+			}
+		});
 	}
 
 	public getDeck(url: string): Deck {
@@ -94,7 +100,10 @@ export class DeckManager {
 		return this.deckCache.get(url)!;
 	}
 
-	public async getDeckFromMessage(msg: Message): Promise<[Deck, DeckError[]]> {
+	public async getDeckFromMessage(
+		msg: Message,
+		allowVector: CardVector = this.tcgAllowVector
+	): Promise<[Deck, DeckError[]]> {
 		if (msg.attachments.length > 0 && msg.attachments[0].filename.endsWith(".ydk")) {
 			// cap filezie for security
 			if (msg.attachments[0].size > MAX_BYTES) {
@@ -108,10 +117,10 @@ export class DeckManager {
 			const ydk = await this.extractYdk(msg.attachments[0]); // throws on network error
 			const deck = new Deck(this.cardIndex, { ydk }); // throws YDKParseError
 			this.deckCache.set(deck.url, deck);
-			return [deck, deck.validate(this.tcgAllowVector)];
+			return [deck, deck.validate(allowVector)];
 		}
 		const deck = this.getDeck(msg.content);
-		return [deck, deck.validate(this.tcgAllowVector)]; // throws: UrlConstructionError
+		return [deck, deck.validate(allowVector)]; // throws: UrlConstructionError
 	}
 
 	public prettyPrint(deck: Deck, filename: string, errors: DeckError[] = []): [AdvancedMessageContent, MessageFile] {
@@ -179,11 +188,16 @@ export class DeckManager {
 			}
 		}
 		fields.push({ name: "YDKE URL", value: deck.url });
-		if (errors.length > 0) {
-			fields.push({
-				name: "Deck is illegal!",
-				value: errors.map(d => this.formatDeckError(d)).join("\n")
-			});
+		if (errors.length) {
+			const heading = `Deck is illegal! (${errors.length})`;
+			const payload = errors.map(d => this.formatDeckError(d)).join("\n");
+			const parts = splitText(payload, 1024);
+			for (let i = 0; i < parts.length; i++) {
+				fields.push({
+					name: heading + (i > 0 ? " [continued]" : ""),
+					value: parts[i]
+				});
+			}
 		}
 
 		return [{ embed: { title, fields } }, { file: deck.ydk, name: filename }];

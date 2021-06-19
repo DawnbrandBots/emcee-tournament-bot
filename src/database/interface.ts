@@ -1,3 +1,5 @@
+import { CardVector } from "ydeck";
+
 export enum TournamentStatus {
 	PREPARING = "preparing",
 	IPR = "in progress",
@@ -36,6 +38,7 @@ export interface DatabaseTournament {
 	publicChannels: string[];
 	privateChannels: string[];
 	byes: string[];
+	allowVector?: CardVector;
 	findPlayer: (id: string) => DatabasePlayer | undefined;
 }
 
