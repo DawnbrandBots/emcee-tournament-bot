@@ -84,7 +84,7 @@ describe("Test embeds", function () {
 		expect(file).to.equal("#created by YDeck\n#main\n#extra\n!side\n");
 		expect(embed?.title).to.equal("Themes: none");
 		const errorField = embed?.fields?.[1];
-		expect(errorField?.name).to.equal("Deck is illegal!");
+		expect(errorField?.name).to.equal("Deck is illegal! (1)");
 		expect(errorField?.value).to.equal("Main Deck too small! Should be at least 40, is 0!");
 	});
 	it("Deck with archetypes");
