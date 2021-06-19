@@ -24,7 +24,7 @@ describe("command:deck", function () {
 	it(
 		"retrieves the deck for the mentioned user",
 		test(async function (this: SinonSandbox) {
-			msg.mentions = [new User({ id: "nova" }, mockBotClient)];
+			msg.mentions = [new User({ id: "nova", username: "nova", discriminator: "0000" }, mockBotClient)];
 			const replySpy = (msg.channel.createMessage = this.spy());
 			this.stub(support.database, "getConfirmedPlayer").resolves({
 				challongeId: 0,
@@ -36,7 +36,7 @@ describe("command:deck", function () {
 			expect(msg.channel.createMessage).to.have.been.calledOnce;
 			expect(support.database.getConfirmedPlayer).to.have.been.calledOnceWithExactly("nova", "name");
 			expect(support.decks.getDeck).to.have.been.calledOnceWithExactly(sampleDeck.url);
-			expect(replySpy.args[0][1].name).to.equal("nova.ydk");
+			expect(replySpy.args[0][1].name).to.equal("nova.0000.ydk");
 			expect(replySpy.args[0][1].file).to.equal(sampleDeck.ydk);
 		})
 	);
