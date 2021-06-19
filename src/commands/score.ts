@@ -105,9 +105,25 @@ const command: CommandDefinition = {
 					`You have successfully reported a score of ${scores[0]}-${scores[1]}, and it matches your opponent's report, so the score has been saved. Thank you, <@${msg.author.id}>.`
 				);
 			} else {
+				// Notify the opponent, but don't fail the command if we can't
+				const opponent = pendingScore.playerDiscord;
+				try {
+					await support.discord.sendDirectMessage(
+						opponent,
+						`Your opponent submitted a different score of ${scores[1]}-${scores[0]} for **${player.tournament.name}**. Both of you will need to report again.`
+					);
+				} catch (err) {
+					log("DM fail", { opponent });
+					logger.warn(err);
+					for (const channel of player.tournament.privateChannels) {
+						await support.discord
+							.sendMessage(channel, `Failed to send report of score disagreement to <@${opponent}>.`)
+							.catch(logger.error);
+					}
+				}
 				await reply(
 					msg,
-					`Your score does not match your opponent's reported score of ${pendingScore.oppScore}-${pendingScore.playerScore}. Both of you will need to report again, <@${msg.author.id}>.`
+					`Your score does not match your opponent's reported score of ${pendingScore.oppScore}-${pendingScore.playerScore}. Both of you will need to report again.`
 				);
 			}
 			// Whether the scores match or not, remove the pending score
