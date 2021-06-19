@@ -7,6 +7,7 @@
 
 ### Bug Fixes
 - Restore tie command (#287)
+- `mc!dump`, `mc!players` retrieve usernames if not already cached (#295)
 
 ## 2021-05-28 ([Chalislime Monthly May 2021](https://challonge.com/csmmay2021))
 

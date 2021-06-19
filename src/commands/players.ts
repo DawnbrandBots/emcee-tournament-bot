@@ -22,13 +22,15 @@ const command: CommandDefinition = {
 			})
 		);
 		const players = await support.database.getConfirmed(id);
-		const rows = players.map(player => {
-			const deck = support.decks.getDeck(player.deck);
-			return {
-				Player: support.discord.getUsername(player.discordId), // TODO: REST needed
-				Theme: deck.themes.length > 0 ? deck.themes.join("/") : "No themes"
-			};
-		});
+		const rows = await Promise.all(
+			players.map(async player => {
+				const deck = support.decks.getDeck(player.deck);
+				return {
+					Player: (await support.discord.getRESTUsername(player.discordId)) || player.discordId,
+					Theme: deck.themes.length > 0 ? deck.themes.join("/") : "No themes"
+				};
+			})
+		);
 		const file = await csv.writeToString(rows, { headers: true });
 		logger.verbose(
 			JSON.stringify({
