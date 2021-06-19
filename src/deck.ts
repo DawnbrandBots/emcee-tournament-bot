@@ -197,7 +197,7 @@ export class DeckManager {
 			});
 			for (const text of rest) {
 				fields.push({
-					name: "Deck is illegal! (continued)",
+					name: "Deck is illegal! [continued]",
 					value: text
 				});
 			}
