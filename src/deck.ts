@@ -100,7 +100,10 @@ export class DeckManager {
 		return this.deckCache.get(url)!;
 	}
 
-	public async getDeckFromMessage(msg: Message): Promise<[Deck, DeckError[]]> {
+	public async getDeckFromMessage(
+		msg: Message,
+		allowVector: CardVector = this.tcgAllowVector
+	): Promise<[Deck, DeckError[]]> {
 		if (msg.attachments.length > 0 && msg.attachments[0].filename.endsWith(".ydk")) {
 			// cap filezie for security
 			if (msg.attachments[0].size > MAX_BYTES) {
@@ -114,10 +117,10 @@ export class DeckManager {
 			const ydk = await this.extractYdk(msg.attachments[0]); // throws on network error
 			const deck = new Deck(this.cardIndex, { ydk }); // throws YDKParseError
 			this.deckCache.set(deck.url, deck);
-			return [deck, deck.validate(this.tcgAllowVector)];
+			return [deck, deck.validate(allowVector)];
 		}
 		const deck = this.getDeck(msg.content);
-		return [deck, deck.validate(this.tcgAllowVector)]; // throws: UrlConstructionError
+		return [deck, deck.validate(allowVector)]; // throws: UrlConstructionError
 	}
 
 	public prettyPrint(deck: Deck, filename: string, errors: DeckError[] = []): [AdvancedMessageContent, MessageFile] {
