@@ -59,7 +59,7 @@ export class ChallongeTournament extends BaseEntity {
 	@Column("text", {
 		nullable: true,
 		transformer: {
-			from: (raw?: string) => raw && new Map(JSON.parse(raw)),
+			from: (raw: string | null) => (raw ? new Map(JSON.parse(raw)) : undefined),
 			to: (entity?: CardVector) => entity && JSON.stringify([...entity.entries()])
 		}
 	})
