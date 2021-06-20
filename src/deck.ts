@@ -64,7 +64,7 @@ export async function initializeDeckManager(octokitToken: string): Promise<DeckM
 	const cardIndex: ConstructorParameters<typeof DeckManager>[0] = new Map();
 	for (const password in cardList) {
 		if (
-			cardList[password].data.ot & (enums.ot.OT_OCG | enums.ot.OT_TCG) &&
+			cardList[password].data.ot & (enums.ot.OT_OCG | enums.ot.OT_TCG | enums.ot.OT_ILLEGAL) &&
 			!(cardList[password].data.type & enums.type.TYPE_TOKEN)
 		) {
 			cardIndex.set(Number(password), await convertCard(cardList[password]));
