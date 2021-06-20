@@ -37,7 +37,7 @@ describe("command:score", function () {
 			open: true,
 			round: 1
 		});
-		sinon.stub(support.discord, "sendDirectMessage").resolves();
+		const directStub = sinon.stub(support.discord, "sendDirectMessage").resolves();
 		sinon.stub(support.discord, "sendMessage").resolves();
 		sinon.stub(support.discord, "getRESTUsername").resolves("nova#0000");
 
@@ -54,10 +54,15 @@ describe("command:score", function () {
 		expect(replySpy).to.have.been.calledWith(
 			sinon.match({
 				content:
-					"Your score does not match your opponent's reported score of 1-2. Both of you will need to report again, <@zeus>."
+					"Your score does not match your opponent's reported score of 1-2. Both of you will need to report again."
 			})
 		);
+		expect(support.discord.sendDirectMessage).to.have.been.calledWith(
+			"0000",
+			"Your opponent submitted a different score of 1-2 for **foo**. Both of you will need to report again."
+		);
 
+		directStub.resetHistory();
 		replySpy.resetHistory();
 		msg.author.id = "0000";
 		await command.executor(msg, ["name", "2-1"], support);
