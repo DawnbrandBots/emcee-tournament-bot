@@ -17,10 +17,12 @@ describe("command:dump", function () {
 				{ discordId: "1314", deck: "ydke://!!!", challongeId: 2 },
 				{ discordId: "1234", deck: "ydke://!!!", challongeId: 3 }
 			]);
+			const restStub = this.stub(support.discord, "getRESTUsername").resolves(null);
 			msg.channel.createMessage = this.spy();
 			await command.executor(msg, args, support);
 			expect(authStub).to.have.been.called;
 			expect(listStub).to.have.been.calledOnce;
+			expect(restStub).to.have.been.calledThrice;
 			expect(msg.channel.createMessage).to.have.been.calledOnceWithExactly(
 				sinon.match({ content: "Player decklists for Tournament battlecity is attached." }),
 				{

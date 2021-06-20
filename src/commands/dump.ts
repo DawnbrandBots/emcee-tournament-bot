@@ -22,13 +22,17 @@ const command: CommandDefinition = {
 			})
 		);
 		const players = await support.database.getConfirmed(id);
-		const rows = players.map(player => {
-			const deck = support.decks.getDeck(player.deck);
-			return {
-				Player: support.discord.getUsername(player.discordId), // TODO: REST needed
-				Deck: `Main: ${deck.mainText}, Extra: ${deck.extraText}, Side: ${deck.sideText}`.replace(/\n/g, ", ")
-			};
-		});
+		const rows = await Promise.all(
+			players.map(async player => {
+				const deck = support.decks.getDeck(player.deck);
+				const username = (await support.discord.getRESTUsername(player.discordId)) || player.discordId;
+				const text = `Main: ${deck.mainText}, Extra: ${deck.extraText}, Side: ${deck.sideText}`;
+				return {
+					Player: username,
+					Deck: text.replace(/\n/g, ", ")
+				};
+			})
+		);
 		const file = await csv.writeToString(rows, { headers: true });
 		logger.verbose(
 			JSON.stringify({
