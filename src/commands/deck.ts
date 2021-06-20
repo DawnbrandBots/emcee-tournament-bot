@@ -35,8 +35,10 @@ const command: CommandDefinition = {
 				event: "retrieve"
 			})
 		);
-		const name = support.discord.getUsername(player);
-		const response = support.decks.prettyPrint(deck, `${name}.ydk`);
+		const response = support.decks.prettyPrint(
+			deck,
+			`${msg.mentions[0].username}.${msg.mentions[0].discriminator}.ydk`
+		);
 		logger.verbose(
 			JSON.stringify({
 				channel: msg.channel.id,
