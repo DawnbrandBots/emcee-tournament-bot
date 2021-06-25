@@ -28,3 +28,15 @@ export function firstMentionOrFail(msg: Message): string {
 	}
 	return msg.mentions[0].id;
 }
+
+export function parseUserMention(who: string): string | null {
+	if (who.startsWith("<@") && who.endsWith(">")) {
+		if (who.charAt(2) === "!") {
+			return who.slice(3, -1);
+		} else {
+			return who.slice(2, -1);
+		}
+	} else {
+		return null;
+	}
+}

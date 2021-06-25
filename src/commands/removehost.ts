@@ -1,5 +1,5 @@
 import { CommandDefinition } from "../Command";
-import { reply } from "../util/discord";
+import { parseUserMention, reply } from "../util/discord";
 import { getLogger } from "../util/logger";
 
 const logger = getLogger("command:removehost");
@@ -11,7 +11,7 @@ const command: CommandDefinition = {
 		// Mirror of addhost
 		const [id, who] = args;
 		await support.database.authenticateHost(id, msg.author.id, msg.guildID);
-		const newHost = who.startsWith("<@!") && who.endsWith(">") ? who.slice(3, -1) : who;
+		const newHost = parseUserMention(who) || who;
 		logger.verbose(
 			JSON.stringify({
 				channel: msg.channel.id,

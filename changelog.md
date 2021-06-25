@@ -9,6 +9,7 @@
 ### Bug Fixes
 - Restore tie command (#287)
 - `mc!dump`, `mc!players` retrieve usernames if not already cached (#295)
+- Parse mentions without internal `!` for forcedrop and removehost (#300)
 
 ## 2021-05-28 ([Chalislime Monthly May 2021](https://challonge.com/csmmay2021))
 
