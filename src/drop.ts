@@ -90,7 +90,7 @@ export async function dropPlayerChallonge(
 				// If the match is closed AND the opponent has also dropped, the score is amended to a tie.
 				// Do not direct message the former opponent but do warn hosts of any errors.
 				// TODO: keep in mind when we change to tracking dropped players
-				const opponent = await database.getPlayerByChallonge(oppChallonge, tournamentId).catch<void>();
+				const opponent = await database.getPlayerByChallonge(oppChallonge, tournamentId).catch(() => undefined);
 				if (opponent) {
 					log({ tournamentId, oppChallonge, discordId: opponent.discordId });
 				} else {
