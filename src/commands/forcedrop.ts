@@ -2,7 +2,7 @@ import { CommandDefinition } from "../Command";
 import { TournamentStatus } from "../database/interface";
 import { Participant } from "../database/orm";
 import { dropPlayerChallonge } from "../drop";
-import { reply } from "../util/discord";
+import { parseUserMention, reply } from "../util/discord";
 import { getLogger } from "../util/logger";
 
 const logger = getLogger("command:forcedrop");
@@ -13,7 +13,7 @@ const command: CommandDefinition = {
 	executor: async (msg, args, support) => {
 		const [id, who] = args;
 		const tournament = await support.database.authenticateHost(id, msg.author.id, msg.guildID);
-		const player = who.startsWith("<@!") && who.endsWith(">") ? who.slice(3, -1) : who;
+		const player = parseUserMention(who) || who;
 		function log(payload: Record<string, unknown>): void {
 			logger.verbose(
 				JSON.stringify({
