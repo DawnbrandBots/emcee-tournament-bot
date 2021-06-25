@@ -4053,9 +4053,9 @@ yargs@^15.0.2:
     yargs-parser "^18.1.2"
 
 ydeck@^0.2.1:
-  version "0.2.1"
-  resolved "https://registry.yarnpkg.com/ydeck/-/ydeck-0.2.1.tgz#0850274b36b2ba390a6185d83d5e36742115e642"
-  integrity sha512-snKi7tQ8MxN16eIfAhdUMj90sFFHwdRGpdd2BM6my3TW3PzRRjtvK73f95bW7VuVfJXwpue2uIGe8XxLuFluow==
+  version "0.2.2"
+  resolved "https://registry.yarnpkg.com/ydeck/-/ydeck-0.2.2.tgz#101ebd8c5fb5ad71c25d6dd35e4a4a8bd88e60c8"
+  integrity sha512-mKJdbN6j9w/qCAkY0Xpu+Pz65CjoJ863Xv75je1kHtgquyQkrZIkb5ByxxIDXfVk8qYm5VTdVlIbj7CGqk/JeQ==
   dependencies:
     ydke "^1.1.0"
 
