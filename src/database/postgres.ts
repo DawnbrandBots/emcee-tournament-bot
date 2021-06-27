@@ -319,7 +319,9 @@ export class DatabaseWrapperPostgres {
 				await entityManager.remove(message);
 			}
 			logger.verbose(`prestartTournament: searching for pending participants`);
-			const participants = await entityManager.getRepository(Participant).find({ tournamentId });
+			const participants = await entityManager
+				.getRepository(Participant)
+				.find({ where: { tournamentId }, relations: ["confirmed"] });
 			logger.verbose(`prestartTournament: loaded ${participants.length} participants for ${tournamentId}`);
 			const ejectEntities = participants.filter(p => !p.confirmed);
 			const ejected = ejectEntities.map(p => p.discordId);
