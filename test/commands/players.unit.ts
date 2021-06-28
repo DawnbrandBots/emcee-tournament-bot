@@ -29,7 +29,45 @@ describe("command:players", function () {
 				}),
 				{
 					name: "battlecity.csv",
-					file: `Player,Theme\n1312,No themes\n1314,No themes\n1234,No themes`
+					file: `Player,Theme,Deck\n1312,No themes,"Main: , Extra: , Side: "\n1314,No themes,"Main: , Extra: , Side: "\n1234,No themes,"Main: , Extra: , Side: "`
+				}
+			);
+		})
+	);
+	it(
+		"warns on an empty tournament",
+		test(async function (this: SinonSandbox) {
+			const authStub = this.stub(support.database, "authenticateHost").resolves();
+			const listStub = this.stub(support.database, "getConfirmed").resolves([]);
+			msg.channel.createMessage = this.spy();
+			await command.executor(msg, args, support);
+			expect(authStub).to.have.been.called;
+			expect(listStub).to.have.been.calledOnce;
+			expect(msg.channel.createMessage).to.have.been.calledOnceWithExactly(
+				sinon.match({
+					content: "Tournament battlecity has no players!"
+				})
+			);
+		})
+	);
+	it(
+		"provides a dump of all themes",
+		test(async function (this: SinonSandbox) {
+			const authStub = this.stub(support.database, "authenticateHost").resolves();
+			const listStub = this.stub(support.database, "getConfirmed").resolves([
+				{ discordId: "1312", deck: "ydke://!!!", challongeId: 1 },
+				{ discordId: "1314", deck: "ydke://!!!", challongeId: 2 },
+				{ discordId: "1234", deck: "ydke://!!!", challongeId: 3 }
+			]);
+			msg.channel.createMessage = this.spy();
+			await command.executor(msg, [args[0], "pie"], support);
+			expect(authStub).to.have.been.called;
+			expect(listStub).to.have.been.calledOnce;
+			expect(msg.channel.createMessage).to.have.been.calledOnceWithExactly(
+				sinon.match({ content: "Archetype counts for Tournament battlecity are attached." }),
+				{
+					name: "battlecity.csv",
+					file: `Theme,Count\nNo themes,3`
 				}
 			);
 		})
