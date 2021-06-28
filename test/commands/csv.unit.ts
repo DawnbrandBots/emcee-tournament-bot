@@ -25,7 +25,7 @@ describe("command:csv", function () {
 			expect(restStub).to.have.been.calledThrice;
 			expect(msg.channel.createMessage).to.have.been.calledOnceWithExactly(
 				sinon.match({
-					content: "A list of players for tournament battlecity with the theme of their deck is attached."
+					content: "A list of players for tournament battlecity with their deck is attached."
 				}),
 				{
 					name: "battlecity.csv",
@@ -64,7 +64,7 @@ describe("command:csv", function () {
 			expect(authStub).to.have.been.called;
 			expect(listStub).to.have.been.calledOnce;
 			expect(msg.channel.createMessage).to.have.been.calledOnceWithExactly(
-				sinon.match({ content: "Archetype counts for Tournament battlecity are attached." }),
+				sinon.match({ content: "A list of themes in tournament battlecity with their counts is attached." }),
 				{
 					name: "battlecity.csv",
 					file: `Theme,Count\nNo themes,3`
@@ -102,7 +102,7 @@ describe("command:csv", function () {
 				expect(listStub).to.have.been.calledOnce;
 				expect(msg.channel.createMessage).to.have.been.calledOnceWithExactly(
 					sinon.match({
-						content: "A list of players for tournament battlecity with the theme of their deck is attached."
+						content: "A list of players for tournament battlecity with their deck is attached."
 					}),
 					{
 						name: "battlecity.csv",
