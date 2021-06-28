@@ -65,6 +65,8 @@ export async function advanceRoundDiscord(
 			if (player1 && player2) {
 				const name1 = await getRealUsername(discord, player1);
 				const name2 = await getRealUsername(discord, player2);
+				// names are escaped because they will be printed to discord, but this has consequences for logging
+				// TODO: expose escape function as public to resolve this specific case?
 				logger.verbose({ tournament: tournament.id, match: match.matchId, player1, player2, name1, name2 });
 				if (name1) {
 					await sendPairing(discord, intro, player1, player2, name2, tournament);

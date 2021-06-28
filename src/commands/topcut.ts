@@ -55,7 +55,7 @@ const command: CommandDefinition = {
 		for (const player of top) {
 			const challongeId = await support.challonge.registerPlayer(
 				newId,
-				support.discord.getUsername(player.discordId),
+				support.discord.getUsername(player.discordId, false),
 				player.discordId
 			);
 			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion

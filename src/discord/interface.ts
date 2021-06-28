@@ -129,12 +129,20 @@ export class DiscordInterface {
 		await this.api.deleteMessage(channelId, messageId);
 	}
 
-	public getUsername(userId: string): string {
-		return this.api.getUsername(userId);
+	private escapeUsername(username: string): string {
+		const mdEscape = /([\\*_`>])/g;
+		return username.replace(mdEscape, "\\$1");
 	}
 
-	public async getRESTUsername(userId: string): Promise<string | null> {
-		return await this.api.getRESTUsername(userId);
+	// escape markdown characters if destination is discord, but not if being printed into a file, filename, challonge, etc
+	public getUsername(userId: string, escape = true): string {
+		const name = this.api.getUsername(userId);
+		return escape ? this.escapeUsername(name) : name;
+	}
+
+	public async getRESTUsername(userId: string, escape = true): Promise<string | null> {
+		const name = await this.api.getRESTUsername(userId);
+		return name && escape ? this.escapeUsername(name) : name;
 	}
 
 	public async sendDirectMessage(userId: string, content: DiscordMessageOut): Promise<void> {
