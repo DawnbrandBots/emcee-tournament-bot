@@ -25,9 +25,12 @@ const command: CommandDefinition = {
 		const rows = await Promise.all(
 			players.map(async player => {
 				const deck = support.decks.getDeck(player.deck);
+				const username = (await support.discord.getRESTUsername(player.discordId)) || player.discordId;
+				const text = `Main: ${deck.mainText}, Extra: ${deck.extraText}, Side: ${deck.sideText}`;
 				return {
-					Player: (await support.discord.getRESTUsername(player.discordId)) || player.discordId,
-					Theme: deck.themes.length > 0 ? deck.themes.join("/") : "No themes"
+					Player: username,
+					Theme: deck.themes.length > 0 ? deck.themes.join("/") : "No themes",
+					Deck: text.replace(/\n/g, ", ")
 				};
 			})
 		);

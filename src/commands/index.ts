@@ -6,7 +6,6 @@ export { default as cancel } from "./cancel";
 export { default as create } from "./create";
 export { default as deck } from "./deck";
 export { default as drop } from "./drop";
-export { default as dump } from "./dump";
 export { default as finish } from "./finish";
 export { default as forcedrop } from "./forcedrop";
 export { default as forcescore } from "./forcescore";
