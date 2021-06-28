@@ -24,6 +24,10 @@ const command: CommandDefinition = {
 			})
 		);
 		const players = await support.database.getConfirmed(id);
+		if (players.length < 1) {
+			await reply(msg, `Tournament ${id} has no players!`);
+			return;
+		}
 		let file;
 		if (pie) {
 			const themes = players
