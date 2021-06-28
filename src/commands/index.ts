@@ -12,7 +12,6 @@ export { default as forcescore } from "./forcescore";
 export { default as help } from "./help";
 export { default as list } from "./list";
 export { default as open } from "./open";
-export { default as pie } from "./pie";
 export { default as players } from "./players";
 export { default as removebye } from "./removebye";
 export { default as removechannel } from "./removechannel";
