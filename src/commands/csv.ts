@@ -3,10 +3,10 @@ import { CommandDefinition } from "../Command";
 import { reply } from "../util/discord";
 import { getLogger } from "../util/logger";
 
-const logger = getLogger("command:players");
+const logger = getLogger("command:csv");
 
 const command: CommandDefinition = {
-	name: "players",
+	name: "csv",
 	requiredArgs: ["id"],
 	executor: async (msg, args, support) => {
 		const [id, pieArg] = args;
@@ -18,7 +18,7 @@ const command: CommandDefinition = {
 				message: msg.id,
 				user: msg.author.id,
 				tournament: id,
-				command: "players",
+				command: "csv",
 				pie,
 				event: "attempt"
 			})
@@ -58,7 +58,7 @@ const command: CommandDefinition = {
 				message: msg.id,
 				user: msg.author.id,
 				tournament: id,
-				command: "players",
+				command: "csv",
 				pie,
 				event: "success"
 			})
