@@ -102,12 +102,8 @@ describe("command:csv", function () {
 				expect(listStub).to.have.been.calledOnce;
 				expect(msg.channel.createMessage).to.have.been.calledOnceWithExactly(
 					sinon.match({
-						content: "A list of players for tournament battlecity with their deck is attached."
-					}),
-					{
-						name: "battlecity.csv",
-						file: ""
-					}
+						content: "Tournament battlecity has no players!"
+					})
 				);
 			}
 		})
