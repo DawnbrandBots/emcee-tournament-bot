@@ -87,8 +87,8 @@ const command: CommandDefinition = {
 				}
 				// Inform the hosts
 				try {
-					const callerUsername = await support.discord.getRESTUsername(msg.author.id);
-					const opponentUsername = await support.discord.getRESTUsername(opponent);
+					const callerUsername = await support.discord.getRESTUsername(msg.author.id, true);
+					const opponentUsername = await support.discord.getRESTUsername(opponent, true);
 					log("notify", { callerUsername, opponentUsername });
 					for (const channel of player.tournament.privateChannels) {
 						await support.discord.sendMessage(

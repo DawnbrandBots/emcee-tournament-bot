@@ -135,12 +135,12 @@ export class DiscordInterface {
 	}
 
 	// escape markdown characters if destination is discord, but not if being printed into a file, filename, challonge, etc
-	public getUsername(userId: string, escape = true): string {
+	public getUsername(userId: string, escape = false): string {
 		const name = this.api.getUsername(userId);
 		return escape ? this.escapeUsername(name) : name;
 	}
 
-	public async getRESTUsername(userId: string, escape = true): Promise<string | null> {
+	public async getRESTUsername(userId: string, escape = false): Promise<string | null> {
 		const name = await this.api.getRESTUsername(userId);
 		return name && escape ? this.escapeUsername(name) : name;
 	}

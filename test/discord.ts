@@ -23,16 +23,16 @@ describe("Simple helpers", function () {
 
 describe("getUsername", function () {
 	it("No special characters", function () {
-		expect(discord.getUsername("player1")).to.equal("player1");
+		expect(discord.getUsername("player1", true)).to.equal("player1");
 	});
 	it("Successful escape", function () {
-		expect(discord.getUsername("player_1")).to.equal("player\\_1");
+		expect(discord.getUsername("player_1", true)).to.equal("player\\_1");
 	});
 	it("Successful escape backslash", function () {
-		expect(discord.getUsername("player\\1")).to.equal("player\\\\1");
+		expect(discord.getUsername("player\\1", true)).to.equal("player\\\\1");
 	});
 	it("There is no escape", function () {
-		expect(discord.getUsername("player_1", false)).to.equal("player_1");
+		expect(discord.getUsername("player_1")).to.equal("player_1");
 	});
 });
 

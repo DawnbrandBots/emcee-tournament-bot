@@ -142,7 +142,7 @@ async function getRealUsername(discord: DiscordInterface, userId: string): Promi
 	if (notSnowflake(userId)) {
 		return null;
 	}
-	return await discord.getRESTUsername(userId);
+	return await discord.getRESTUsername(userId, true);
 }
 
 async function sendPairing(
