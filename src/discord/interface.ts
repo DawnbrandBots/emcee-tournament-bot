@@ -130,7 +130,7 @@ export class DiscordInterface {
 	}
 
 	private escapeUsername(username: string): string {
-		const mdEscape = /([\\*_`>])/g;
+		const mdEscape = /([\\*_`>~])/g;
 		return username.replace(mdEscape, "\\$1");
 	}
 
