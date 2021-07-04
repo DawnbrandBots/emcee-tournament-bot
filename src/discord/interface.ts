@@ -129,7 +129,7 @@ export class DiscordInterface {
 		await this.api.deleteMessage(channelId, messageId);
 	}
 
-	private escapeUsername(username: string): string {
+	public escapeUsername(username: string): string {
 		const mdEscape = /([\\*_`>~])/g;
 		return username.replace(mdEscape, "\\$1");
 	}
