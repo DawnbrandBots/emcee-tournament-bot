@@ -1,6 +1,6 @@
 # Changelog
 
-## HEAD
+## 2021-06-27 ([Chalislime Monthly June 2021](https://challonge.com/csmjune2021))
 
 ### New Features
 - Enable configuring custom card pools through `mc!banlist` (#290)
@@ -10,6 +10,7 @@
 - Restore tie command (#287)
 - `mc!dump`, `mc!players` retrieve usernames if not already cached (#295)
 - Parse mentions without internal `!` for forcedrop and removehost (#300)
+- Interim patch for double drop silent failures (#301)
 
 ## 2021-05-28 ([Chalislime Monthly May 2021](https://challonge.com/csmmay2021))
 
