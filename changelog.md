@@ -1,7 +1,11 @@
 # Changelog
 
 ## HEAD
--   `mc!dump`, `mc!players` and `mc!pie` have been merged into one command, `mc!csv`.
+### New Features
+- `mc!dump`, `mc!players` and `mc!pie` have been merged into one command, `mc!csv`. (#303)
+
+### Bug Fixes
+- Usernames printed in Discord will have markdown elements escaped, so they appear as written. (#304)
 
 ## 2021-06-27 ([Chalislime Monthly June 2021](https://challonge.com/csmjune2021))
 
