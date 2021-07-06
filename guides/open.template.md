@@ -15,15 +15,12 @@ mc!removebye {}|@User```
 You can view a single player's deck.
 ```
 mc!deck {}|@User```
-You can download a CSV file of all players with their deck's archetype.
+You can download a CSV file of all players with their deck's archetype and deck list.
 ```
-mc!players {}```
-You can download a CSV file of all players with their deck lists.
-```
-mc!dump {}```
+mc!csv {}```
 You can download a CSV file of how many decks have each archetype.
 ```
-mc!pie {}```
+mc!csv {}|pie```
 **Start tournament**
 This will commence the tournament on challonge, assigning round 1 byes and allowing play to begin.
 Further details will be sent to private channels, including how to start the timer and send out matchups.

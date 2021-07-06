@@ -36,9 +36,7 @@ They may be truncated with length. Make sure to update these if you change a hea
 
 ### Informational
 1. [mc!deck](#show-participant-deck)
-1. [mc!players](#list-participants-with-deck-themes)
-1. [mc!dump](#list-participants-with-deck-lists)
-1. [mc!pie](#count-participants-by-deck-themes)
+1. [mc!csv](#list-participants-and-deck-themes)
 
 ### Before starting a tournament
 1. [mc!update](#update-tournament-information)
@@ -317,38 +315,22 @@ mc!deck id|@user
 
 Reposts the deck profile for the mentioned user if they are confirmed for this tournament.
 
-### List participants with deck themes
+### List participants and deck themes
 ```
-mc!players id
+mc!csv id|pie
 ```
 **Caller permission level**: host for the tournament identified by _id_
 
-Generates a CSV of the form
+The `pie` parameter is optional.
+
+If no `pie` parameter is provided, generates a CSV of the form
 ```csv
 Player,Theme
-User#0000,DetectedTheme1/DetectedTheme2
-User2#0000,No themes
+User#0000,DetectedTheme1/DetectedTheme2,Main: Card 1, Card 2, Extra: Card 3, Card 4, Side: Card 5, Card 6
+User2#0000,No themes,Main: Card 1, Card 2, Extra: Card 3, Card 4, Side: Card 5, Card 6
 ```
 
-### List participants with deck lists
-```
-mc!dump id
-```
-**Caller permission level**: host for the tournament identified by _id_
-
-Generates a CSV of the form
-```csv
-Player,Deck
-User#0000,Main: Card 1, Card 2, Extra: Card 3, Card 4, Side: Card 5, Card 6
-```
-
-### Count participants by deck themes
-```
-mc!pie id
-```
-**Caller permission level**: host for the tournament identified by _id_
-
-Generates a CSV of the form
+If the `pie` parameter is provided, generates a CSV of the form
 ```csv
 Theme,Count
 DetectedTheme1,2
