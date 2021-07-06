@@ -105,7 +105,8 @@ export class TournamentManager implements TournamentInterface {
 				await this.discord.sendMessage(
 					c,
 					`Player ${this.discord.mentionUser(playerId)} (${this.discord.getUsername(
-						playerId
+						playerId,
+						true
 					)}) is trying to sign up for Tournament ${tournament.name} (${
 						tournament.id
 					}), but I cannot send them DMs. Please ask them to allow DMs from this server.`

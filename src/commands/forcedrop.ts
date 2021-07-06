@@ -28,7 +28,7 @@ const command: CommandDefinition = {
 		}
 		log({ player, event: "attempt" });
 		const participant = await Participant.findOne({ tournamentId: id, discordId: player });
-		const username = await support.discord.getRESTUsername(player);
+		const username = await support.discord.getRESTUsername(player, true);
 		log({ player, exists: !!participant, challongeId: participant?.confirmed?.challongeId, username });
 		const name = username ? `<@${player}> (${username})` : who;
 		if (!participant) {

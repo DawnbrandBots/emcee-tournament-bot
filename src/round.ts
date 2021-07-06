@@ -63,9 +63,12 @@ export async function advanceRoundDiscord(
 			const player1 = players.get(match.player1);
 			const player2 = players.get(match.player2);
 			if (player1 && player2) {
-				const name1 = await getRealUsername(discord, player1);
-				const name2 = await getRealUsername(discord, player2);
+				let name1 = await getRealUsername(discord, player1);
+				let name2 = await getRealUsername(discord, player2);
 				logger.verbose({ tournament: tournament.id, match: match.matchId, player1, player2, name1, name2 });
+				// escape names for Discord printing now that we've logged them
+				name1 = name1 && discord.escapeUsername(name1);
+				name2 = name2 && discord.escapeUsername(name2);
 				if (name1) {
 					await sendPairing(discord, intro, player1, player2, name2, tournament);
 				} else {
@@ -140,7 +143,7 @@ async function getRealUsername(discord: DiscordInterface, userId: string): Promi
 	if (notSnowflake(userId)) {
 		return null;
 	}
-	return await discord.getRESTUsername(userId);
+	return await discord.getRESTUsername(userId); //we need it both escaped and unescaped, so we'll escape manually later
 }
 
 async function sendPairing(

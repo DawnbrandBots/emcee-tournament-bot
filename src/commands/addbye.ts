@@ -34,7 +34,8 @@ const command: CommandDefinition = {
 				event: "success"
 			})
 		);
-		const tag = (id: string): string => `${support.discord.mentionUser(id)} (${support.discord.getUsername(id)})`;
+		const tag = (id: string): string =>
+			`${support.discord.mentionUser(id)} (${support.discord.getUsername(id, true)})`;
 		const names = byes.map(tag).join(", ");
 		await reply(msg, `Bye registered for Player ${tag(player)} in Tournament ${id}!\nAll byes: ${names}`);
 	}

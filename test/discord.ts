@@ -19,9 +19,20 @@ describe("Simple helpers", function () {
 	it("mentionRole", function () {
 		expect(discord.mentionRole("role")).to.equal("<@&role>");
 	});
+});
 
-	it("getUsername", function () {
-		expect(discord.getUsername("player1")).to.equal("player1");
+describe("getUsername", function () {
+	it("No special characters", function () {
+		expect(discord.getUsername("player1", true)).to.equal("player1");
+	});
+	it("Successful escape", function () {
+		expect(discord.getUsername("player_1", true)).to.equal("player\\_1");
+	});
+	it("Successful escape backslash", function () {
+		expect(discord.getUsername("player\\1", true)).to.equal("player\\\\1");
+	});
+	it("There is no escape", function () {
+		expect(discord.getUsername("player_1")).to.equal("player_1");
 	});
 });
 

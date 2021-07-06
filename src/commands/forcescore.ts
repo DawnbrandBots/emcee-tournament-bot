@@ -61,7 +61,7 @@ const command: CommandDefinition = {
 				event: "success"
 			})
 		);
-		const username = await support.discord.getRESTUsername(player);
+		const username = await support.discord.getRESTUsername(player, true);
 		await reply(
 			msg,
 			`Score of ${scores[0]}-${scores[1]} submitted in favour of <@${player}> (${username}) in **${tournament.name}**!`
