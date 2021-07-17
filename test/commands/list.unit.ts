@@ -12,6 +12,7 @@ const fakeTournaments: DatabaseTournament[] = [
 		status: TournamentStatus.PREPARING,
 		players: [],
 		// below are irrelevant
+		limit: 0,
 		description: "",
 		format: TournamentFormat.SWISS,
 		hosts: [],

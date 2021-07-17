@@ -34,6 +34,7 @@ export interface DatabaseTournament {
 	status: TournamentStatus;
 	hosts: string[];
 	players: DatabasePlayer[];
+	limit: number;
 	server: string;
 	publicChannels: string[];
 	privateChannels: string[];

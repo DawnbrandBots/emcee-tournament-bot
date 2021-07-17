@@ -35,6 +35,7 @@ export class DatabaseWrapperPostgres {
 				challongeId: p.challongeId,
 				deck: p.deck
 			})),
+			limit: tournament.participantLimit,
 			publicChannels: tournament.publicChannels.slice(),
 			privateChannels: tournament.privateChannels.slice(),
 			server: tournament.owningDiscordServer,
