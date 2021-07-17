@@ -31,14 +31,14 @@ const command: CommandDefinition = {
 				})
 			);
 			const fields: EmbedField[] = [
-				{ name: ":notepad_spiral: Format", value: tournament.format, inline: true },
-				{ name: ":hourglass: Status", value: tournament.status, inline: true },
-				{ name: ":ticket: Capacity", value: "256", inline: true },
+				{ name: ":ticket: Capacity", value: `${tournament.participantLimit || 256}`, inline: true },
 				{
 					name: ":tickets: Registered",
 					value: `**${tournament.confirmed.length}** participants`,
 					inline: true
-				}
+				},
+				{ name: ":notepad_spiral: Format", value: tournament.format, inline: true },
+				{ name: ":hourglass: Status", value: tournament.status, inline: true }
 			];
 			const byes = tournament.confirmed
 				.filter(p => p.hasBye)
