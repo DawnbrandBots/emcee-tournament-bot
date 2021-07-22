@@ -2,6 +2,7 @@ import { CommandDefinition } from "../Command";
 import { TournamentStatus } from "../database/interface";
 import { reply } from "../util/discord";
 import { getLogger } from "../util/logger";
+import { challongeTieBreaker } from "../website/interface";
 
 const logger = getLogger("command:forcescore");
 
@@ -19,7 +20,7 @@ const command: CommandDefinition = {
 	name: "forcescore",
 	requiredArgs: ["id"],
 	executor: async (msg, args, support) => {
-		const [id] = args;
+		const [id, tb1, tb2, tb3] = args;
 		logger.verbose(
 			JSON.stringify({
 				channel: msg.channel.id,
@@ -36,23 +37,41 @@ const command: CommandDefinition = {
 			msg.guildID,
 			TournamentStatus.IPR
 		);
-		const webTournament = await support.challonge.getTournament(id);
-		logger.verbose(
-			JSON.stringify({
-				channel: msg.channel.id,
-				message: msg.id,
-				user: msg.author.id,
-				tournament: id,
-				command: "tb",
-				event: "success"
-			})
-		);
-		await reply(
-			msg,
-			`**${tournament.name}** has the following tie-breaker priority:\n${webTournament.tieBreaks
-				.map((tb, i) => `${i + 1}. ${realTBNames[tb]}`)
-				.join("\n")}`
-		);
+		// if no options provided, display current status
+		if (!tb1) {
+			const webTournament = await support.challonge.getTournament(id);
+			logger.verbose(
+				JSON.stringify({
+					channel: msg.channel.id,
+					message: msg.id,
+					user: msg.author.id,
+					tournament: id,
+					command: "tb",
+					event: "success"
+				})
+			);
+			await reply(
+				msg,
+				`**${tournament.name}** has the following tie-breaker priority:\n${webTournament.tieBreaks
+					.map((tb, i) => `${i + 1}. ${realTBNames[tb]}`)
+					.join("\n")}`
+			);
+			return;
+		}
+		// if invalid options provided, display advice
+		if (!tb2 || !tb3 || !(tb1 in realTBNames) || !(tb2 in realTBNames) || !(tb3 in realTBNames)) {
+			await reply(
+				msg,
+				`Could not update tie-breakers for Tournament ${id}. You must provide three valid options in priority order. The valid options and their corresponding meaning are:\n${Object.entries(
+					realTBNames
+				)
+					.map(tb => `\`${tb[0]}\` (${tb[1]})`)
+					.join("\n")}`
+			);
+			return;
+		}
+		// if valid options provided, update tournament
+		await support.challonge.updateTieBreakers(id, [tb1, tb2, tb3] as challongeTieBreaker[]);
 	}
 };
 

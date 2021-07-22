@@ -4,6 +4,7 @@ import { ChallongeIDConflictError, UserError } from "../util/errors";
 export interface WebsiteWrapper {
 	createTournament(name: string, desc: string, url: string, topCut?: boolean): Promise<WebsiteTournament>;
 	updateTournament(tournamentId: string, name: string, desc: string): Promise<void>;
+	updateTieBreakers(tournamentId: string, tbs: challongeTieBreaker[]): Promise<void>;
 	getTournament(tournamentId: string): Promise<WebsiteTournament>;
 	registerPlayer(tournamentId: string, playerName: string, playerId: string): Promise<number>;
 	startTournament(tournamentId: string): Promise<void>;
@@ -78,6 +79,10 @@ export class WebsiteInterface {
 
 	public async updateTournament(tournamentId: string, name: string, desc: string): Promise<void> {
 		return await this.api.updateTournament(tournamentId, name, desc);
+	}
+
+	public async updateTieBreakers(tournamentId: string, tbs: challongeTieBreaker[]): Promise<void> {
+		return await this.api.updateTieBreakers(tournamentId, tbs);
 	}
 
 	public async getTournament(tournamentId: string): Promise<WebsiteTournament> {

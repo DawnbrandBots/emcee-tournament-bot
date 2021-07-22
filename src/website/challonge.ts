@@ -35,6 +35,7 @@ interface ChallongeTournamentSettings {
 	start_at?: Date;
 	check_in_duration?: number;
 	grand_finals_modifier?: null | "single match" | "skip";
+	tie_breaks?: string[]; // undocumented, hoping exists
 }
 
 interface ChallongeParticipant {
@@ -250,6 +251,17 @@ export class WebsiteWrapperChallonge implements WebsiteWrapper {
 		const settings: ChallongeTournamentSettings = {
 			name,
 			description: desc
+		};
+		await this.fetch(`${this.baseUrl}tournaments/${tournamentId}.json`, {
+			method: "PUT",
+			body: JSON.stringify({ tournament: settings }),
+			headers: { "Content-Type": "application/json" }
+		});
+	}
+
+	public async updateTieBreakers(tournamentId: string, tbs: challongeTieBreaker[]): Promise<void> {
+		const settings: ChallongeTournamentSettings = {
+			tie_breaks: tbs
 		};
 		await this.fetch(`${this.baseUrl}tournaments/${tournamentId}.json`, {
 			method: "PUT",
