@@ -179,14 +179,14 @@ export class TournamentManager implements TournamentInterface {
 		);
 	}
 
-	public async finishTournament(tournamentId: string, cancel = false): Promise<void> {
+	public async finishTournament(tournamentId: string, early = false): Promise<void> {
 		const tournament = await this.database.getTournament(tournamentId, TournamentStatus.IPR);
 		const channels = tournament.publicChannels;
 		let webTourn: WebsiteTournament;
-		if (!cancel) {
+		if (!early) {
 			webTourn = await this.website.finishTournament(tournamentId);
 		} else {
-			// TODO: edit description to say cancelled?
+			// TODO: edit description to say finished?
 			webTourn = await this.website.getTournament(tournamentId);
 		}
 		await this.timeWizard.cancel(tournament.id);
@@ -197,9 +197,7 @@ export class TournamentManager implements TournamentInterface {
 			channels.map(async c => {
 				await this.discord.sendMessage(
 					c,
-					`${tournament.name} has ${
-						cancel ? "been cancelled." : "concluded!"
-					} Thank you all for playing! ${role}\nResults: ${webTourn.url}`
+					`${tournament.name} has concluded! Thank you all for playing! ${role}\nResults: ${webTourn.url}`
 				);
 			})
 		);
