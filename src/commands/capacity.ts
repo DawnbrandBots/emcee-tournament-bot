@@ -12,7 +12,7 @@ const command: CommandDefinition = {
 	requiredArgs: ["id"],
 	executor: async (msg, args, support) => {
 		const [id, rawCapacity] = args; // 1 optional and thus potentially undefined
-		const capacity = parseInt(rawCapacity, 10);
+		let capacity = parseInt(rawCapacity, 10);
 		logger.verbose(
 			JSON.stringify({
 				channel: msg.channel.id,
@@ -25,6 +25,9 @@ const command: CommandDefinition = {
 		);
 		if (rawCapacity && (isNaN(capacity) || capacity < 0 || `${capacity}` !== rawCapacity)) {
 			throw new UserError("The second parameter (tournament capacity) must be a whole number!");
+		}
+		if (capacity > 256) {
+			capacity = 0;
 		}
 		const tournament = await support.database.authenticateHost(
 			id,

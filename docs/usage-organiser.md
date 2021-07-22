@@ -40,6 +40,7 @@ They may be truncated with length. Make sure to update these if you change a hea
 
 ### Before starting a tournament
 1. [mc!update](#update-tournament-information)
+1. [mc!capacity](#set-or-read-tournament-capacity)
 1. [mc!removehost](#remove-host)
 1. [mc!removechannel](#remove-announcement-channel)
 1. [mc!addbye](#add-artificial-round-one-bye)
@@ -134,6 +135,26 @@ mc!update id|name|description
 The specified tournament must be in the preparing stage and not have been started.
 Updates the name and description for the tournament, affecting the Challonge page
 and future sign-up messages.
+
+
+### Set or read tournament capacity
+```
+mc!capacity id|limit
+```
+**Caller permission level**: host for the tournament identified by _id_
+
+`limit` must be a whole number. It may be omitted, in which case this reads the
+tournament capacity instead.
+
+The specified tournament must be in the preparing stage and not have been started.
+
+If `limit` is omitted, this retrieves the current participant limit. Note that
+the default maximum is 256, enforced by Challonge's free [Standard Plan](https://challonge.com/pricing).
+
+If `limit` is provided, the participant limit is set to the provided value. Using
+`0` will disable this feature from Emcee's side as it is by default, but the
+aforementioned limits from Challonge continue to apply, so it will display as 256.
+For the same reason, setting the capacity above 256 will not have a meaningful effect.
 
 ### Open tournament for registrations
 ```
