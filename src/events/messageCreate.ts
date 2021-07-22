@@ -87,7 +87,20 @@ export async function onDirectMessage(
 	}
 	if (tournaments.length === 1) {
 		const tournament = tournaments[0];
-		log("info", msg, { event: "confirm start", tournament: tournament.id });
+		log("info", msg, {
+			event: "confirm start",
+			tournament: tournament.id,
+			size: tournament.players.length,
+			limit: tournament.limit
+		});
+		if (tournament.limit > 0 && tournament.players.length >= tournament.limit) {
+			log("info", msg, { event: "confirm full", tournament: tournament.id });
+			await reply(
+				msg,
+				`Sorry, **${tournament.name}** has reached its capacity of ${tournament.limit} registrations!`
+			);
+			return;
+		}
 		try {
 			await verifyDeckAndConfirmPending(msg, tournament, database, decks, challonge, participantRole, bot);
 		} catch (error) {
