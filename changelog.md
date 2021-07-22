@@ -4,7 +4,7 @@
 ### New Features
 - `mc!dump`, `mc!players` and `mc!pie` have been merged into one command, `mc!csv`. (#303)
 - Participant limits are enforced (#313)
-
+- Add `mc!info` to display a pretty embed of all relevant information (#314)
 ### Bug Fixes
 - Usernames printed in Discord will have markdown elements escaped, so they appear as written. (#304)
 

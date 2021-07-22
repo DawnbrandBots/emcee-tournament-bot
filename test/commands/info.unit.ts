@@ -124,6 +124,7 @@ describe("command:info", function () {
 			msg.channel.createMessage = this.spy();
 			msg.guildID = "foo";
 			await command.executor(msg, ["name"], support);
+			msg.guildID = undefined;
 			expect(findStub).to.have.been.calledOnceWithExactly({ tournamentId: "name", owningDiscordServer: "foo" });
 			expect(msg.channel.createMessage).to.have.been.calledOnceWithExactly(
 				sinon.match({
@@ -139,6 +140,7 @@ describe("command:info", function () {
 			msg.channel.createMessage = this.spy();
 			msg.guildID = "foo";
 			await command.executor(msg, ["name"], support);
+			msg.guildID = undefined;
 			expect(findStub).to.have.been.calledOnce; // same as above
 			expect(msg.channel.createMessage).to.have.been.calledOnceWithExactly(sinon.match({ embed: {} }));
 		})
