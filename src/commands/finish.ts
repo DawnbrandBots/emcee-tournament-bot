@@ -42,7 +42,9 @@ const command: CommandDefinition = {
 					msg,
 					`Tournament ${id} is not finished. If you intend to end it early, use \`mc!finish ${id}|early\`.`
 				);
+				return;
 			}
+			throw e;
 		}
 	}
 };
