@@ -11,6 +11,10 @@ This gives them a free win.
 ```
 mc!addbye {}|@User
 mc!removebye {}|@User```
+**View details**
+This one can be used at any time by any one.
+```
+mc!info {}```
 **View decks**
 You can view a single player's deck.
 ```
