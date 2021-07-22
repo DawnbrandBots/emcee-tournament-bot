@@ -72,6 +72,12 @@ const command: CommandDefinition = {
 		}
 		// if valid options provided, update tournament
 		await support.challonge.updateTieBreakers(id, [tb1, tb2, tb3] as challongeTieBreaker[]);
+		await reply(
+			msg,
+			`Tie-breaker settings updated for Tournament ${id}.\n${[tb1, tb2, tb3]
+				.map((tb, i) => `${i + 1}. ${realTBNames[tb as challongeTieBreaker]}`)
+				.join("\n")}`
+		);
 	}
 };
 
