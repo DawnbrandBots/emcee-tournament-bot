@@ -25,7 +25,7 @@ describe("command:capacity", function () {
 	itRejectsNonHosts(support, command, msg, ["name"]);
 	it("rejects badly formatted numbers", () => {
 		const error = "The second parameter (tournament capacity) must be a whole number!";
-		for (const example in [
+		for (const example of [
 			"1.1",
 			"4000.56",
 			"0x2",
