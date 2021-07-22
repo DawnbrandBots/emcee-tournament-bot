@@ -7,6 +7,7 @@
 - Add `mc!info` to display a pretty embed of all relevant information (#314)
 ### Bug Fixes
 - Usernames printed in Discord will have markdown elements escaped, so they appear as written. (#304)
+- Fix fatal out-of-memory crashes on tournament start (#306)
 
 ## 2021-06-27 ([Chalislime Monthly June 2021](https://challonge.com/csmjune2021))
 
