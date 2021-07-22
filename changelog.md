@@ -4,6 +4,7 @@
 ### New Features
 - `mc!dump`, `mc!players` and `mc!pie` have been merged into one command, `mc!csv`. (#303)
 - Participant limits are enforced (#313)
+- `mc!cancel` has been merged into `mc!finish`, with messaging changed to account for early finishes being a regular occurence.
 
 ### Bug Fixes
 - Usernames printed in Discord will have markdown elements escaped, so they appear as written. (#304)
