@@ -31,6 +31,15 @@ export interface WebsitePlayer {
 	seed: number;
 }
 
+export type challongeTieBreaker =
+	| "match wins"
+	| "game wins"
+	| "game win percentage"
+	| "points scored"
+	| "points difference"
+	| "match wins vs tied"
+	| "median buchholz";
+
 // interface structure WIP as fleshed out command-by-command
 export interface WebsiteTournament {
 	id: string;
@@ -39,6 +48,7 @@ export interface WebsiteTournament {
 	url: string;
 	players: WebsitePlayer[];
 	rounds: number;
+	tieBreaks: challongeTieBreaker[];
 }
 
 export interface WebsiteMatch {

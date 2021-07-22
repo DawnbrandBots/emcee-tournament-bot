@@ -1,6 +1,6 @@
 import fetch from "node-fetch";
 import { ChallongeAPIError } from "../util/errors";
-import { WebsiteMatch, WebsitePlayer, WebsiteTournament, WebsiteWrapper } from "./interface";
+import { challongeTieBreaker, WebsiteMatch, WebsitePlayer, WebsiteTournament, WebsiteWrapper } from "./interface";
 
 type TournamentType = "single elimination" | "double elimination" | "round robin" | "swiss";
 type RankedBy = "match wins" | "game wins" | "points scored" | "points difference" | "custom";
@@ -226,7 +226,8 @@ export class WebsiteWrapperChallonge implements WebsiteWrapper {
 			desc: tournament.description,
 			url: `https://challonge.com/${tournament.url}`,
 			players: participants,
-			rounds: tournament.swiss_rounds
+			rounds: tournament.swiss_rounds,
+			tieBreaks: tournament.tie_breaks as challongeTieBreaker[]
 		};
 	}
 
