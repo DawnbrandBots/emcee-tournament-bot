@@ -20,6 +20,9 @@ mc!removehost {}|@User```
 You can change the name and description.
 ```
 mc!update {}|New Name|A new description```
+You can set a smaller capacity than Challonge Standard: https://challonge.com/pricing
+```
+mc!capacity {}|limit```
 **Open sign-ups**
 This posts the registration message to all public channels.
 Further details on your next steps will be sent to private channels.
