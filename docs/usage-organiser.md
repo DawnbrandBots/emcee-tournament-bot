@@ -35,6 +35,7 @@ They may be truncated with length. Make sure to update these if you change a hea
 1. [mc!tie](#tie-round)
 
 ### Informational
+1. [mc!info](#show-tournament-details)
 1. [mc!deck](#show-participant-deck)
 1. [mc!csv](#list-participants-and-deck-themes)
 
@@ -325,6 +326,16 @@ This is irreversible. The participant is informed of the removal via direct mess
 
 If a confirmed participant leaves the server for a tournament while Emcee is online,
 they should be automatically dropped from the tournament by Emcee.
+
+### Show tournament details
+```
+mc!info id
+```
+**Caller permission level**: everybody
+
+If used in a server and the tournament identified by _id_ exists, displays a pretty
+embed of the tournament name, description, Challonge link, capacity, number of currently
+registered participants, format, current status, any round 1 byes, and hosts.
 
 ### Show participant deck
 ```
