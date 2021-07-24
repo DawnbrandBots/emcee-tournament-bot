@@ -4,6 +4,7 @@
 ### New Features
 - `mc!dump`, `mc!players` and `mc!pie` have been merged into one command, `mc!csv`. (#303)
 - Participant limits are enforced (#313)
+- Add `mc!tb` to check and configure the tie-breaker settings for a tournament. (#319)
 
 ### Bug Fixes
 - Usernames printed in Discord will have markdown elements escaped, so they appear as written. (#304)
