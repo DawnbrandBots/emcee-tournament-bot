@@ -7,7 +7,7 @@
 	"scripts": {
 		"test": "nyc mocha --config test/.mocharc.yml test/*.ts test/**/*.unit.ts",
 		"cover": "nyc report",
-		"lint": "eslint . --ext .js,.jsx,.ts,.tsx",
+		"lint": "eslint src test",
 		"build": "tsc",
 		"delete": "ts-node src/cli/delete",
 		"delete:docker": "node --enable-source-maps --unhandled-rejections=strict cli/delete",
