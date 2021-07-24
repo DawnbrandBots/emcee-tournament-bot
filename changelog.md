@@ -4,10 +4,13 @@
 ### New Features
 - `mc!dump`, `mc!players` and `mc!pie` have been merged into one command, `mc!csv`. (#303)
 - Participant limits are enforced (#313)
-- `mc!cancel` has been merged into `mc!finish`, with messaging changed to account for early finishes being a regular occurence.
+- Add `mc!info` to display a pretty embed of all relevant information (#314)
+- Add command `mc!capacity` to read and set the participant limit of preparing tournaments (#315)
+- `mc!cancel` has been merged into `mc!finish`, with messaging changed to account for early finishes being a regular occurence. (#318)
 
 ### Bug Fixes
 - Usernames printed in Discord will have markdown elements escaped, so they appear as written. (#304)
+- Fix fatal out-of-memory crashes on tournament start (#306)
 
 ## 2021-06-27 ([Chalislime Monthly June 2021](https://challonge.com/csmjune2021))
 
