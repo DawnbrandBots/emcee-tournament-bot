@@ -27,19 +27,16 @@ describe("command:finish", function () {
 			const authStub = this.stub(support.database, "authenticateHost").resolves();
 			const finishStub = this.stub(support.tournamentManager, "finishTournament").rejects();
 			msg.channel.createMessage = this.spy();
-			try {
-				await command.executor(msg, args, support);
-				expect.fail();
-			} catch (e) {
-				expect(authStub).to.have.been.called;
-				expect(finishStub).to.have.been.calledOnce;
-				expect(msg.channel.createMessage).to.have.been.calledOnceWithExactly(
-					sinon.match({
-						content:
-							"Tournament battlecity is not finished. If you intend to end it early, use `mc!battlecity finish|early`."
-					})
-				);
-			}
+			// no try catch because executor does not throw, it handles error
+			await command.executor(msg, args, support);
+			expect(authStub).to.have.been.called;
+			expect(finishStub).to.have.been.calledOnce;
+			expect(msg.channel.createMessage).to.have.been.calledOnceWithExactly(
+				sinon.match({
+					content:
+						"Tournament battlecity is not finished. If you intend to end it early, use `mc!finish battlecity|early`."
+				})
+			);
 		})
 	);
 	it(
