@@ -54,6 +54,22 @@ describe("command:finish", function () {
 		})
 	);
 	it(
+		"does not catch finishTournament exceptions when early",
+		test(async function (this: SinonSandbox) {
+			const authStub = this.stub(support.database, "authenticateHost").resolves();
+			const finishStub = this.stub(support.tournamentManager, "finishTournament").rejects();
+			msg.channel.createMessage = this.spy();
+			try {
+				await command.executor(msg, [...args, "early"], support);
+				expect.fail();
+			} catch (e) {
+				expect(authStub).to.have.been.called;
+				expect(finishStub).to.have.been.calledOnceWithExactly("battlecity", true);
+				expect(msg.channel.createMessage).to.not.have.been.called;
+			}
+		})
+	);
+	it(
 		"does not catch reply exceptions",
 		test(async function (this: SinonSandbox) {
 			const authStub = this.stub(support.database, "authenticateHost").resolves();
