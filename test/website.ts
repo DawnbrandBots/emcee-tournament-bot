@@ -16,7 +16,8 @@ describe("Tournament creation commands", function () {
 			id: "test",
 			players: [],
 			desc: "Tournament description.",
-			name: "Test Tournament"
+			name: "Test Tournament",
+			tieBreaks: ["median buchholz", "points difference", "match wins vs tied"]
 		});
 	});
 
@@ -32,7 +33,8 @@ describe("Tournament creation commands", function () {
 			desc: "desc",
 			url: `https://example.com/url`,
 			players: [],
-			rounds: 3
+			rounds: 3,
+			tieBreaks: ["median buchholz", "points difference", "match wins vs tied"]
 		});
 	});
 
@@ -75,7 +77,8 @@ describe("Tournament flow commands", function () {
 			desc: "desc",
 			url: `https://example.com/url`,
 			players: [],
-			rounds: 3
+			rounds: 3,
+			tieBreaks: ["median buchholz", "points difference", "match wins vs tied"]
 		});
 	});
 });
