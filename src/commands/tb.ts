@@ -2,7 +2,7 @@ import { CommandDefinition } from "../Command";
 import { TournamentStatus } from "../database/interface";
 import { reply } from "../util/discord";
 import { getLogger } from "../util/logger";
-import { challongeTieBreaker } from "../website/interface";
+import { ChallongeTieBreaker } from "../website/interface";
 
 const logger = getLogger("command:tb");
 
@@ -71,11 +71,11 @@ const command: CommandDefinition = {
 			return;
 		}
 		// if valid options provided, update tournament
-		await support.challonge.updateTieBreakers(id, [tb1, tb2, tb3] as challongeTieBreaker[]);
+		await support.challonge.updateTieBreakers(id, [tb1, tb2, tb3] as ChallongeTieBreaker[]);
 		await reply(
 			msg,
 			`Tie-breaker settings updated for Tournament ${id}.\n${[tb1, tb2, tb3]
-				.map((tb, i) => `${i + 1}. ${realTBNames[tb as challongeTieBreaker]}`)
+				.map((tb, i) => `${i + 1}. ${realTBNames[tb as ChallongeTieBreaker]}`)
 				.join("\n")}`
 		);
 	}
