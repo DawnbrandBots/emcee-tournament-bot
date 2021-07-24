@@ -1,6 +1,6 @@
 import fetch from "node-fetch";
 import { ChallongeAPIError } from "../util/errors";
-import { challongeTieBreaker, WebsiteMatch, WebsitePlayer, WebsiteTournament, WebsiteWrapper } from "./interface";
+import { ChallongeTieBreaker, WebsiteMatch, WebsitePlayer, WebsiteTournament, WebsiteWrapper } from "./interface";
 
 type TournamentType = "single elimination" | "double elimination" | "round robin" | "swiss";
 type RankedBy = "match wins" | "game wins" | "points scored" | "points difference" | "custom";
@@ -228,7 +228,7 @@ export class WebsiteWrapperChallonge implements WebsiteWrapper {
 			url: `https://challonge.com/${tournament.url}`,
 			players: participants,
 			rounds: tournament.swiss_rounds,
-			tieBreaks: tournament.tie_breaks as challongeTieBreaker[]
+			tieBreaks: tournament.tie_breaks as ChallongeTieBreaker[]
 		};
 	}
 
@@ -259,7 +259,7 @@ export class WebsiteWrapperChallonge implements WebsiteWrapper {
 		});
 	}
 
-	public async updateTieBreakers(tournamentId: string, tbs: challongeTieBreaker[]): Promise<void> {
+	public async updateTieBreakers(tournamentId: string, tbs: ChallongeTieBreaker[]): Promise<void> {
 		const settings: ChallongeTournamentSettings = {
 			tie_breaks: tbs
 		};
