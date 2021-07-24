@@ -20,6 +20,11 @@ mc!removehost {}|@User```
 You can change the name and description.
 ```
 mc!update {}|New Name|A new description```
+**Change tie-breaker settings**
+You can check and change the priority for the systems Challonge uses to break ties.
+```
+mc!tb {}
+mc!tb {}|tb1|tb2|tb3```
 **Open sign-ups**
 This posts the registration message to all public channels.
 Further details on your next steps will be sent to private channels.
