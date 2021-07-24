@@ -4,7 +4,7 @@ import { reply } from "../util/discord";
 import { getLogger } from "../util/logger";
 import { challongeTieBreaker } from "../website/interface";
 
-const logger = getLogger("command:forcescore");
+const logger = getLogger("command:tb");
 
 const realTBNames = {
 	"match wins": "Match Wins",
@@ -17,7 +17,7 @@ const realTBNames = {
 };
 
 const command: CommandDefinition = {
-	name: "forcescore",
+	name: "tb",
 	requiredArgs: ["id"],
 	executor: async (msg, args, support) => {
 		const [id, tb1, tb2, tb3] = args;
