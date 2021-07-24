@@ -85,8 +85,9 @@ describe("Tournament flow commands", function () {
 	});
 	it("Cancel tournament", async function () {
 		await tournament.finishTournament("tourn2", true);
+		// same message as normal finish
 		expect(discord.getResponse("channel1")).to.equal(
-			"Tournament 2 has been cancelled. Thank you all for playing! <@&role>\nResults: https://example.com/url"
+			"Tournament 2 has concluded! Thank you all for playing! <@&role>\nResults: https://example.com/url"
 		);
 	});
 });

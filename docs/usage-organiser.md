@@ -31,7 +31,6 @@ They may be truncated with length. Make sure to update these if you change a hea
 ### Tournament administration
 1. [mc!forcescore](#override-score)
 1. [mc!forcedrop](#drop-participant)
-1. [mc!cancel](#cancel-tournament)
 1. [mc!tie](#tie-round)
 
 ### Informational
@@ -244,14 +243,15 @@ timer so participants play in regulation.
 
 ### Finish tournament
 ```
-mc!finish id
+mc!finish id|early
 ```
 **Caller permission level**: host for the tournament identified by _id_
 
-If the tournament is in progress and all scores for every round have been submitted,
-the tournament is marked as finished on Challonge. All round timers are stopped.
-An announcement is sent to all public channels, pinging all participants, and then
-the participant role for this tournament is deleted.
+If the tournament is in progress and either all scores for every round have been submitted
+or the `early` parameter was not provided, all round timers are stopped. An announcement is
+sent to all public channels, pinging all participants, and then the participant role for this
+tournament is deleted. If the `early` parameter was not provided, the tournament is also
+marked as finished on Challonge. 
 
 ### Start top cut tournament
 ```
@@ -268,16 +268,6 @@ is granted to these users.
 
 This should be called as soon as possible after [`mc!finish`](#finish-tournament),
 breaks permitting, lest any participants leave the server.
-
-### Cancel tournament
-```
-mc!cancel id
-```
-**Caller permission level**: host for the tournament identified by _id_
-
-If the tournament is in progress, the tournament is marked as finished on Challonge
-and Emcee. All round timers are stopped. An announcement is sent to all public channels, pinging all participants, and then the participant role for this tournament is deleted.
-The tournament is not restartable.
 
 ### Tie round
 ```

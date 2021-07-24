@@ -6,6 +6,7 @@
 - Participant limits are enforced (#313)
 - Add `mc!info` to display a pretty embed of all relevant information (#314)
 - Add command `mc!capacity` to read and set the participant limit of preparing tournaments (#315)
+- `mc!cancel` has been merged into `mc!finish`, with messaging changed to account for early finishes being a regular occurence. (#318)
 
 ### Bug Fixes
 - Usernames printed in Discord will have markdown elements escaped, so they appear as written. (#304)
