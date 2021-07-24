@@ -9,10 +9,14 @@ export class WebsiteWrapperMock implements WebsiteWrapper {
 			desc: desc,
 			url: `https://example.com/${url}`,
 			players: [],
-			rounds: 3
+			rounds: 3,
+			tieBreaks: ["median buchholz", "points difference", "match wins vs tied"]
 		};
 	}
 	async updateTournament(): Promise<void> {
+		return;
+	}
+	async updateTieBreakers(): Promise<void> {
 		return;
 	}
 	async getTournament(tournamentId: string): Promise<WebsiteTournament> {
@@ -31,7 +35,8 @@ export class WebsiteWrapperMock implements WebsiteWrapper {
 						discordId: "bye"
 					}
 				],
-				rounds: 3
+				rounds: 3,
+				tieBreaks: ["median buchholz", "points difference", "match wins vs tied"]
 			};
 		}
 		if (tournamentId.includes("create") || tournamentId.includes("topcut")) {
@@ -43,7 +48,8 @@ export class WebsiteWrapperMock implements WebsiteWrapper {
 			desc: "desc",
 			url: `https://example.com/url`,
 			players: [],
-			rounds: 3
+			rounds: 3,
+			tieBreaks: ["median buchholz", "points difference", "match wins vs tied"]
 		};
 	}
 	async registerPlayer(): Promise<number> {
