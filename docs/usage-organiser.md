@@ -31,16 +31,17 @@ They may be truncated with length. Make sure to update these if you change a hea
 ### Tournament administration
 1. [mc!forcescore](#override-score)
 1. [mc!forcedrop](#drop-participant)
-1. [mc!cancel](#cancel-tournament)
 1. [mc!tie](#tie-round)
 
 ### Informational
+1. [mc!info](#show-tournament-details)
 1. [mc!deck](#show-participant-deck)
 1. [mc!csv](#list-participants-and-deck-themes)
 
 ### Before starting a tournament
 1. [mc!update](#update-tournament-information)
 1. [mc!tb](#update-tiebreaker-settings)
+1. [mc!capacity](#set-or-read-tournament-capacity)
 1. [mc!removehost](#remove-host)
 1. [mc!removechannel](#remove-announcement-channel)
 1. [mc!addbye](#add-artificial-round-one-bye)
@@ -154,6 +155,25 @@ displays what the current settings are. The full list of options is as follows.
  - `match wins vs tied`
  - `median buchholz`
 
+### Set or read tournament capacity
+```
+mc!capacity id|limit
+```
+**Caller permission level**: host for the tournament identified by _id_
+
+`limit` must be a whole number. It may be omitted, in which case this reads the
+tournament capacity instead.
+
+The specified tournament must be in the preparing stage and not have been started.
+
+If `limit` is omitted, this retrieves the current participant limit. Note that
+the default maximum is 256, enforced by Challonge's free [Standard Plan](https://challonge.com/pricing).
+
+If `limit` is provided, the participant limit is set to the provided value. Using
+`0` will disable this feature from Emcee's side as it is by default, but the
+aforementioned limits from Challonge continue to apply, so it will display as 256.
+For the same reason, setting the capacity above 256 will not have a meaningful effect.
+
 ### Open tournament for registrations
 ```
 mc!open id
@@ -241,14 +261,15 @@ timer so participants play in regulation.
 
 ### Finish tournament
 ```
-mc!finish id
+mc!finish id|early
 ```
 **Caller permission level**: host for the tournament identified by _id_
 
-If the tournament is in progress and all scores for every round have been submitted,
-the tournament is marked as finished on Challonge. All round timers are stopped.
-An announcement is sent to all public channels, pinging all participants, and then
-the participant role for this tournament is deleted.
+If the tournament is in progress and either all scores for every round have been submitted
+or the `early` parameter was not provided, all round timers are stopped. An announcement is
+sent to all public channels, pinging all participants, and then the participant role for this
+tournament is deleted. If the `early` parameter was not provided, the tournament is also
+marked as finished on Challonge. 
 
 ### Start top cut tournament
 ```
@@ -265,16 +286,6 @@ is granted to these users.
 
 This should be called as soon as possible after [`mc!finish`](#finish-tournament),
 breaks permitting, lest any participants leave the server.
-
-### Cancel tournament
-```
-mc!cancel id
-```
-**Caller permission level**: host for the tournament identified by _id_
-
-If the tournament is in progress, the tournament is marked as finished on Challonge
-and Emcee. All round timers are stopped. An announcement is sent to all public channels, pinging all participants, and then the participant role for this tournament is deleted.
-The tournament is not restartable.
 
 ### Tie round
 ```
@@ -323,6 +334,16 @@ This is irreversible. The participant is informed of the removal via direct mess
 
 If a confirmed participant leaves the server for a tournament while Emcee is online,
 they should be automatically dropped from the tournament by Emcee.
+
+### Show tournament details
+```
+mc!info id
+```
+**Caller permission level**: everybody
+
+If used in a server and the tournament identified by _id_ exists, displays a pretty
+embed of the tournament name, description, Challonge link, capacity, number of currently
+registered participants, format, current status, any round 1 byes, and hosts.
 
 ### Show participant deck
 ```

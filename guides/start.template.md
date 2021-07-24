@@ -26,9 +26,9 @@ It skips sending pairings in DMs.
 After all scores for all rounds are submitted.
 ```
 mc!finish {}```
-If you need to stop early, you can cancel.
+If you need to stop early, you can.
 ```
-mc!cancel {}```
+mc!finish {}|early```
 **Top cut**
 ```
 mc!topcut {}|size```
