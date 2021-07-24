@@ -23,18 +23,6 @@ const command: CommandDefinition = {
 		);
 		try {
 			await support.tournamentManager.finishTournament(id, early);
-			support.scores.delete(id);
-			logger.verbose(
-				JSON.stringify({
-					channel: msg.channel.id,
-					message: msg.id,
-					user: msg.author.id,
-					tournament: id,
-					command: "finish",
-					event: "success"
-				})
-			);
-			await reply(msg, `Tournament ${id} successfully finished.`);
 		} catch (e) {
 			// TODO: filter specifically for challonge error with finalise
 			if (!early) {
@@ -46,6 +34,18 @@ const command: CommandDefinition = {
 			}
 			throw e;
 		}
+		support.scores.delete(id);
+		logger.verbose(
+			JSON.stringify({
+				channel: msg.channel.id,
+				message: msg.id,
+				user: msg.author.id,
+				tournament: id,
+				command: "finish",
+				event: "success"
+			})
+		);
+		await reply(msg, `Tournament ${id} successfully finished.`);
 	}
 };
 
