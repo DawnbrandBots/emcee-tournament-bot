@@ -35,7 +35,7 @@ const command: CommandDefinition = {
 			id,
 			msg.author.id,
 			msg.guildID,
-			TournamentStatus.IPR
+			TournamentStatus.PREPARING
 		);
 		// if no options provided, display current status
 		if (!tb1) {
