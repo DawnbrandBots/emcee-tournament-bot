@@ -4,6 +4,7 @@ import { ChallongeIDConflictError, UserError } from "../util/errors";
 export interface WebsiteWrapper {
 	createTournament(name: string, desc: string, url: string, topCut?: boolean): Promise<WebsiteTournament>;
 	updateTournament(tournamentId: string, name: string, desc: string): Promise<void>;
+	updateTieBreakers(tournamentId: string, tbs: ChallongeTieBreaker[]): Promise<void>;
 	getTournament(tournamentId: string): Promise<WebsiteTournament>;
 	registerPlayer(tournamentId: string, playerName: string, playerId: string): Promise<number>;
 	startTournament(tournamentId: string): Promise<void>;
@@ -31,6 +32,15 @@ export interface WebsitePlayer {
 	seed: number;
 }
 
+export type ChallongeTieBreaker =
+	| "match wins"
+	| "game wins"
+	| "game win percentage"
+	| "points scored"
+	| "points difference"
+	| "match wins vs tied"
+	| "median buchholz";
+
 // interface structure WIP as fleshed out command-by-command
 export interface WebsiteTournament {
 	id: string;
@@ -39,6 +49,7 @@ export interface WebsiteTournament {
 	url: string;
 	players: WebsitePlayer[];
 	rounds: number;
+	tieBreaks: ChallongeTieBreaker[];
 }
 
 export interface WebsiteMatch {
@@ -68,6 +79,10 @@ export class WebsiteInterface {
 
 	public async updateTournament(tournamentId: string, name: string, desc: string): Promise<void> {
 		return await this.api.updateTournament(tournamentId, name, desc);
+	}
+
+	public async updateTieBreakers(tournamentId: string, tbs: ChallongeTieBreaker[]): Promise<void> {
+		return await this.api.updateTieBreakers(tournamentId, tbs);
 	}
 
 	public async getTournament(tournamentId: string): Promise<WebsiteTournament> {

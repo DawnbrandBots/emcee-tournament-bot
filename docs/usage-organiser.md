@@ -40,6 +40,7 @@ They may be truncated with length. Make sure to update these if you change a hea
 
 ### Before starting a tournament
 1. [mc!update](#update-tournament-information)
+1. [mc!tb](#update-tiebreaker-settings)
 1. [mc!capacity](#set-or-read-tournament-capacity)
 1. [mc!removehost](#remove-host)
 1. [mc!removechannel](#remove-announcement-channel)
@@ -136,6 +137,23 @@ The specified tournament must be in the preparing stage and not have been starte
 Updates the name and description for the tournament, affecting the Challonge page
 and future sign-up messages.
 
+### Update tiebreaker settings
+```
+mc!tb id|tb1|tb2|tb3
+```
+**Caller permission level**: host for the tournament identified by _id_
+
+The specified tournament must be in the preparing stage and not have been started.
+Updates the settings Challonge usees to determine standings amongst players with equivalent score.
+Exactly zero or three options must be provided. in the case of zero options, the command
+displays what the current settings are. The full list of options is as follows.
+ - `match wins`
+ - `game wins`
+ - `game win percentage`
+ - `points scored`
+ - `points difference`
+ - `match wins vs tied`
+ - `median buchholz`
 
 ### Set or read tournament capacity
 ```
