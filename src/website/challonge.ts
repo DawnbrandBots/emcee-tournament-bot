@@ -153,7 +153,7 @@ interface ChallongeTournament {
 		state: string;
 		swiss_rounds: number;
 		teams: boolean;
-		tie_breaks: string[];
+		tie_breaks: null | string[];
 		tournament_type: TournamentType;
 		updated_at: Date;
 		url: string;
@@ -228,7 +228,9 @@ export class WebsiteWrapperChallonge implements WebsiteWrapper {
 			url: `https://challonge.com/${tournament.url}`,
 			players: participants,
 			rounds: tournament.swiss_rounds,
-			tieBreaks: tournament.tie_breaks as ChallongeTieBreaker[]
+			tieBreaks: tournament.tie_breaks
+				? (tournament.tie_breaks as ChallongeTieBreaker[])
+				: ["match wins vs tied", "median buchholz", "points difference"] // challonge default in UI
 		};
 	}
 
