@@ -9,7 +9,7 @@ describe("command:open", function () {
 		msg.channel.createMessage = sinon.spy();
 		await command.executor(msg, ["name"], support);
 		expect(msg.channel.createMessage).to.have.been.calledOnceWithExactly(
-			sinon.match({ content: "Tournament name opened for registration!" })
+			sinon.match({ content: "**Tournament 1** opened for registration!" })
 		);
 	});
 });

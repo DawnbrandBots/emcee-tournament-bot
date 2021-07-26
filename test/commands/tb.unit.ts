@@ -30,7 +30,7 @@ describe("command:tb", function () {
 			expect(msg.channel.createMessage).to.have.been.calledOnceWithExactly(
 				sinon.match({
 					content:
-						"Tie-breaker settings updated for Tournament name.\n1. Match Wins\n2. Game/Set Wins\n3. Points Scored"
+						"Tie-breaker settings updated for **Tournament 1**.\n1. Match Wins\n2. Game/Set Wins\n3. Points Scored"
 				})
 			);
 		})
@@ -45,7 +45,7 @@ describe("command:tb", function () {
 			expect(msg.channel.createMessage).to.have.been.calledOnceWithExactly(
 				sinon.match({
 					content:
-						"Could not update tie-breakers for Tournament name. You must provide three valid options in priority order. The valid options and their corresponding meaning are:\n" +
+						"Could not update tie-breakers for **Tournament 1**. You must provide three valid options in priority order. The valid options and their corresponding meaning are:\n" +
 						"`match wins` (Match Wins)\n`game wins` (Game/Set Wins)\n`game win percentage` (Game/Set Win %)\n`points scored` (Points Scored)\n`points difference` (Points Difference)\n`match wins vs tied` (Wins vs Tied Participants)\n`median buchholz` (Median-Buchholz system)"
 				})
 			);

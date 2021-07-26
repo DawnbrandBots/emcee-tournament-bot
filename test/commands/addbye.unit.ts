@@ -21,7 +21,7 @@ describe("command:addbye", function () {
 			await command.executor(msg, ["name"], support);
 			expect(msg.channel.createMessage).to.have.been.calledOnceWithExactly(
 				sinon.match({
-					content: "Bye registered for Player <@nova> (nova) in Tournament name!\nAll byes: "
+					content: "Bye registered for Player <@nova> (nova) in **Tournament 1**!\nAll byes: "
 				})
 			);
 		})
