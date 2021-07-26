@@ -10,7 +10,7 @@ const command: CommandDefinition = {
 	executor: async (msg, args, support) => {
 		// Mirror of addbye
 		const [id] = args;
-		await support.database.authenticateHost(id, msg.author.id, msg.guildID);
+		const tournament = await support.database.authenticateHost(id, msg.author.id, msg.guildID);
 		const player = firstMentionOrFail(msg);
 		logger.verbose(
 			JSON.stringify({
