@@ -31,7 +31,7 @@ const command: CommandDefinition = {
 				event: "success"
 			})
 		);
-		await reply(msg, `Tournament ${id} opened for registration!`);
+		await reply(msg, `**${tournament.name}** opened for registration!`);
 	}
 };
 

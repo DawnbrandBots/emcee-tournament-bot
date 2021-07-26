@@ -62,7 +62,9 @@ const command: CommandDefinition = {
 		if (!tb2 || !tb3 || !(tb1 in realTBNames) || !(tb2 in realTBNames) || !(tb3 in realTBNames)) {
 			await reply(
 				msg,
-				`Could not update tie-breakers for Tournament ${id}. You must provide three valid options in priority order. The valid options and their corresponding meaning are:\n${Object.entries(
+				`Could not update tie-breakers for **${
+					tournament.name
+				}**. You must provide three valid options in priority order. The valid options and their corresponding meaning are:\n${Object.entries(
 					realTBNames
 				)
 					.map(tb => `\`${tb[0]}\` (${tb[1]})`)
@@ -74,7 +76,7 @@ const command: CommandDefinition = {
 		await support.challonge.updateTieBreakers(id, [tb1, tb2, tb3] as ChallongeTieBreaker[]);
 		await reply(
 			msg,
-			`Tie-breaker settings updated for Tournament ${id}.\n${[tb1, tb2, tb3]
+			`Tie-breaker settings updated for **${tournament.name}**.\n${[tb1, tb2, tb3]
 				.map((tb, i) => `${i + 1}. ${realTBNames[tb as ChallongeTieBreaker]}`)
 				.join("\n")}`
 		);

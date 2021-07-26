@@ -38,7 +38,10 @@ const command: CommandDefinition = {
 				event: "success"
 			})
 		);
-		await reply(msg, `All outstanding matches in Round ${round} of Tournament ${id} successfully ended in a tie!`);
+		await reply(
+			msg,
+			`All outstanding matches in Round ${round} of **${tournament.name}** successfully ended in a tie!`
+		);
 	}
 };
 

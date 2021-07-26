@@ -47,9 +47,9 @@ const command: CommandDefinition = {
 			msg,
 			`${support.discord.mentionChannel(
 				channelId
-			)} removed as a ${type} announcement channel for Tournament ${id}!`
+			)} removed as a ${type} announcement channel for **${tournament.name}**!`
 		); */
-		await reply(msg, `This channel removed as a ${type} announcement channel for Tournament ${id}!`);
+		await reply(msg, `This channel removed as a ${type} announcement channel for **${tournament.name}**!`);
 	}
 };
 

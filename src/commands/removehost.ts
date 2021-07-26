@@ -35,7 +35,7 @@ const command: CommandDefinition = {
 				event: "success"
 			})
 		);
-		await reply(msg, `${support.discord.mentionUser(newHost)} removed as a host for Tournament ${id}!`);
+		await reply(msg, `${support.discord.mentionUser(newHost)} removed as a host for **${tournament.name}**!`);
 	}
 };
 

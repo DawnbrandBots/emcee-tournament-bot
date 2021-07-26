@@ -25,7 +25,7 @@ const command: CommandDefinition = {
 		);
 		const players = await support.database.getConfirmed(id);
 		if (players.length < 1) {
-			await reply(msg, `Tournament ${id} has no players!`);
+			await reply(msg, `**${tournament.name}** has no players!`);
 			return;
 		}
 		let file;

@@ -28,7 +28,7 @@ const command: CommandDefinition = {
 			if (!early) {
 				await reply(
 					msg,
-					`Tournament ${id} is not finished. If you intend to end it early, use \`mc!finish ${id}|early\`.`
+					`**${tournament.name}** is not finished. If you intend to end it early, use \`mc!finish ${id}|early\`.`
 				);
 				return;
 			}
@@ -45,7 +45,7 @@ const command: CommandDefinition = {
 				event: "success"
 			})
 		);
-		await reply(msg, `Tournament ${id} successfully finished.`);
+		await reply(msg, `**${tournament.name}** successfully finished.`);
 	}
 };
 
