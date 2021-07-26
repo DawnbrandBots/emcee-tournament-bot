@@ -39,7 +39,7 @@ describe("command:create", function () {
 			expect(msg.channel.createMessage).to.have.been.calledWithExactly(
 				sinon.match({
 					content:
-						"**Tournament 1** created! You can find it at https://example.com/battlecity. For future commands, refer to this tournament by the id `battlecity`."
+						"Tournament battlecity created! You can find it at https://example.com/battlecity. For future commands, refer to this tournament by the id `battlecity`."
 				})
 			);
 			expect(msg.channel.createMessage).to.have.been.calledWithExactly(
