@@ -17,7 +17,7 @@ describe("command:addchannel", function () {
 				"public"
 			);
 			expect(msg.channel.createMessage).to.have.been.calledOnceWithExactly(
-				sinon.match({ content: "This channel added as a public announcement channel for Tournament name!" })
+				sinon.match({ content: "This channel added as a public announcement channel for **Tournament 1**!" })
 			);
 		})
 	);
@@ -33,7 +33,7 @@ describe("command:addchannel", function () {
 				"public"
 			);
 			expect(msg.channel.createMessage).to.have.been.calledOnceWithExactly(
-				sinon.match({ content: "This channel added as a public announcement channel for Tournament name!" })
+				sinon.match({ content: "This channel added as a public announcement channel for **Tournament 1**!" })
 			);
 		})
 	);
@@ -49,7 +49,7 @@ describe("command:addchannel", function () {
 				"private"
 			);
 			expect(msg.channel.createMessage).to.have.been.calledOnceWithExactly(
-				sinon.match({ content: "This channel added as a private announcement channel for Tournament name!" })
+				sinon.match({ content: "This channel added as a private announcement channel for **Tournament 1**!" })
 			);
 		})
 	);

@@ -45,10 +45,10 @@ const command: CommandDefinition = {
 		/* No longer required as will always be in same channel as reply
 		await reply(
 			msg,
-			`${support.discord.mentionChannel(channelId)} added as a ${type} announcement channel for Tournament ${id}!`
+			`${support.discord.mentionChannel(channelId)} added as a ${type} announcement channel for **${tournament.name}**!`
 		);
 		*/
-		await reply(msg, `This channel added as a ${type} announcement channel for Tournament ${id}!`);
+		await reply(msg, `This channel added as a ${type} announcement channel for **${tournament.name}**!`);
 	}
 };
 

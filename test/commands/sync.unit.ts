@@ -9,7 +9,7 @@ describe("command:sync", function () {
 		msg.channel.createMessage = sinon.spy();
 		await command.executor(msg, ["name"], support);
 		expect(msg.channel.createMessage).to.have.been.calledOnceWithExactly(
-			sinon.match({ content: "Tournament name database successfully synchronised with remote website." })
+			sinon.match({ content: "**Tournament 1** database successfully synchronised with remote website." })
 		);
 	});
 });

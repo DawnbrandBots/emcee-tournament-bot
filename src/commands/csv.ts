@@ -11,7 +11,7 @@ const command: CommandDefinition = {
 	executor: async (msg, args, support) => {
 		const [id, pieArg] = args;
 		const pie = !!pieArg;
-		await support.database.authenticateHost(id, msg.author.id, msg.guildID);
+		const tournament = await support.database.authenticateHost(id, msg.author.id, msg.guildID);
 		logger.verbose(
 			JSON.stringify({
 				channel: msg.channel.id,
@@ -25,7 +25,7 @@ const command: CommandDefinition = {
 		);
 		const players = await support.database.getConfirmed(id);
 		if (players.length < 1) {
-			await reply(msg, `Tournament ${id} has no players!`);
+			await reply(msg, `**${tournament.name}** has no players!`);
 			return;
 		}
 		let file;

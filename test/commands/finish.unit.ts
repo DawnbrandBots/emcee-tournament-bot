@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import sinon, { SinonSandbox } from "sinon";
 import command from "../../src/commands/finish";
-import { itRejectsNonHosts, msg, support, test } from "./common";
+import { itRejectsNonHosts, msg, support, test, tournament } from "./common";
 
 describe("command:finish", function () {
 	const args = ["battlecity"];
@@ -9,14 +9,14 @@ describe("command:finish", function () {
 	it(
 		"finishes the tournament",
 		test(async function (this: SinonSandbox) {
-			const authStub = this.stub(support.database, "authenticateHost").resolves();
+			const authStub = this.stub(support.database, "authenticateHost").resolves(tournament);
 			const finishStub = this.stub(support.tournamentManager, "finishTournament").resolves();
 			msg.channel.createMessage = this.spy();
 			await command.executor(msg, args, support);
 			expect(authStub).to.have.been.called;
 			expect(finishStub).to.have.been.calledOnceWithExactly("battlecity", false);
 			expect(msg.channel.createMessage).to.have.been.calledOnceWithExactly(
-				sinon.match({ content: "Tournament battlecity successfully finished." })
+				sinon.match({ content: "**Tournament 1** successfully finished." })
 			);
 		})
 	);
@@ -24,7 +24,7 @@ describe("command:finish", function () {
 	it(
 		"suggests early on finishTournament exceptions",
 		test(async function (this: SinonSandbox) {
-			const authStub = this.stub(support.database, "authenticateHost").resolves();
+			const authStub = this.stub(support.database, "authenticateHost").resolves(tournament);
 			const finishStub = this.stub(support.tournamentManager, "finishTournament").rejects();
 			msg.channel.createMessage = this.spy();
 			// no try catch because executor does not throw, it handles error
@@ -34,7 +34,7 @@ describe("command:finish", function () {
 			expect(msg.channel.createMessage).to.have.been.calledOnceWithExactly(
 				sinon.match({
 					content:
-						"Tournament battlecity is not finished. If you intend to end it early, use `mc!finish battlecity|early`."
+						"**Tournament 1** is not finished. If you intend to end it early, use `mc!finish battlecity|early`."
 				})
 			);
 		})
@@ -42,14 +42,14 @@ describe("command:finish", function () {
 	it(
 		"finishes the tournament early",
 		test(async function (this: SinonSandbox) {
-			const authStub = this.stub(support.database, "authenticateHost").resolves();
+			const authStub = this.stub(support.database, "authenticateHost").resolves(tournament);
 			const finishStub = this.stub(support.tournamentManager, "finishTournament").resolves();
 			msg.channel.createMessage = this.spy();
 			await command.executor(msg, [...args, "early"], support);
 			expect(authStub).to.have.been.called;
 			expect(finishStub).to.have.been.calledOnceWithExactly("battlecity", true);
 			expect(msg.channel.createMessage).to.have.been.calledOnceWithExactly(
-				sinon.match({ content: "Tournament battlecity successfully finished." })
+				sinon.match({ content: "**Tournament 1** successfully finished." })
 			);
 		})
 	);
@@ -72,7 +72,7 @@ describe("command:finish", function () {
 	it(
 		"does not catch reply exceptions",
 		test(async function (this: SinonSandbox) {
-			const authStub = this.stub(support.database, "authenticateHost").resolves();
+			const authStub = this.stub(support.database, "authenticateHost").resolves(tournament);
 			const finishStub = this.stub(support.tournamentManager, "finishTournament").resolves();
 			msg.channel.createMessage = this.stub().rejects();
 			try {
