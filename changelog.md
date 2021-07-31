@@ -1,6 +1,6 @@
 # Changelog
 
-## HEAD
+## 2021-07-31 ([Chalislime Monthly July 2021](https://challonge.com/csmjuly2021))
 ### New Features
 - `mc!dump`, `mc!players` and `mc!pie` have been merged into one command, `mc!csv`. (#303)
 - Participant limits are enforced (#313)
