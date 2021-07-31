@@ -7,7 +7,7 @@
 	"scripts": {
 		"test": "nyc mocha --config test/.mocharc.yml test/*.ts test/**/*.unit.ts",
 		"cover": "nyc report",
-		"lint": "eslint . --ext .js,.jsx,.ts,.tsx",
+		"lint": "eslint src test",
 		"build": "tsc",
 		"delete": "ts-node src/cli/delete",
 		"delete:docker": "node --enable-source-maps --unhandled-rejections=strict cli/delete",
@@ -26,79 +26,28 @@
 	"dependencies": {
 		"@fast-csv/format": "^4.3.5",
 		"debug": "^4.3.1",
-		"dotenv": "^8.2.0",
+		"dotenv": "10.0.0",
 		"eris": "^0.15.0",
 		"node-fetch": "^2.6.1",
-		"pg": "^8.6.0",
+		"pg": "^8.7.1",
 		"reflect-metadata": "^0.1.13",
 		"supports-color": "^9.0.0",
-		"typeorm": "^0.2.32",
+		"typeorm": "^0.2.36",
 		"ydeck": "^0.2.2",
 		"ydke": "^1.1.0",
 		"ygopro-data": "1.3.6"
 	},
 	"devDependencies": {
-		"@istanbuljs/nyc-config-typescript": "^1.0.1",
-		"@types/chai": "^4.2.17",
-		"@types/chai-as-promised": "^7.1.3",
-		"@types/debug": "^4.1.5",
-		"@types/mocha": "^8.2.2",
-		"@types/node": "^14.14.45",
-		"@types/node-fetch": "^2.5.10",
-		"@types/proxyquire": "^1.3.28",
-		"@types/sinon": "^10.0.0",
-		"@types/sinon-chai": "^3.2.5",
-		"@types/sinon-test": "^2.4.2",
-		"@typescript-eslint/eslint-plugin": "^4.22.0",
-		"@typescript-eslint/parser": "^4.22.0",
-		"chai": "^4.3.4",
-		"chai-as-promised": "^7.1.1",
-		"coveralls": "^3.1.0",
-		"eslint": "^7.25.0",
-		"eslint-config-prettier": "^8.3.0",
-		"mocha": "^8.3.2",
-		"nyc": "^15.1.0",
-		"prettier": "^2.2.1",
-		"proxyquire": "^2.1.3",
-		"sinon": "^10.0.0",
-		"sinon-chai": "^3.5.0",
-		"sinon-test": "^3.1.0",
-		"ts-node": "^9.1.1",
-		"typescript": "^4.2.4"
+		"@alphakretin/essentials": "^1.0.0",
+		"@alphakretin/mocha-ecosystem": "^1.0.0",
+		"@types/debug": "^4.1.7",
+		"@types/node-fetch": "^2.5.10"
 	},
 	"eslintConfig": {
-		"root": true,
-		"parser": "@typescript-eslint/parser",
-		"plugins": [
-			"@typescript-eslint"
-		],
-		"extends": [
-			"eslint:recommended",
-			"plugin:@typescript-eslint/eslint-recommended",
-			"plugin:@typescript-eslint/recommended",
-			"prettier"
-		],
-		"rules": {
-			"@typescript-eslint/explicit-function-return-type": [
-				"warn",
-				{
-					"allowExpressions": true,
-					"allowTypedFunctionExpressions": true,
-					"allowHigherOrderFunctions": true,
-					"allowDirectConstAssertionInArrowFunctions": true,
-					"allowConciseArrowFunctionExpressionsStartingWithVoid": true
-				}
-			],
-			"prefer-template": "error"
-		}
+		"extends": "@alphakretin"
 	},
-	"prettier": {
-		"printWidth": 120,
-		"useTabs": true,
-		"semi": true,
-		"singleQuote": false,
-		"trailingComma": "none",
-		"bracketSpacing": true,
-		"arrowParens": "avoid"
+	"prettier": "@alphakretin/essentials",
+	"nyc": {
+		"extends": "@alphakretin/mocha-ecosystem"
 	}
 }
