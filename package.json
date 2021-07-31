@@ -29,18 +29,18 @@
 		"dotenv": "10.0.0",
 		"eris": "^0.15.0",
 		"node-fetch": "^2.6.1",
-		"pg": "^8.6.0",
+		"pg": "^8.7.1",
 		"reflect-metadata": "^0.1.13",
 		"supports-color": "^9.0.0",
-		"typeorm": "^0.2.32",
+		"typeorm": "^0.2.36",
 		"ydeck": "^0.2.2",
 		"ydke": "^1.1.0",
 		"ygopro-data": "1.3.6"
 	},
 	"devDependencies": {
-		"@alphakretin/essentials": "../typescript-tooling/essentials",
-		"@alphakretin/mocha-ecosystem": "../typescript-tooling/mocha-ecosystem",
-		"@types/debug": "^4.1.5",
+		"@alphakretin/essentials": "^1.0.0",
+		"@alphakretin/mocha-ecosystem": "^1.0.0",
+		"@types/debug": "^4.1.7",
 		"@types/node-fetch": "^2.5.10"
 	},
 	"eslintConfig": {
