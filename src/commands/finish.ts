@@ -8,8 +8,9 @@ const command: CommandDefinition = {
 	name: "finish",
 	requiredArgs: ["id"],
 	executor: async (msg, args, support) => {
-		const [id] = args;
-		await support.database.authenticateHost(id, msg.author.id, msg.guildID);
+		const [id, earlyArg] = args;
+		const early = !!earlyArg;
+		const tournament = await support.database.authenticateHost(id, msg.author.id, msg.guildID);
 		logger.verbose(
 			JSON.stringify({
 				channel: msg.channel.id,
@@ -20,8 +21,19 @@ const command: CommandDefinition = {
 				event: "attempt"
 			})
 		);
-		// TODO: error path
-		await support.tournamentManager.finishTournament(id, false);
+		try {
+			await support.tournamentManager.finishTournament(id, early);
+		} catch (e) {
+			// TODO: filter specifically for challonge error with finalise
+			if (!early) {
+				await reply(
+					msg,
+					`**${tournament.name}** is not finished. If you intend to end it early, use \`mc!finish ${id}|early\`.`
+				);
+				return;
+			}
+			throw e;
+		}
 		support.scores.delete(id);
 		logger.verbose(
 			JSON.stringify({
@@ -33,7 +45,7 @@ const command: CommandDefinition = {
 				event: "success"
 			})
 		);
-		await reply(msg, `Tournament ${id} successfully finished.`);
+		await reply(msg, `**${tournament.name}** successfully finished.`);
 	}
 };
 

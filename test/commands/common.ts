@@ -5,6 +5,7 @@ import sinon, { SinonSandbox } from "sinon";
 import sinonChai from "sinon-chai";
 import sinonTest from "sinon-test";
 import { CommandDefinition, CommandSupport } from "../../src/Command";
+import { DatabaseTournament, TournamentFormat, TournamentStatus } from "../../src/database/interface";
 import { DeckManager } from "../../src/deck";
 import { DiscordInterface } from "../../src/discord/interface";
 import { OrganiserRoleProvider } from "../../src/role/organiser";
@@ -43,6 +44,22 @@ export function itRejectsNonHosts(
 export const mockBotClient = new Client("mock");
 // For the purposes of most commands, most fields don't matter. This is the minimum to make the constructor run.
 export const msg = new Message({ id: "007", channel_id: "foo", author: { id: "0000" } }, mockBotClient);
+// for the purposes of testing, needs a valid name to be displayed by command responses
+export const tournament: DatabaseTournament = {
+	name: "Tournament 1",
+	id: "name",
+	description: "",
+	format: TournamentFormat.SWISS,
+	status: TournamentStatus.IPR,
+	hosts: [],
+	players: [],
+	limit: 256,
+	server: "",
+	publicChannels: [],
+	privateChannels: [],
+	byes: [],
+	findPlayer: sinon.stub()
+};
 
 export const support: CommandSupport = {
 	discord: new DiscordInterface(new DiscordWrapperMock()),

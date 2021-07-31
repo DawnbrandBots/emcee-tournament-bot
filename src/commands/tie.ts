@@ -10,7 +10,12 @@ const command: CommandDefinition = {
 	requiredArgs: ["id"],
 	executor: async (msg, args, support) => {
 		const [id] = args;
-		await support.database.authenticateHost(id, msg.author.id, msg.guildID, TournamentStatus.IPR);
+		const tournament = await support.database.authenticateHost(
+			id,
+			msg.author.id,
+			msg.guildID,
+			TournamentStatus.IPR
+		);
 		logger.verbose(
 			JSON.stringify({
 				channel: msg.channel.id,
@@ -38,7 +43,10 @@ const command: CommandDefinition = {
 				event: "success"
 			})
 		);
-		await reply(msg, `All outstanding matches in Round ${round} of Tournament ${id} successfully ended in a tie!`);
+		await reply(
+			msg,
+			`All outstanding matches in Round ${round} of **${tournament.name}** successfully ended in a tie!`
+		);
 	}
 };
 

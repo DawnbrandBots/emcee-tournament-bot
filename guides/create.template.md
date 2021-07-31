@@ -20,6 +20,10 @@ mc!removehost {}|@User```
 You can change the name and description.
 ```
 mc!update {}|New Name|A new description```
+You can check and change the priority for the systems Challonge uses to break ties.
+```
+mc!tb {}
+mc!tb {}|tb1|tb2|tb3```
 You can set a smaller capacity than Challonge Standard: https://challonge.com/pricing
 ```
 mc!capacity {}|limit```

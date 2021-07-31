@@ -1,6 +1,6 @@
 import fetch from "node-fetch";
 import { ChallongeAPIError } from "../util/errors";
-import { WebsiteMatch, WebsitePlayer, WebsiteTournament, WebsiteWrapper } from "./interface";
+import { ChallongeTieBreaker, WebsiteMatch, WebsitePlayer, WebsiteTournament, WebsiteWrapper } from "./interface";
 
 type TournamentType = "single elimination" | "double elimination" | "round robin" | "swiss";
 type RankedBy = "match wins" | "game wins" | "points scored" | "points difference" | "custom";
@@ -35,6 +35,7 @@ interface ChallongeTournamentSettings {
 	start_at?: Date;
 	check_in_duration?: number;
 	grand_finals_modifier?: null | "single match" | "skip";
+	tie_breaks?: string[]; // undocumented, hoping exists
 }
 
 interface ChallongeParticipant {
@@ -152,7 +153,7 @@ interface ChallongeTournament {
 		state: string;
 		swiss_rounds: number;
 		teams: boolean;
-		tie_breaks: string[];
+		tie_breaks: null | string[];
 		tournament_type: TournamentType;
 		updated_at: Date;
 		url: string;
@@ -226,7 +227,10 @@ export class WebsiteWrapperChallonge implements WebsiteWrapper {
 			desc: tournament.description,
 			url: `https://challonge.com/${tournament.url}`,
 			players: participants,
-			rounds: tournament.swiss_rounds
+			rounds: tournament.swiss_rounds,
+			tieBreaks: tournament.tie_breaks
+				? (tournament.tie_breaks as ChallongeTieBreaker[])
+				: ["match wins vs tied", "median buchholz", "points difference"] // challonge default in UI
 		};
 	}
 
@@ -249,6 +253,17 @@ export class WebsiteWrapperChallonge implements WebsiteWrapper {
 		const settings: ChallongeTournamentSettings = {
 			name,
 			description: desc
+		};
+		await this.fetch(`${this.baseUrl}tournaments/${tournamentId}.json`, {
+			method: "PUT",
+			body: JSON.stringify({ tournament: settings }),
+			headers: { "Content-Type": "application/json" }
+		});
+	}
+
+	public async updateTieBreakers(tournamentId: string, tbs: ChallongeTieBreaker[]): Promise<void> {
+		const settings: ChallongeTournamentSettings = {
+			tie_breaks: tbs
 		};
 		await this.fetch(`${this.baseUrl}tournaments/${tournamentId}.json`, {
 			method: "PUT",

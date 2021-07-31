@@ -9,7 +9,7 @@ const command: CommandDefinition = {
 	requiredArgs: ["id"],
 	executor: async (msg, args, support) => {
 		const [id] = args;
-		await support.database.authenticateHost(id, msg.author.id, msg.guildID);
+		const tournament = await support.database.authenticateHost(id, msg.author.id, msg.guildID);
 		const player = firstMentionOrFail(msg);
 		logger.verbose(
 			JSON.stringify({
@@ -37,7 +37,7 @@ const command: CommandDefinition = {
 		const tag = (id: string): string =>
 			`${support.discord.mentionUser(id)} (${support.discord.getUsername(id, true)})`;
 		const names = byes.map(tag).join(", ");
-		await reply(msg, `Bye registered for Player ${tag(player)} in Tournament ${id}!\nAll byes: ${names}`);
+		await reply(msg, `Bye registered for Player ${tag(player)} in **${tournament.name}**!\nAll byes: ${names}`);
 	}
 };
 

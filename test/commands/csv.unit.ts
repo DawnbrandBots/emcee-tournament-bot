@@ -2,7 +2,7 @@ import { expect } from "chai";
 import dotenv from "dotenv";
 import sinon, { SinonSandbox } from "sinon";
 import command from "../../src/commands/csv";
-import { itRejectsNonHosts, msg, support, test } from "./common";
+import { itRejectsNonHosts, msg, support, test, tournament } from "./common";
 
 dotenv.config();
 describe("command:csv", function () {
@@ -37,7 +37,7 @@ describe("command:csv", function () {
 	it(
 		"warns on an empty tournament",
 		test(async function (this: SinonSandbox) {
-			const authStub = this.stub(support.database, "authenticateHost").resolves();
+			const authStub = this.stub(support.database, "authenticateHost").resolves(tournament);
 			const listStub = this.stub(support.database, "getConfirmed").resolves([]);
 			msg.channel.createMessage = this.spy();
 			await command.executor(msg, args, support);
@@ -45,7 +45,7 @@ describe("command:csv", function () {
 			expect(listStub).to.have.been.calledOnce;
 			expect(msg.channel.createMessage).to.have.been.calledOnceWithExactly(
 				sinon.match({
-					content: "Tournament battlecity has no players!"
+					content: "**Tournament 1** has no players!"
 				})
 			);
 		})
@@ -91,7 +91,7 @@ describe("command:csv", function () {
 	it(
 		"does not catch reply exceptions",
 		test(async function (this: SinonSandbox) {
-			const authStub = this.stub(support.database, "authenticateHost").resolves();
+			const authStub = this.stub(support.database, "authenticateHost").resolves(tournament);
 			const listStub = this.stub(support.database, "getConfirmed").resolves([]);
 			msg.channel.createMessage = this.stub().rejects();
 			try {
@@ -102,7 +102,7 @@ describe("command:csv", function () {
 				expect(listStub).to.have.been.calledOnce;
 				expect(msg.channel.createMessage).to.have.been.calledOnceWithExactly(
 					sinon.match({
-						content: "Tournament battlecity has no players!"
+						content: "**Tournament 1** has no players!"
 					})
 				);
 			}

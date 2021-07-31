@@ -17,7 +17,7 @@ describe("command:addhost", function () {
 		msg.channel.createMessage = sinon.spy();
 		await command.executor(msg, ["name"], support);
 		expect(msg.channel.createMessage).to.have.been.calledOnceWithExactly(
-			sinon.match({ content: "<@nova> added as a host for Tournament name!" })
+			sinon.match({ content: "<@nova> added as a host for **Tournament 1**!" })
 		);
 	});
 });

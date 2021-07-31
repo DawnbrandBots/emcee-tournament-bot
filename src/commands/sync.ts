@@ -51,7 +51,7 @@ const command: CommandDefinition = {
 				event: "success"
 			})
 		);
-		await reply(msg, `Tournament ${id} database successfully synchronised with remote website.`);
+		await reply(msg, `**${tournament.name}** database successfully synchronised with remote website.`);
 	}
 };
 
