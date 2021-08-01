@@ -6,7 +6,9 @@ export async function reply(
 	...args: Parameters<Textable["createMessage"]>
 ): ReturnType<Textable["createMessage"]> {
 	const mixin = {
-		messageReferenceID: msg.id,
+		messageReference: {
+			messageID: msg.id
+		},
 		allowedMentions: {
 			repliedUser: true
 		}
