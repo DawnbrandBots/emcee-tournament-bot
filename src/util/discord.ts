@@ -1,4 +1,4 @@
-import { Message, Textable } from "eris";
+import { Message, Textable } from "discord.js";
 import { UserError } from "./errors";
 
 export async function reply(

@@ -1,4 +1,4 @@
-import { Message } from "eris";
+import { Message } from "discord.js";
 import { DatabaseWrapperPostgres } from "./database/postgres";
 import { DeckManager } from "./deck";
 import { DiscordInterface } from "./discord/interface";

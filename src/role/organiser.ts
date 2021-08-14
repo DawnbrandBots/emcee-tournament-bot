@@ -1,4 +1,4 @@
-import { Guild, GuildChannel, Message } from "eris";
+import { Guild, Message } from "discord.js";
 import { UnauthorisedTOError } from "../util/errors";
 import { getLogger } from "../util/logger";
 
@@ -21,13 +21,11 @@ export class OrganiserRoleProvider {
 	 * @returns Discord role snowflake
 	 */
 	public async create(server: Guild): Promise<string> {
-		const role = await server.createRole(
-			{
-				name: this.name,
-				color: this.color
-			},
-			"Auto-created by Emcee."
-		);
+		const role = await server.roles.create({
+			name: this.name,
+			color: this.color,
+			reason: "Auto-created by Emcee."
+		});
 		this.roleCache[server.id] = role.id;
 		logger.info(`Role ${this.name} (${role.id}) created in ${server.name} (${server.id}).`);
 		return role.id;
@@ -45,7 +43,7 @@ export class OrganiserRoleProvider {
 			return this.roleCache[server.id];
 		}
 		// Find already-created role and cache in memory
-		const existingRole = server.roles.find(role => role.name === this.name);
+		const existingRole = server.roles.cache.find(role => role.name === this.name);
 		if (existingRole) {
 			logger.verbose(`Cached role ${this.name} (${existingRole.id}) in ${server.name} (${server.id}).`);
 			return (this.roleCache[server.id] = existingRole.id);
@@ -63,18 +61,15 @@ export class OrganiserRoleProvider {
 	 * @throws UnauthorisedTOError
 	 */
 	public async authorise(msg: Message): Promise<void> {
-		if (!(msg.channel instanceof GuildChannel)) {
+		if (!("guildId" in msg.channel)) {
 			throw new UnauthorisedTOError(msg.author.id);
 		}
 		const server = msg.channel.guild;
-		// Since we have the provided context of a message sent to the bot, we can simply
-		// use the Eris cache to get server member metadata for the message author
-		const member = server.members.get(msg.author.id);
-		if (!member) {
-			throw new UnauthorisedTOError(msg.author.id);
-		}
+		// Since we have the provided context of a message sent to the bot, this should
+		// only hit the cache to get server member metadata for the message author
+		const member = await server.members.fetch(msg.author.id);
 		const role = await this.get(server);
-		if (!member.roles.includes(role)) {
+		if (!member.roles.cache.has(role)) {
 			throw new UnauthorisedTOError(msg.author.id);
 		}
 		logger.verbose(

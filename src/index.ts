@@ -1,4 +1,4 @@
-import { Client } from "eris";
+import { Client, Intents } from "discord.js";
 import { getConfig } from "./config"; // Must be imported first among first-party modules
 import { initializeDatabase } from "./database/postgres";
 import { initializeDeckManager } from "./deck";
@@ -29,16 +29,37 @@ const logger = getLogger("index");
 		new WebsiteWrapperChallonge(config.challongeUsername, config.challongeToken)
 	);
 
-	const bot = new Client(config.discordToken, {
-		restMode: true
+	const bot = new Client({
+		intents: [
+			Intents.FLAGS.GUILDS,
+			Intents.FLAGS.GUILD_MEMBERS,
+			Intents.FLAGS.GUILD_MESSAGES,
+			Intents.FLAGS.GUILD_MESSAGE_REACTIONS,
+			Intents.FLAGS.DIRECT_MESSAGES,
+			Intents.FLAGS.DIRECT_MESSAGE_REACTIONS
+		]
 	});
-	const eris = new DiscordWrapperEris(bot);
+	const eris = new DiscordWrapperEris(bot as any);
 	const discord = new DiscordInterface(eris);
 	const organiserRole = new OrganiserRoleProvider(config.defaultTORole, 0x3498db);
-	const participantRole = new ParticipantRoleProvider(bot, 0xe67e22);
+	const participantRole = new ParticipantRoleProvider(bot as any, 0xe67e22);
 	const timeWizard = new TimeWizard({
-		sendMessage: async (...args) => (await bot.createMessage(...args)).id,
-		editMessage: async (...args) => void (await bot.editMessage(...args))
+		sendMessage: async (channelId, message) => {
+			const channel = await bot.channels.fetch(channelId);
+			if (channel?.isText()) {
+				const sent = await channel.send(message);
+				return sent.id;
+			}
+			throw new Error(`${channelId} is not a text channel`);
+		},
+		editMessage: async (channelId, messageId, newMessage) => {
+			const channel = await bot.channels.fetch(channelId);
+			if (channel?.isText()) {
+				const sent = await channel.messages.fetch(messageId);
+				await sent.edit(newMessage);
+			}
+			throw new Error(`${channelId} is not a text channel`);
+		}
 	});
 	const tournamentManager = new TournamentManager(
 		discord,
@@ -48,7 +69,7 @@ const logger = getLogger("index");
 		participantRole,
 		timeWizard
 	);
-	registerEvents(bot, config.defaultPrefix, {
+	registerEvents(bot as any, config.defaultPrefix, {
 		discord,
 		tournamentManager,
 		organiserRole,
@@ -64,15 +85,15 @@ const logger = getLogger("index");
 
 	let firstReady = true;
 	bot.on("ready", async () => {
-		logger.notify(`Logged in as ${bot.user.username}#${bot.user.discriminator} - ${bot.user.id}`);
+		logger.notify(`Logged in as ${bot.user?.tag} - ${bot.user?.id}`);
 		if (firstReady) {
 			firstReady = false;
 			await timeWizard.load();
 			await tournamentManager.loadButtons();
 		}
 	});
-	bot.connect().catch(logger.error);
+	bot.login().catch(logger.error);
 	process.once("SIGTERM", () => {
-		bot.disconnect({ reconnect: false });
+		bot.destroy();
 	});
 })();

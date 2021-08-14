@@ -1,4 +1,4 @@
-import { AdvancedMessageContent, Attachment, Message, MessageFile } from "eris";
+import { AdvancedMessageContent, Attachment, Message, MessageFile } from "discord.js";
 import fetch from "node-fetch";
 import { CardIndex, CardVector, createAllowVector, Deck, DeckError, ICard } from "ydeck";
 import { Card, enums, YgoData } from "ygopro-data";

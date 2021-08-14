@@ -1,4 +1,4 @@
-import { Client, Message, PrivateChannel } from "eris";
+import { Client, Message } from "discord.js";
 import { CardVector } from "ydeck";
 import { Command, CommandDefinition, CommandSupport } from "../Command";
 import { helpMessage } from "../config";
@@ -25,10 +25,10 @@ export function makeHandler(
 	}
 	return async function messageCreate(msg: Message): Promise<void> {
 		// Ignore messages from all bots and replies
-		if (msg.author.bot || msg.messageReference) {
+		if (msg.author.bot || msg.reference) {
 			return;
 		}
-		if (msg.mentions.includes(bot.user)) {
+		if (bot.user && msg.mentions.has(bot.user)) {
 			await reply(msg, helpMessage).catch(logger.error);
 			return;
 		}
@@ -41,10 +41,10 @@ export function makeHandler(
 				.split("|")
 				.map(s => s.trim());
 			await handlers[cmdName]?.run(msg, args, support);
-		} else if (!msg.guildID) {
+		} else if (!msg.guildId) {
 			// Checking guildID is likely more performant than instanceof
 			await onDirectMessage(
-				msg as Message<PrivateChannel>,
+				msg,
 				support.database,
 				support.decks,
 				support.challonge,
@@ -55,7 +55,7 @@ export function makeHandler(
 	};
 }
 
-function log(level: keyof typeof logger, msg: Message<PrivateChannel>, payload: Record<string, unknown>): void {
+function log(level: keyof typeof logger, msg: Message, payload: Record<string, unknown>): void {
 	return logger[level](
 		JSON.stringify({
 			handle: `${msg.author.username}#${msg.author.discriminator}`,
@@ -68,7 +68,7 @@ function log(level: keyof typeof logger, msg: Message<PrivateChannel>, payload: 
 
 // The only allowed exceptions are final reply errors or initial database access failures
 export async function onDirectMessage(
-	msg: Message<PrivateChannel>,
+	msg: Message,
 	database: Public<DatabaseWrapperPostgres>,
 	decks: DeckManager,
 	challonge: WebsiteInterface,
@@ -149,7 +149,7 @@ export async function onDirectMessage(
 
 // Throws on any problem with the deck, and the exception payload should be sent to the user
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-async function verifyDeck(msg: Message<PrivateChannel>, decks: DeckManager, allowVector?: CardVector) {
+async function verifyDeck(msg: Message, decks: DeckManager, allowVector?: CardVector) {
 	const [deck, errors] = await decks.getDeckFromMessage(msg, allowVector); // throws on network error, YDKParseError, bad YDKE URL, filesize too big
 	const formattedDeckMessage = decks.prettyPrint(
 		deck,
@@ -168,7 +168,7 @@ async function verifyDeck(msg: Message<PrivateChannel>, decks: DeckManager, allo
 
 // Should only throw exceptions from verifyDeck
 async function verifyDeckAndConfirmPending(
-	msg: Message<PrivateChannel>,
+	msg: Message,
 	tournament: DatabaseTournament,
 	database: Public<DatabaseWrapperPostgres>,
 	decks: DeckManager,
@@ -231,7 +231,7 @@ async function verifyDeckAndConfirmPending(
 
 // Should only throw exceptions from verifyDeck
 async function verifyDeckAndUpdateConfirmed(
-	msg: Message<PrivateChannel>,
+	msg: Message,
 	tournament: DatabaseTournament,
 	database: Public<DatabaseWrapperPostgres>,
 	decks: DeckManager,

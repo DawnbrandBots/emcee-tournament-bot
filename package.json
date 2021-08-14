@@ -20,12 +20,13 @@
 	],
 	"license": "AGPL-3.0-or-later",
 	"engines": {
-		"node": ">=14.x",
-		"yarn": "1.x"
+		"node": ">=16.6",
+		"yarn": "1.22.x"
 	},
 	"dependencies": {
 		"@fast-csv/format": "^4.3.5",
 		"debug": "^4.3.1",
+		"discord.js": "^13.1.0",
 		"dotenv": "10.0.0",
 		"eris": "^0.15.0",
 		"node-fetch": "^2.6.1",

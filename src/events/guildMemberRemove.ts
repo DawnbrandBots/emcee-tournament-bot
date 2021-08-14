@@ -1,4 +1,4 @@
-import { Guild, Member, MemberPartial } from "eris";
+import { Guild, Member, MemberPartial } from "discord.js";
 import { getConnection } from "typeorm";
 import { CommandSupport } from "../Command";
 import { Participant } from "../database/orm";
