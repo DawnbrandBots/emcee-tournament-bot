@@ -1,6 +1,5 @@
 import { CommandDefinition } from "../Command";
 import { TournamentStatus } from "../database/interface";
-import { reply } from "../util/discord";
 import { getLogger } from "../util/logger";
 
 const logger = getLogger("command:topcut");
@@ -12,7 +11,7 @@ const command: CommandDefinition = {
 		const [id, sizeRaw] = args;
 		const size = parseInt(sizeRaw, 10);
 		if (isNaN(size) || size < 2) {
-			await reply(msg, `Bad top cut size of ${sizeRaw}.`);
+			await msg.reply(`Bad top cut size of ${sizeRaw}.`);
 		}
 		const tournament = await support.database.authenticateHost(
 			id,
@@ -33,7 +32,7 @@ const command: CommandDefinition = {
 			})
 		);
 		if (tournament.players.length < size) {
-			await reply(msg, `**${tournament.name}** only has ${tournament.players.length} participants!`);
+			await msg.reply(`**${tournament.name}** only has ${tournament.players.length} participants!`);
 			return;
 		}
 		const top = await support.challonge.getTopCut(id, size);
@@ -80,8 +79,7 @@ const command: CommandDefinition = {
 		for (const channel of tournament.privateChannels) {
 			await support.discord.sendMessage(channel, support.templater.format("start", newId));
 		}
-		await reply(
-			msg,
+		await msg.reply(
 			`Top cut for **${tournament.name}** commenced on Challonge! Use \`mc!round ${newId}\` to send out pairings and start the timer for round 1.`
 		);
 		// start new round

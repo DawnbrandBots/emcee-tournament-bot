@@ -1,7 +1,6 @@
 import { EmbedField, MessageEmbed } from "discord.js";
 import { CommandDefinition } from "../Command";
 import { ChallongeTournament } from "../database/orm";
-import { reply } from "../util/discord";
 import { UserError } from "../util/errors";
 import { getLogger } from "../util/logger";
 
@@ -59,7 +58,7 @@ const command: CommandDefinition = {
 				})
 			);
 			const embed = createTournamentEmbed(tournament);
-			await reply(msg, {
+			await msg.reply({
 				embeds: [embed],
 				allowedMentions: { users: [] }
 			});
@@ -74,7 +73,7 @@ const command: CommandDefinition = {
 					event: "404"
 				})
 			);
-			await reply(msg, "No matching tournament in this server.");
+			await msg.reply("No matching tournament in this server.");
 		}
 	}
 };

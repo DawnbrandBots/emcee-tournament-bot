@@ -1,5 +1,4 @@
 import { CommandDefinition } from "../Command";
-import { reply } from "../util/discord";
 import { getLogger } from "../util/logger";
 
 const logger = getLogger("command:finish");
@@ -26,8 +25,7 @@ const command: CommandDefinition = {
 		} catch (e) {
 			// TODO: filter specifically for challonge error with finalise
 			if (!early) {
-				await reply(
-					msg,
+				await msg.reply(
 					`**${tournament.name}** is not finished. If you intend to end it early, use \`mc!finish ${id}|early\`.`
 				);
 				return;
@@ -45,7 +43,7 @@ const command: CommandDefinition = {
 				event: "success"
 			})
 		);
-		await reply(msg, `**${tournament.name}** successfully finished.`);
+		await msg.reply(`**${tournament.name}** successfully finished.`);
 	}
 };
 

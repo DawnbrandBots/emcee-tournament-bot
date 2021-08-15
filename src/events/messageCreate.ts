@@ -6,7 +6,7 @@ import { DatabaseTournament } from "../database/interface";
 import { DatabaseWrapperPostgres } from "../database/postgres";
 import { DeckManager } from "../deck";
 import { ParticipantRoleProvider } from "../role/participant";
-import { reply, send } from "../util/discord";
+import { send } from "../util/discord";
 import { getLogger } from "../util/logger";
 import { Public } from "../util/types";
 import { WebsiteInterface } from "../website/interface";
@@ -29,7 +29,7 @@ export function makeHandler(
 			return;
 		}
 		if (bot.user && msg.mentions.has(bot.user)) {
-			await reply(msg, helpMessage).catch(logger.error);
+			await msg.reply(helpMessage).catch(logger.error);
 			return;
 		}
 		if (msg.content.startsWith(prefix)) {
@@ -79,8 +79,7 @@ export async function onDirectMessage(
 	if (tournaments.length > 1) {
 		const out = tournaments.map(t => t.name).join(", ");
 		log("info", msg, { event: "pending multiple", tournaments: out });
-		await reply(
-			msg,
+		await msg.reply(
 			`You are registering in multiple tournaments. Please register in one at a time by unchecking the reaction on all others.\n${out}`
 		);
 		return;
@@ -95,8 +94,7 @@ export async function onDirectMessage(
 		});
 		if (tournament.limit > 0 && tournament.players.length >= tournament.limit) {
 			log("info", msg, { event: "confirm full", tournament: tournament.id });
-			await reply(
-				msg,
+			await msg.reply(
 				`Sorry, **${tournament.name}** has reached its capacity of ${tournament.limit} registrations!`
 			);
 			return;
@@ -105,11 +103,10 @@ export async function onDirectMessage(
 			await verifyDeckAndConfirmPending(msg, tournament, database, decks, challonge, participantRole, bot);
 		} catch (error) {
 			log("info", msg, { event: "confirm fail", tournament: tournament.id, error: error.message });
-			await reply(
-				msg,
+			await msg.reply(
 				`Must provide a valid attached \`.ydk\` file OR valid \`ydke://\` URL for **${tournament.name}**!`
 			);
-			await reply(msg, error.message);
+			await msg.reply(error.message);
 		}
 		return;
 	}
@@ -118,8 +115,7 @@ export async function onDirectMessage(
 	if (tournaments.length > 1) {
 		const out = tournaments.map(t => t.name).join(", ");
 		log("info", msg, { event: "confirmed multiple", tournaments: out });
-		await reply(
-			msg,
+		await msg.reply(
 			`You're trying to update your deck for a tournament, but you're in multiple! Please choose one by dropping and registering again.\n${out}`
 		);
 		return;
@@ -131,18 +127,16 @@ export async function onDirectMessage(
 			await verifyDeckAndUpdateConfirmed(msg, tournament, database, decks, bot);
 		} catch (error) {
 			log("info", msg, { event: "update fail", tournament: tournament.id, error: error.message });
-			await reply(
-				msg,
+			await msg.reply(
 				`Must provide a valid attached \`.ydk\` file OR valid \`ydke://\` URL for **${tournament.name}**!`
 			);
-			await reply(msg, error.message);
+			await msg.reply(error.message);
 		}
 		return;
 	}
 
 	log("verbose", msg, { event: "no context", content: msg.content });
-	await reply(
-		msg,
+	await msg.reply(
 		`${helpMessage}\nIf you're trying to sign up for a tournament, make sure you've clicked ✅ on a sign-up message and I'll let you know how to proceed.`
 	);
 }
@@ -157,7 +151,7 @@ async function verifyDeck(msg: Message, decks: DeckManager, allowVector?: CardVe
 		errors
 	);
 	if (errors.length > 0) {
-		await reply(msg, formattedDeckMessage).catch(logger.error);
+		await msg.reply(formattedDeckMessage).catch(logger.error);
 		throw new Error(
 			`Your deck is not legal. Please see the print out for all the errors. You have NOT been registered yet, please submit again with a legal deck.`
 		);
@@ -192,9 +186,9 @@ async function verifyDeckAndConfirmPending(
 				`Something went really wrong while trying to register <@${msg.author.id}> (${username}) for **${tournament.name}**!`
 			).catch(logger.error);
 		}
-		await reply(msg, `Something went really wrong while trying to register for **${tournament.name}**!`).catch(
-			logger.error
-		);
+		await msg
+			.reply(`Something went really wrong while trying to register for **${tournament.name}**!`)
+			.catch(logger.error);
 		return;
 	}
 	let roleGrantWarning = "";
@@ -219,11 +213,10 @@ async function verifyDeckAndConfirmPending(
 	}
 	log("info", msg, { event: "confirm success", tournament: tournament.id });
 	try {
-		await reply(
-			msg,
+		await msg.reply(
 			`You have successfully signed up for **${tournament.name}**! Your deck is below to double-check. You may resubmit at any time before the tournament starts.`
 		);
-		await reply(msg, formattedDeckMessage);
+		await msg.reply(formattedDeckMessage);
 	} catch (error) {
 		logger.error(error);
 	}
@@ -251,9 +244,9 @@ async function verifyDeckAndUpdateConfirmed(
 				`Something went really wrong while trying to update deck of <@${msg.author.id}> (${username}) for **${tournament.name}**!`
 			).catch(logger.error);
 		}
-		await reply(msg, `Something went really wrong while trying to update deck for **${tournament.name}**!`).catch(
-			logger.error
-		);
+		await msg
+			.reply(`Something went really wrong while trying to update deck for **${tournament.name}**!`)
+			.catch(logger.error);
 		return;
 	}
 	for (const channel of tournament.privateChannels) {
@@ -270,11 +263,10 @@ async function verifyDeckAndUpdateConfirmed(
 	}
 	log("info", msg, { event: "update success", tournament: tournament.id });
 	try {
-		await reply(
-			msg,
+		await msg.reply(
 			`You have successfully changed your deck for **${tournament.name}**! Your deck is below to double-check. You may resubmit at any time before the tournament starts.`
 		);
-		await reply(msg, formattedDeckMessage);
+		await msg.reply(formattedDeckMessage);
 	} catch (error) {
 		logger.error(error);
 	}

@@ -1,5 +1,4 @@
 import { CommandDefinition } from "../Command";
-import { reply } from "../util/discord";
 import { getLogger } from "../util/logger";
 
 const logger = getLogger("command:list");
@@ -34,9 +33,9 @@ const command: CommandDefinition = {
 			})
 		);
 		if (text.length === 0) {
-			await reply(msg, "There are no open tournaments you have access to!");
+			await msg.reply("There are no open tournaments you have access to!");
 		} else {
-			await reply(msg, `\`\`\`\n${text}\`\`\``);
+			await msg.reply(`\`\`\`\n${text}\`\`\``);
 		}
 	}
 };

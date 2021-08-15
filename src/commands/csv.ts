@@ -1,7 +1,6 @@
 import * as csv from "@fast-csv/format";
 import { MessageAttachment } from "discord.js";
 import { CommandDefinition } from "../Command";
-import { reply } from "../util/discord";
 import { getLogger } from "../util/logger";
 
 const logger = getLogger("command:csv");
@@ -26,7 +25,7 @@ const command: CommandDefinition = {
 		);
 		const players = await support.database.getConfirmed(id);
 		if (players.length < 1) {
-			await reply(msg, `**${tournament.name}** has no players!`);
+			await msg.reply(`**${tournament.name}** has no players!`);
 			return;
 		}
 		let file;
@@ -64,7 +63,7 @@ const command: CommandDefinition = {
 				event: "success"
 			})
 		);
-		await reply(msg, {
+		await msg.reply({
 			content: pie
 				? `A list of themes in tournament ${id} with their counts is attached.`
 				: `A list of players for tournament ${id} with their deck is attached.`,

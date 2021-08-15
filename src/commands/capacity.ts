@@ -1,7 +1,6 @@
 import { CommandDefinition } from "../Command";
 import { TournamentStatus } from "../database/interface";
 import { ChallongeTournament } from "../database/orm";
-import { reply } from "../util/discord";
 import { UserError } from "../util/errors";
 import { getLogger } from "../util/logger";
 
@@ -41,9 +40,9 @@ const command: CommandDefinition = {
 				.set({ participantLimit: capacity })
 				.where({ tournamentId: id })
 				.execute();
-			await reply(msg, `Set the capacity for **${tournament.name}** to _${capacity}_.`);
+			await msg.reply(`Set the capacity for **${tournament.name}** to _${capacity}_.`);
 		} else {
-			await reply(msg, `**${tournament.name}** capacity: _${tournament.limit || 256}_`);
+			await msg.reply(`**${tournament.name}** capacity: _${tournament.limit || 256}_`);
 		}
 	}
 };

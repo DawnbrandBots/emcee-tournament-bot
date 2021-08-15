@@ -1,7 +1,6 @@
 import { CommandDefinition } from "../Command";
 import { TournamentStatus } from "../database/interface";
 import { advanceRoundDiscord, parseTime } from "../round";
-import { reply } from "../util/discord";
 import { getLogger } from "../util/logger";
 
 const logger = getLogger("command:round");
@@ -49,8 +48,7 @@ const command: CommandDefinition = {
 				event: "success"
 			})
 		);
-		await reply(
-			msg,
+		await msg.reply(
 			`Pairings sent out for **${tournament.name}**. Please check the private channels for any failed DMs.`
 		);
 	}

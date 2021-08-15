@@ -1,6 +1,5 @@
 import { CommandDefinition } from "../Command";
 import { TournamentStatus } from "../database/interface";
-import { reply } from "../util/discord";
 import { getLogger } from "../util/logger";
 
 const logger = getLogger("command:tie");
@@ -43,8 +42,7 @@ const command: CommandDefinition = {
 				event: "success"
 			})
 		);
-		await reply(
-			msg,
+		await msg.reply(
 			`All outstanding matches in Round ${round} of **${tournament.name}** successfully ended in a tie!`
 		);
 	}

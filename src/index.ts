@@ -37,12 +37,13 @@ const logger = getLogger("index");
 			Intents.FLAGS.GUILD_MESSAGE_REACTIONS,
 			Intents.FLAGS.DIRECT_MESSAGES,
 			Intents.FLAGS.DIRECT_MESSAGE_REACTIONS
-		]
+		],
+		partials: ["CHANNEL"]
 	});
 	const djs = new DiscordWrapperDJS(bot);
 	const discord = new DiscordInterface(djs);
 	const organiserRole = new OrganiserRoleProvider(config.defaultTORole, 0x3498db);
-	const participantRole = new ParticipantRoleProvider(bot as any, 0xe67e22);
+	const participantRole = new ParticipantRoleProvider(bot, 0xe67e22);
 	const timeWizard = new TimeWizard({
 		sendMessage: async (channelId, message) => {
 			const channel = await bot.channels.fetch(channelId);
@@ -69,7 +70,7 @@ const logger = getLogger("index");
 		participantRole,
 		timeWizard
 	);
-	registerEvents(bot as any, config.defaultPrefix, {
+	registerEvents(bot, config.defaultPrefix, {
 		discord,
 		tournamentManager,
 		organiserRole,

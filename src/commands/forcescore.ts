@@ -1,6 +1,6 @@
 import { CommandDefinition } from "../Command";
 import { TournamentStatus } from "../database/interface";
-import { firstMentionOrFail, reply } from "../util/discord";
+import { firstMentionOrFail } from "../util/discord";
 import { UserError } from "../util/errors";
 import { getLogger } from "../util/logger";
 
@@ -62,8 +62,7 @@ const command: CommandDefinition = {
 			})
 		);
 		const username = await support.discord.getRESTUsername(player.id, true);
-		await reply(
-			msg,
+		await msg.reply(
 			`Score of ${scores[0]}-${scores[1]} submitted in favour of <@${player}> (${username}) in **${tournament.name}**!`
 		);
 	}

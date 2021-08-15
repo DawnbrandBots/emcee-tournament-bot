@@ -1,5 +1,5 @@
 import { CommandDefinition } from "../Command";
-import { firstMentionOrFail, reply } from "../util/discord";
+import { firstMentionOrFail } from "../util/discord";
 import { getLogger } from "../util/logger";
 
 const logger = getLogger("command:deck");
@@ -47,7 +47,7 @@ const command: CommandDefinition = {
 				event: "success"
 			})
 		);
-		await reply(msg, response);
+		await msg.reply(response);
 	}
 };
 

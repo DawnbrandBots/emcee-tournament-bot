@@ -1,5 +1,5 @@
 import { CommandDefinition } from "../Command";
-import { firstMentionOrFail, reply } from "../util/discord";
+import { firstMentionOrFail } from "../util/discord";
 import { getLogger } from "../util/logger";
 
 const logger = getLogger("command:removebye");
@@ -38,7 +38,7 @@ const command: CommandDefinition = {
 		const tag = (id: string): string =>
 			`${support.discord.mentionUser(id)} (${support.discord.getUsername(id, true)})`;
 		const names = byes.map(tag).join(", ");
-		await reply(msg, `Bye removed for Player ${tag(player.id)} in **${tournament.name}**!\nAll byes: ${names}`);
+		await msg.reply(`Bye removed for Player ${tag(player.id)} in **${tournament.name}**!\nAll byes: ${names}`);
 	}
 };
 

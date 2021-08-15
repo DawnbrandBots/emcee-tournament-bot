@@ -1,6 +1,5 @@
 import { CommandDefinition } from "../Command";
 import { TournamentStatus } from "../database/interface";
-import { reply } from "../util/discord";
 import { getLogger } from "../util/logger";
 
 const logger = getLogger("command:sync");
@@ -32,7 +31,7 @@ const command: CommandDefinition = {
 					event: "already complete"
 				})
 			);
-			await reply(msg, `**${tournament.name}** has already concluded!`);
+			await msg.reply(`**${tournament.name}** has already concluded!`);
 			return;
 		}
 		const tournamentData = await support.challonge.getTournament(id);
@@ -51,7 +50,7 @@ const command: CommandDefinition = {
 				event: "success"
 			})
 		);
-		await reply(msg, `**${tournament.name}** database successfully synchronised with remote website.`);
+		await msg.reply(`**${tournament.name}** database successfully synchronised with remote website.`);
 	}
 };
 

@@ -1,5 +1,5 @@
 import { CommandDefinition } from "../Command";
-import { parseUserMention, reply } from "../util/discord";
+import { parseUserMention } from "../util/discord";
 import { getLogger } from "../util/logger";
 
 const logger = getLogger("command:removehost");
@@ -35,7 +35,7 @@ const command: CommandDefinition = {
 				event: "success"
 			})
 		);
-		await reply(msg, `${support.discord.mentionUser(newHost)} removed as a host for **${tournament.name}**!`);
+		await msg.reply(`${support.discord.mentionUser(newHost)} removed as a host for **${tournament.name}**!`);
 	}
 };
 

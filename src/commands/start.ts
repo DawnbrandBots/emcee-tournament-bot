@@ -1,6 +1,5 @@
 import { CommandDefinition } from "../Command";
 import { TournamentStatus } from "../database/interface";
-import { reply } from "../util/discord";
 import { UserError } from "../util/errors";
 import { getLogger } from "../util/logger";
 
@@ -62,13 +61,12 @@ const command: CommandDefinition = {
 			logger.info(log("challonge"));
 			await support.database.startTournament(id);
 			logger.verbose(log("database"));
-			await reply(
-				msg,
+			await msg.reply(
 				`**${tournament.name}** commenced on Challonge! Use \`mc!round ${id}\` to send out pairings and start the timer for round 1.`
 			);
 		} catch (err) {
 			logger.error(err);
-			await reply(msg, `Something went wrong in preflight for **${tournament.name}**. Please try again later.`);
+			await msg.reply(`Something went wrong in preflight for **${tournament.name}**. Please try again later.`);
 			return;
 		}
 		// send command guide to players

@@ -1,5 +1,4 @@
 import { CommandDefinition } from "../Command";
-import { reply } from "../util/discord";
 import { getLogger } from "../util/logger";
 
 const logger = getLogger("command:open");
@@ -31,7 +30,7 @@ const command: CommandDefinition = {
 				event: "success"
 			})
 		);
-		await reply(msg, `**${tournament.name}** opened for registration!`);
+		await msg.reply(`**${tournament.name}** opened for registration!`);
 	}
 };
 

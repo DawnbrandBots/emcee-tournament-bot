@@ -1,6 +1,5 @@
 import { CommandDefinition } from "../Command";
 import { TournamentStatus } from "../database/interface";
-import { reply } from "../util/discord";
 import { getLogger } from "../util/logger";
 
 const logger = getLogger("command:update");
@@ -36,7 +35,7 @@ const command: CommandDefinition = {
 					event: "already complete"
 				})
 			);
-			await reply(msg, `**${tournament.name}** has already concluded!`);
+			await msg.reply(`**${tournament.name}** has already concluded!`);
 			return;
 		}
 		// Update DB first because it performs an important check that might throw
@@ -55,7 +54,7 @@ const command: CommandDefinition = {
 				event: "success"
 			})
 		);
-		await reply(msg, `Tournament \`${id}\` updated! It now has the name ${name} and the given description.`);
+		await msg.reply(`Tournament \`${id}\` updated! It now has the name ${name} and the given description.`);
 	}
 };
 

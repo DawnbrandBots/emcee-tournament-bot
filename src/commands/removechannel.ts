@@ -1,6 +1,5 @@
 import { CommandDefinition } from "../Command";
 import { TournamentStatus } from "../database/interface";
-import { reply } from "../util/discord";
 import { getLogger } from "../util/logger";
 
 const logger = getLogger("command:removechannel");
@@ -27,7 +26,7 @@ const command: CommandDefinition = {
 			})
 		);
 		if (tournament.status === TournamentStatus.COMPLETE) {
-			await reply(msg, `**${tournament.name}** has already concluded!`);
+			await msg.reply(`**${tournament.name}** has already concluded!`);
 			return;
 		}
 		await support.database.removeAnnouncementChannel(id, channelId, type);
@@ -43,13 +42,12 @@ const command: CommandDefinition = {
 				event: "success"
 			})
 		);
-		/* await reply(
-			msg,
+		/* await msg.reply(
 			`${support.discord.mentionChannel(
 				channelId
 			)} removed as a ${type} announcement channel for **${tournament.name}**!`
 		); */
-		await reply(msg, `This channel removed as a ${type} announcement channel for **${tournament.name}**!`);
+		await msg.reply(`This channel removed as a ${type} announcement channel for **${tournament.name}**!`);
 	}
 };
 

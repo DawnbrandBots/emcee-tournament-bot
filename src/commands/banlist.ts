@@ -3,7 +3,6 @@ import { MessageAttachment } from "discord.js";
 import fetch from "node-fetch";
 import { CommandDefinition } from "../Command";
 import { TournamentStatus } from "../database/interface";
-import { reply } from "../util/discord";
 import { UserError } from "../util/errors";
 import { getLogger } from "../util/logger";
 
@@ -45,8 +44,7 @@ const command: CommandDefinition = {
 		);
 		if (msg.attachments.size) {
 			if (tournament.players.length) {
-				await reply(
-					msg,
+				await msg.reply(
 					`Players have already been confirmed for **${tournament.name}**. Please drop them first if you wish to change the card pool.`
 				);
 				return;
@@ -85,7 +83,7 @@ const command: CommandDefinition = {
 							event: "success"
 						})
 					);
-					await reply(msg, `Set the card pool for **${tournament.name}**.`);
+					await msg.reply(`Set the card pool for **${tournament.name}**.`);
 				} catch (error) {
 					logger.info(
 						JSON.stringify({
@@ -98,8 +96,7 @@ const command: CommandDefinition = {
 						}),
 						error
 					);
-					await reply(
-						msg,
+					await msg.reply(
 						error instanceof TypeError ? error.message : "Failed to save card pool! Please try again later."
 					);
 				}
@@ -114,8 +111,7 @@ const command: CommandDefinition = {
 						event: "bad upload"
 					})
 				);
-				await reply(
-					msg,
+				await msg.reply(
 					`Please provide exactly 1 JSON file to use for **${tournament.name}**'s allowed card pool.`
 				);
 			}
@@ -143,7 +139,7 @@ const command: CommandDefinition = {
 			const memo = tournament.allowVector
 				? `Here is the custom allowed card pool for **${tournament.name}** in vector form.\nSHA256: \`${hash}\``
 				: `This is the _default_ allowed card pool in vector form.\nSHA256: \`${hash}\``;
-			await reply(msg, { content: memo, files: [new MessageAttachment(file, `${id}.allowVector.json`)] });
+			await msg.reply({ content: memo, files: [new MessageAttachment(file, `${id}.allowVector.json`)] });
 		}
 	}
 };

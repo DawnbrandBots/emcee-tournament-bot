@@ -7,7 +7,6 @@ import { ParticipantRoleProvider } from "./role/participant";
 import { Templater } from "./templates";
 import { TimeWizard } from "./timer";
 import { TournamentInterface } from "./TournamentManager";
-import { reply } from "./util/discord";
 import { UserError } from "./util/errors";
 import { getLogger } from "./util/logger";
 import { Public } from "./util/types";
@@ -73,7 +72,7 @@ export class Command {
 		const error = this.checkUsage(args);
 		if (error) {
 			logger.verbose(this.log(msg, { error }));
-			await reply(msg, error).catch(logger.error);
+			await msg.reply(error).catch(logger.error);
 			return;
 		}
 		try {
@@ -83,7 +82,7 @@ export class Command {
 		} catch (e) {
 			if (e instanceof UserError) {
 				logger.verbose(this.log(msg, { error: e.message }));
-				await reply(msg, e.message).catch(logger.error);
+				await msg.reply(e.message).catch(logger.error);
 				return;
 			}
 			logger.error(e); // internal error
