@@ -1,10 +1,20 @@
-import { Message, User } from "discord.js";
+import { Channel, Client, Message, TextChannel, User } from "discord.js";
 import { UserError } from "./errors";
 
 // Discord.js v13 apparently will automatically use inline replies
 export async function reply(msg: Message, ...args: Parameters<Message["reply"]>): ReturnType<Message["reply"]> {
 	// TODO: mixin allowedMentions
 	return await msg.reply(...args);
+}
+
+export async function send(
+	bot: Client,
+	channelId: string,
+	...args: Parameters<TextChannel["send"]>
+): ReturnType<TextChannel["send"]> {
+	const channel = bot.channels.cache.get(channelId)! as TextChannel;
+	// TODO: check channel existence and type
+	return await channel.send(...args);
 }
 
 // TODO: refactor for Discord.js in detail

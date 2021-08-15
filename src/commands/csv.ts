@@ -1,4 +1,5 @@
 import * as csv from "@fast-csv/format";
+import { MessageAttachment } from "discord.js";
 import { CommandDefinition } from "../Command";
 import { reply } from "../util/discord";
 import { getLogger } from "../util/logger";
@@ -63,16 +64,12 @@ const command: CommandDefinition = {
 				event: "success"
 			})
 		);
-		await reply(
-			msg,
-			pie
+		await reply(msg, {
+			content: pie
 				? `A list of themes in tournament ${id} with their counts is attached.`
 				: `A list of players for tournament ${id} with their deck is attached.`,
-			{
-				name: `${id}.csv`,
-				file
-			}
-		);
+			files: [new MessageAttachment(file, `${id}.csv`)]
+		});
 	}
 };
 

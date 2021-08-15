@@ -6,7 +6,7 @@ import { DatabaseTournament } from "../database/interface";
 import { DatabaseWrapperPostgres } from "../database/postgres";
 import { DeckManager } from "../deck";
 import { ParticipantRoleProvider } from "../role/participant";
-import { reply } from "../util/discord";
+import { reply, send } from "../util/discord";
 import { getLogger } from "../util/logger";
 import { Public } from "../util/types";
 import { WebsiteInterface } from "../website/interface";
@@ -157,7 +157,7 @@ async function verifyDeck(msg: Message, decks: DeckManager, allowVector?: CardVe
 		errors
 	);
 	if (errors.length > 0) {
-		await reply(msg, ...formattedDeckMessage).catch(logger.error);
+		await reply(msg, formattedDeckMessage).catch(logger.error);
 		throw new Error(
 			`Your deck is not legal. Please see the print out for all the errors. You have NOT been registered yet, please submit again with a legal deck.`
 		);
@@ -185,13 +185,12 @@ async function verifyDeckAndConfirmPending(
 		log("verbose", msg, { event: "database", tournament: tournament.id });
 	} catch (error) {
 		logger.error(error);
-		for (const channel of tournament.privateChannels) {
-			await bot
-				.createMessage(
-					channel,
-					`Something went really wrong while trying to register <@${msg.author.id}> (${username}) for **${tournament.name}**!`
-				)
-				.catch(logger.error);
+		for (const channelId of tournament.privateChannels) {
+			await send(
+				bot,
+				channelId,
+				`Something went really wrong while trying to register <@${msg.author.id}> (${username}) for **${tournament.name}**!`
+			).catch(logger.error);
 		}
 		await reply(msg, `Something went really wrong while trying to register for **${tournament.name}**!`).catch(
 			logger.error
@@ -208,11 +207,12 @@ async function verifyDeckAndConfirmPending(
 	}
 	for (const channel of tournament.privateChannels) {
 		try {
-			await bot.createMessage(
+			await send(
+				bot,
 				channel,
 				`<@${msg.author.id}> (${username}) has signed up for **${tournament.name}** with the following deck!${roleGrantWarning}`
 			);
-			await bot.createMessage(channel, ...formattedDeckMessage);
+			await send(bot, channel, formattedDeckMessage);
 		} catch (error) {
 			logger.error(error);
 		}
@@ -223,7 +223,7 @@ async function verifyDeckAndConfirmPending(
 			msg,
 			`You have successfully signed up for **${tournament.name}**! Your deck is below to double-check. You may resubmit at any time before the tournament starts.`
 		);
-		await reply(msg, ...formattedDeckMessage);
+		await reply(msg, formattedDeckMessage);
 	} catch (error) {
 		logger.error(error);
 	}
@@ -245,12 +245,11 @@ async function verifyDeckAndUpdateConfirmed(
 	} catch (error) {
 		logger.error(error);
 		for (const channel of tournament.privateChannels) {
-			await bot
-				.createMessage(
-					channel,
-					`Something went really wrong while trying to update deck of <@${msg.author.id}> (${username}) for **${tournament.name}**!`
-				)
-				.catch(logger.error);
+			await send(
+				bot,
+				channel,
+				`Something went really wrong while trying to update deck of <@${msg.author.id}> (${username}) for **${tournament.name}**!`
+			).catch(logger.error);
 		}
 		await reply(msg, `Something went really wrong while trying to update deck for **${tournament.name}**!`).catch(
 			logger.error
@@ -259,11 +258,12 @@ async function verifyDeckAndUpdateConfirmed(
 	}
 	for (const channel of tournament.privateChannels) {
 		try {
-			await bot.createMessage(
+			await send(
+				bot,
 				channel,
 				`<@${msg.author.id}> (${username}) has updated their deck for **${tournament.name}** to the following!`
 			);
-			await bot.createMessage(channel, ...formattedDeckMessage);
+			await send(bot, channel, formattedDeckMessage);
 		} catch (error) {
 			logger.error(error);
 		}
@@ -274,7 +274,7 @@ async function verifyDeckAndUpdateConfirmed(
 			msg,
 			`You have successfully changed your deck for **${tournament.name}**! Your deck is below to double-check. You may resubmit at any time before the tournament starts.`
 		);
-		await reply(msg, ...formattedDeckMessage);
+		await reply(msg, formattedDeckMessage);
 	} catch (error) {
 		logger.error(error);
 	}
