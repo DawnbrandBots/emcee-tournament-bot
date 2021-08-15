@@ -1,4 +1,4 @@
-import { EmbedField, EmbedOptions } from "eris";
+import { EmbedField, MessageEmbed } from "discord.js";
 import { CommandDefinition } from "../Command";
 import { ChallongeTournament } from "../database/orm";
 import { reply } from "../util/discord";
@@ -7,7 +7,7 @@ import { getLogger } from "../util/logger";
 
 const logger = getLogger("command:info");
 
-export function createTournamentEmbed(tournament: ChallongeTournament): EmbedOptions {
+export function createTournamentEmbed(tournament: ChallongeTournament): MessageEmbed {
 	const fields: EmbedField[] = [
 		{ name: ":ticket: Capacity", value: `${tournament.participantLimit || 256}`, inline: true },
 		{
@@ -27,13 +27,13 @@ export function createTournamentEmbed(tournament: ChallongeTournament): EmbedOpt
 	}
 	const hosts = tournament.hosts.map(snowflake => `<@${snowflake}>`).join(" ");
 	fields.push({ name: ":smile: Hosts", value: hosts, inline: true });
-	return {
-		url: `https://challonge.com/${tournament.tournamentId}`,
-		title: `**${tournament.name}**`,
-		description: tournament.description,
-		fields,
-		footer: { text: "Tournament details as of request time" }
-	};
+	const embed = new MessageEmbed();
+	embed.setURL(`https://challonge.com/${tournament.tournamentId}`);
+	embed.setTitle(`**${tournament.name}**`);
+	embed.setDescription(tournament.description),
+		embed.setFields(fields),
+		embed.setFooter("Tournament details as of request time");
+	return embed;
 }
 
 const command: CommandDefinition = {
@@ -61,8 +61,8 @@ const command: CommandDefinition = {
 			);
 			const embed = createTournamentEmbed(tournament);
 			await reply(msg, {
-				embed,
-				allowedMentions: { users: false }
+				embeds: [embed],
+				allowedMentions: { users: [] }
 			});
 		} else {
 			logger.verbose(
