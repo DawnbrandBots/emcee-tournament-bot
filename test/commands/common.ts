@@ -1,6 +1,6 @@
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
-import { Client, Message } from "eris";
+import { Client, Message } from "discord.js";
 import sinon, { SinonSandbox } from "sinon";
 import sinonChai from "sinon-chai";
 import sinonTest from "sinon-test";
@@ -32,10 +32,10 @@ export function itRejectsNonHosts(
 		"rejects non-hosts",
 		test(function (this: SinonSandbox) {
 			const authStub = this.stub(support.database, "authenticateHost").rejects();
-			msg.channel.createMessage = sinon.spy();
+			msg.channel.send = sinon.spy();
 			expect(command.executor(msg, args, support)).to.be.rejected;
 			expect(authStub).to.have.been.called;
-			expect(msg.channel.createMessage).to.not.have.been.called;
+			expect(msg.channel.send).to.not.have.been.called;
 		})
 	);
 }

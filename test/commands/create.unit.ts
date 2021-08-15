@@ -15,11 +15,11 @@ describe("command:create", function () {
 				"https://example.com/battlecity",
 				"Guide: mc!help battlecity"
 			]);
-			msg.channel.createMessage = this.spy();
+			msg.channel.send = this.spy();
 			expect(command.executor(msg, args, support)).to.be.rejected;
 			expect(authStub).to.have.been.called;
 			expect(createStub).to.not.have.been.called;
-			expect(msg.channel.createMessage).to.not.have.been.called;
+			expect(msg.channel.send).to.not.have.been.called;
 		})
 	);
 	it(
@@ -31,18 +31,18 @@ describe("command:create", function () {
 				"https://example.com/battlecity",
 				"Guide: mc!help battlecity"
 			]);
-			msg.channel.createMessage = this.spy();
+			msg.channel.send = this.spy();
 			await command.executor(msg, args, support);
 			expect(authStub).to.have.been.called;
 			expect(createStub).to.have.been.calledOnce;
-			expect(msg.channel.createMessage).to.have.been.calledTwice;
-			expect(msg.channel.createMessage).to.have.been.calledWithExactly(
+			expect(msg.channel.send).to.have.been.calledTwice;
+			expect(msg.channel.send).to.have.been.calledWithExactly(
 				sinon.match({
 					content:
 						"Tournament battlecity created! You can find it at https://example.com/battlecity. For future commands, refer to this tournament by the id `battlecity`."
 				})
 			);
-			expect(msg.channel.createMessage).to.have.been.calledWithExactly(
+			expect(msg.channel.send).to.have.been.calledWithExactly(
 				sinon.match({ content: "Guide: mc!help battlecity" })
 			);
 		})
@@ -53,7 +53,7 @@ describe("command:create", function () {
 			const authStub = this.stub(support.organiserRole, "authorise").resolves();
 			const error = new ChallongeIDConflictError("battlecity");
 			const createStub = this.stub(support.tournamentManager, "createTournament").rejects(error);
-			msg.channel.createMessage = this.spy();
+			msg.channel.send = this.spy();
 			try {
 				await command.executor(msg, args, support);
 				expect.fail();
@@ -61,7 +61,7 @@ describe("command:create", function () {
 				expect(e).to.equal(error);
 				expect(authStub).to.have.been.called;
 				expect(createStub).to.have.been.calledOnce;
-				expect(msg.channel.createMessage).to.have.been.calledOnceWithExactly(
+				expect(msg.channel.send).to.have.been.calledOnceWithExactly(
 					sinon.match({
 						content:
 							"Tournament ID battlecity already taken on Challonge. This is an error with Emcee, so please report it, but in the meantime, try using a different tournament name."
@@ -75,14 +75,14 @@ describe("command:create", function () {
 		test(async function (this: SinonSandbox) {
 			const authStub = this.stub(support.organiserRole, "authorise").resolves();
 			const createStub = this.stub(support.tournamentManager, "createTournament").rejects();
-			msg.channel.createMessage = this.spy();
+			msg.channel.send = this.spy();
 			try {
 				await command.executor(msg, args, support);
 				expect.fail();
 			} catch (e) {
 				expect(authStub).to.have.been.called;
 				expect(createStub).to.have.been.calledOnce;
-				expect(msg.channel.createMessage).to.not.have.been.called;
+				expect(msg.channel.send).to.not.have.been.called;
 			}
 		})
 	);
@@ -95,14 +95,14 @@ describe("command:create", function () {
 				"https://example.com/battlecity",
 				"Guide: mc!help battlecity"
 			]);
-			msg.channel.createMessage = this.stub().rejects();
+			msg.channel.send = this.stub().rejects();
 			try {
 				await command.executor(msg, args, support);
 				expect.fail();
 			} catch (e) {
 				expect(authStub).to.have.been.called;
 				expect(createStub).to.have.been.calledOnce;
-				expect(msg.channel.createMessage).to.have.been.calledOnce;
+				expect(msg.channel.send).to.have.been.calledOnce;
 			}
 		})
 	);
@@ -112,7 +112,7 @@ describe("command:create", function () {
 			const authStub = this.stub(support.organiserRole, "authorise").resolves();
 			const error = new ChallongeIDConflictError("battlecity");
 			const createStub = this.stub(support.tournamentManager, "createTournament").rejects(error);
-			msg.channel.createMessage = this.stub().rejects();
+			msg.channel.send = this.stub().rejects();
 			try {
 				await command.executor(msg, args, support);
 				expect.fail();
@@ -120,7 +120,7 @@ describe("command:create", function () {
 				expect(e).to.not.equal(error);
 				expect(authStub).to.have.been.called;
 				expect(createStub).to.have.been.calledOnce;
-				expect(msg.channel.createMessage).to.have.been.calledOnce;
+				expect(msg.channel.send).to.have.been.calledOnce;
 			}
 		})
 	);

@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import { Message } from "eris";
+import { Message } from "discord.js";
 import sinon, { SinonSandbox } from "sinon";
 import command from "../../src/commands/list";
 import { DatabaseTournament, TournamentFormat, TournamentStatus } from "../../src/database/interface";
@@ -36,11 +36,11 @@ describe("command:list", function () {
 		test(function (this: SinonSandbox) {
 			const authStub = this.stub(support.organiserRole, "authorise").rejects();
 			const listStub = this.stub(support.database, "getActiveTournaments");
-			msg.channel.createMessage = this.spy();
+			msg.channel.send = this.spy();
 			expect(command.executor(msg, [], support)).to.be.rejected;
 			expect(authStub).to.have.been.called;
 			expect(listStub).to.not.have.been.called;
-			expect(msg.channel.createMessage).to.not.have.been.called;
+			expect(msg.channel.send).to.not.have.been.called;
 		})
 	);
 	it(
@@ -48,11 +48,11 @@ describe("command:list", function () {
 		test(async function (this: SinonSandbox) {
 			const authStub = this.stub(support.organiserRole, "authorise").resolves();
 			const listStub = this.stub(support.database, "getActiveTournaments").resolves(fakeTournaments);
-			msg.channel.createMessage = this.spy();
+			msg.channel.send = this.spy();
 			await command.executor(msg, [], support);
 			expect(authStub).to.have.been.called;
 			expect(listStub).to.have.been.calledOnceWithExactly(msg.guildId);
-			expect(msg.channel.createMessage).to.have.been.calledOnceWithExactly(
+			expect(msg.channel.send).to.have.been.calledOnceWithExactly(
 				sinon.match({ content: "```\nID: foo|Name: foo tournament|Status: preparing|Players: 0```" })
 			);
 		})
@@ -62,11 +62,11 @@ describe("command:list", function () {
 		test(async function (this: SinonSandbox) {
 			const authStub = this.stub(support.organiserRole, "authorise").resolves();
 			const listStub = this.stub(support.database, "getActiveTournaments").resolves([]);
-			msg.channel.createMessage = this.spy();
+			msg.channel.send = this.spy();
 			await command.executor(msg, [], support);
 			expect(authStub).to.have.been.called;
 			expect(listStub).to.have.been.calledOnceWithExactly(msg.guildId);
-			expect(msg.channel.createMessage).to.have.been.calledOnceWithExactly(
+			expect(msg.channel.send).to.have.been.calledOnceWithExactly(
 				sinon.match({ content: "There are no open tournaments you have access to!" })
 			);
 		})
@@ -76,14 +76,14 @@ describe("command:list", function () {
 		test(async function (this: SinonSandbox) {
 			const authStub = this.stub(support.organiserRole, "authorise").resolves();
 			const listStub = this.stub(support.database, "getActiveTournaments").resolves(fakeTournaments);
-			msg.channel.createMessage = this.stub().rejects();
+			msg.channel.send = this.stub().rejects();
 			try {
 				await command.executor(msg, [], support);
 				expect.fail();
 			} catch {
 				expect(authStub).to.have.been.called;
 				expect(listStub).to.have.been.calledOnce;
-				expect(msg.channel.createMessage).to.have.been.calledOnce;
+				expect(msg.channel.send).to.have.been.calledOnce;
 			}
 		})
 	);
@@ -92,14 +92,14 @@ describe("command:list", function () {
 		test(async function (this: SinonSandbox) {
 			const authStub = this.stub(support.organiserRole, "authorise").resolves();
 			const listStub = this.stub(support.database, "getActiveTournaments").resolves([]);
-			msg.channel.createMessage = this.stub().rejects();
+			msg.channel.send = this.stub().rejects();
 			try {
 				await command.executor(msg, [], support);
 				expect.fail();
 			} catch {
 				expect(authStub).to.have.been.called;
 				expect(listStub).to.have.been.calledOnce;
-				expect(msg.channel.createMessage).to.have.been.calledOnce;
+				expect(msg.channel.send).to.have.been.calledOnce;
 			}
 		})
 	);

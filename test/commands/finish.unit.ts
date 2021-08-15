@@ -11,11 +11,11 @@ describe("command:finish", function () {
 		test(async function (this: SinonSandbox) {
 			const authStub = this.stub(support.database, "authenticateHost").resolves(tournament);
 			const finishStub = this.stub(support.tournamentManager, "finishTournament").resolves();
-			msg.channel.createMessage = this.spy();
+			msg.channel.send = this.spy();
 			await command.executor(msg, args, support);
 			expect(authStub).to.have.been.called;
 			expect(finishStub).to.have.been.calledOnceWithExactly("battlecity", false);
-			expect(msg.channel.createMessage).to.have.been.calledOnceWithExactly(
+			expect(msg.channel.send).to.have.been.calledOnceWithExactly(
 				sinon.match({ content: "**Tournament 1** successfully finished." })
 			);
 		})
@@ -26,12 +26,12 @@ describe("command:finish", function () {
 		test(async function (this: SinonSandbox) {
 			const authStub = this.stub(support.database, "authenticateHost").resolves(tournament);
 			const finishStub = this.stub(support.tournamentManager, "finishTournament").rejects();
-			msg.channel.createMessage = this.spy();
+			msg.channel.send = this.spy();
 			// no try catch because executor does not throw, it handles error
 			await command.executor(msg, args, support);
 			expect(authStub).to.have.been.called;
 			expect(finishStub).to.have.been.calledOnce;
-			expect(msg.channel.createMessage).to.have.been.calledOnceWithExactly(
+			expect(msg.channel.send).to.have.been.calledOnceWithExactly(
 				sinon.match({
 					content:
 						"**Tournament 1** is not finished. If you intend to end it early, use `mc!finish battlecity|early`."
@@ -44,11 +44,11 @@ describe("command:finish", function () {
 		test(async function (this: SinonSandbox) {
 			const authStub = this.stub(support.database, "authenticateHost").resolves(tournament);
 			const finishStub = this.stub(support.tournamentManager, "finishTournament").resolves();
-			msg.channel.createMessage = this.spy();
+			msg.channel.send = this.spy();
 			await command.executor(msg, [...args, "early"], support);
 			expect(authStub).to.have.been.called;
 			expect(finishStub).to.have.been.calledOnceWithExactly("battlecity", true);
-			expect(msg.channel.createMessage).to.have.been.calledOnceWithExactly(
+			expect(msg.channel.send).to.have.been.calledOnceWithExactly(
 				sinon.match({ content: "**Tournament 1** successfully finished." })
 			);
 		})
@@ -58,14 +58,14 @@ describe("command:finish", function () {
 		test(async function (this: SinonSandbox) {
 			const authStub = this.stub(support.database, "authenticateHost").resolves();
 			const finishStub = this.stub(support.tournamentManager, "finishTournament").rejects();
-			msg.channel.createMessage = this.spy();
+			msg.channel.send = this.spy();
 			try {
 				await command.executor(msg, [...args, "early"], support);
 				expect.fail();
 			} catch (e) {
 				expect(authStub).to.have.been.called;
 				expect(finishStub).to.have.been.calledOnceWithExactly("battlecity", true);
-				expect(msg.channel.createMessage).to.not.have.been.called;
+				expect(msg.channel.send).to.not.have.been.called;
 			}
 		})
 	);
@@ -74,14 +74,14 @@ describe("command:finish", function () {
 		test(async function (this: SinonSandbox) {
 			const authStub = this.stub(support.database, "authenticateHost").resolves(tournament);
 			const finishStub = this.stub(support.tournamentManager, "finishTournament").resolves();
-			msg.channel.createMessage = this.stub().rejects();
+			msg.channel.send = this.stub().rejects();
 			try {
 				await command.executor(msg, args, support);
 				expect.fail();
 			} catch (e) {
 				expect(authStub).to.have.been.called;
 				expect(finishStub).to.have.been.calledOnce;
-				expect(msg.channel.createMessage).to.have.been.calledOnce;
+				expect(msg.channel.send).to.have.been.calledOnce;
 			}
 		})
 	);

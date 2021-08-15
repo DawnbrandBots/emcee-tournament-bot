@@ -8,7 +8,7 @@ describe("command:score", function () {
 	it(
 		"rejects non-players",
 		test(function (this: SinonSandbox) {
-			const replySpy = (msg.channel.createMessage = sinon.spy());
+			const replySpy = (msg.channel.send = sinon.spy());
 			const authStub = this.stub(support.database, "authenticatePlayer").rejects();
 			expect(command.executor(msg, ["name", "2-0"], support)).to.be.rejected;
 			expect(authStub).to.have.been.calledOnceWithExactly("name", "0000", undefined, TournamentStatus.IPR);
@@ -22,7 +22,7 @@ describe("command:score", function () {
 	});
 	it("submits good scores", async () => {
 		sinon.restore();
-		const replySpy = (msg.channel.createMessage = sinon.spy());
+		const replySpy = (msg.channel.send = sinon.spy());
 		sinon.stub(support.database, "authenticatePlayer").callsFake(async (_, id) => ({
 			challongeId: id === "0000" ? 0 : 1,
 			tournament: {

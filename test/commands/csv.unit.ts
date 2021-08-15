@@ -18,12 +18,12 @@ describe("command:csv", function () {
 				{ discordId: "1234", deck: "ydke://!!!", challongeId: 3 }
 			]);
 			const restStub = this.stub(support.discord, "getRESTUsername").resolves(null);
-			msg.channel.createMessage = this.spy();
+			msg.channel.send = this.spy();
 			await command.executor(msg, args, support);
 			expect(authStub).to.have.been.called;
 			expect(listStub).to.have.been.calledOnce;
 			expect(restStub).to.have.been.calledThrice;
-			expect(msg.channel.createMessage).to.have.been.calledOnceWithExactly(
+			expect(msg.channel.send).to.have.been.calledOnceWithExactly(
 				sinon.match({
 					content: "A list of players for tournament battlecity with their deck is attached."
 				}),
@@ -39,11 +39,11 @@ describe("command:csv", function () {
 		test(async function (this: SinonSandbox) {
 			const authStub = this.stub(support.database, "authenticateHost").resolves(tournament);
 			const listStub = this.stub(support.database, "getConfirmed").resolves([]);
-			msg.channel.createMessage = this.spy();
+			msg.channel.send = this.spy();
 			await command.executor(msg, args, support);
 			expect(authStub).to.have.been.called;
 			expect(listStub).to.have.been.calledOnce;
-			expect(msg.channel.createMessage).to.have.been.calledOnceWithExactly(
+			expect(msg.channel.send).to.have.been.calledOnceWithExactly(
 				sinon.match({
 					content: "**Tournament 1** has no players!"
 				})
@@ -59,11 +59,11 @@ describe("command:csv", function () {
 				{ discordId: "1314", deck: "ydke://!!!", challongeId: 2 },
 				{ discordId: "1234", deck: "ydke://!!!", challongeId: 3 }
 			]);
-			msg.channel.createMessage = this.spy();
+			msg.channel.send = this.spy();
 			await command.executor(msg, [args[0], "pie"], support);
 			expect(authStub).to.have.been.called;
 			expect(listStub).to.have.been.calledOnce;
-			expect(msg.channel.createMessage).to.have.been.calledOnceWithExactly(
+			expect(msg.channel.send).to.have.been.calledOnceWithExactly(
 				sinon.match({ content: "A list of themes in tournament battlecity with their counts is attached." }),
 				{
 					name: "battlecity.csv",
@@ -77,14 +77,14 @@ describe("command:csv", function () {
 		test(async function (this: SinonSandbox) {
 			const authStub = this.stub(support.database, "authenticateHost").resolves();
 			const listStub = this.stub(support.database, "getConfirmed").rejects();
-			msg.channel.createMessage = this.spy();
+			msg.channel.send = this.spy();
 			try {
 				await command.executor(msg, args, support);
 				expect.fail();
 			} catch (e) {
 				expect(authStub).to.have.been.called;
 				expect(listStub).to.have.been.calledOnce;
-				expect(msg.channel.createMessage).to.not.have.been.called;
+				expect(msg.channel.send).to.not.have.been.called;
 			}
 		})
 	);
@@ -93,14 +93,14 @@ describe("command:csv", function () {
 		test(async function (this: SinonSandbox) {
 			const authStub = this.stub(support.database, "authenticateHost").resolves(tournament);
 			const listStub = this.stub(support.database, "getConfirmed").resolves([]);
-			msg.channel.createMessage = this.stub().rejects();
+			msg.channel.send = this.stub().rejects();
 			try {
 				await command.executor(msg, args, support);
 				expect.fail();
 			} catch (e) {
 				expect(authStub).to.have.been.called;
 				expect(listStub).to.have.been.calledOnce;
-				expect(msg.channel.createMessage).to.have.been.calledOnceWithExactly(
+				expect(msg.channel.send).to.have.been.calledOnceWithExactly(
 					sinon.match({
 						content: "**Tournament 1** has no players!"
 					})

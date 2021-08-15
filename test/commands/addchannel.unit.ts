@@ -8,7 +8,7 @@ describe("command:addchannel", function () {
 	it(
 		"adds a public channel by default",
 		test(async function (this: SinonSandbox) {
-			msg.channel.createMessage = this.spy();
+			msg.channel.send = this.spy();
 			this.stub(support.database, "addAnnouncementChannel");
 			await command.executor(msg, ["name"], support);
 			expect(support.database.addAnnouncementChannel).to.have.been.calledOnceWithExactly(
@@ -16,7 +16,7 @@ describe("command:addchannel", function () {
 				msg.channel.id,
 				"public"
 			);
-			expect(msg.channel.createMessage).to.have.been.calledOnceWithExactly(
+			expect(msg.channel.send).to.have.been.calledOnceWithExactly(
 				sinon.match({ content: "This channel added as a public announcement channel for **Tournament 1**!" })
 			);
 		})
@@ -24,7 +24,7 @@ describe("command:addchannel", function () {
 	it(
 		"adds public channels",
 		test(async function (this: SinonSandbox) {
-			msg.channel.createMessage = this.spy();
+			msg.channel.send = this.spy();
 			this.stub(support.database, "addAnnouncementChannel");
 			await command.executor(msg, ["name", "public"], support);
 			expect(support.database.addAnnouncementChannel).to.have.been.calledOnceWithExactly(
@@ -32,7 +32,7 @@ describe("command:addchannel", function () {
 				msg.channel.id,
 				"public"
 			);
-			expect(msg.channel.createMessage).to.have.been.calledOnceWithExactly(
+			expect(msg.channel.send).to.have.been.calledOnceWithExactly(
 				sinon.match({ content: "This channel added as a public announcement channel for **Tournament 1**!" })
 			);
 		})
@@ -40,7 +40,7 @@ describe("command:addchannel", function () {
 	it(
 		"adds private channels",
 		test(async function (this: SinonSandbox) {
-			msg.channel.createMessage = this.spy();
+			msg.channel.send = this.spy();
 			this.stub(support.database, "addAnnouncementChannel");
 			await command.executor(msg, ["name", "private"], support);
 			expect(support.database.addAnnouncementChannel).to.have.been.calledOnceWithExactly(
@@ -48,7 +48,7 @@ describe("command:addchannel", function () {
 				msg.channel.id,
 				"private"
 			);
-			expect(msg.channel.createMessage).to.have.been.calledOnceWithExactly(
+			expect(msg.channel.send).to.have.been.calledOnceWithExactly(
 				sinon.match({ content: "This channel added as a private announcement channel for **Tournament 1**!" })
 			);
 		})

@@ -1,7 +1,7 @@
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import dotenv from "dotenv";
-import { Client } from "eris";
+import { Client } from "discord.js";
 import * as fs from "fs/promises";
 import sinon from "sinon";
 import sinonChai from "sinon-chai";
@@ -29,7 +29,7 @@ const mockWebsiteWrapper = new WebsiteWrapperMock();
 const mockWebsite = new WebsiteInterface(mockWebsiteWrapper);
 
 const templater = new Templater();
-const participantRole = new ParticipantRoleProvider(new Client("foo"));
+const participantRole = new ParticipantRoleProvider(new Client({ intents: [] }));
 
 sinon.stub(participantRole, "get").resolves("role");
 sinon.stub(participantRole, "grant").resolves();
