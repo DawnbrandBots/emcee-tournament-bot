@@ -19,7 +19,7 @@ const command: CommandDefinition = {
 				user: msg.author.id,
 				tournament: id,
 				command: "removebye",
-				mention: player,
+				mention: player.id,
 				event: "attempt"
 			})
 		);
@@ -31,7 +31,7 @@ const command: CommandDefinition = {
 				user: msg.author.id,
 				tournament: id,
 				command: "removebye",
-				mention: player,
+				mention: player.id,
 				event: "success"
 			})
 		);

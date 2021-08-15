@@ -18,11 +18,11 @@ const command: CommandDefinition = {
 				user: msg.author.id,
 				tournament: id,
 				command: "deck",
-				mention: player,
+				mention: player.id,
 				event: "attempt"
 			})
 		);
-		const playerData = await support.database.getConfirmedPlayer(player, id);
+		const playerData = await support.database.getConfirmedPlayer(player.id, id);
 		const deck = support.decks.getDeck(playerData.deck);
 		logger.verbose(
 			JSON.stringify({
@@ -31,25 +31,23 @@ const command: CommandDefinition = {
 				user: msg.author.id,
 				tournament: id,
 				command: "deck",
-				mention: player,
+				mention: player.id,
 				event: "retrieve"
 			})
 		);
-		const response = support.decks.prettyPrint(
-			deck,
-			`${msg.mentions[0].username}.${msg.mentions[0].discriminator}.ydk`
-		);
+		// d.js supports user.tag, but we don't want the # here
+		const response = support.decks.prettyPrint(deck, `${player.username}.${player.discriminator}.ydk`);
 		logger.verbose(
 			JSON.stringify({
 				channel: msg.channel.id,
 				message: msg.id,
 				user: msg.author.id,
 				command: "deck",
-				mention: player,
+				mention: player.id,
 				event: "success"
 			})
 		);
-		await reply(msg, ...response);
+		await reply(msg, response);
 	}
 };
 

@@ -20,7 +20,7 @@ const command: CommandDefinition = {
 				user: msg.author.id,
 				tournament: id,
 				command: "forcescore",
-				mention: player,
+				mention: player.id,
 				scores,
 				event: "attempt"
 			})
@@ -55,7 +55,7 @@ const command: CommandDefinition = {
 				user: msg.author.id,
 				tournament: id,
 				command: "forcescore",
-				mention: player,
+				mention: player.id,
 				scores,
 				cleared,
 				event: "success"

@@ -18,11 +18,11 @@ const command: CommandDefinition = {
 				user: msg.author.id,
 				tournament: id,
 				command: "addbye",
-				mention: player,
+				mention: player.id,
 				event: "attempt"
 			})
 		);
-		const byes = await support.database.registerBye(id, player);
+		const byes = await support.database.registerBye(id, player.id);
 		logger.verbose(
 			JSON.stringify({
 				channel: msg.channel.id,
@@ -30,14 +30,14 @@ const command: CommandDefinition = {
 				user: msg.author.id,
 				tournament: id,
 				command: "addbye",
-				mention: player,
+				mention: player.id,
 				event: "success"
 			})
 		);
 		const tag = (id: string): string =>
 			`${support.discord.mentionUser(id)} (${support.discord.getUsername(id, true)})`;
 		const names = byes.map(tag).join(", ");
-		await reply(msg, `Bye registered for Player ${tag(player)} in **${tournament.name}**!\nAll byes: ${names}`);
+		await reply(msg, `Bye registered for Player ${tag(player.id)} in **${tournament.name}**!\nAll byes: ${names}`);
 	}
 };
 

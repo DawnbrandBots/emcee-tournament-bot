@@ -24,11 +24,13 @@ export async function reply(
 	return await msg.channel.createMessage(...args);
 }
 
-export function firstMentionOrFail(msg: Message): string {
-	if (msg.mentions.length < 1) {
+// returns full user object with d.js due to additional complexity of msg.mentions
+export function firstMentionOrFail(msg: Message): User {
+	const user = msg.mentions.users.first();
+	if (!user) {
 		throw new UserError(`Message does not mention a user!\n\`${msg.content}\``);
 	}
-	return msg.mentions[0].id;
+	return user;
 }
 
 export function parseUserMention(who: string): string | null {
