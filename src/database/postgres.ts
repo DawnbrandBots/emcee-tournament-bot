@@ -114,7 +114,7 @@ export class DatabaseWrapperPostgres {
 	public async authenticatePlayer(
 		tournamentId: string,
 		discordId: string,
-		serverId?: string,
+		serverId: string | null,
 		assertStatus?: TournamentStatus
 	): Promise<DatabasePlayerWithTournament> {
 		try {
