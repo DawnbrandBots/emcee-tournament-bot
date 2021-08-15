@@ -32,7 +32,7 @@ export function itRejectsNonHosts(
 		"rejects non-hosts",
 		test(function (this: SinonSandbox) {
 			const authStub = this.stub(support.database, "authenticateHost").rejects();
-			msg.reply = sinon.spy();
+			this.stub(msg, "reply").resolves();
 			expect(command.executor(msg, args, support)).to.be.rejected;
 			expect(authStub).to.have.been.called;
 			expect(msg.reply).to.not.have.been.called;

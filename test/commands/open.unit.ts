@@ -6,8 +6,9 @@ import { itRejectsNonHosts, msg, support } from "./common";
 describe("command:open", function () {
 	itRejectsNonHosts(support, command, msg, ["name"]);
 	it("opens registration", async () => {
-		msg.reply = sinon.spy();
+		sinon.stub(msg, "reply").resolves();
 		await command.executor(msg, ["name"], support);
+		sinon.restore();
 		expect(msg.reply).to.have.been.calledOnceWithExactly("**Tournament 1** opened for registration!");
 	});
 });

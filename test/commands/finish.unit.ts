@@ -11,7 +11,7 @@ describe("command:finish", function () {
 		test(async function (this: SinonSandbox) {
 			const authStub = this.stub(support.database, "authenticateHost").resolves(tournament);
 			const finishStub = this.stub(support.tournamentManager, "finishTournament").resolves();
-			msg.reply = this.spy();
+			this.stub(msg, "reply").resolves();
 			await command.executor(msg, args, support);
 			expect(authStub).to.have.been.called;
 			expect(finishStub).to.have.been.calledOnceWithExactly("battlecity", false);
@@ -24,7 +24,7 @@ describe("command:finish", function () {
 		test(async function (this: SinonSandbox) {
 			const authStub = this.stub(support.database, "authenticateHost").resolves(tournament);
 			const finishStub = this.stub(support.tournamentManager, "finishTournament").rejects();
-			msg.reply = this.spy();
+			this.stub(msg, "reply").resolves();
 			// no try catch because executor does not throw, it handles error
 			await command.executor(msg, args, support);
 			expect(authStub).to.have.been.called;
@@ -39,7 +39,7 @@ describe("command:finish", function () {
 		test(async function (this: SinonSandbox) {
 			const authStub = this.stub(support.database, "authenticateHost").resolves(tournament);
 			const finishStub = this.stub(support.tournamentManager, "finishTournament").resolves();
-			msg.reply = this.spy();
+			this.stub(msg, "reply").resolves();
 			await command.executor(msg, [...args, "early"], support);
 			expect(authStub).to.have.been.called;
 			expect(finishStub).to.have.been.calledOnceWithExactly("battlecity", true);
@@ -51,7 +51,7 @@ describe("command:finish", function () {
 		test(async function (this: SinonSandbox) {
 			const authStub = this.stub(support.database, "authenticateHost").resolves();
 			const finishStub = this.stub(support.tournamentManager, "finishTournament").rejects();
-			msg.reply = this.spy();
+			this.stub(msg, "reply").resolves();
 			try {
 				await command.executor(msg, [...args, "early"], support);
 				expect.fail();
@@ -67,7 +67,7 @@ describe("command:finish", function () {
 		test(async function (this: SinonSandbox) {
 			const authStub = this.stub(support.database, "authenticateHost").resolves(tournament);
 			const finishStub = this.stub(support.tournamentManager, "finishTournament").resolves();
-			msg.reply = this.stub().rejects();
+			this.stub(msg, "reply").rejects();
 			try {
 				await command.executor(msg, args, support);
 				expect.fail();

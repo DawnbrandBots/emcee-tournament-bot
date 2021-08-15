@@ -46,7 +46,7 @@ describe("command:capacity", function () {
 		"returns the participant limit",
 		test(async function (this: SinonSandbox) {
 			this.stub(support.database, "authenticateHost").resolves(tournament);
-			msg.reply = this.spy();
+			this.stub(msg, "reply").resolves();
 			await command.executor(msg, ["name"], support);
 			expect(msg.reply).to.have.been.calledOnceWithExactly(`**foo** capacity: _16_`);
 		})
@@ -58,7 +58,7 @@ describe("command:capacity", function () {
 				...tournament,
 				limit: 0
 			});
-			msg.reply = this.spy();
+			this.stub(msg, "reply").resolves();
 			await command.executor(msg, ["name"], support);
 			expect(msg.reply).to.have.been.calledOnceWithExactly(`**foo** capacity: _256_`);
 		})
@@ -77,7 +77,7 @@ describe("command:capacity", function () {
 				})
 				// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			} as any);
-			msg.reply = this.spy();
+			this.stub(msg, "reply").resolves();
 			await command.executor(msg, ["name", "32"], support);
 			expect(msg.reply).to.have.been.calledOnceWithExactly(`Set the capacity for **foo** to _32_.`);
 		})
@@ -96,7 +96,7 @@ describe("command:capacity", function () {
 				})
 				// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			} as any);
-			msg.reply = this.spy();
+			this.stub(msg, "reply").resolves();
 			await command.executor(msg, ["name", "512"], support);
 			expect(msg.reply).to.have.been.calledOnceWithExactly(`Set the capacity for **foo** to _0_.`);
 		})

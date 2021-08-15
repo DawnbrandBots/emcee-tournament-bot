@@ -9,7 +9,7 @@ describe("command:tb", function () {
 		"responds with current state",
 		test(async function (this: SinonSandbox) {
 			support.challonge.updateTieBreakers = sinon.spy();
-			msg.reply = sinon.spy();
+			this.stub(msg, "reply").resolves();
 			await command.executor(msg, ["name"], support);
 			expect(support.challonge.updateTieBreakers).to.not.have.been.called;
 			expect(msg.reply).to.have.been.calledOnceWithExactly(
@@ -21,7 +21,7 @@ describe("command:tb", function () {
 		"updates tie-breaker settings",
 		test(async function (this: SinonSandbox) {
 			support.challonge.updateTieBreakers = sinon.spy();
-			msg.reply = sinon.spy();
+			this.stub(msg, "reply").resolves();
 			await command.executor(msg, ["name", "match wins", "game wins", "points scored"], support);
 			expect(support.challonge.updateTieBreakers).to.have.been.calledOnce;
 			expect(msg.reply).to.have.been.calledOnceWithExactly(
@@ -33,7 +33,7 @@ describe("command:tb", function () {
 		"provides advice on invalid input",
 		test(async function (this: SinonSandbox) {
 			support.challonge.updateTieBreakers = sinon.spy();
-			msg.reply = sinon.spy();
+			this.stub(msg, "reply").resolves();
 			await command.executor(msg, ["name", "match wins"], support);
 			expect(support.challonge.updateTieBreakers).to.not.have.been.called;
 			expect(msg.reply).to.have.been.calledOnceWithExactly(

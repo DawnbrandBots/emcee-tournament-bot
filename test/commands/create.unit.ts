@@ -15,7 +15,7 @@ describe("command:create", function () {
 				"https://example.com/battlecity",
 				"Guide: mc!help battlecity"
 			]);
-			msg.reply = this.spy();
+			this.stub(msg, "reply").resolves();
 			expect(command.executor(msg, args, support)).to.be.rejected;
 			expect(authStub).to.have.been.called;
 			expect(createStub).to.not.have.been.called;
@@ -31,7 +31,7 @@ describe("command:create", function () {
 				"https://example.com/battlecity",
 				"Guide: mc!help battlecity"
 			]);
-			msg.reply = this.spy();
+			this.stub(msg, "reply").resolves();
 			await command.executor(msg, args, support);
 			expect(authStub).to.have.been.called;
 			expect(createStub).to.have.been.calledOnce;
@@ -48,7 +48,7 @@ describe("command:create", function () {
 			const authStub = this.stub(support.organiserRole, "authorise").resolves();
 			const error = new ChallongeIDConflictError("battlecity");
 			const createStub = this.stub(support.tournamentManager, "createTournament").rejects(error);
-			msg.reply = this.spy();
+			this.stub(msg, "reply").resolves();
 			try {
 				await command.executor(msg, args, support);
 				expect.fail();
@@ -67,7 +67,7 @@ describe("command:create", function () {
 		test(async function (this: SinonSandbox) {
 			const authStub = this.stub(support.organiserRole, "authorise").resolves();
 			const createStub = this.stub(support.tournamentManager, "createTournament").rejects();
-			msg.reply = this.spy();
+			this.stub(msg, "reply").resolves();
 			try {
 				await command.executor(msg, args, support);
 				expect.fail();
@@ -87,7 +87,7 @@ describe("command:create", function () {
 				"https://example.com/battlecity",
 				"Guide: mc!help battlecity"
 			]);
-			msg.reply = this.stub().rejects();
+			this.stub(msg, "reply").rejects();
 			try {
 				await command.executor(msg, args, support);
 				expect.fail();
@@ -104,7 +104,7 @@ describe("command:create", function () {
 			const authStub = this.stub(support.organiserRole, "authorise").resolves();
 			const error = new ChallongeIDConflictError("battlecity");
 			const createStub = this.stub(support.tournamentManager, "createTournament").rejects(error);
-			msg.reply = this.stub().rejects();
+			this.stub(msg, "reply").rejects();
 			try {
 				await command.executor(msg, args, support);
 				expect.fail();

@@ -1,16 +1,19 @@
 import { expect } from "chai";
 import { MessageMentions } from "discord.js";
-import sinon, { SinonSandbox } from "sinon";
+import { SinonSandbox } from "sinon";
 import command from "../../src/commands/forcescore";
 import { msg, support, test } from "./common";
 
 describe("command:forcescore", function () {
-	it("requires a mentioned user", async () => {
-		msg.mentions = new MessageMentions(msg, [], [], false);
-		msg.reply = sinon.spy();
-		expect(command.executor(msg, ["name"], support)).to.be.rejectedWith("Message does not mention a user!");
-		expect(msg.reply).to.not.have.been.called;
-	});
+	it(
+		"requires a mentioned user",
+		test(async function (this: SinonSandbox) {
+			msg.mentions = new MessageMentions(msg, [], [], false);
+			this.stub(msg, "reply").resolves();
+			expect(command.executor(msg, ["name"], support)).to.be.rejectedWith("Message does not mention a user!");
+			expect(msg.reply).to.not.have.been.called;
+		})
+	);
 	it(
 		"submits good scores",
 		test(async function (this: SinonSandbox) {
@@ -20,7 +23,7 @@ describe("command:forcescore", function () {
 				[],
 				false
 			);
-			msg.reply = sinon.spy();
+			this.stub(msg, "reply").resolves();
 			this.stub(support.database, "getConfirmedPlayer").resolves({ challongeId: 0, discordId: "", deck: "" });
 			this.stub(support.challonge, "findClosedMatch").resolves({
 				player1: 0,
@@ -43,7 +46,7 @@ describe("command:forcescore", function () {
 			[],
 			false
 		);
-		msg.reply = sinon.spy();
+		this.stub(msg, "reply").resolves();
 		expect(command.executor(msg, ["name", "they won"], support)).to.be.rejectedWith(
 			"Must provide score in format `#-#` e.g. `2-1`."
 		);

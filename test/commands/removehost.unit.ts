@@ -6,9 +6,10 @@ import { itRejectsNonHosts, msg, support } from "./common";
 
 describe("command:removehost", function () {
 	itRejectsNonHosts(support, command, msg, ["name"]);
+	beforeEach(() => sinon.stub(msg, "reply").resolves());
+	afterEach(() => sinon.restore());
 	it("supports mentioned users", async () => {
 		msg.mentions = new MessageMentions(msg, [], [], false);
-		msg.reply = sinon.spy();
 		await command.executor(msg, ["name", "<@!snowflake>"], support);
 		expect(msg.reply).to.have.been.calledOnceWithExactly("<@snowflake> removed as a host for **Tournament 1**!");
 	});
@@ -19,7 +20,6 @@ describe("command:removehost", function () {
 			[],
 			false
 		);
-		msg.reply = sinon.spy();
 		await command.executor(msg, ["name", "raw-snowflake"], support);
 		expect(msg.reply).to.have.been.calledOnceWithExactly(
 			"<@raw-snowflake> removed as a host for **Tournament 1**!"

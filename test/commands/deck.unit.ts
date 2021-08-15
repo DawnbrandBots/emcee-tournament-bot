@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import { MessageMentions } from "discord.js";
 import dotenv from "dotenv";
-import sinon, { SinonSandbox } from "sinon";
+import { SinonSandbox } from "sinon";
 import { Deck } from "ydeck";
 import command from "../../src/commands/deck";
 import { itRejectsNonHosts, msg, support, test } from "./common";
@@ -14,12 +14,15 @@ dotenv.config();
 
 describe("command:deck", function () {
 	itRejectsNonHosts(support, command, msg, ["name"]);
-	it("requires a mentioned user", async () => {
-		msg.mentions = new MessageMentions(msg, [], [], false);
-		msg.reply = sinon.spy();
-		expect(command.executor(msg, ["name"], support)).to.be.rejectedWith("Message does not mention a user!");
-		expect(msg.reply).to.not.have.been.called;
-	});
+	it(
+		"requires a mentioned user",
+		test(async function (this: SinonSandbox) {
+			msg.mentions = new MessageMentions(msg, [], [], false);
+			this.stub(msg, "reply").resolves();
+			expect(command.executor(msg, ["name"], support)).to.be.rejectedWith("Message does not mention a user!");
+			expect(msg.reply).to.not.have.been.called;
+		})
+	);
 	it(
 		"retrieves the deck for the mentioned user",
 		test(async function (this: SinonSandbox) {
@@ -29,7 +32,7 @@ describe("command:deck", function () {
 				[],
 				false
 			);
-			const replySpy = (msg.reply = this.spy());
+			const replySpy = this.stub(msg, "reply").resolves();
 			this.stub(support.database, "getConfirmedPlayer").resolves({
 				challongeId: 0,
 				deck: sampleDeck.url,
@@ -40,8 +43,13 @@ describe("command:deck", function () {
 			expect(msg.reply).to.have.been.calledOnce;
 			expect(support.database.getConfirmedPlayer).to.have.been.calledOnceWithExactly("nova", "name");
 			expect(support.decks.getDeck).to.have.been.calledOnceWithExactly(sampleDeck.url);
-			expect(replySpy.args[0][1].name).to.equal("nova.0000.ydk");
-			expect(replySpy.args[0][1].file).to.equal(sampleDeck.ydk);
+			const reply = replySpy.args[0][0];
+			expect(reply).to.have.property("files");
+			if (typeof reply === "object" && "files" in reply) {
+				reply.files?.[0]?.toJSON();
+			}
+			expect(replySpy.args[0][1]?.name).to.equal("nova.0000.ydk");
+			expect(replySpy.args[0][1]?.file).to.equal(sampleDeck.ydk);
 		})
 	);
 });

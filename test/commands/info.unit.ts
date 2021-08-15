@@ -127,7 +127,7 @@ describe("command:info", function () {
 		"responds if no match is found",
 		test(async function (this: SinonSandbox) {
 			const findStub = this.stub(ChallongeTournament, "findOne");
-			msg.reply = this.spy();
+			this.stub(msg, "reply").resolves();
 			msg.guildId = "foo";
 			await command.executor(msg, ["name"], support);
 			msg.guildId = null;
@@ -139,7 +139,7 @@ describe("command:info", function () {
 		"displays an embed if found",
 		test(async function (this: SinonSandbox) {
 			const findStub = this.stub(ChallongeTournament, "findOne").resolves(makeTournament());
-			msg.reply = this.spy();
+			this.stub(msg, "reply").resolves();
 			msg.guildId = "foo";
 			await command.executor(msg, ["name"], support);
 			msg.guildId = null;

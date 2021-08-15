@@ -8,7 +8,7 @@ describe("command:addchannel", function () {
 	it(
 		"adds a public channel by default",
 		test(async function (this: SinonSandbox) {
-			msg.reply = this.spy();
+			this.stub(msg, "reply").resolves();
 			this.stub(support.database, "addAnnouncementChannel");
 			await command.executor(msg, ["name"], support);
 			expect(support.database.addAnnouncementChannel).to.have.been.calledOnceWithExactly(
@@ -24,7 +24,7 @@ describe("command:addchannel", function () {
 	it(
 		"adds public channels",
 		test(async function (this: SinonSandbox) {
-			msg.reply = this.spy();
+			this.stub(msg, "reply").resolves();
 			this.stub(support.database, "addAnnouncementChannel");
 			await command.executor(msg, ["name", "public"], support);
 			expect(support.database.addAnnouncementChannel).to.have.been.calledOnceWithExactly(
@@ -40,7 +40,7 @@ describe("command:addchannel", function () {
 	it(
 		"adds private channels",
 		test(async function (this: SinonSandbox) {
-			msg.reply = this.spy();
+			this.stub(msg, "reply").resolves();
 			this.stub(support.database, "addAnnouncementChannel");
 			await command.executor(msg, ["name", "private"], support);
 			expect(support.database.addAnnouncementChannel).to.have.been.calledOnceWithExactly(

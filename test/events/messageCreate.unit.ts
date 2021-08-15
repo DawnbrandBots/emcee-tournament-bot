@@ -122,7 +122,7 @@ describe("Direct message submissions", function () {
 			await onDirectMessage(sampleMessage, database, decks, challonge, participantRole, mockBotClient);
 			sampleMessage.content = content;
 			const reply = replySpy.args[0][0];
-			expect(reply).property("embeds");
+			expect(reply).to.have.property("embeds");
 			if (typeof reply === "object" && "embeds" in reply) {
 				expect(reply.embeds?.[0]?.fields?.[1]?.value).to.equal(
 					"Main Deck too small! Should be at least 40, is 0!"
@@ -217,7 +217,7 @@ describe("Direct message submissions", function () {
 			await onDirectMessage(sampleMessage, database, decks, challonge, participantRole, mockBotClient);
 			sampleMessage.content = content;
 			const reply = replySpy.args[0][0];
-			expect(reply).property("embeds");
+			expect(reply).to.have.property("embeds");
 			if (typeof reply === "object" && "embeds" in reply) {
 				expect(reply.embeds?.[0]?.fields?.[1]?.value).to.equal(
 					"Main Deck too small! Should be at least 40, is 0!"

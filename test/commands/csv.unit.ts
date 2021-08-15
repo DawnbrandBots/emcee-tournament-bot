@@ -18,7 +18,7 @@ describe("command:csv", function () {
 				{ discordId: "1234", deck: "ydke://!!!", challongeId: 3 }
 			]);
 			const restStub = this.stub(support.discord, "getRESTUsername").resolves(null);
-			msg.reply = this.spy();
+			this.stub(msg, "reply").resolves();
 			await command.executor(msg, args, support);
 			expect(authStub).to.have.been.called;
 			expect(listStub).to.have.been.calledOnce;
@@ -39,7 +39,7 @@ describe("command:csv", function () {
 		test(async function (this: SinonSandbox) {
 			const authStub = this.stub(support.database, "authenticateHost").resolves(tournament);
 			const listStub = this.stub(support.database, "getConfirmed").resolves([]);
-			msg.reply = this.spy();
+			this.stub(msg, "reply").resolves();
 			await command.executor(msg, args, support);
 			expect(authStub).to.have.been.called;
 			expect(listStub).to.have.been.calledOnce;
@@ -55,7 +55,7 @@ describe("command:csv", function () {
 				{ discordId: "1314", deck: "ydke://!!!", challongeId: 2 },
 				{ discordId: "1234", deck: "ydke://!!!", challongeId: 3 }
 			]);
-			msg.reply = this.spy();
+			this.stub(msg, "reply").resolves();
 			await command.executor(msg, [args[0], "pie"], support);
 			expect(authStub).to.have.been.called;
 			expect(listStub).to.have.been.calledOnce;
@@ -73,7 +73,7 @@ describe("command:csv", function () {
 		test(async function (this: SinonSandbox) {
 			const authStub = this.stub(support.database, "authenticateHost").resolves();
 			const listStub = this.stub(support.database, "getConfirmed").rejects();
-			msg.reply = this.spy();
+			this.stub(msg, "reply").resolves();
 			try {
 				await command.executor(msg, args, support);
 				expect.fail();
@@ -89,7 +89,7 @@ describe("command:csv", function () {
 		test(async function (this: SinonSandbox) {
 			const authStub = this.stub(support.database, "authenticateHost").resolves(tournament);
 			const listStub = this.stub(support.database, "getConfirmed").resolves([]);
-			msg.reply = this.stub().rejects();
+			this.stub(msg, "reply").rejects();
 			try {
 				await command.executor(msg, args, support);
 				expect.fail();
