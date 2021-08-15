@@ -70,8 +70,7 @@ describe("Command class", function () {
 	it(
 		"checks command usage and runs the command",
 		test(async function (this: SinonSandbox) {
-			const replySpy = this.spy();
-			msg.channel.send = replySpy;
+			const replySpy = this.stub(msg, "reply").resolves();
 			const execStub = this.stub(testCommand, "executor");
 			const usage = "Usage: test unused|failmode";
 			const fails = [
@@ -87,7 +86,7 @@ describe("Command class", function () {
 			];
 			for (const args of fails) {
 				await command.run(msg, args, support);
-				expect(msg.channel.send).to.have.been.calledOnceWithExactly(sinon.match({ content: usage }));
+				expect(msg.reply).to.have.been.calledOnceWithExactly(usage);
 				expect(execStub).to.not.have.been.called;
 				replySpy.resetHistory();
 			}
@@ -97,7 +96,7 @@ describe("Command class", function () {
 			];
 			for (const args of successes) {
 				await command.run(msg, args, support);
-				expect(msg.channel.send).to.not.have.been.called;
+				expect(msg.reply).to.not.have.been.called;
 				expect(execStub).to.have.been.calledOnceWithExactly(msg, args, support);
 				execStub.resetHistory();
 			}
@@ -106,21 +105,21 @@ describe("Command class", function () {
 	it(
 		"informs the user of errors",
 		test(async function (this: SinonSandbox) {
-			msg.channel.send = this.spy();
+			this.stub(msg, "reply").resolves();
 			await command.run(msg, ["fail", "user"], support);
-			expect(msg.channel.send).to.have.been.calledOnceWithExactly(sinon.match({ content: "induced-user" }));
+			expect(msg.reply).to.have.been.calledOnceWithExactly("induced-user");
 		})
 	);
 	it(
 		"absorbs and logs all errors",
 		test(async function (this: SinonSandbox) {
-			msg.channel.send = this.stub().rejects();
+			this.stub(msg, "reply").resolves();
 			await command.run(msg, [], support);
-			expect(msg.channel.send).to.have.been.calledOnce;
+			expect(msg.reply).to.have.been.calledOnce;
 			await command.run(msg, ["fail", "user"], support);
-			expect(msg.channel.send).to.have.been.calledTwice;
+			expect(msg.reply).to.have.been.calledTwice;
 			await command.run(msg, ["fail", "other"], support);
-			expect(msg.channel.send).to.have.been.calledTwice;
+			expect(msg.reply).to.have.been.calledTwice;
 		})
 	);
 });

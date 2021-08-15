@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import sinon, { SinonSandbox } from "sinon";
+import { SinonSandbox } from "sinon";
 import command from "../../src/commands/capacity";
 import { DatabaseTournament, TournamentFormat, TournamentStatus } from "../../src/database/interface";
 import { ChallongeTournament } from "../../src/database/orm";
@@ -46,11 +46,9 @@ describe("command:capacity", function () {
 		"returns the participant limit",
 		test(async function (this: SinonSandbox) {
 			this.stub(support.database, "authenticateHost").resolves(tournament);
-			msg.channel.send = this.spy();
+			msg.reply = this.spy();
 			await command.executor(msg, ["name"], support);
-			expect(msg.channel.send).to.have.been.calledOnceWithExactly(
-				sinon.match({ content: `**foo** capacity: _16_` })
-			);
+			expect(msg.reply).to.have.been.calledOnceWithExactly(`**foo** capacity: _16_`);
 		})
 	);
 	it(
@@ -60,11 +58,9 @@ describe("command:capacity", function () {
 				...tournament,
 				limit: 0
 			});
-			msg.channel.send = this.spy();
+			msg.reply = this.spy();
 			await command.executor(msg, ["name"], support);
-			expect(msg.channel.send).to.have.been.calledOnceWithExactly(
-				sinon.match({ content: `**foo** capacity: _256_` })
-			);
+			expect(msg.reply).to.have.been.calledOnceWithExactly(`**foo** capacity: _256_`);
 		})
 	);
 	it(
@@ -81,11 +77,9 @@ describe("command:capacity", function () {
 				})
 				// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			} as any);
-			msg.channel.send = this.spy();
+			msg.reply = this.spy();
 			await command.executor(msg, ["name", "32"], support);
-			expect(msg.channel.send).to.have.been.calledOnceWithExactly(
-				sinon.match({ content: `Set the capacity for **foo** to _32_.` })
-			);
+			expect(msg.reply).to.have.been.calledOnceWithExactly(`Set the capacity for **foo** to _32_.`);
 		})
 	);
 	it(
@@ -102,11 +96,9 @@ describe("command:capacity", function () {
 				})
 				// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			} as any);
-			msg.channel.send = this.spy();
+			msg.reply = this.spy();
 			await command.executor(msg, ["name", "512"], support);
-			expect(msg.channel.send).to.have.been.calledOnceWithExactly(
-				sinon.match({ content: `Set the capacity for **foo** to _0_.` })
-			);
+			expect(msg.reply).to.have.been.calledOnceWithExactly(`Set the capacity for **foo** to _0_.`);
 		})
 	);
 });

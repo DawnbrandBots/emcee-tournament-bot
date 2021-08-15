@@ -127,28 +127,24 @@ describe("command:info", function () {
 		"responds if no match is found",
 		test(async function (this: SinonSandbox) {
 			const findStub = this.stub(ChallongeTournament, "findOne");
-			msg.channel.send = this.spy();
+			msg.reply = this.spy();
 			msg.guildId = "foo";
 			await command.executor(msg, ["name"], support);
 			msg.guildId = null;
 			expect(findStub).to.have.been.calledOnceWithExactly({ tournamentId: "name", owningDiscordServer: "foo" });
-			expect(msg.channel.send).to.have.been.calledOnceWithExactly(
-				sinon.match({
-					content: "No matching tournament in this server."
-				})
-			);
+			expect(msg.reply).to.have.been.calledOnceWithExactly("No matching tournament in this server.");
 		})
 	);
 	it(
 		"displays an embed if found",
 		test(async function (this: SinonSandbox) {
 			const findStub = this.stub(ChallongeTournament, "findOne").resolves(makeTournament());
-			msg.channel.send = this.spy();
+			msg.reply = this.spy();
 			msg.guildId = "foo";
 			await command.executor(msg, ["name"], support);
 			msg.guildId = null;
 			expect(findStub).to.have.been.calledOnce; // same as above
-			expect(msg.channel.send).to.have.been.calledOnceWithExactly(sinon.match({ embed: {} }));
+			expect(msg.reply).to.have.been.calledOnceWithExactly(sinon.match.has("embeds", sinon.match.array));
 		})
 	);
 });

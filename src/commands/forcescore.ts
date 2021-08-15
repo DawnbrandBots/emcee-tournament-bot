@@ -15,7 +15,7 @@ const command: CommandDefinition = {
 		const scores = score.split("-").map(s => parseInt(s, 10));
 		logger.verbose(
 			JSON.stringify({
-				channel: msg.channel.id,
+				channel: msg.channelId,
 				message: msg.id,
 				user: msg.author.id,
 				tournament: id,
@@ -50,7 +50,7 @@ const command: CommandDefinition = {
 		const cleared = support.scores.get(id)?.delete(challongeId); // Remove any pending participant-submitted score.
 		logger.verbose(
 			JSON.stringify({
-				channel: msg.channel.id,
+				channel: msg.channelId,
 				message: msg.id,
 				user: msg.author.id,
 				tournament: id,

@@ -1,5 +1,5 @@
 import chai, { expect } from "chai";
-import { Client, Message, Channel, MessageAttachment } from "discord.js";
+import { Client, Message, MessageAttachment } from "discord.js";
 import sinon, { SinonSandbox } from "sinon";
 import sinonChai from "sinon-chai";
 import sinonTest from "sinon-test";
@@ -7,7 +7,6 @@ import { TournamentFormat, TournamentStatus } from "../../src/database/interface
 import { DeckManager, initializeDeckManager } from "../../src/deck";
 import { onDirectMessage } from "../../src/events/messageCreate";
 import { ParticipantRoleProvider } from "../../src/role/participant";
-import { send } from "../../src/util/discord";
 import { WebsiteInterface } from "../../src/website/interface";
 import { DatabaseWrapperMock } from "../mocks/database";
 import { WebsiteWrapperMock } from "../mocks/website";
@@ -70,21 +69,19 @@ describe("Direct message submissions", function () {
 			]);
 			this.stub(decks, "prettyPrint").returns({ embeds: [], files: [new MessageAttachment("mock", "mock")] });
 			this.stub(participantRole, "grant").resolves();
-			sampleMessage.channel.send = this.spy();
-			this.stub(send);
+			const replySpy = this.stub(sampleMessage, "reply").resolves();
+			const send = this.spy();
+			const fetchStub = this.stub(mockBotClient.channels, "fetch").resolves({ isText: () => true, send } as any);
 			await onDirectMessage(sampleMessage, database, decks, challonge, participantRole, mockBotClient);
+			expect(fetchStub).to.have.been.calledWith("channel2");
 			expect(send).to.have.been.calledWith(
-				"channel2",
 				"<@testUser> (undefined#undefined) has signed up for **Tournament 1** with the following deck!"
 			);
-			expect(send).to.have.been.calledWith("channel2", {}, { name: "mock", file: "mock" });
-			expect(sampleMessage.channel.send).to.have.been.calledWith(
-				sinon.match({
-					content:
-						"You have successfully signed up for **Tournament 1**! Your deck is below to double-check. You may resubmit at any time before the tournament starts."
-				})
+			expect(send).to.have.been.calledWith({ name: "mock", file: "mock" });
+			expect(replySpy).to.have.been.calledWith(
+				"You have successfully signed up for **Tournament 1**! Your deck is below to double-check. You may resubmit at any time before the tournament starts."
 			);
-			expect(sampleMessage.channel.send).to.have.been.calledWith(sinon.match.any, {
+			expect(replySpy).to.have.been.calledWith(sinon.match.any, {
 				name: "mock",
 				file: "mock"
 			});
@@ -97,13 +94,10 @@ describe("Direct message submissions", function () {
 				{ name: "Tournament 1" },
 				{ name: "Tournament 2" }
 			] as never);
-			sampleMessage.channel.send = this.spy();
+			const replySpy = this.stub(sampleMessage, "reply").resolves();
 			await onDirectMessage(sampleMessage, database, decks, challonge, participantRole, mockBotClient);
-			expect(sampleMessage.channel.send).to.have.been.calledWith(
-				sinon.match({
-					content:
-						"You are registering in multiple tournaments. Please register in one at a time by unchecking the reaction on all others.\nTournament 1, Tournament 2"
-				})
+			expect(replySpy).to.have.been.calledWith(
+				"You are registering in multiple tournaments. Please register in one at a time by unchecking the reaction on all others.\nTournament 1, Tournament 2"
 			);
 		})
 	);
@@ -112,13 +106,10 @@ describe("Direct message submissions", function () {
 		test(async function (this: SinonSandbox) {
 			this.stub(database, "getPendingTournaments").resolves([]);
 			this.stub(database, "getConfirmedTournaments").resolves([]);
-			sampleMessage.channel.send = this.spy();
+			const replySpy = this.stub(sampleMessage, "reply").resolves();
 			await onDirectMessage(sampleMessage, database, decks, challonge, participantRole, mockBotClient);
-			expect(sampleMessage.channel.send).to.have.been.calledWith(
-				sinon.match({
-					content:
-						"Emcee's documentation can be found at https://github.com/AlphaKretin/emcee-tournament-bot/blob/master/README.md.\nRevision: **undefined**\nIf you're trying to sign up for a tournament, make sure you've clicked ✅ on a sign-up message and I'll let you know how to proceed."
-				})
+			expect(replySpy).to.have.been.calledWith(
+				"Emcee's documentation can be found at https://github.com/AlphaKretin/emcee-tournament-bot/blob/master/README.md.\nRevision: **undefined**\nIf you're trying to sign up for a tournament, make sure you've clicked ✅ on a sign-up message and I'll let you know how to proceed."
 			);
 		})
 	);
@@ -127,12 +118,16 @@ describe("Direct message submissions", function () {
 		test(async function (this: SinonSandbox) {
 			const content = sampleMessage.content;
 			sampleMessage.content = "ydke://!!!";
-			const replySpy = (sampleMessage.channel.send = this.spy());
+			const replySpy = this.stub(sampleMessage, "reply").resolves();
 			await onDirectMessage(sampleMessage, database, decks, challonge, participantRole, mockBotClient);
 			sampleMessage.content = content;
-			expect(replySpy.args[0][0].embed.fields[1].value).to.equal(
-				"Main Deck too small! Should be at least 40, is 0!"
-			);
+			const reply = replySpy.args[0][0];
+			expect(reply).property("embeds");
+			if (typeof reply === "object" && "embeds" in reply) {
+				expect(reply.embeds?.[0]?.fields?.[1]?.value).to.equal(
+					"Main Deck too small! Should be at least 40, is 0!"
+				);
+			}
 		})
 	);
 	it(
@@ -143,13 +138,10 @@ describe("Direct message submissions", function () {
 				{ name: "Tournament 1" },
 				{ name: "Tournament 3" }
 			] as never);
-			sampleMessage.channel.send = this.spy();
+			const replySpy = this.stub(sampleMessage, "reply").resolves();
 			await onDirectMessage(sampleMessage, database, decks, challonge, participantRole, mockBotClient);
-			expect(sampleMessage.channel.send).to.have.been.calledWith(
-				sinon.match({
-					content:
-						"You're trying to update your deck for a tournament, but you're in multiple! Please choose one by dropping and registering again.\nTournament 1, Tournament 3"
-				})
+			expect(replySpy).to.have.been.calledWith(
+				"You're trying to update your deck for a tournament, but you're in multiple! Please choose one by dropping and registering again.\nTournament 1, Tournament 3"
 			);
 		})
 	);
@@ -178,21 +170,19 @@ describe("Direct message submissions", function () {
 			]);
 			this.stub(decks, "prettyPrint").returns({ embeds: [], files: [new MessageAttachment("mock", "mock")] });
 			this.stub(database, "updateDeck").resolves();
-			sampleMessage.channel.send = this.spy();
-			this.stub(send);
+			const replySpy = this.stub(sampleMessage, "reply").resolves();
+			const send = this.spy();
+			const fetchStub = this.stub(mockBotClient.channels, "fetch").resolves({ isText: () => true, send } as any);
 			await onDirectMessage(sampleMessage, database, decks, challonge, participantRole, mockBotClient);
+			expect(fetchStub).to.have.been.calledWith("channel2");
 			expect(send).to.have.been.calledWith(
-				"channel2",
 				"<@testUser> (undefined#undefined) has updated their deck for **Tournament 1** to the following!"
 			);
-			expect(send).to.have.been.calledWith("channel2", {}, { name: "mock", file: "mock" });
-			expect(sampleMessage.channel.send).to.have.been.calledWith(
-				sinon.match({
-					content:
-						"You have successfully changed your deck for **Tournament 1**! Your deck is below to double-check. You may resubmit at any time before the tournament starts."
-				})
+			expect(send).to.have.been.calledWith({ name: "mock", file: "mock" });
+			expect(replySpy).to.have.been.calledWith(
+				"You have successfully changed your deck for **Tournament 1**! Your deck is below to double-check. You may resubmit at any time before the tournament starts."
 			);
-			expect(sampleMessage.channel.send).to.have.been.calledWith(sinon.match.any, {
+			expect(replySpy).to.have.been.calledWith(sinon.match.any, {
 				name: "mock",
 				file: "mock"
 			});
@@ -223,12 +213,16 @@ describe("Direct message submissions", function () {
 			]);
 			const content = sampleMessage.content;
 			sampleMessage.content = "ydke://!!!";
-			const replySpy = (sampleMessage.channel.send = this.spy());
+			const replySpy = this.stub(sampleMessage, "reply").resolves();
 			await onDirectMessage(sampleMessage, database, decks, challonge, participantRole, mockBotClient);
 			sampleMessage.content = content;
-			expect(replySpy.args[0][0].embed.fields[1].value).to.equal(
-				"Main Deck too small! Should be at least 40, is 0!"
-			);
+			const reply = replySpy.args[0][0];
+			expect(reply).property("embeds");
+			if (typeof reply === "object" && "embeds" in reply) {
+				expect(reply.embeds?.[0]?.fields?.[1]?.value).to.equal(
+					"Main Deck too small! Should be at least 40, is 0!"
+				);
+			}
 		})
 	);
 });

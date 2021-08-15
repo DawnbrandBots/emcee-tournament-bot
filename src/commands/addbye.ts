@@ -13,7 +13,7 @@ const command: CommandDefinition = {
 		const player = firstMentionOrFail(msg);
 		logger.verbose(
 			JSON.stringify({
-				channel: msg.channel.id,
+				channel: msg.channelId,
 				message: msg.id,
 				user: msg.author.id,
 				tournament: id,
@@ -25,7 +25,7 @@ const command: CommandDefinition = {
 		const byes = await support.database.registerBye(id, player.id);
 		logger.verbose(
 			JSON.stringify({
-				channel: msg.channel.id,
+				channel: msg.channelId,
 				message: msg.id,
 				user: msg.author.id,
 				tournament: id,

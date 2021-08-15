@@ -59,7 +59,7 @@ export class Command {
 
 	protected log(msg: Message, extra: Record<string, unknown>): string {
 		return JSON.stringify({
-			channel: msg.channel.id,
+			channel: msg.channelId,
 			message: msg.id,
 			user: msg.author.id,
 			command: this.definition.name,

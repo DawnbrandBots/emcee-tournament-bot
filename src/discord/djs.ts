@@ -1,16 +1,15 @@
 import {
 	Client,
-	Emoji,
-	Message,
-	MessageReaction,
-	PartialMessageReaction,
-	PartialUser,
-	PartialMessage,
-	User,
 	GuildChannel,
+	Message,
 	MessageAttachment,
 	MessageEmbed,
-	TextChannel
+	MessageReaction,
+	PartialMessage,
+	PartialMessageReaction,
+	PartialUser,
+	TextChannel,
+	User
 } from "discord.js";
 import { AssertTextChannelError, BlockedDMsError } from "../util/errors";
 import { getLogger } from "../util/logger";
@@ -129,7 +128,7 @@ export class DiscordWrapperDJS implements DiscordWrapper {
 
 	private wrapMessageLimited(msg: Message | PartialMessage): DiscordMessageLimited {
 		return {
-			channelId: msg.channel.id,
+			channelId: msg.channelId,
 			id: msg.id
 		};
 	}

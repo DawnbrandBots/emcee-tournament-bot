@@ -24,7 +24,7 @@ const command: CommandDefinition = {
 		);
 		function log(event: string, payload?: Record<string, unknown>): string {
 			return JSON.stringify({
-				channel: msg.channel.id,
+				channel: msg.channelId,
 				message: msg.id,
 				user: msg.author.id,
 				tournament: id,

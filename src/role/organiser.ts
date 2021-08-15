@@ -74,7 +74,7 @@ export class OrganiserRoleProvider {
 		}
 		logger.verbose(
 			JSON.stringify({
-				channel: msg.channel.id,
+				channel: msg.channelId,
 				message: msg.id,
 				user: msg.author.id,
 				server: server.id,

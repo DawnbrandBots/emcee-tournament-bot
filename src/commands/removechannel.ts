@@ -12,10 +12,10 @@ const command: CommandDefinition = {
 		const [id, baseType] = args; // 1 optional and thus potentially undefined
 		const tournament = await support.database.authenticateHost(id, msg.author.id, msg.guildId);
 		const type = baseType?.toLowerCase() === "private" ? "private" : "public";
-		const channelId = msg.channel.id;
+		const channelId = msg.channelId;
 		logger.verbose(
 			JSON.stringify({
-				channel: msg.channel.id,
+				channel: msg.channelId,
 				message: msg.id,
 				user: msg.author.id,
 				tournament: id,
@@ -32,7 +32,7 @@ const command: CommandDefinition = {
 		await support.database.removeAnnouncementChannel(id, channelId, type);
 		logger.verbose(
 			JSON.stringify({
-				channel: msg.channel.id,
+				channel: msg.channelId,
 				message: msg.id,
 				user: msg.author.id,
 				tournament: id,

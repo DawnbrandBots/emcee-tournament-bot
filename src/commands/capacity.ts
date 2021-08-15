@@ -14,7 +14,7 @@ const command: CommandDefinition = {
 		let capacity = parseInt(rawCapacity, 10);
 		logger.verbose(
 			JSON.stringify({
-				channel: msg.channel.id,
+				channel: msg.channelId,
 				message: msg.id,
 				user: msg.author.id,
 				tournament: id,

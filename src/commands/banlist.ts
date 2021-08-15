@@ -32,7 +32,7 @@ const command: CommandDefinition = {
 		);
 		logger.verbose(
 			JSON.stringify({
-				channel: msg.channel.id,
+				channel: msg.channelId,
 				message: msg.id,
 				user: msg.author.id,
 				tournament: id,
@@ -62,7 +62,7 @@ const command: CommandDefinition = {
 				const raw = await download(attachment);
 				logger.verbose(
 					JSON.stringify({
-						channel: msg.channel.id,
+						channel: msg.channelId,
 						message: msg.id,
 						user: msg.author.id,
 						tournament: id,
@@ -75,7 +75,7 @@ const command: CommandDefinition = {
 					await support.database.setAllowVector(id, raw);
 					logger.verbose(
 						JSON.stringify({
-							channel: msg.channel.id,
+							channel: msg.channelId,
 							message: msg.id,
 							user: msg.author.id,
 							tournament: id,
@@ -87,7 +87,7 @@ const command: CommandDefinition = {
 				} catch (error) {
 					logger.info(
 						JSON.stringify({
-							channel: msg.channel.id,
+							channel: msg.channelId,
 							message: msg.id,
 							user: msg.author.id,
 							tournament: id,
@@ -103,7 +103,7 @@ const command: CommandDefinition = {
 			} else {
 				logger.verbose(
 					JSON.stringify({
-						channel: msg.channel.id,
+						channel: msg.channelId,
 						message: msg.id,
 						user: msg.author.id,
 						tournament: id,
@@ -126,7 +126,7 @@ const command: CommandDefinition = {
 			const hash = createHash("sha256").update(file).digest("hex");
 			logger.verbose(
 				JSON.stringify({
-					channel: msg.channel.id,
+					channel: msg.channelId,
 					message: msg.id,
 					user: msg.author.id,
 					tournament: id,

@@ -22,7 +22,7 @@ const command: CommandDefinition = {
 		const [id, tb1, tb2, tb3] = args;
 		logger.verbose(
 			JSON.stringify({
-				channel: msg.channel.id,
+				channel: msg.channelId,
 				message: msg.id,
 				user: msg.author.id,
 				tournament: id,
@@ -41,7 +41,7 @@ const command: CommandDefinition = {
 			const webTournament = await support.challonge.getTournament(id);
 			logger.verbose(
 				JSON.stringify({
-					channel: msg.channel.id,
+					channel: msg.channelId,
 					message: msg.id,
 					user: msg.author.id,
 					tournament: id,

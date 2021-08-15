@@ -1,16 +1,16 @@
 import { expect } from "chai";
-import { MessageMentions, User } from "discord.js";
+import { MessageMentions } from "discord.js";
 import sinon, { SinonSandbox } from "sinon";
 import command from "../../src/commands/removebye";
-import { itRejectsNonHosts, mockBotClient, msg, support, test } from "./common";
+import { itRejectsNonHosts, msg, support, test } from "./common";
 
 describe("command:removebye", function () {
 	itRejectsNonHosts(support, command, msg, ["name"]);
 	it("requires a mentioned user", async () => {
 		msg.mentions = new MessageMentions(msg, [], [], false);
-		msg.channel.send = sinon.spy();
+		msg.reply = sinon.spy();
 		expect(command.executor(msg, ["name"], support)).to.be.rejectedWith("Message does not mention a user!");
-		expect(msg.channel.send).to.not.have.been.called;
+		expect(msg.reply).to.not.have.been.called;
 	});
 	it(
 		"removes the mentioned user",
@@ -21,11 +21,11 @@ describe("command:removebye", function () {
 				[],
 				false
 			);
-			msg.channel.send = this.spy();
+			msg.reply = this.spy();
 			this.stub(support.database, "removeBye").resolves([]);
 			await command.executor(msg, ["name"], support);
-			expect(msg.channel.send).to.have.been.calledOnceWithExactly(
-				sinon.match({ content: "Bye removed for Player <@nova> (nova) in **Tournament 1**!\nAll byes: " })
+			expect(msg.reply).to.have.been.calledOnceWithExactly(
+				"Bye removed for Player <@nova> (nova) in **Tournament 1**!\nAll byes: "
 			);
 		})
 	);

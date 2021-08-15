@@ -13,7 +13,7 @@ const command: CommandDefinition = {
 		const player = firstMentionOrFail(msg);
 		logger.verbose(
 			JSON.stringify({
-				channel: msg.channel.id,
+				channel: msg.channelId,
 				message: msg.id,
 				user: msg.author.id,
 				tournament: id,
@@ -26,7 +26,7 @@ const command: CommandDefinition = {
 		const deck = support.decks.getDeck(playerData.deck);
 		logger.verbose(
 			JSON.stringify({
-				channel: msg.channel.id,
+				channel: msg.channelId,
 				message: msg.id,
 				user: msg.author.id,
 				tournament: id,
@@ -39,7 +39,7 @@ const command: CommandDefinition = {
 		const response = support.decks.prettyPrint(deck, `${player.username}.${player.discriminator}.ydk`);
 		logger.verbose(
 			JSON.stringify({
-				channel: msg.channel.id,
+				channel: msg.channelId,
 				message: msg.id,
 				user: msg.author.id,
 				command: "deck",

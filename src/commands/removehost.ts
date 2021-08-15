@@ -14,7 +14,7 @@ const command: CommandDefinition = {
 		const newHost = parseUserMention(who) || who;
 		logger.verbose(
 			JSON.stringify({
-				channel: msg.channel.id,
+				channel: msg.channelId,
 				message: msg.id,
 				user: msg.author.id,
 				tournament: id,
@@ -26,7 +26,7 @@ const command: CommandDefinition = {
 		await support.database.removeHost(id, newHost);
 		logger.verbose(
 			JSON.stringify({
-				channel: msg.channel.id,
+				channel: msg.channelId,
 				message: msg.id,
 				user: msg.author.id,
 				tournament: id,

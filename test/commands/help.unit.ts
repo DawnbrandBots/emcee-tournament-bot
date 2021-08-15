@@ -5,8 +5,8 @@ import { msg, support } from "./common";
 
 describe("command:help", function () {
 	it("responds with a help message", async () => {
-		msg.channel.send = sinon.spy();
+		msg.reply = sinon.spy();
 		await command.executor(msg, [], support);
-		expect(msg.channel.send).to.have.been.calledOnce;
+		expect(msg.reply).to.have.been.calledOnce;
 	});
 });

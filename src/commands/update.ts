@@ -12,7 +12,7 @@ const command: CommandDefinition = {
 		const tournament = await support.database.authenticateHost(id, msg.author.id, msg.guildId);
 		logger.verbose(
 			JSON.stringify({
-				channel: msg.channel.id,
+				channel: msg.channelId,
 				message: msg.id,
 				user: msg.author.id,
 				tournament: id,
@@ -25,7 +25,7 @@ const command: CommandDefinition = {
 		if (tournament.status === TournamentStatus.COMPLETE) {
 			logger.verbose(
 				JSON.stringify({
-					channel: msg.channel.id,
+					channel: msg.channelId,
 					message: msg.id,
 					user: msg.author.id,
 					tournament: id,
@@ -44,7 +44,7 @@ const command: CommandDefinition = {
 		// TODO: missing failure path
 		logger.verbose(
 			JSON.stringify({
-				channel: msg.channel.id,
+				channel: msg.channelId,
 				message: msg.id,
 				user: msg.author.id,
 				tournament: id,

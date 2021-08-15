@@ -12,7 +12,7 @@ const command: CommandDefinition = {
 		// This log may be meaningless because we perform no parameter processing
 		logger.verbose(
 			JSON.stringify({
-				channel: msg.channel.id,
+				channel: msg.channelId,
 				message: msg.id,
 				user: msg.author.id,
 				command: "list",
@@ -25,7 +25,7 @@ const command: CommandDefinition = {
 			.join("\n");
 		logger.verbose(
 			JSON.stringify({
-				channel: msg.channel.id,
+				channel: msg.channelId,
 				message: msg.id,
 				user: msg.author.id,
 				command: "list",

@@ -12,7 +12,7 @@ const command: CommandDefinition = {
 		const [name, desc] = args;
 		logger.verbose(
 			JSON.stringify({
-				channel: msg.channel.id,
+				channel: msg.channelId,
 				message: msg.id,
 				user: msg.author.id,
 				command: "create",
@@ -31,7 +31,7 @@ const command: CommandDefinition = {
 			// TODO: missing failure path
 			logger.verbose(
 				JSON.stringify({
-					channel: msg.channel.id,
+					channel: msg.channelId,
 					message: msg.id,
 					user: msg.author.id,
 					command: "create",

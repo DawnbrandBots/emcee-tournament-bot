@@ -26,7 +26,7 @@ const command: CommandDefinition = {
 		);
 		logger.verbose(
 			JSON.stringify({
-				channel: msg.channel.id,
+				channel: msg.channelId,
 				message: msg.id,
 				user: msg.author.id,
 				tournament: id,
@@ -40,7 +40,7 @@ const command: CommandDefinition = {
 		support.scores.get(id)?.clear();
 		logger.verbose(
 			JSON.stringify({
-				channel: msg.channel.id,
+				channel: msg.channelId,
 				message: msg.id,
 				user: msg.author.id,
 				tournament: id,
