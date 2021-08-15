@@ -25,7 +25,7 @@ const command: CommandDefinition = {
 		try {
 			const [id, url, guide] = await support.tournamentManager.createTournament(
 				msg.author.id,
-				msg.guildID || "private",
+				msg.guildId || "private",
 				name,
 				desc
 			);

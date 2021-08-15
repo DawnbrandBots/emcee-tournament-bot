@@ -17,7 +17,7 @@ const command: CommandDefinition = {
 		const tournament = await support.database.authenticateHost(
 			id,
 			msg.author.id,
-			msg.guildID,
+			msg.guildId,
 			TournamentStatus.COMPLETE
 		);
 		logger.verbose(

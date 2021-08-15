@@ -20,7 +20,7 @@ const command: CommandDefinition = {
 				event: "attempt"
 			})
 		);
-		const list = await support.database.getActiveTournaments(msg.guildID || "private");
+		const list = await support.database.getActiveTournaments(msg.guildId || "private");
 		const text = list
 			.map(t => `ID: ${t.id}|Name: ${t.name}|Status: ${t.status}|Players: ${t.players.length}`)
 			.join("\n");

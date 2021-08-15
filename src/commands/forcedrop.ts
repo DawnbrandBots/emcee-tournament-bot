@@ -12,7 +12,7 @@ const command: CommandDefinition = {
 	requiredArgs: ["id", "who"],
 	executor: async (msg, args, support) => {
 		const [id, who] = args;
-		const tournament = await support.database.authenticateHost(id, msg.author.id, msg.guildID);
+		const tournament = await support.database.authenticateHost(id, msg.author.id, msg.guildId);
 		const player = parseUserMention(who) || who;
 		function log(payload: Record<string, unknown>): void {
 			logger.verbose(

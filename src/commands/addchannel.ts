@@ -10,7 +10,7 @@ const command: CommandDefinition = {
 	requiredArgs: ["id"],
 	executor: async (msg, args, support) => {
 		const [id, baseType] = args; // 1 optional and thus potentially undefined
-		const tournament = await support.database.authenticateHost(id, msg.author.id, msg.guildID);
+		const tournament = await support.database.authenticateHost(id, msg.author.id, msg.guildId);
 		const type = baseType?.toLowerCase() === "private" ? "private" : "public";
 		const channelId = msg.channel.id;
 		logger.verbose(

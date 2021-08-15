@@ -23,7 +23,7 @@ const command: CommandDefinition = {
 					channel: msg.channel.id,
 					message: msg.id,
 					user: msg.author.id,
-					server: msg.guildID,
+					server: msg.guildId,
 					tournament: id,
 					tournamentServer: participant?.tournament.owningDiscordServer,
 					command: "drop",
@@ -32,7 +32,7 @@ const command: CommandDefinition = {
 			);
 		}
 		log({ event: "attempt" });
-		if (!participant || (msg.guildID && msg.guildID !== participant.tournament.owningDiscordServer)) {
+		if (!participant || (msg.guildId && msg.guildId !== participant.tournament.owningDiscordServer)) {
 			await reply(
 				msg,
 				`I couldn't find you in the __${id}__ tournament. Are you sure that the name is correct and you're registered?`

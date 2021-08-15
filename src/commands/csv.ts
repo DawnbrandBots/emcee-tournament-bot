@@ -11,7 +11,7 @@ const command: CommandDefinition = {
 	executor: async (msg, args, support) => {
 		const [id, pieArg] = args;
 		const pie = !!pieArg;
-		const tournament = await support.database.authenticateHost(id, msg.author.id, msg.guildID);
+		const tournament = await support.database.authenticateHost(id, msg.author.id, msg.guildId);
 		logger.verbose(
 			JSON.stringify({
 				channel: msg.channel.id,

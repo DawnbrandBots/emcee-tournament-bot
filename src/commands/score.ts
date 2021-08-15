@@ -31,7 +31,7 @@ const command: CommandDefinition = {
 				})
 			);
 		}
-		const player = await support.database.authenticatePlayer(id, msg.author.id, msg.guildID, TournamentStatus.IPR);
+		const player = await support.database.authenticatePlayer(id, msg.author.id, msg.guildId, TournamentStatus.IPR);
 		const match = await support.challonge.findMatch(id, player.challongeId);
 		if (!match) {
 			log("no match");

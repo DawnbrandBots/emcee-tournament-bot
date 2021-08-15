@@ -51,7 +51,7 @@ describe("command:list", function () {
 			msg.channel.createMessage = this.spy();
 			await command.executor(msg, [], support);
 			expect(authStub).to.have.been.called;
-			expect(listStub).to.have.been.calledOnceWithExactly(msg.guildID);
+			expect(listStub).to.have.been.calledOnceWithExactly(msg.guildId);
 			expect(msg.channel.createMessage).to.have.been.calledOnceWithExactly(
 				sinon.match({ content: "```\nID: foo|Name: foo tournament|Status: preparing|Players: 0```" })
 			);
@@ -65,7 +65,7 @@ describe("command:list", function () {
 			msg.channel.createMessage = this.spy();
 			await command.executor(msg, [], support);
 			expect(authStub).to.have.been.called;
-			expect(listStub).to.have.been.calledOnceWithExactly(msg.guildID);
+			expect(listStub).to.have.been.calledOnceWithExactly(msg.guildId);
 			expect(msg.channel.createMessage).to.have.been.calledOnceWithExactly(
 				sinon.match({ content: "There are no open tournaments you have access to!" })
 			);

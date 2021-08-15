@@ -41,12 +41,12 @@ const command: CommandDefinition = {
 	requiredArgs: ["id"],
 	executor: async (msg, args) => {
 		const [id] = args;
-		if (!msg.guildID) {
+		if (!msg.guildId) {
 			throw new UserError("This can only be used in a server!");
 		}
 		const tournament = await ChallongeTournament.findOne({
 			tournamentId: id,
-			owningDiscordServer: msg.guildID
+			owningDiscordServer: msg.guildId
 		});
 		if (tournament) {
 			logger.verbose(
