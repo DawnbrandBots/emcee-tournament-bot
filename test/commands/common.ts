@@ -41,9 +41,24 @@ export function itRejectsNonHosts(
 }
 
 // This is created so we can stub out methods. Most Eris objects also need this as a constructor parameter.
-export const mockBotClient = new Client("mock");
+export const mockBotClient = new Client({ intents: [] });
 // For the purposes of most commands, most fields don't matter. This is the minimum to make the constructor run.
-export const msg = new Message({ id: "007", channel_id: "foo", author: { id: "0000" } }, mockBotClient);
+export const msg = new Message(new Client({ intents: [] }), {
+	id: "007",
+	channel_id: "foo",
+	author: { id: "0000", username: "K", discriminator: "1234", avatar: "k.png" },
+	content: ".",
+	timestamp: "1",
+	edited_timestamp: "1",
+	tts: false,
+	mention_everyone: false,
+	mentions: [],
+	mention_roles: [],
+	attachments: [],
+	embeds: [],
+	pinned: false,
+	type: 0
+});
 // for the purposes of testing, needs a valid name to be displayed by command responses
 export const tournament: DatabaseTournament = {
 	name: "Tournament 1",

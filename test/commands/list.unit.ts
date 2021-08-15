@@ -3,7 +3,7 @@ import { Message } from "discord.js";
 import sinon, { SinonSandbox } from "sinon";
 import command from "../../src/commands/list";
 import { DatabaseTournament, TournamentFormat, TournamentStatus } from "../../src/database/interface";
-import { mockBotClient, support, test } from "./common";
+import { mockBotClient, msg, support, test } from "./common";
 
 const fakeTournaments: DatabaseTournament[] = [
 	{
@@ -27,10 +27,6 @@ const fakeTournaments: DatabaseTournament[] = [
 ];
 
 describe("command:list", function () {
-	const msg = new Message(
-		{ id: "007", channel_id: "foo", guild_id: "public", author: { id: "0000" } },
-		mockBotClient
-	);
 	it(
 		"rejects non-TOs",
 		test(function (this: SinonSandbox) {

@@ -1,12 +1,12 @@
 import { expect } from "chai";
-import { User } from "discord.js";
+import { MessageMentions, User } from "discord.js";
 import sinon, { SinonSandbox } from "sinon";
 import command from "../../src/commands/forcescore";
 import { mockBotClient, msg, support, test } from "./common";
 
 describe("command:forcescore", function () {
 	it("requires a mentioned user", async () => {
-		msg.mentions = [];
+		msg.mentions = new MessageMentions(msg, [], [], false);
 		msg.channel.send = sinon.spy();
 		expect(command.executor(msg, ["name"], support)).to.be.rejectedWith("Message does not mention a user!");
 		expect(msg.channel.send).to.not.have.been.called;
@@ -14,7 +14,12 @@ describe("command:forcescore", function () {
 	it(
 		"submits good scores",
 		test(async function (this: SinonSandbox) {
-			msg.mentions = [new User({ id: "nova" }, mockBotClient)];
+			msg.mentions = new MessageMentions(
+				msg,
+				[{ id: "nova", username: "K", discriminator: "0000", avatar: "k.png" }],
+				[],
+				false
+			);
 			msg.channel.send = sinon.spy();
 			this.stub(support.database, "getConfirmedPlayer").resolves({ challongeId: 0, discordId: "", deck: "" });
 			this.stub(support.challonge, "findClosedMatch").resolves({
@@ -32,7 +37,12 @@ describe("command:forcescore", function () {
 		})
 	);
 	it("rejects bad scores", () => {
-		msg.mentions = [new User({ id: "nova" }, mockBotClient)];
+		msg.mentions = new MessageMentions(
+			msg,
+			[{ id: "nova", username: "K", discriminator: "0000", avatar: "k.png" }],
+			[],
+			false
+		);
 		msg.channel.send = sinon.spy();
 		expect(command.executor(msg, ["name", "they won"], support)).to.be.rejectedWith(
 			"Must provide score in format `#-#` e.g. `2-1`."
