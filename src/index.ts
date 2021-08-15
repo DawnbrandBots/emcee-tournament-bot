@@ -2,7 +2,7 @@ import { Client, Intents } from "discord.js";
 import { getConfig } from "./config"; // Must be imported first among first-party modules
 import { initializeDatabase } from "./database/postgres";
 import { initializeDeckManager } from "./deck";
-import { DiscordWrapperEris } from "./discord/eris";
+import { DiscordWrapperDJS } from "./discord/djs";
 import { DiscordInterface } from "./discord/interface";
 import { registerEvents } from "./events";
 import { OrganiserRoleProvider } from "./role/organiser";
@@ -39,8 +39,8 @@ const logger = getLogger("index");
 			Intents.FLAGS.DIRECT_MESSAGE_REACTIONS
 		]
 	});
-	const eris = new DiscordWrapperEris(bot as any);
-	const discord = new DiscordInterface(eris);
+	const djs = new DiscordWrapperDJS(bot);
+	const discord = new DiscordInterface(djs);
 	const organiserRole = new OrganiserRoleProvider(config.defaultTORole, 0x3498db);
 	const participantRole = new ParticipantRoleProvider(bot as any, 0xe67e22);
 	const timeWizard = new TimeWizard({
