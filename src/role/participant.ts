@@ -1,4 +1,4 @@
-import { Client, Guild, Role } from "eris";
+import { Client, Guild, Role } from "discord.js";
 import { MiscInternalError } from "../util/errors";
 import { getLogger } from "../util/logger";
 
@@ -18,10 +18,10 @@ type Tournament = {
  * Creates the server role that identifies confirmed status in a given tournament.
  */
 export class ParticipantRoleProvider {
-	// Storing a reference to the Eris cached server might not be necessary if parameterised
+	// Storing a reference to the DJS cached server might not be necessary if parameterised
 	protected roleCache: Record<string, ParticipantRole> = {};
 
-	// Using American spelling for Eris consistency
+	// Using American spelling for DJS consistency
 	constructor(protected readonly bot: Client, readonly color?: number) {}
 
 	/**
@@ -33,13 +33,11 @@ export class ParticipantRoleProvider {
 	 * @returns The created role
 	 */
 	private async create(server: Guild, tournamentId: string): Promise<Role> {
-		const role = await server.createRole(
-			{
-				name: `MC-${tournamentId}-player`,
-				color: this.color
-			},
-			"Auto-created by Emcee."
-		);
+		const role = await server.roles.create({
+			name: `MC-${tournamentId}-player`,
+			color: this.color,
+			reason: "Auto-created by Emcee."
+		});
 		logger.verbose(`Role ${role.name} (${role.id}) created in ${server.name} (${server.id}).`);
 		return role;
 	}
@@ -55,7 +53,7 @@ export class ParticipantRoleProvider {
 		if (tournament.id in this.roleCache) {
 			return this.roleCache[tournament.id];
 		}
-		const server = this.bot.guilds.get(tournament.server);
+		const server = this.bot.guilds.cache.get(tournament.server);
 		if (!server) {
 			// TODO: determine what bizarre scenario would result in this
 			throw new MiscInternalError(
@@ -71,7 +69,7 @@ export class ParticipantRoleProvider {
 			})
 		);
 		const role =
-			server.roles.find(r => r.name === `MC-${tournament.id}-player`) ||
+			server.roles.cache.find(r => r.name === `MC-${tournament.id}-player`) ||
 			(await this.create(server, tournament.id));
 		return (this.roleCache[tournament.id] = { id: role.id, server });
 	}
@@ -98,7 +96,8 @@ export class ParticipantRoleProvider {
 	 */
 	public async grant(userId: string, tournament: Tournament): Promise<void> {
 		const { id, server } = await this.lazyGet(tournament);
-		await server.addMemberRole(userId, id, "Granted by Emcee.");
+		// TODO: handle null user
+		await server.members.cache.get(userId)?.roles.add(id, "Granted by Emcee.");
 	}
 
 	/**
@@ -112,7 +111,8 @@ export class ParticipantRoleProvider {
 	 */
 	public async ungrant(userId: string, tournament: Tournament): Promise<void> {
 		const { id, server } = await this.lazyGet(tournament);
-		await server.removeMemberRole(userId, id, "Granted by Emcee.");
+		// TODO: handle null user
+		await server.members.cache.get(userId)?.roles.remove(id, "Granted by Emcee.");
 	}
 
 	/**
@@ -133,7 +133,8 @@ export class ParticipantRoleProvider {
 		if (tournament.id in this.roleCache) {
 			const { id, server } = this.roleCache[tournament.id];
 			try {
-				await server.deleteRole(id);
+				// TODO: handle null role
+				await server.roles.cache.get(id)?.delete();
 			} catch (e) {
 				logger.error(e);
 			}
@@ -149,15 +150,16 @@ export class ParticipantRoleProvider {
 			);
 			return;
 		} else {
-			const server = this.bot.guilds.get(tournament.server);
+			const server = this.bot.guilds.cache.get(tournament.server);
 			if (!server) {
 				logger.error(new Error(`Could not find server ${tournament.server}.`));
 				return;
 			}
-			const role = server.roles.find(r => r.name === `MC-${tournament.id}-player`);
+			const role = server.roles.cache.find(r => r.name === `MC-${tournament.id}-player`);
 			if (role) {
 				try {
-					await server.deleteRole(role.id);
+					// TODO: handle null role
+					await server.roles.cache.get(role.id)?.delete();
 				} catch (e) {
 					logger.error(e);
 				}
