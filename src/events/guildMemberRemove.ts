@@ -1,4 +1,4 @@
-import { Guild, Member, MemberPartial } from "discord.js";
+import { Guild, GuildMember, PartialGuildMember } from "discord.js";
 import { getConnection } from "typeorm";
 import { CommandSupport } from "../Command";
 import { Participant } from "../database/orm";
@@ -25,8 +25,10 @@ async function messageChannels(
 }
 
 export function makeHandler({ database, discord, challonge }: CommandSupport) {
-	return async function guildMemberRemove(server: Guild, member: Member | MemberPartial): Promise<void> {
-		if (member.user.bot) {
+	return async function guildMemberRemove(member: GuildMember | PartialGuildMember): Promise<void> {
+		const server = member.guild;
+		const user = member.user!; // TODO handle null case
+		if (user.bot) {
 			return;
 		}
 		await getConnection()
@@ -54,13 +56,13 @@ export function makeHandler({ database, discord, challonge }: CommandSupport) {
 				log({
 					server: server.id,
 					name: server.name,
-					username: `${member.user.username}#${member.user.discriminator}`,
+					username: user.tag,
 					tournaments: dropped.map(({ tournamentId, confirmed }) => ({
 						tournamentId,
 						challongeId: confirmed?.challongeId
 					}))
 				});
-				const who = `<@${member.id}> (${member.user.username}#${member.user.discriminator})`;
+				const who = `<@${member.id}> (${user.tag})`;
 				for (const participant of dropped) {
 					// For each tournament, inform the private channel that the user left and was dropped.
 					await messageChannels(
