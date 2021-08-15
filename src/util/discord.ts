@@ -1,7 +1,14 @@
-import { Message, Textable } from "discord.js";
+import { Message, User } from "discord.js";
 import { UserError } from "./errors";
 
-export async function reply(
+// Discord.js v13 apparently will automatically use inline replies
+export async function reply(msg: Message, ...args: Parameters<Message["reply"]>): ReturnType<Message["reply"]> {
+	// TODO: mixin allowedMentions
+	return await msg.reply(...args);
+}
+
+// TODO: refactor for Discord.js in detail
+/*export async function reply(
 	msg: Message,
 	...args: Parameters<Textable["createMessage"]>
 ): ReturnType<Textable["createMessage"]> {
@@ -22,7 +29,7 @@ export async function reply(
 		args[0] = { ...args[0], ...mixin };
 	}
 	return await msg.channel.createMessage(...args);
-}
+}*/
 
 // returns full user object with d.js due to additional complexity of msg.mentions
 export function firstMentionOrFail(msg: Message): User {

@@ -125,7 +125,12 @@ export class DeckManager {
 		return [deck, deck.validate(allowVector)]; // throws: UrlConstructionError
 	}
 
-	public prettyPrint(deck: Deck, filename: string, errors: DeckError[] = []): [MessageEmbed, MessageAttachment] {
+	// return type from discord.js message sending
+	public prettyPrint(
+		deck: Deck,
+		filename: string,
+		errors: DeckError[] = []
+	): { embeds: MessageEmbed[]; files: MessageAttachment[] } {
 		const title = `Themes: ${deck.themes.join(",") || "none"}`;
 		let mainHeader = `Main Deck (${deck.contents.main.length} cards — `;
 		const mainHeaderParts: string[] = [];
@@ -208,7 +213,7 @@ export class DeckManager {
 
 		const file = new MessageAttachment(deck.ydk, filename);
 
-		return [embed, file];
+		return { embeds: [embed], files: [file] };
 	}
 
 	private async extractYdk(attach: MessageAttachment): Promise<string> {

@@ -143,7 +143,7 @@ const command: CommandDefinition = {
 			const memo = tournament.allowVector
 				? `Here is the custom allowed card pool for **${tournament.name}** in vector form.\nSHA256: \`${hash}\``
 				: `This is the _default_ allowed card pool in vector form.\nSHA256: \`${hash}\``;
-			await reply(msg, memo, { file, name: `${id}.allowVector.json` });
+			await reply(msg, { content: memo, files: [new MessageAttachment(file, `${id}.allowVector.json`)] });
 		}
 	}
 };
