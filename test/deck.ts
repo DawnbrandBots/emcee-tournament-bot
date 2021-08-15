@@ -56,8 +56,8 @@ describe("Get deck from message", function () {
 					spoiler: false,
 					width: 1,
 					height: 1,
-					setFile: () => sampleMessage.attachments.first(),
-					setName: () => sampleMessage.attachments.first(),
+					setFile: () => sampleMessage.attachments.first()!,
+					setName: () => sampleMessage.attachments.first()!,
 					toJSON: () => {}
 				}
 			]

@@ -27,13 +27,12 @@ export function createTournamentEmbed(tournament: ChallongeTournament): MessageE
 	}
 	const hosts = tournament.hosts.map(snowflake => `<@${snowflake}>`).join(" ");
 	fields.push({ name: ":smile: Hosts", value: hosts, inline: true });
-	const embed = new MessageEmbed();
-	embed.setURL(`https://challonge.com/${tournament.tournamentId}`);
-	embed.setTitle(`**${tournament.name}**`);
-	embed.setDescription(tournament.description),
-		embed.setFields(fields),
-		embed.setFooter("Tournament details as of request time");
-	return embed;
+	return new MessageEmbed()
+		.setURL(`https://challonge.com/${tournament.tournamentId}`)
+		.setTitle(`**${tournament.name}**`)
+		.setDescription(tournament.description)
+		.setFields(fields)
+		.setFooter("Tournament details as of request time");
 }
 
 const command: CommandDefinition = {

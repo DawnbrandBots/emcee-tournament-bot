@@ -23,7 +23,9 @@ describe("createTournamentEmbed", function () {
 	it("returns an embed", () => {
 		const tournament = makeTournament();
 		const embed = createTournamentEmbed(tournament);
-		expect(embed).to.deep.equal({
+		const embedNoFalsy = Object.fromEntries(Object.entries(embed.toJSON() as any).filter(([, value]) => value));
+		expect(embedNoFalsy).to.deep.equal({
+			type: "rich",
 			title: "**Drive Your Fire**",
 			description: "Thrash out against the ignorance of others, it is not a flame hot enough!",
 			url: "https://challonge.com/users/EmceeDiscordBot",
@@ -55,6 +57,7 @@ describe("createTournamentEmbed", function () {
 				}
 			],
 			footer: {
+				icon_url: undefined,
 				text: "Tournament details as of request time"
 			}
 		});
@@ -70,7 +73,9 @@ describe("createTournamentEmbed", function () {
 		tournament.hosts = ["A-ONE", "Rute", "Aki"];
 		tournament.confirmed = [p("Yusei"), p("Jack"), p("Crow"), p("Aki"), p("Ruka"), p("Rua")];
 		const embed = createTournamentEmbed(tournament);
-		expect(embed).to.deep.equal({
+		const embedNoFalsy = Object.fromEntries(Object.entries(embed.toJSON() as any).filter(([, value]) => value));
+		expect(embedNoFalsy).to.deep.equal({
+			type: "rich",
 			title: "**Drive Your Fire**",
 			description: "Thrash out against the ignorance of others, it is not a flame hot enough!",
 			url: "https://challonge.com/users/EmceeDiscordBot",
@@ -107,6 +112,7 @@ describe("createTournamentEmbed", function () {
 				}
 			],
 			footer: {
+				icon_url: undefined,
 				text: "Tournament details as of request time"
 			}
 		});
@@ -124,7 +130,7 @@ describe("command:info", function () {
 			msg.channel.send = this.spy();
 			msg.guildId = "foo";
 			await command.executor(msg, ["name"], support);
-			msg.guildId = undefined;
+			msg.guildId = null;
 			expect(findStub).to.have.been.calledOnceWithExactly({ tournamentId: "name", owningDiscordServer: "foo" });
 			expect(msg.channel.send).to.have.been.calledOnceWithExactly(
 				sinon.match({
@@ -140,7 +146,7 @@ describe("command:info", function () {
 			msg.channel.send = this.spy();
 			msg.guildId = "foo";
 			await command.executor(msg, ["name"], support);
-			msg.guildId = undefined;
+			msg.guildId = null;
 			expect(findStub).to.have.been.calledOnce; // same as above
 			expect(msg.channel.send).to.have.been.calledOnceWithExactly(sinon.match({ embed: {} }));
 		})
