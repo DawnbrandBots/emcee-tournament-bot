@@ -40,7 +40,7 @@ export function itRejectsNonHosts(
 	);
 }
 
-// This is created so we can stub out methods. Most Eris objects also need this as a constructor parameter.
+// This is created so we can stub out methods. Most DJS objects also need this as a constructor parameter.
 export const mockBotClient = new Client({ intents: [] });
 // For the purposes of most commands, most fields don't matter. This is the minimum to make the constructor run.
 export const msg = new Message(new Client({ intents: [] }), {

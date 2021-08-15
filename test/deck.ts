@@ -4,7 +4,7 @@ import { Client, Collection, Message } from "discord.js";
 import { DeckManager, initializeDeckManager, splitText } from "../src/deck";
 chai.use(chaiAsPromised);
 
-// This is created so we can stub out methods. Most Eris objects also need this as a constructor parameter.
+// This is created so we can stub out methods. Most DJS objects also need this as a constructor parameter.
 const mockBotClient = new Client({ intents: [] });
 // For the purposes of most commands, most fields don't matter. This is the minimum to make the constructor run.
 export const sampleMessage = new Message(mockBotClient, {

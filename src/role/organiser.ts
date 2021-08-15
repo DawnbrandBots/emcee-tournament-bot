@@ -10,7 +10,7 @@ const logger = getLogger("role:organiser");
 export class OrganiserRoleProvider {
 	protected roleCache: { [serverId: string]: string } = {};
 
-	// Using American spelling for Eris consistency
+	// Using American spelling for DJS consistency
 	constructor(readonly name: string, readonly color?: number) {}
 
 	/**
