@@ -1,4 +1,4 @@
-import { AdvancedMessageContent, Attachment, Message, MessageFile } from "discord.js";
+import { Message, MessageAttachment, MessageEmbed } from "discord.js";
 import fetch from "node-fetch";
 import { CardIndex, CardVector, createAllowVector, Deck, DeckError, ICard } from "ydeck";
 import { Card, enums, YgoData } from "ygopro-data";
@@ -104,17 +104,19 @@ export class DeckManager {
 		msg: Message,
 		allowVector: CardVector = this.tcgAllowVector
 	): Promise<[Deck, DeckError[]]> {
-		if (msg.attachments.length > 0 && msg.attachments[0].filename.endsWith(".ydk")) {
+		// TODO: inconsistencies with banlist upload handling
+		const attachment = msg.attachments.first();
+		if (attachment && attachment.name?.endsWith(".ydk")) {
 			// cap filezie for security
-			if (msg.attachments[0].size > MAX_BYTES) {
+			if (attachment.size > MAX_BYTES) {
 				// report potential abuse internally
 				// TODO: Would be useful to report tournament and server, but we don't have that data in this scope
 				logger.notify(
-					`Potential abuse warning! User ${msg.author.id} (@${msg.author.username}#${msg.author.discriminator}) submitted oversized deck file of ${msg.attachments[0].size}B.`
+					`Potential abuse warning! User ${msg.author.id} (@${msg.author.username}#${msg.author.discriminator}) submitted oversized deck file of ${attachment.size}B.`
 				);
 				throw new UserError("YDK file too large! Please try again with a smaller file.");
 			}
-			const ydk = await this.extractYdk(msg.attachments[0]); // throws on network error
+			const ydk = await this.extractYdk(attachment); // throws on network error
 			const deck = new Deck(this.cardIndex, { ydk }); // throws YDKParseError
 			this.deckCache.set(deck.url, deck);
 			return [deck, deck.validate(allowVector)];
@@ -123,7 +125,7 @@ export class DeckManager {
 		return [deck, deck.validate(allowVector)]; // throws: UrlConstructionError
 	}
 
-	public prettyPrint(deck: Deck, filename: string, errors: DeckError[] = []): [AdvancedMessageContent, MessageFile] {
+	public prettyPrint(deck: Deck, filename: string, errors: DeckError[] = []): [MessageEmbed, MessageAttachment] {
 		const title = `Themes: ${deck.themes.join(",") || "none"}`;
 		let mainHeader = `Main Deck (${deck.contents.main.length} cards — `;
 		const mainHeaderParts: string[] = [];
@@ -200,10 +202,16 @@ export class DeckManager {
 			}
 		}
 
-		return [{ embed: { title, fields } }, { file: deck.ydk, name: filename }];
+		const embed = new MessageEmbed();
+		embed.setTitle(title);
+		embed.addFields(fields);
+
+		const file = new MessageAttachment(deck.ydk, filename);
+
+		return [embed, file];
 	}
 
-	private async extractYdk(attach: Attachment): Promise<string> {
+	private async extractYdk(attach: MessageAttachment): Promise<string> {
 		const file = await fetch(attach.url);
 		const ydk = await file.text();
 		return ydk;

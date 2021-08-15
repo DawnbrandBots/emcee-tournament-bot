@@ -1,5 +1,5 @@
 import { createHash } from "crypto";
-import { Attachment } from "eris";
+import { MessageAttachment } from "discord.js";
 import fetch from "node-fetch";
 import { CommandDefinition } from "../Command";
 import { TournamentStatus } from "../database/interface";
@@ -9,7 +9,7 @@ import { getLogger } from "../util/logger";
 
 const logger = getLogger("command:banlist");
 
-async function download(attach: Attachment): Promise<unknown> {
+async function download(attach: MessageAttachment): Promise<unknown> {
 	try {
 		const response = await fetch(attach.url);
 		const json = await response.json();
@@ -39,11 +39,11 @@ const command: CommandDefinition = {
 				tournament: id,
 				command: "banlist",
 				event: "attempt",
-				attachments: msg.attachments.length,
+				attachments: msg.attachments.size,
 				players: tournament.players.length
 			})
 		);
-		if (msg.attachments.length) {
+		if (msg.attachments.size) {
 			if (tournament.players.length) {
 				await reply(
 					msg,
@@ -51,15 +51,17 @@ const command: CommandDefinition = {
 				);
 				return;
 			}
-			if (msg.attachments.length === 1 && msg.attachments[0].filename.endsWith(".json")) {
+			const attachment = msg.attachments.first();
+			// checking not-null should be redundant given size check but serves as type guard
+			if (msg.attachments.size === 1 && attachment && attachment.name?.endsWith(".json")) {
 				// cap filesize for security at 0.5 MB
-				if (msg.attachments[0].size > 512 * 1024) {
+				if (attachment.size > 512 * 1024) {
 					logger.notify(
-						`Potential abuse warning! ${msg.author.username}#${msg.author.discriminator} (${msg.author.id}) uploaded oversized card pool JSON "${msg.attachments[0].filename}" (${msg.attachments[0].size}B).`
+						`Potential abuse warning! ${msg.author.username}#${msg.author.discriminator} (${msg.author.id}) uploaded oversized card pool JSON "${attachment.name}" (${attachment.size}B).`
 					);
 					throw new UserError("JSON file too large! Please try again with a smaller file.");
 				}
-				const raw = await download(msg.attachments[0]);
+				const raw = await download(attachment);
 				logger.verbose(
 					JSON.stringify({
 						channel: msg.channel.id,
@@ -68,7 +70,7 @@ const command: CommandDefinition = {
 						tournament: id,
 						command: "banlist",
 						event: "download",
-						attachment: msg.attachments[0].filename
+						attachment: attachment.name
 					})
 				);
 				try {
