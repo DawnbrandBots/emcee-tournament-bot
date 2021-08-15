@@ -160,7 +160,8 @@ export class DiscordWrapperDJS implements DiscordWrapper {
 		userId: string
 	): Promise<boolean> {
 		// TODO: Check channel exists and is of text type
-		const channel = this.bot.channels.cache.get(channelId) as TextChannel;
+		const channel = (this.bot.channels.cache.get(channelId) ||
+			(await this.bot.channels.fetch(channelId))) as TextChannel;
 		const msg = channel.messages.cache.get(messageId) || (await channel.messages.fetch(messageId));
 		try {
 			// TODO: handle null reaction
@@ -207,13 +208,10 @@ export class DiscordWrapperDJS implements DiscordWrapper {
 	}
 
 	public async getMessage(channelId: string, messageId: string): Promise<DiscordMessageIn | null> {
-		const chan = this.bot.channels.cache.get(channelId);
+		const chan = this.bot.channels.cache.get(channelId) || (await this.bot.channels.fetch(channelId));
 		if (chan instanceof TextChannel) {
-			// TODO: handle null message
-			await chan.messages.cache.get(messageId)?.delete();
+			const msg = chan.messages.cache.get(messageId) || (await chan.messages.fetch(messageId));
 			try {
-				// TODO: handle null message
-				const msg = chan.messages.cache.get(messageId);
 				await msg?.delete();
 			} catch (err) {
 				// unknown message
@@ -234,22 +232,20 @@ export class DiscordWrapperDJS implements DiscordWrapper {
 	): Promise<DiscordMessageSent> {
 		const messageContent = typeof msg === "string" ? { content: msg } : { embeds: [this.unwrapEmbed(msg)] };
 		const messageFile = file ? { files: [new MessageAttachment(file.contents, file.filename)] } : {};
-		const chan = this.bot.channels.cache.get(channelId);
+		const chan = this.bot.channels.cache.get(channelId) || (await this.bot.channels.fetch(channelId));
 		if (chan instanceof TextChannel) {
 			const response = await chan.send({ ...messageContent, ...messageFile });
 			return this.wrapMessageIn(response);
 		}
-		// TODO: handle null channel
 		throw new AssertTextChannelError(channelId);
 	}
 
 	public async deleteMessage(channelId: string, messageId: string): Promise<void> {
-		const chan = this.bot.channels.cache.get(channelId);
+		const chan = this.bot.channels.cache.get(channelId) || (await this.bot.channels.fetch(channelId));
 		if (chan instanceof TextChannel) {
-			// TODO: handle null message
-			await chan.messages.cache.get(messageId)?.delete();
+			const message = chan.messages.cache.get(messageId) || (await chan.messages.fetch(messageId));
+			await message.delete();
 		}
-		// TODO: handle null channel
 		throw new AssertTextChannelError(channelId);
 	}
 }

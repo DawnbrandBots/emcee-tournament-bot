@@ -12,7 +12,7 @@ export async function send(
 	channelId: string,
 	...args: Parameters<TextChannel["send"]>
 ): ReturnType<TextChannel["send"]> {
-	const channel = bot.channels.cache.get(channelId)! as TextChannel;
+	const channel = (bot.channels.cache.get(channelId) || (await bot.channels.fetch(channelId))) as TextChannel;
 	// TODO: check channel existence and type
 	return await channel.send(...args);
 }
