@@ -37,7 +37,7 @@ const command: CommandDefinition = {
 		);
 		try {
 			// eslint-disable-next-line no-var
-			var { challongeId } = await support.database.getConfirmedPlayer(player, id);
+			var { challongeId } = await support.database.getConfirmedPlayer(player.id, id);
 		} catch {
 			throw new UserError(`<@${player}> isn't playing in **${tournament.name}**.`);
 		}
@@ -61,7 +61,7 @@ const command: CommandDefinition = {
 				event: "success"
 			})
 		);
-		const username = await support.discord.getRESTUsername(player, true);
+		const username = await support.discord.getRESTUsername(player.id, true);
 		await reply(
 			msg,
 			`Score of ${scores[0]}-${scores[1]} submitted in favour of <@${player}> (${username}) in **${tournament.name}**!`

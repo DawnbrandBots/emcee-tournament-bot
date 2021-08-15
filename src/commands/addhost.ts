@@ -22,7 +22,7 @@ const command: CommandDefinition = {
 				event: "attempt"
 			})
 		);
-		await support.database.addHost(id, newHost);
+		await support.database.addHost(id, newHost.id);
 		logger.verbose(
 			JSON.stringify({
 				channel: msg.channel.id,
@@ -34,7 +34,7 @@ const command: CommandDefinition = {
 				event: "success"
 			})
 		);
-		await reply(msg, `${support.discord.mentionUser(newHost)} added as a host for **${tournament.name}**!`);
+		await reply(msg, `${support.discord.mentionUser(newHost.id)} added as a host for **${tournament.name}**!`);
 	}
 };
 

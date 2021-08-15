@@ -23,7 +23,7 @@ const command: CommandDefinition = {
 				event: "attempt"
 			})
 		);
-		const byes = await support.database.removeBye(id, player);
+		const byes = await support.database.removeBye(id, player.id);
 		logger.verbose(
 			JSON.stringify({
 				channel: msg.channel.id,
@@ -38,7 +38,7 @@ const command: CommandDefinition = {
 		const tag = (id: string): string =>
 			`${support.discord.mentionUser(id)} (${support.discord.getUsername(id, true)})`;
 		const names = byes.map(tag).join(", ");
-		await reply(msg, `Bye removed for Player ${tag(player)} in **${tournament.name}**!\nAll byes: ${names}`);
+		await reply(msg, `Bye removed for Player ${tag(player.id)} in **${tournament.name}**!\nAll byes: ${names}`);
 	}
 };
 
