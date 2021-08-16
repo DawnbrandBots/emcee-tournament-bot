@@ -39,12 +39,12 @@ const command: CommandDefinition = {
 			// eslint-disable-next-line no-var
 			var { challongeId } = await support.database.getConfirmedPlayer(player.id, id);
 		} catch {
-			throw new UserError(`<@${player}> isn't playing in **${tournament.name}**.`);
+			throw new UserError(`${player} isn't playing in **${tournament.name}**.`);
 		}
 		// can also find open matches, just depends on current round
 		const match = await support.challonge.findClosedMatch(id, challongeId);
 		if (!match) {
-			throw new UserError(`Could not find an open match in **${tournament.name}** including <@${player}>.`);
+			throw new UserError(`Could not find an open match in **${tournament.name}** including ${player}.`);
 		}
 		await support.challonge.submitScore(id, match, challongeId, scores[0], scores[1]);
 		const cleared = support.scores.get(id)?.delete(challongeId); // Remove any pending participant-submitted score.
@@ -61,9 +61,8 @@ const command: CommandDefinition = {
 				event: "success"
 			})
 		);
-		const username = await support.discord.getRESTUsername(player.id, true);
 		await msg.reply(
-			`Score of ${scores[0]}-${scores[1]} submitted in favour of <@${player}> (${username}) in **${tournament.name}**!`
+			`Score of ${scores[0]}-${scores[1]} submitted in favour of ${player} (${player.tag}) in **${tournament.name}**!`
 		);
 	}
 };

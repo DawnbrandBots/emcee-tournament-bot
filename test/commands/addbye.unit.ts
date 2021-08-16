@@ -28,7 +28,7 @@ describe("command:addbye", function () {
 			this.stub(support.database, "registerBye").resolves([]);
 			await command.executor(msg, ["name"], support);
 			expect(msg.reply).to.have.been.calledOnceWithExactly(
-				"Bye registered for Player <@nova> (nova) in **Tournament 1**!\nAll byes: "
+				"Bye registered for <@nova> (K#1234) in **Tournament 1**!\nAll byes: "
 			);
 		})
 	);

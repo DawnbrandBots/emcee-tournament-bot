@@ -11,7 +11,7 @@ describe("command:score", function () {
 			const replySpy = this.stub(msg, "reply").resolves();
 			const authStub = this.stub(support.database, "authenticatePlayer").rejects();
 			expect(command.executor(msg, ["name", "2-0"], support)).to.be.rejected;
-			expect(authStub).to.have.been.calledOnceWithExactly("name", "0000", undefined, TournamentStatus.IPR);
+			expect(authStub).to.have.been.calledOnceWithExactly("name", "0000", null, TournamentStatus.IPR);
 			expect(replySpy).to.not.have.been.called;
 		})
 	);
@@ -77,6 +77,6 @@ describe("command:score", function () {
 			"123",
 			"<@zeus> (nova#0000) and <@0000> (nova#0000) have reported their score of 1-2 for **foo** (name)."
 		);
-		sinon.resetBehavior();
+		sinon.restore();
 	});
 });

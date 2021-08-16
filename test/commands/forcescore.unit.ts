@@ -32,23 +32,25 @@ describe("command:forcescore", function () {
 				open: true,
 				round: 1
 			});
-			this.stub(support.discord, "getRESTUsername").resolves("nova#0000");
 			await command.executor(msg, ["name", "2-1"], support);
 			expect(msg.reply).to.have.been.calledOnceWithExactly(
-				"Score of 2-1 submitted in favour of <@nova> (nova#0000) in **Tournament 1**!"
+				"Score of 2-1 submitted in favour of <@nova> (K#0000) in **Tournament 1**!"
 			);
 		})
 	);
-	it("rejects bad scores", () => {
-		msg.mentions = new MessageMentions(
-			msg,
-			[{ id: "nova", username: "K", discriminator: "0000", avatar: "k.png" }],
-			[],
-			false
-		);
-		this.stub(msg, "reply").resolves();
-		expect(command.executor(msg, ["name", "they won"], support)).to.be.rejectedWith(
-			"Must provide score in format `#-#` e.g. `2-1`."
-		);
-	});
+	it(
+		"rejects bad scores",
+		test(function (this: SinonSandbox) {
+			msg.mentions = new MessageMentions(
+				msg,
+				[{ id: "nova", username: "K", discriminator: "0000", avatar: "k.png" }],
+				[],
+				false
+			);
+			this.stub(msg, "reply").resolves();
+			expect(command.executor(msg, ["name", "they won"], support)).to.be.rejectedWith(
+				"Must provide score in format `#-#` e.g. `2-1`."
+			);
+		})
+	);
 });

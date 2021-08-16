@@ -8,7 +8,7 @@ describe("command:open", function () {
 	it("opens registration", async () => {
 		sinon.stub(msg, "reply").resolves();
 		await command.executor(msg, ["name"], support);
-		sinon.restore();
 		expect(msg.reply).to.have.been.calledOnceWithExactly("**Tournament 1** opened for registration!");
+		sinon.restore();
 	});
 });

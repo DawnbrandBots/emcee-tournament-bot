@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import sinon, { SinonSandbox } from "sinon";
+import { SinonSandbox } from "sinon";
 import command from "../../src/commands/tb";
 import { itRejectsNonHosts, msg, support, test } from "./common";
 
@@ -8,7 +8,7 @@ describe("command:tb", function () {
 	it(
 		"responds with current state",
 		test(async function (this: SinonSandbox) {
-			support.challonge.updateTieBreakers = sinon.spy();
+			this.spy(support.challonge, "updateTieBreakers");
 			this.stub(msg, "reply").resolves();
 			await command.executor(msg, ["name"], support);
 			expect(support.challonge.updateTieBreakers).to.not.have.been.called;
@@ -20,7 +20,7 @@ describe("command:tb", function () {
 	it(
 		"updates tie-breaker settings",
 		test(async function (this: SinonSandbox) {
-			support.challonge.updateTieBreakers = sinon.spy();
+			this.spy(support.challonge, "updateTieBreakers");
 			this.stub(msg, "reply").resolves();
 			await command.executor(msg, ["name", "match wins", "game wins", "points scored"], support);
 			expect(support.challonge.updateTieBreakers).to.have.been.calledOnce;
@@ -32,7 +32,7 @@ describe("command:tb", function () {
 	it(
 		"provides advice on invalid input",
 		test(async function (this: SinonSandbox) {
-			support.challonge.updateTieBreakers = sinon.spy();
+			this.spy(support.challonge, "updateTieBreakers");
 			this.stub(msg, "reply").resolves();
 			await command.executor(msg, ["name", "match wins"], support);
 			expect(support.challonge.updateTieBreakers).to.not.have.been.called;

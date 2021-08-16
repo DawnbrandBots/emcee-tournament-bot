@@ -20,6 +20,7 @@ describe("command:update", function () {
 		test(async function (this: SinonSandbox) {
 			this.stub(support.database, "updateTournament").resolves();
 			this.stub(support.challonge, "updateTournament").resolves();
+			this.stub(msg, "reply").resolves();
 			await command.executor(msg, ["name", "newName", "newDesc"], support);
 			expect(support.database.updateTournament).to.have.been.calledOnceWithExactly("name", "newName", "newDesc");
 			expect(support.challonge.updateTournament).to.have.been.calledOnceWithExactly("name", "newName", "newDesc");

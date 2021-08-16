@@ -5,6 +5,8 @@ import { itRejectsNonHosts, msg, support } from "./common";
 
 describe("command:removechannel", function () {
 	itRejectsNonHosts(support, command, msg, ["name"]);
+});
+describe("command:removechannel", function () {
 	beforeEach(() => sinon.stub(msg, "reply").resolves());
 	afterEach(() => sinon.restore());
 	it("removes a public channel by default", async () => {

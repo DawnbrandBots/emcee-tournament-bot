@@ -26,6 +26,8 @@ const fakeTournaments: DatabaseTournament[] = [
 ];
 
 describe("command:list", function () {
+	before(() => (msg.guildId = "public"));
+	after(() => (msg.guildId = null));
 	it(
 		"rejects non-TOs",
 		test(function (this: SinonSandbox) {

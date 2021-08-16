@@ -6,6 +6,8 @@ import { itRejectsNonHosts, msg, support } from "./common";
 
 describe("command:removehost", function () {
 	itRejectsNonHosts(support, command, msg, ["name"]);
+});
+describe("command:removehost", function () {
 	beforeEach(() => sinon.stub(msg, "reply").resolves());
 	afterEach(() => sinon.restore());
 	it("supports mentioned users", async () => {

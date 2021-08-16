@@ -1,4 +1,4 @@
-import { Message, MessageAttachment, MessageEmbed } from "discord.js";
+import { Message, MessageAttachment, MessageEmbed, ReplyMessageOptions } from "discord.js";
 import fetch from "node-fetch";
 import { CardIndex, CardVector, createAllowVector, Deck, DeckError, ICard } from "ydeck";
 import { Card, enums, YgoData } from "ygopro-data";
@@ -126,11 +126,7 @@ export class DeckManager {
 	}
 
 	// return type from discord.js message sending
-	public prettyPrint(
-		deck: Deck,
-		filename: string,
-		errors: DeckError[] = []
-	): { embeds: MessageEmbed[]; files: MessageAttachment[] } {
+	public prettyPrint(deck: Deck, name: string, errors: DeckError[] = []): ReplyMessageOptions {
 		const title = `Themes: ${deck.themes.join(",") || "none"}`;
 		let mainHeader = `Main Deck (${deck.contents.main.length} cards — `;
 		const mainHeaderParts: string[] = [];
@@ -207,13 +203,10 @@ export class DeckManager {
 			}
 		}
 
-		const embed = new MessageEmbed();
-		embed.setTitle(title);
-		embed.addFields(fields);
-
-		const file = new MessageAttachment(deck.ydk, filename);
-
-		return { embeds: [embed], files: [file] };
+		return {
+			embeds: [new MessageEmbed().setTitle(title).addFields(fields)],
+			files: [{ name, attachment: deck.ydk }]
+		};
 	}
 
 	private async extractYdk(attach: MessageAttachment): Promise<string> {
