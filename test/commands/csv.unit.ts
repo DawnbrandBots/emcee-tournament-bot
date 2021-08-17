@@ -1,6 +1,6 @@
 import { expect } from "chai";
 import dotenv from "dotenv";
-import sinon, { SinonSandbox } from "sinon";
+import { SinonSandbox } from "sinon";
 import command from "../../src/commands/csv";
 import { itRejectsNonHosts, msg, support, test, tournament } from "./common";
 
@@ -23,15 +23,15 @@ describe("command:csv", function () {
 			expect(authStub).to.have.been.called;
 			expect(listStub).to.have.been.calledOnce;
 			expect(restStub).to.have.been.calledThrice;
-			expect(msg.reply).to.have.been.calledOnceWithExactly(
-				sinon.match({
-					content: "A list of players for tournament battlecity with their deck is attached."
-				}),
-				{
-					name: "battlecity.csv",
-					file: `Player,Theme,Deck\n1312,No themes,"Main: , Extra: , Side: "\n1314,No themes,"Main: , Extra: , Side: "\n1234,No themes,"Main: , Extra: , Side: "`
-				}
-			);
+			expect(msg.reply).to.have.been.calledOnceWithExactly({
+				content: "A list of players for tournament battlecity with their deck is attached.",
+				files: [
+					{
+						name: "battlecity.csv",
+						attachment: `Player,Theme,Deck\n1312,No themes,"Main: , Extra: , Side: "\n1314,No themes,"Main: , Extra: , Side: "\n1234,No themes,"Main: , Extra: , Side: "`
+					}
+				]
+			});
 		})
 	);
 	it(
@@ -59,13 +59,15 @@ describe("command:csv", function () {
 			await command.executor(msg, [args[0], "pie"], support);
 			expect(authStub).to.have.been.called;
 			expect(listStub).to.have.been.calledOnce;
-			expect(msg.reply).to.have.been.calledOnceWithExactly(
-				"A list of themes in tournament battlecity with their counts is attached.",
-				{
-					name: "battlecity.csv",
-					file: `Theme,Count\nNo themes,3`
-				}
-			);
+			expect(msg.reply).to.have.been.calledOnceWithExactly({
+				content: "A list of themes in tournament battlecity with their counts is attached.",
+				files: [
+					{
+						name: "battlecity.csv",
+						attachment: `Theme,Count\nNo themes,3`
+					}
+				]
+			});
 		})
 	);
 	it(

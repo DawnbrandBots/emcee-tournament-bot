@@ -1,5 +1,4 @@
 import * as csv from "@fast-csv/format";
-import { MessageAttachment } from "discord.js";
 import { CommandDefinition } from "../Command";
 import { getLogger } from "../util/logger";
 
@@ -67,7 +66,7 @@ const command: CommandDefinition = {
 			content: pie
 				? `A list of themes in tournament ${id} with their counts is attached.`
 				: `A list of players for tournament ${id} with their deck is attached.`,
-			files: [new MessageAttachment(file, `${id}.csv`)]
+			files: [{ attachment: file, name: `${id}.csv` }]
 		});
 	}
 };
