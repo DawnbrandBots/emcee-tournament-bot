@@ -1,5 +1,5 @@
 import chai, { expect } from "chai";
-import { Client, Message, MessageAttachment } from "discord.js";
+import { Client, Message } from "discord.js";
 import sinon, { SinonSandbox } from "sinon";
 import sinonChai from "sinon-chai";
 import sinonTest from "sinon-test";
@@ -67,7 +67,8 @@ describe("Direct message submissions", function () {
 					}
 				}
 			]);
-			this.stub(decks, "prettyPrint").returns({ embeds: [], files: [new MessageAttachment("mock", "mock")] });
+			const printResult = { embeds: [], files: [] };
+			this.stub(decks, "prettyPrint").returns(printResult);
 			this.stub(participantRole, "grant").resolves();
 			const replySpy = this.stub(sampleMessage, "reply").resolves();
 			const send = this.spy();
@@ -75,16 +76,13 @@ describe("Direct message submissions", function () {
 			await onDirectMessage(sampleMessage, database, decks, challonge, participantRole, mockBotClient);
 			expect(fetchStub).to.have.been.calledWith("channel2");
 			expect(send).to.have.been.calledWith(
-				"<@testUser> (undefined#undefined) has signed up for **Tournament 1** with the following deck!"
+				"<@testUser> (K#1234) has signed up for **Tournament 1** with the following deck!"
 			);
-			expect(send).to.have.been.calledWith({ name: "mock", file: "mock" });
+			expect(send).to.have.been.calledWith(printResult);
 			expect(replySpy).to.have.been.calledWith(
 				"You have successfully signed up for **Tournament 1**! Your deck is below to double-check. You may resubmit at any time before the tournament starts."
 			);
-			expect(replySpy).to.have.been.calledWith(sinon.match.any, {
-				name: "mock",
-				file: "mock"
-			});
+			expect(replySpy).to.have.been.calledWith(printResult);
 		})
 	);
 	it(
@@ -168,7 +166,8 @@ describe("Direct message submissions", function () {
 					}
 				}
 			]);
-			this.stub(decks, "prettyPrint").returns({ embeds: [], files: [new MessageAttachment("mock", "mock")] });
+			const printResult = { embeds: [], files: [] };
+			this.stub(decks, "prettyPrint").returns(printResult);
 			this.stub(database, "updateDeck").resolves();
 			const replySpy = this.stub(sampleMessage, "reply").resolves();
 			const send = this.spy();
@@ -176,16 +175,13 @@ describe("Direct message submissions", function () {
 			await onDirectMessage(sampleMessage, database, decks, challonge, participantRole, mockBotClient);
 			expect(fetchStub).to.have.been.calledWith("channel2");
 			expect(send).to.have.been.calledWith(
-				"<@testUser> (undefined#undefined) has updated their deck for **Tournament 1** to the following!"
+				"<@testUser> (K#1234) has updated their deck for **Tournament 1** to the following!"
 			);
-			expect(send).to.have.been.calledWith({ name: "mock", file: "mock" });
+			expect(send).to.have.been.calledWith(printResult);
 			expect(replySpy).to.have.been.calledWith(
 				"You have successfully changed your deck for **Tournament 1**! Your deck is below to double-check. You may resubmit at any time before the tournament starts."
 			);
-			expect(replySpy).to.have.been.calledWith(sinon.match.any, {
-				name: "mock",
-				file: "mock"
-			});
+			expect(replySpy).to.have.been.calledWith(printResult);
 		})
 	);
 	it(
