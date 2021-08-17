@@ -90,7 +90,7 @@ export class ParticipantRoleProvider {
 	public async grant(userId: string, tournament: Tournament): Promise<void> {
 		const { id, server } = await this.lazyGet(tournament);
 		// TODO: handle null user
-		const member = server.members.cache.get(userId) || (await server.members.fetch(userId));
+		const member = await server.members.fetch(userId);
 		await member.roles.add(id, "Granted by Emcee.");
 	}
 

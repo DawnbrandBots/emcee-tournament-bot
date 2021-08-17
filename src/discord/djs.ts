@@ -153,9 +153,8 @@ export class DiscordWrapperDJS implements DiscordWrapper {
 		userId: string
 	): Promise<boolean> {
 		// TODO: Check channel exists and is of text type
-		const channel = (this.bot.channels.cache.get(channelId) ||
-			(await this.bot.channels.fetch(channelId))) as TextChannel;
-		const msg = channel.messages.cache.get(messageId) || (await channel.messages.fetch(messageId));
+		const channel = (await this.bot.channels.fetch(channelId)) as TextChannel;
+		const msg = await channel.messages.fetch(messageId);
 		try {
 			// TODO: handle null reaction
 			await msg.reactions.cache.get(emoji)?.users.remove(userId);
@@ -176,7 +175,7 @@ export class DiscordWrapperDJS implements DiscordWrapper {
 	 */
 	public async getRESTUsername(userId: string): Promise<string | null> {
 		try {
-			const user = this.bot.users.cache.get(userId) || (await this.bot.users.fetch(userId));
+			const user = await this.bot.users.fetch(userId);
 			return `${user.username}#${user.discriminator}`;
 		} catch {
 			return null;
@@ -184,7 +183,7 @@ export class DiscordWrapperDJS implements DiscordWrapper {
 	}
 
 	public async sendDirectMessage(userId: string, content: DiscordMessageOut): Promise<void> {
-		const user = this.bot.users.cache.get(userId) || (await this.bot.users.fetch(userId));
+		const user = await this.bot.users.fetch(userId);
 		try {
 			const messageContent =
 				typeof content === "string" ? { content: content } : { embeds: [this.unwrapEmbed(content)] };
@@ -201,9 +200,9 @@ export class DiscordWrapperDJS implements DiscordWrapper {
 	}
 
 	public async getMessage(channelId: string, messageId: string): Promise<DiscordMessageIn | null> {
-		const chan = this.bot.channels.cache.get(channelId) || (await this.bot.channels.fetch(channelId));
+		const chan = await this.bot.channels.fetch(channelId);
 		if (chan instanceof TextChannel) {
-			const msg = chan.messages.cache.get(messageId) || (await chan.messages.fetch(messageId));
+			const msg = await chan.messages.fetch(messageId);
 			try {
 				await msg?.delete();
 			} catch (err) {
@@ -225,7 +224,7 @@ export class DiscordWrapperDJS implements DiscordWrapper {
 	): Promise<DiscordMessageSent> {
 		const messageContent = typeof msg === "string" ? { content: msg } : { embeds: [this.unwrapEmbed(msg)] };
 		const messageFile = file ? { files: [new MessageAttachment(file.contents, file.filename)] } : {};
-		const chan = this.bot.channels.cache.get(channelId) || (await this.bot.channels.fetch(channelId));
+		const chan = await this.bot.channels.fetch(channelId);
 		if (chan instanceof TextChannel) {
 			const response = await chan.send({ ...messageContent, ...messageFile });
 			return this.wrapMessageIn(response);
@@ -234,9 +233,9 @@ export class DiscordWrapperDJS implements DiscordWrapper {
 	}
 
 	public async deleteMessage(channelId: string, messageId: string): Promise<void> {
-		const chan = this.bot.channels.cache.get(channelId) || (await this.bot.channels.fetch(channelId));
+		const chan = await this.bot.channels.fetch(channelId);
 		if (chan instanceof TextChannel) {
-			const message = chan.messages.cache.get(messageId) || (await chan.messages.fetch(messageId));
+			const message = await chan.messages.fetch(messageId);
 			await message.delete();
 		}
 		throw new AssertTextChannelError(channelId);
