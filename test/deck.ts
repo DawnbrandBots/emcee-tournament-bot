@@ -1,6 +1,6 @@
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
-import { Client, Collection, FileOptions, Message } from "discord.js";
+import { Client, FileOptions, Message, MessageAttachment } from "discord.js";
 import { DeckManager, initializeDeckManager, splitText } from "../src/deck";
 chai.use(chaiAsPromised);
 
@@ -42,28 +42,18 @@ describe("Get deck from message", function () {
 		expect(deck.contents.main.length).to.equal(40); // more details in ydeck tests, just checking we got something
 	});
 	it("YDK", async function () {
-		sampleMessage.attachments = new Collection([
-			[
-				"unused",
-				{
-					name: "deck.ydk",
-					url: "https://raw.githubusercontent.com/AlphaKretin/AlphaKretin.github.io/297c9154cf29214b65bebdd9a85acbdf68fb5eb0/miscstorage/ABC.ydk",
-					id: "unused",
-					proxyURL: "unused",
-					size: NaN,
-					attachment: "unused",
-					contentType: "unused",
-					spoiler: false,
-					width: 1,
-					height: 1,
-					setFile: () => sampleMessage.attachments.first()!,
-					setName: () => sampleMessage.attachments.first()!,
-					toJSON: () => {}
-				}
-			]
-		]);
+		sampleMessage.attachments.set(
+			"unused",
+			new MessageAttachment("unused", "deck.ydk", {
+				url: "https://raw.githubusercontent.com/AlphaKretin/AlphaKretin.github.io/297c9154cf29214b65bebdd9a85acbdf68fb5eb0/miscstorage/ABC.ydk",
+				filename: "deck.ydk",
+				id: "unused",
+				proxy_url: "unused",
+				size: NaN
+			})
+		);
 		const [deck] = await decks.getDeckFromMessage(sampleMessage);
-		sampleMessage.attachments = new Collection([]);
+		sampleMessage.attachments.clear();
 		expect(deck.contents.main.length).to.equal(40); // more details in ydeck tests, just checking we got something
 	});
 	it("None", function () {

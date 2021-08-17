@@ -1,4 +1,4 @@
-import { Guild, GuildMember, PartialGuildMember } from "discord.js";
+import { GuildMember, PartialGuildMember } from "discord.js";
 import { getConnection } from "typeorm";
 import { CommandSupport } from "../Command";
 import { Participant } from "../database/orm";

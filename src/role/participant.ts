@@ -1,5 +1,4 @@
 import { Client, Guild, Role } from "discord.js";
-import { MiscInternalError } from "../util/errors";
 import { getLogger } from "../util/logger";
 
 const logger = getLogger("role:participant");
@@ -53,7 +52,7 @@ export class ParticipantRoleProvider {
 		if (tournament.id in this.roleCache) {
 			return this.roleCache[tournament.id];
 		}
-		const server = this.bot.guilds.cache.get(tournament.server) || (await this.bot.guilds.fetch(tournament.server));
+		const server = await this.bot.guilds.fetch(tournament.server);
 		logger.verbose(
 			JSON.stringify({
 				method: "get",
@@ -128,7 +127,7 @@ export class ParticipantRoleProvider {
 		if (tournament.id in this.roleCache) {
 			const { id, server } = this.roleCache[tournament.id];
 			try {
-				const role = server.roles.cache.get(id) || (await server.roles.fetch(id));
+				const role = await server.roles.fetch(id);
 				// TODO: handle null role
 				await role!.delete();
 			} catch (e) {

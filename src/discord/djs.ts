@@ -53,8 +53,7 @@ export class DiscordWrapperDJS implements DiscordWrapper {
 		reaction: MessageReaction | PartialMessageReaction,
 		user: User | PartialUser
 	): Promise<void> {
-		// TODO: handle null user
-		if (user.id === this.bot.user!.id) {
+		if (user.id === this.bot.user?.id) {
 			return;
 		}
 		const msg = reaction.message;
@@ -77,8 +76,7 @@ export class DiscordWrapperDJS implements DiscordWrapper {
 		reaction: MessageReaction | PartialMessageReaction,
 		user: User | PartialUser
 	): Promise<void> {
-		// TODO: handle null user
-		if (user.id === this.bot.user!.id) {
+		if (user.id === this.bot.user?.id) {
 			return;
 		}
 		const msg = reaction.message;
