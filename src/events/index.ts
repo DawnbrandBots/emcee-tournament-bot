@@ -23,4 +23,5 @@ export function registerEvents(bot: Client, prefix: string, support: CommandSupp
 	bot.on("guildCreate", guildCreate.makeHandler(support.organiserRole));
 	bot.on("messageCreate", messageCreate.makeHandler(bot, prefix, commands, support));
 	bot.on("guildMemberRemove", guildMemberRemove.makeHandler(support));
+	bot.on("messageDelete", message => support.database.cleanRegistration(message.channelId, message.id));
 }

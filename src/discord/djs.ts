@@ -138,10 +138,6 @@ export class DiscordWrapperDJS implements DiscordWrapper {
 		return embed;
 	}
 
-	public onDelete(handler: DiscordDeleteHandler): void {
-		this.deleteHandlers.push(handler);
-	}
-
 	public onReaction(handler: DiscordReactionHandler): void {
 		this.reactionHandlers.push(handler);
 	}

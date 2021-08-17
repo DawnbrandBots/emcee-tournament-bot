@@ -82,7 +82,6 @@ const logger = getLogger("index");
 		templater,
 		timeWizard
 	});
-	discord.onDelete(msg => tournamentManager.cleanRegistration(msg));
 
 	let firstReady = true;
 	bot.on("ready", async () => {
