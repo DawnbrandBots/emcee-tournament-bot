@@ -58,8 +58,9 @@ const logger = getLogger("index");
 			if (channel?.isText()) {
 				const sent = await channel.messages.fetch(messageId);
 				await sent.edit(newMessage);
+			} else {
+				throw new Error(`${channelId} is not a text channel`);
 			}
-			throw new Error(`${channelId} is not a text channel`);
 		}
 	});
 	const tournamentManager = new TournamentManager(
