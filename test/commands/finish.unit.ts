@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import sinon, { SinonSandbox } from "sinon";
+import { SinonSandbox } from "sinon";
 import command from "../../src/commands/finish";
 import { itRejectsNonHosts, msg, support, test, tournament } from "./common";
 
@@ -11,13 +11,11 @@ describe("command:finish", function () {
 		test(async function (this: SinonSandbox) {
 			const authStub = this.stub(support.database, "authenticateHost").resolves(tournament);
 			const finishStub = this.stub(support.tournamentManager, "finishTournament").resolves();
-			msg.channel.createMessage = this.spy();
+			this.stub(msg, "reply").resolves();
 			await command.executor(msg, args, support);
 			expect(authStub).to.have.been.called;
 			expect(finishStub).to.have.been.calledOnceWithExactly("battlecity", false);
-			expect(msg.channel.createMessage).to.have.been.calledOnceWithExactly(
-				sinon.match({ content: "**Tournament 1** successfully finished." })
-			);
+			expect(msg.reply).to.have.been.calledOnceWithExactly("**Tournament 1** successfully finished.");
 		})
 	);
 	// TODO: specifically mock challonge-level stuff about whether all match scores are in or not?
@@ -26,16 +24,13 @@ describe("command:finish", function () {
 		test(async function (this: SinonSandbox) {
 			const authStub = this.stub(support.database, "authenticateHost").resolves(tournament);
 			const finishStub = this.stub(support.tournamentManager, "finishTournament").rejects();
-			msg.channel.createMessage = this.spy();
+			this.stub(msg, "reply").resolves();
 			// no try catch because executor does not throw, it handles error
 			await command.executor(msg, args, support);
 			expect(authStub).to.have.been.called;
 			expect(finishStub).to.have.been.calledOnce;
-			expect(msg.channel.createMessage).to.have.been.calledOnceWithExactly(
-				sinon.match({
-					content:
-						"**Tournament 1** is not finished. If you intend to end it early, use `mc!finish battlecity|early`."
-				})
+			expect(msg.reply).to.have.been.calledOnceWithExactly(
+				"**Tournament 1** is not finished. If you intend to end it early, use `mc!finish battlecity|early`."
 			);
 		})
 	);
@@ -44,13 +39,11 @@ describe("command:finish", function () {
 		test(async function (this: SinonSandbox) {
 			const authStub = this.stub(support.database, "authenticateHost").resolves(tournament);
 			const finishStub = this.stub(support.tournamentManager, "finishTournament").resolves();
-			msg.channel.createMessage = this.spy();
+			this.stub(msg, "reply").resolves();
 			await command.executor(msg, [...args, "early"], support);
 			expect(authStub).to.have.been.called;
 			expect(finishStub).to.have.been.calledOnceWithExactly("battlecity", true);
-			expect(msg.channel.createMessage).to.have.been.calledOnceWithExactly(
-				sinon.match({ content: "**Tournament 1** successfully finished." })
-			);
+			expect(msg.reply).to.have.been.calledOnceWithExactly("**Tournament 1** successfully finished.");
 		})
 	);
 	it(
@@ -58,14 +51,14 @@ describe("command:finish", function () {
 		test(async function (this: SinonSandbox) {
 			const authStub = this.stub(support.database, "authenticateHost").resolves();
 			const finishStub = this.stub(support.tournamentManager, "finishTournament").rejects();
-			msg.channel.createMessage = this.spy();
+			this.stub(msg, "reply").resolves();
 			try {
 				await command.executor(msg, [...args, "early"], support);
 				expect.fail();
 			} catch (e) {
 				expect(authStub).to.have.been.called;
 				expect(finishStub).to.have.been.calledOnceWithExactly("battlecity", true);
-				expect(msg.channel.createMessage).to.not.have.been.called;
+				expect(msg.reply).to.not.have.been.called;
 			}
 		})
 	);
@@ -74,14 +67,14 @@ describe("command:finish", function () {
 		test(async function (this: SinonSandbox) {
 			const authStub = this.stub(support.database, "authenticateHost").resolves(tournament);
 			const finishStub = this.stub(support.tournamentManager, "finishTournament").resolves();
-			msg.channel.createMessage = this.stub().rejects();
+			this.stub(msg, "reply").rejects();
 			try {
 				await command.executor(msg, args, support);
 				expect.fail();
 			} catch (e) {
 				expect(authStub).to.have.been.called;
 				expect(finishStub).to.have.been.calledOnce;
-				expect(msg.channel.createMessage).to.have.been.calledOnce;
+				expect(msg.reply).to.have.been.calledOnce;
 			}
 		})
 	);

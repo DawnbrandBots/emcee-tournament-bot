@@ -1,7 +1,6 @@
 import { CommandDefinition } from "../Command";
 import { TournamentStatus } from "../database/interface";
 import { advanceRoundDiscord, parseTime } from "../round";
-import { reply } from "../util/discord";
 import { getLogger } from "../util/logger";
 
 const logger = getLogger("command:round");
@@ -22,12 +21,12 @@ const command: CommandDefinition = {
 		const tournament = await support.database.authenticateHost(
 			id,
 			msg.author.id,
-			msg.guildID,
+			msg.guildId,
 			TournamentStatus.IPR
 		);
 		logger.verbose(
 			JSON.stringify({
-				channel: msg.channel.id,
+				channel: msg.channelId,
 				message: msg.id,
 				user: msg.author.id,
 				tournament: id,
@@ -41,7 +40,7 @@ const command: CommandDefinition = {
 		support.scores.get(id)?.clear();
 		logger.verbose(
 			JSON.stringify({
-				channel: msg.channel.id,
+				channel: msg.channelId,
 				message: msg.id,
 				user: msg.author.id,
 				tournament: id,
@@ -49,8 +48,7 @@ const command: CommandDefinition = {
 				event: "success"
 			})
 		);
-		await reply(
-			msg,
+		await msg.reply(
 			`Pairings sent out for **${tournament.name}**. Please check the private channels for any failed DMs.`
 		);
 	}

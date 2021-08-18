@@ -1,4 +1,4 @@
-ARG NODE_VERSION=14-buster
+ARG NODE_VERSION=16
 FROM node:${NODE_VERSION} as base
 WORKDIR /app
 COPY package*.json yarn.lock ./
@@ -25,4 +25,4 @@ COPY --chown=node:node dbs/ ./dbs
 COPY guides/ ./guides
 COPY COPYING .
 USER node
-CMD ["node", "--enable-source-maps", "--unhandled-rejections=strict", "."]
+CMD ["node", "--enable-source-maps", "."]

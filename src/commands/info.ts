@@ -1,13 +1,12 @@
-import { EmbedField, EmbedOptions } from "eris";
+import { EmbedField, MessageEmbed } from "discord.js";
 import { CommandDefinition } from "../Command";
 import { ChallongeTournament } from "../database/orm";
-import { reply } from "../util/discord";
 import { UserError } from "../util/errors";
 import { getLogger } from "../util/logger";
 
 const logger = getLogger("command:info");
 
-export function createTournamentEmbed(tournament: ChallongeTournament): EmbedOptions {
+export function createTournamentEmbed(tournament: ChallongeTournament): MessageEmbed {
 	const fields: EmbedField[] = [
 		{ name: ":ticket: Capacity", value: `${tournament.participantLimit || 256}`, inline: true },
 		{
@@ -27,13 +26,12 @@ export function createTournamentEmbed(tournament: ChallongeTournament): EmbedOpt
 	}
 	const hosts = tournament.hosts.map(snowflake => `<@${snowflake}>`).join(" ");
 	fields.push({ name: ":smile: Hosts", value: hosts, inline: true });
-	return {
-		url: `https://challonge.com/${tournament.tournamentId}`,
-		title: `**${tournament.name}**`,
-		description: tournament.description,
-		fields,
-		footer: { text: "Tournament details as of request time" }
-	};
+	return new MessageEmbed()
+		.setURL(`https://challonge.com/${tournament.tournamentId}`)
+		.setTitle(`**${tournament.name}**`)
+		.setDescription(tournament.description)
+		.setFields(fields)
+		.setFooter("Tournament details as of request time");
 }
 
 const command: CommandDefinition = {
@@ -41,17 +39,17 @@ const command: CommandDefinition = {
 	requiredArgs: ["id"],
 	executor: async (msg, args) => {
 		const [id] = args;
-		if (!msg.guildID) {
+		if (!msg.guildId) {
 			throw new UserError("This can only be used in a server!");
 		}
 		const tournament = await ChallongeTournament.findOne({
 			tournamentId: id,
-			owningDiscordServer: msg.guildID
+			owningDiscordServer: msg.guildId
 		});
 		if (tournament) {
 			logger.verbose(
 				JSON.stringify({
-					channel: msg.channel.id,
+					channel: msg.channelId,
 					message: msg.id,
 					user: msg.author.id,
 					tournament: id,
@@ -60,14 +58,14 @@ const command: CommandDefinition = {
 				})
 			);
 			const embed = createTournamentEmbed(tournament);
-			await reply(msg, {
-				embed,
-				allowedMentions: { users: false }
+			await msg.reply({
+				embeds: [embed],
+				allowedMentions: { users: [] }
 			});
 		} else {
 			logger.verbose(
 				JSON.stringify({
-					channel: msg.channel.id,
+					channel: msg.channelId,
 					message: msg.id,
 					user: msg.author.id,
 					tournament: id,
@@ -75,7 +73,7 @@ const command: CommandDefinition = {
 					event: "404"
 				})
 			);
-			await reply(msg, "No matching tournament in this server.");
+			await msg.reply("No matching tournament in this server.");
 		}
 	}
 };

@@ -1,4 +1,4 @@
-import { Guild } from "eris";
+import { Guild } from "discord.js";
 import { OrganiserRoleProvider } from "../role/organiser";
 import { serializeServer } from "../util";
 import { getLogger } from "../util/logger";

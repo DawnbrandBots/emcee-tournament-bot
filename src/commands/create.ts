@@ -1,5 +1,4 @@
 import { CommandDefinition } from "../Command";
-import { reply } from "../util/discord";
 import { ChallongeIDConflictError } from "../util/errors";
 import { getLogger } from "../util/logger";
 
@@ -13,7 +12,7 @@ const command: CommandDefinition = {
 		const [name, desc] = args;
 		logger.verbose(
 			JSON.stringify({
-				channel: msg.channel.id,
+				channel: msg.channelId,
 				message: msg.id,
 				user: msg.author.id,
 				command: "create",
@@ -25,14 +24,14 @@ const command: CommandDefinition = {
 		try {
 			const [id, url, guide] = await support.tournamentManager.createTournament(
 				msg.author.id,
-				msg.guildID || "private",
+				msg.guildId || "private",
 				name,
 				desc
 			);
 			// TODO: missing failure path
 			logger.verbose(
 				JSON.stringify({
-					channel: msg.channel.id,
+					channel: msg.channelId,
 					message: msg.id,
 					user: msg.author.id,
 					command: "create",
@@ -41,15 +40,13 @@ const command: CommandDefinition = {
 					event: "success"
 				})
 			);
-			await reply(
-				msg,
+			await msg.reply(
 				`Tournament ${name} created! You can find it at ${url}. For future commands, refer to this tournament by the id \`${id}\`.`
 			);
-			await reply(msg, guide);
+			await msg.reply(guide);
 		} catch (e) {
 			if (e instanceof ChallongeIDConflictError) {
-				await reply(
-					msg,
+				await msg.reply(
 					`Tournament ID ${e.tournamentId} already taken on Challonge. This is an error with Emcee, so please report it, but in the meantime, try using a different tournament name.`
 				);
 			}

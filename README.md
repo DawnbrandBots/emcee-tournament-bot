@@ -62,7 +62,7 @@ Discord slash commands in future when the feature is stable in Discord.
 ## Development
 
 Emcee is written in TypeScript. It targets Node.js 14+ and can be run with or without Docker.
-It uses Eris to talk to Discord and PostgreSQL for persistence.
+It uses Discord.js to talk to Discord and PostgreSQL for persistence.
 
 
 1. Install Docker with Docker Compose, or install PostgreSQL.

@@ -1,34 +1,25 @@
-import { Message, Textable } from "eris";
+import { Client, Message, TextChannel, User } from "discord.js";
 import { UserError } from "./errors";
 
-export async function reply(
-	msg: Message,
-	...args: Parameters<Textable["createMessage"]>
-): ReturnType<Textable["createMessage"]> {
-	const mixin = {
-		messageReference: {
-			messageID: msg.id
-		},
-		allowedMentions: {
-			repliedUser: true
-		}
-	};
-	if (typeof args[0] === "string") {
-		args[0] = {
-			content: args[0],
-			...mixin
-		};
-	} else {
-		args[0] = { ...args[0], ...mixin };
+export async function send(
+	bot: Client,
+	channelId: string,
+	...args: Parameters<TextChannel["send"]>
+): ReturnType<TextChannel["send"]> {
+	const channel = await bot.channels.fetch(channelId);
+	if (channel?.isText()) {
+		return await channel.send(...args);
 	}
-	return await msg.channel.createMessage(...args);
+	throw new Error(`${channelId} is not a text channel`);
 }
 
-export function firstMentionOrFail(msg: Message): string {
-	if (msg.mentions.length < 1) {
+// returns full user object with d.js due to additional complexity of msg.mentions
+export function firstMentionOrFail(msg: Message): User {
+	const user = msg.mentions.users.first();
+	if (!user) {
 		throw new UserError(`Message does not mention a user!\n\`${msg.content}\``);
 	}
-	return msg.mentions[0].id;
+	return user;
 }
 
 export function parseUserMention(who: string): string | null {

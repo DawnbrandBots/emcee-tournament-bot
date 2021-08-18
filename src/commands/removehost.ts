@@ -1,5 +1,5 @@
 import { CommandDefinition } from "../Command";
-import { parseUserMention, reply } from "../util/discord";
+import { parseUserMention } from "../util/discord";
 import { getLogger } from "../util/logger";
 
 const logger = getLogger("command:removehost");
@@ -10,11 +10,11 @@ const command: CommandDefinition = {
 	executor: async (msg, args, support) => {
 		// Mirror of addhost
 		const [id, who] = args;
-		const tournament = await support.database.authenticateHost(id, msg.author.id, msg.guildID);
+		const tournament = await support.database.authenticateHost(id, msg.author.id, msg.guildId);
 		const newHost = parseUserMention(who) || who;
 		logger.verbose(
 			JSON.stringify({
-				channel: msg.channel.id,
+				channel: msg.channelId,
 				message: msg.id,
 				user: msg.author.id,
 				tournament: id,
@@ -26,7 +26,7 @@ const command: CommandDefinition = {
 		await support.database.removeHost(id, newHost);
 		logger.verbose(
 			JSON.stringify({
-				channel: msg.channel.id,
+				channel: msg.channelId,
 				message: msg.id,
 				user: msg.author.id,
 				tournament: id,
@@ -35,7 +35,7 @@ const command: CommandDefinition = {
 				event: "success"
 			})
 		);
-		await reply(msg, `${support.discord.mentionUser(newHost)} removed as a host for **${tournament.name}**!`);
+		await msg.reply(`${support.discord.mentionUser(newHost)} removed as a host for **${tournament.name}**!`);
 	}
 };
 

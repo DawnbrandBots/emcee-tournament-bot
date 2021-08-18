@@ -1,26 +1,34 @@
 import { expect } from "chai";
-import { User } from "eris";
-import sinon, { SinonSandbox } from "sinon";
+import { MessageMentions } from "discord.js";
+import { SinonSandbox } from "sinon";
 import command from "../../src/commands/removebye";
-import { itRejectsNonHosts, mockBotClient, msg, support, test } from "./common";
+import { itRejectsNonHosts, msg, support, test } from "./common";
 
 describe("command:removebye", function () {
 	itRejectsNonHosts(support, command, msg, ["name"]);
-	it("requires a mentioned user", async () => {
-		msg.mentions = [];
-		msg.channel.createMessage = sinon.spy();
-		expect(command.executor(msg, ["name"], support)).to.be.rejectedWith("Message does not mention a user!");
-		expect(msg.channel.createMessage).to.not.have.been.called;
-	});
+	it(
+		"requires a mentioned user",
+		test(async function (this: SinonSandbox) {
+			msg.mentions = new MessageMentions(msg, [], [], false);
+			this.stub(msg, "reply").resolves();
+			expect(command.executor(msg, ["name"], support)).to.be.rejectedWith("Message does not mention a user!");
+			expect(msg.reply).to.not.have.been.called;
+		})
+	);
 	it(
 		"removes the mentioned user",
 		test(async function (this: SinonSandbox) {
-			msg.mentions = [new User({ id: "nova" }, mockBotClient)];
-			msg.channel.createMessage = this.spy();
+			msg.mentions = new MessageMentions(
+				msg,
+				[{ id: "nova", username: "K", discriminator: "0000", avatar: "k.png" }],
+				[],
+				false
+			);
+			this.stub(msg, "reply").resolves();
 			this.stub(support.database, "removeBye").resolves([]);
 			await command.executor(msg, ["name"], support);
-			expect(msg.channel.createMessage).to.have.been.calledOnceWithExactly(
-				sinon.match({ content: "Bye removed for Player <@nova> (nova) in **Tournament 1**!\nAll byes: " })
+			expect(msg.reply).to.have.been.calledOnceWithExactly(
+				"Bye removed for Player <@nova> (nova) in **Tournament 1**!\nAll byes: "
 			);
 		})
 	);

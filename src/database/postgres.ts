@@ -93,7 +93,7 @@ export class DatabaseWrapperPostgres {
 	public async authenticateHost(
 		tournamentId: string,
 		hostId: string,
-		serverId?: string,
+		serverId: string | null,
 		assertStatus?: TournamentStatus
 	): Promise<DatabaseTournament> {
 		const tournament = await this.findTournament(tournamentId);
@@ -114,7 +114,7 @@ export class DatabaseWrapperPostgres {
 	public async authenticatePlayer(
 		tournamentId: string,
 		discordId: string,
-		serverId?: string,
+		serverId: string | null,
 		assertStatus?: TournamentStatus
 	): Promise<DatabasePlayerWithTournament> {
 		try {

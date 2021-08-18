@@ -1,5 +1,4 @@
 import { CommandDefinition } from "../Command";
-import { reply } from "../util/discord";
 import { getLogger } from "../util/logger";
 
 const logger = getLogger("command:open");
@@ -9,10 +8,10 @@ const command: CommandDefinition = {
 	requiredArgs: ["id"],
 	executor: async (msg, args, support) => {
 		const [id] = args;
-		const tournament = await support.database.authenticateHost(id, msg.author.id, msg.guildID);
+		const tournament = await support.database.authenticateHost(id, msg.author.id, msg.guildId);
 		logger.verbose(
 			JSON.stringify({
-				channel: msg.channel.id,
+				channel: msg.channelId,
 				message: msg.id,
 				user: msg.author.id,
 				tournament: id,
@@ -23,7 +22,7 @@ const command: CommandDefinition = {
 		await support.tournamentManager.openTournament(id);
 		logger.verbose(
 			JSON.stringify({
-				channel: msg.channel.id,
+				channel: msg.channelId,
 				message: msg.id,
 				user: msg.author.id,
 				tournament: id,
@@ -31,7 +30,7 @@ const command: CommandDefinition = {
 				event: "success"
 			})
 		);
-		await reply(msg, `**${tournament.name}** opened for registration!`);
+		await msg.reply(`**${tournament.name}** opened for registration!`);
 	}
 };
 

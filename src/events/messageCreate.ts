@@ -1,4 +1,4 @@
-import { Client, Message, PrivateChannel } from "eris";
+import { Client, Message } from "discord.js";
 import { CardVector } from "ydeck";
 import { Command, CommandDefinition, CommandSupport } from "../Command";
 import { helpMessage } from "../config";
@@ -6,7 +6,7 @@ import { DatabaseTournament } from "../database/interface";
 import { DatabaseWrapperPostgres } from "../database/postgres";
 import { DeckManager } from "../deck";
 import { ParticipantRoleProvider } from "../role/participant";
-import { reply } from "../util/discord";
+import { send } from "../util/discord";
 import { getLogger } from "../util/logger";
 import { Public } from "../util/types";
 import { WebsiteInterface } from "../website/interface";
@@ -25,11 +25,11 @@ export function makeHandler(
 	}
 	return async function messageCreate(msg: Message): Promise<void> {
 		// Ignore messages from all bots and replies
-		if (msg.author.bot || msg.messageReference) {
+		if (msg.author.bot || msg.reference) {
 			return;
 		}
-		if (msg.mentions.includes(bot.user)) {
-			await reply(msg, helpMessage).catch(logger.error);
+		if (bot.user && msg.mentions.has(bot.user)) {
+			await msg.reply(helpMessage).catch(logger.error);
 			return;
 		}
 		if (msg.content.startsWith(prefix)) {
@@ -41,10 +41,10 @@ export function makeHandler(
 				.split("|")
 				.map(s => s.trim());
 			await handlers[cmdName]?.run(msg, args, support);
-		} else if (!msg.guildID) {
+		} else if (!msg.guildId) {
 			// Checking guildID is likely more performant than instanceof
 			await onDirectMessage(
-				msg as Message<PrivateChannel>,
+				msg,
 				support.database,
 				support.decks,
 				support.challonge,
@@ -55,7 +55,7 @@ export function makeHandler(
 	};
 }
 
-function log(level: keyof typeof logger, msg: Message<PrivateChannel>, payload: Record<string, unknown>): void {
+function log(level: keyof typeof logger, msg: Message, payload: Record<string, unknown>): void {
 	return logger[level](
 		JSON.stringify({
 			handle: `${msg.author.username}#${msg.author.discriminator}`,
@@ -68,7 +68,7 @@ function log(level: keyof typeof logger, msg: Message<PrivateChannel>, payload: 
 
 // The only allowed exceptions are final reply errors or initial database access failures
 export async function onDirectMessage(
-	msg: Message<PrivateChannel>,
+	msg: Message,
 	database: Public<DatabaseWrapperPostgres>,
 	decks: DeckManager,
 	challonge: WebsiteInterface,
@@ -79,8 +79,7 @@ export async function onDirectMessage(
 	if (tournaments.length > 1) {
 		const out = tournaments.map(t => t.name).join(", ");
 		log("info", msg, { event: "pending multiple", tournaments: out });
-		await reply(
-			msg,
+		await msg.reply(
 			`You are registering in multiple tournaments. Please register in one at a time by unchecking the reaction on all others.\n${out}`
 		);
 		return;
@@ -95,8 +94,7 @@ export async function onDirectMessage(
 		});
 		if (tournament.limit > 0 && tournament.players.length >= tournament.limit) {
 			log("info", msg, { event: "confirm full", tournament: tournament.id });
-			await reply(
-				msg,
+			await msg.reply(
 				`Sorry, **${tournament.name}** has reached its capacity of ${tournament.limit} registrations!`
 			);
 			return;
@@ -105,11 +103,10 @@ export async function onDirectMessage(
 			await verifyDeckAndConfirmPending(msg, tournament, database, decks, challonge, participantRole, bot);
 		} catch (error) {
 			log("info", msg, { event: "confirm fail", tournament: tournament.id, error: error.message });
-			await reply(
-				msg,
+			await msg.reply(
 				`Must provide a valid attached \`.ydk\` file OR valid \`ydke://\` URL for **${tournament.name}**!`
 			);
-			await reply(msg, error.message);
+			await msg.reply(error.message);
 		}
 		return;
 	}
@@ -118,8 +115,7 @@ export async function onDirectMessage(
 	if (tournaments.length > 1) {
 		const out = tournaments.map(t => t.name).join(", ");
 		log("info", msg, { event: "confirmed multiple", tournaments: out });
-		await reply(
-			msg,
+		await msg.reply(
 			`You're trying to update your deck for a tournament, but you're in multiple! Please choose one by dropping and registering again.\n${out}`
 		);
 		return;
@@ -131,25 +127,23 @@ export async function onDirectMessage(
 			await verifyDeckAndUpdateConfirmed(msg, tournament, database, decks, bot);
 		} catch (error) {
 			log("info", msg, { event: "update fail", tournament: tournament.id, error: error.message });
-			await reply(
-				msg,
+			await msg.reply(
 				`Must provide a valid attached \`.ydk\` file OR valid \`ydke://\` URL for **${tournament.name}**!`
 			);
-			await reply(msg, error.message);
+			await msg.reply(error.message);
 		}
 		return;
 	}
 
 	log("verbose", msg, { event: "no context", content: msg.content });
-	await reply(
-		msg,
+	await msg.reply(
 		`${helpMessage}\nIf you're trying to sign up for a tournament, make sure you've clicked ✅ on a sign-up message and I'll let you know how to proceed.`
 	);
 }
 
 // Throws on any problem with the deck, and the exception payload should be sent to the user
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-async function verifyDeck(msg: Message<PrivateChannel>, decks: DeckManager, allowVector?: CardVector) {
+async function verifyDeck(msg: Message, decks: DeckManager, allowVector?: CardVector) {
 	const [deck, errors] = await decks.getDeckFromMessage(msg, allowVector); // throws on network error, YDKParseError, bad YDKE URL, filesize too big
 	const formattedDeckMessage = decks.prettyPrint(
 		deck,
@@ -157,7 +151,7 @@ async function verifyDeck(msg: Message<PrivateChannel>, decks: DeckManager, allo
 		errors
 	);
 	if (errors.length > 0) {
-		await reply(msg, ...formattedDeckMessage).catch(logger.error);
+		await msg.reply(formattedDeckMessage).catch(logger.error);
 		throw new Error(
 			`Your deck is not legal. Please see the print out for all the errors. You have NOT been registered yet, please submit again with a legal deck.`
 		);
@@ -168,7 +162,7 @@ async function verifyDeck(msg: Message<PrivateChannel>, decks: DeckManager, allo
 
 // Should only throw exceptions from verifyDeck
 async function verifyDeckAndConfirmPending(
-	msg: Message<PrivateChannel>,
+	msg: Message,
 	tournament: DatabaseTournament,
 	database: Public<DatabaseWrapperPostgres>,
 	decks: DeckManager,
@@ -185,17 +179,16 @@ async function verifyDeckAndConfirmPending(
 		log("verbose", msg, { event: "database", tournament: tournament.id });
 	} catch (error) {
 		logger.error(error);
-		for (const channel of tournament.privateChannels) {
-			await bot
-				.createMessage(
-					channel,
-					`Something went really wrong while trying to register <@${msg.author.id}> (${username}) for **${tournament.name}**!`
-				)
-				.catch(logger.error);
+		for (const channelId of tournament.privateChannels) {
+			await send(
+				bot,
+				channelId,
+				`Something went really wrong while trying to register <@${msg.author.id}> (${username}) for **${tournament.name}**!`
+			).catch(logger.error);
 		}
-		await reply(msg, `Something went really wrong while trying to register for **${tournament.name}**!`).catch(
-			logger.error
-		);
+		await msg
+			.reply(`Something went really wrong while trying to register for **${tournament.name}**!`)
+			.catch(logger.error);
 		return;
 	}
 	let roleGrantWarning = "";
@@ -208,22 +201,22 @@ async function verifyDeckAndConfirmPending(
 	}
 	for (const channel of tournament.privateChannels) {
 		try {
-			await bot.createMessage(
+			await send(
+				bot,
 				channel,
 				`<@${msg.author.id}> (${username}) has signed up for **${tournament.name}** with the following deck!${roleGrantWarning}`
 			);
-			await bot.createMessage(channel, ...formattedDeckMessage);
+			await send(bot, channel, formattedDeckMessage);
 		} catch (error) {
 			logger.error(error);
 		}
 	}
 	log("info", msg, { event: "confirm success", tournament: tournament.id });
 	try {
-		await reply(
-			msg,
+		await msg.reply(
 			`You have successfully signed up for **${tournament.name}**! Your deck is below to double-check. You may resubmit at any time before the tournament starts.`
 		);
-		await reply(msg, ...formattedDeckMessage);
+		await msg.reply(formattedDeckMessage);
 	} catch (error) {
 		logger.error(error);
 	}
@@ -231,7 +224,7 @@ async function verifyDeckAndConfirmPending(
 
 // Should only throw exceptions from verifyDeck
 async function verifyDeckAndUpdateConfirmed(
-	msg: Message<PrivateChannel>,
+	msg: Message,
 	tournament: DatabaseTournament,
 	database: Public<DatabaseWrapperPostgres>,
 	decks: DeckManager,
@@ -245,36 +238,35 @@ async function verifyDeckAndUpdateConfirmed(
 	} catch (error) {
 		logger.error(error);
 		for (const channel of tournament.privateChannels) {
-			await bot
-				.createMessage(
-					channel,
-					`Something went really wrong while trying to update deck of <@${msg.author.id}> (${username}) for **${tournament.name}**!`
-				)
-				.catch(logger.error);
+			await send(
+				bot,
+				channel,
+				`Something went really wrong while trying to update deck of <@${msg.author.id}> (${username}) for **${tournament.name}**!`
+			).catch(logger.error);
 		}
-		await reply(msg, `Something went really wrong while trying to update deck for **${tournament.name}**!`).catch(
-			logger.error
-		);
+		await msg
+			.reply(`Something went really wrong while trying to update deck for **${tournament.name}**!`)
+			.catch(logger.error);
 		return;
 	}
 	for (const channel of tournament.privateChannels) {
 		try {
-			await bot.createMessage(
+			await send(
+				bot,
 				channel,
 				`<@${msg.author.id}> (${username}) has updated their deck for **${tournament.name}** to the following!`
 			);
-			await bot.createMessage(channel, ...formattedDeckMessage);
+			await send(bot, channel, formattedDeckMessage);
 		} catch (error) {
 			logger.error(error);
 		}
 	}
 	log("info", msg, { event: "update success", tournament: tournament.id });
 	try {
-		await reply(
-			msg,
+		await msg.reply(
 			`You have successfully changed your deck for **${tournament.name}**! Your deck is below to double-check. You may resubmit at any time before the tournament starts.`
 		);
-		await reply(msg, ...formattedDeckMessage);
+		await msg.reply(formattedDeckMessage);
 	} catch (error) {
 		logger.error(error);
 	}

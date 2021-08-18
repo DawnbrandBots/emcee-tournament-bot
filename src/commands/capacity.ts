@@ -1,7 +1,6 @@
 import { CommandDefinition } from "../Command";
 import { TournamentStatus } from "../database/interface";
 import { ChallongeTournament } from "../database/orm";
-import { reply } from "../util/discord";
 import { UserError } from "../util/errors";
 import { getLogger } from "../util/logger";
 
@@ -15,7 +14,7 @@ const command: CommandDefinition = {
 		let capacity = parseInt(rawCapacity, 10);
 		logger.verbose(
 			JSON.stringify({
-				channel: msg.channel.id,
+				channel: msg.channelId,
 				message: msg.id,
 				user: msg.author.id,
 				tournament: id,
@@ -32,7 +31,7 @@ const command: CommandDefinition = {
 		const tournament = await support.database.authenticateHost(
 			id,
 			msg.author.id,
-			msg.guildID,
+			msg.guildId,
 			TournamentStatus.PREPARING
 		);
 		if (rawCapacity) {
@@ -41,9 +40,9 @@ const command: CommandDefinition = {
 				.set({ participantLimit: capacity })
 				.where({ tournamentId: id })
 				.execute();
-			await reply(msg, `Set the capacity for **${tournament.name}** to _${capacity}_.`);
+			await msg.reply(`Set the capacity for **${tournament.name}** to _${capacity}_.`);
 		} else {
-			await reply(msg, `**${tournament.name}** capacity: _${tournament.limit || 256}_`);
+			await msg.reply(`**${tournament.name}** capacity: _${tournament.limit || 256}_`);
 		}
 	}
 };

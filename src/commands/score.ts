@@ -1,6 +1,5 @@
 import { CommandDefinition } from "../Command";
 import { TournamentStatus } from "../database/interface";
-import { reply } from "../util/discord";
 import { UserError } from "../util/errors";
 import { getLogger } from "../util/logger";
 
@@ -20,7 +19,7 @@ const command: CommandDefinition = {
 		function log(event: string, extra?: Record<string, unknown>): void {
 			logger.verbose(
 				JSON.stringify({
-					channel: msg.channel.id,
+					channel: msg.channelId,
 					message: msg.id,
 					user: msg.author.id,
 					tournament: id,
@@ -31,12 +30,11 @@ const command: CommandDefinition = {
 				})
 			);
 		}
-		const player = await support.database.authenticatePlayer(id, msg.author.id, msg.guildID, TournamentStatus.IPR);
+		const player = await support.database.authenticatePlayer(id, msg.author.id, msg.guildId, TournamentStatus.IPR);
 		const match = await support.challonge.findMatch(id, player.challongeId);
 		if (!match) {
 			log("no match");
-			await reply(
-				msg,
+			await msg.reply(
 				`Could not find an open match in **${player.tournament.name}** including <@${msg.author.id}>. This could mean your opponent dropped, conceding the match. If the score for your current match is incorrect, please ask a host to change it.`
 			);
 			return;
@@ -46,8 +44,7 @@ const command: CommandDefinition = {
 		if (pendingScore) {
 			if (pendingScore.playerId === player.challongeId) {
 				log("duplicate");
-				await reply(
-					msg,
+				await msg.reply(
 					`You have already reported your score for this match, <@${msg.author.id}>. Please have your opponent confirm the score.`
 				);
 				return;
@@ -63,8 +60,7 @@ const command: CommandDefinition = {
 				try {
 					await support.challonge.submitScore(id, match, winner, winnerScore, loserScore);
 				} catch (err) {
-					await reply(
-						msg,
+					await msg.reply(
 						`Unexpected error submitting a score to Challonge for <@${msg.author.id}>. Please report this and try again later.`
 					);
 					throw err;
@@ -100,8 +96,7 @@ const command: CommandDefinition = {
 					logger.error(err);
 				}
 				// Notify the caller
-				await reply(
-					msg,
+				await msg.reply(
 					`You have successfully reported a score of ${scores[0]}-${scores[1]}, and it matches your opponent's report, so the score has been saved. Thank you, <@${msg.author.id}>.`
 				);
 			} else {
@@ -121,8 +116,7 @@ const command: CommandDefinition = {
 							.catch(logger.error);
 					}
 				}
-				await reply(
-					msg,
+				await msg.reply(
 					`Your score does not match your opponent's reported score of ${pendingScore.oppScore}-${pendingScore.playerScore}. Both of you will need to report again.`
 				);
 			}
@@ -139,8 +133,7 @@ const command: CommandDefinition = {
 				oppScore: scores[1]
 			});
 			log("pending");
-			await reply(
-				msg,
+			await msg.reply(
 				`You have reported a score of ${scores[0]}-${scores[1]}, <@${msg.author.id}>. Your opponent still needs to confirm this score. If you want to drop, please wait for your opponent to confirm or you will concede 0-2.`
 			);
 		}

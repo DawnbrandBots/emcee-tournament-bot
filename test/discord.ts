@@ -42,11 +42,6 @@ describe("Callback setups", function () {
 		expect(discordMock.getResponse("pong")).to.be.undefined;
 	});
 
-	it("onDelete", async function () {
-		// TODO: mock deletion?
-		expect(() => discord.onDelete(noop)).to.not.throw;
-	});
-
 	it("awaitReaction", async function () {
 		const msg = await discord.awaitReaction("reactionMessage", "pung", "😳", noop, noop);
 		expect(msg.content).to.equal("reactionMessage");

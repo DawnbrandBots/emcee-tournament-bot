@@ -1,6 +1,5 @@
 import { CommandDefinition } from "../Command";
 import { TournamentStatus } from "../database/interface";
-import { reply } from "../util/discord";
 import { getLogger } from "../util/logger";
 
 const logger = getLogger("command:sync");
@@ -10,10 +9,10 @@ const command: CommandDefinition = {
 	requiredArgs: ["id"],
 	executor: async (msg, args, support) => {
 		const [id] = args;
-		const tournament = await support.database.authenticateHost(id, msg.author.id, msg.guildID);
+		const tournament = await support.database.authenticateHost(id, msg.author.id, msg.guildId);
 		logger.verbose(
 			JSON.stringify({
-				channel: msg.channel.id,
+				channel: msg.channelId,
 				message: msg.id,
 				user: msg.author.id,
 				tournament: id,
@@ -24,7 +23,7 @@ const command: CommandDefinition = {
 		if (tournament.status === TournamentStatus.COMPLETE) {
 			logger.verbose(
 				JSON.stringify({
-					channel: msg.channel.id,
+					channel: msg.channelId,
 					message: msg.id,
 					user: msg.author.id,
 					tournament: id,
@@ -32,7 +31,7 @@ const command: CommandDefinition = {
 					event: "already complete"
 				})
 			);
-			await reply(msg, `**${tournament.name}** has already concluded!`);
+			await msg.reply(`**${tournament.name}** has already concluded!`);
 			return;
 		}
 		const tournamentData = await support.challonge.getTournament(id);
@@ -43,7 +42,7 @@ const command: CommandDefinition = {
 		});
 		logger.verbose(
 			JSON.stringify({
-				channel: msg.channel.id,
+				channel: msg.channelId,
 				message: msg.id,
 				user: msg.author.id,
 				tournament: id,
@@ -51,7 +50,7 @@ const command: CommandDefinition = {
 				event: "success"
 			})
 		);
-		await reply(msg, `**${tournament.name}** database successfully synchronised with remote website.`);
+		await msg.reply(`**${tournament.name}** database successfully synchronised with remote website.`);
 	}
 };
 

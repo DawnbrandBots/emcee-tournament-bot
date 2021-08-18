@@ -8,10 +8,10 @@ describe("command:score", function () {
 	it(
 		"rejects non-players",
 		test(function (this: SinonSandbox) {
-			const replySpy = (msg.channel.createMessage = sinon.spy());
+			const replySpy = this.stub(msg, "reply").resolves();
 			const authStub = this.stub(support.database, "authenticatePlayer").rejects();
 			expect(command.executor(msg, ["name", "2-0"], support)).to.be.rejected;
-			expect(authStub).to.have.been.calledOnceWithExactly("name", "0000", undefined, TournamentStatus.IPR);
+			expect(authStub).to.have.been.calledOnceWithExactly("name", "0000", null, TournamentStatus.IPR);
 			expect(replySpy).to.not.have.been.called;
 		})
 	);
@@ -22,7 +22,7 @@ describe("command:score", function () {
 	});
 	it("submits good scores", async () => {
 		sinon.restore();
-		const replySpy = (msg.channel.createMessage = sinon.spy());
+		const replySpy = sinon.stub(msg, "reply").resolves();
 		sinon.stub(support.database, "authenticatePlayer").callsFake(async (_, id) => ({
 			challongeId: id === "0000" ? 0 : 1,
 			tournament: {
@@ -43,19 +43,13 @@ describe("command:score", function () {
 
 		await command.executor(msg, ["name", "2-1"], support);
 		expect(replySpy).to.have.been.calledOnceWithExactly(
-			sinon.match({
-				content:
-					"You have reported a score of 2-1, <@0000>. Your opponent still needs to confirm this score. If you want to drop, please wait for your opponent to confirm or you will concede 0-2."
-			})
+			"You have reported a score of 2-1, <@0000>. Your opponent still needs to confirm this score. If you want to drop, please wait for your opponent to confirm or you will concede 0-2."
 		);
 
 		msg.author.id = "zeus";
 		await command.executor(msg, ["name", "2-1"], support);
 		expect(replySpy).to.have.been.calledWith(
-			sinon.match({
-				content:
-					"Your score does not match your opponent's reported score of 1-2. Both of you will need to report again."
-			})
+			"Your score does not match your opponent's reported score of 1-2. Both of you will need to report again."
 		);
 		expect(support.discord.sendDirectMessage).to.have.been.calledWith(
 			"0000",
@@ -67,19 +61,13 @@ describe("command:score", function () {
 		msg.author.id = "0000";
 		await command.executor(msg, ["name", "2-1"], support);
 		expect(replySpy).to.have.been.calledOnceWithExactly(
-			sinon.match({
-				content:
-					"You have reported a score of 2-1, <@0000>. Your opponent still needs to confirm this score. If you want to drop, please wait for your opponent to confirm or you will concede 0-2."
-			})
+			"You have reported a score of 2-1, <@0000>. Your opponent still needs to confirm this score. If you want to drop, please wait for your opponent to confirm or you will concede 0-2."
 		);
 
 		msg.author.id = "zeus";
 		await command.executor(msg, ["name", "1-2"], support);
 		expect(replySpy).to.have.been.calledWith(
-			sinon.match({
-				content:
-					"You have successfully reported a score of 1-2, and it matches your opponent's report, so the score has been saved. Thank you, <@zeus>."
-			})
+			"You have successfully reported a score of 1-2, and it matches your opponent's report, so the score has been saved. Thank you, <@zeus>."
 		);
 		expect(support.discord.sendDirectMessage).to.have.been.calledOnceWithExactly(
 			"0000",
@@ -89,6 +77,6 @@ describe("command:score", function () {
 			"123",
 			"<@zeus> (nova#0000) and <@0000> (nova#0000) have reported their score of 1-2 for **foo** (name)."
 		);
-		sinon.resetBehavior();
+		sinon.restore();
 	});
 });

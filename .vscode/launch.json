@@ -10,7 +10,7 @@
 			"name": "Debug Emcee",
 			"skipFiles": ["<node_internals>/**"],
 			"program": "${workspaceFolder}/dist",
-			"runtimeArgs": ["--enable-source-maps", "--unhandled-rejections=strict"],
+			"runtimeArgs": ["--enable-source-maps"],
 			"preLaunchTask": "npm: build",
 			"outFiles": ["${workspaceFolder}/dist/**/*.js"],
 			"outputCapture": "std",
@@ -34,19 +34,19 @@
 			"type": "node",
 			"request": "launch",
 			"name": "Mocha All",
+			"skipFiles": ["<node_internals>/**/*.js"],
 			"program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
 			"args": ["--config", "test/.mocharc.yml", "--timeout", "0", "${workspaceFolder}/test/*.ts", "${workspaceFolder}/test/**/*.unit.ts"],
-			"internalConsoleOptions":"openOnSessionStart",
-			"skipFiles": ["<node_internals>/**/*.js"]
+			"internalConsoleOptions":"openOnSessionStart"
 		},
 		{
 			"type": "node",
 			"request": "launch",
 			"name": "Mocha Current File",
+			"skipFiles": ["<node_internals>/**/*.js"],
 			"program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
 			"args": ["--config", "test/.mocharc.yml", "--timeout", "0", "${file}"],
-			"internalConsoleOptions":"openOnSessionStart",
-			"skipFiles": ["<node_internals>/**/*.js"]
+			"internalConsoleOptions":"openOnSessionStart"
 		}
 	]
 }

@@ -1,6 +1,5 @@
 import * as csv from "@fast-csv/format";
 import { CommandDefinition } from "../Command";
-import { reply } from "../util/discord";
 import { getLogger } from "../util/logger";
 
 const logger = getLogger("command:csv");
@@ -11,10 +10,10 @@ const command: CommandDefinition = {
 	executor: async (msg, args, support) => {
 		const [id, pieArg] = args;
 		const pie = !!pieArg;
-		const tournament = await support.database.authenticateHost(id, msg.author.id, msg.guildID);
+		const tournament = await support.database.authenticateHost(id, msg.author.id, msg.guildId);
 		logger.verbose(
 			JSON.stringify({
-				channel: msg.channel.id,
+				channel: msg.channelId,
 				message: msg.id,
 				user: msg.author.id,
 				tournament: id,
@@ -25,7 +24,7 @@ const command: CommandDefinition = {
 		);
 		const players = await support.database.getConfirmed(id);
 		if (players.length < 1) {
-			await reply(msg, `**${tournament.name}** has no players!`);
+			await msg.reply(`**${tournament.name}** has no players!`);
 			return;
 		}
 		let file;
@@ -54,7 +53,7 @@ const command: CommandDefinition = {
 		}
 		logger.verbose(
 			JSON.stringify({
-				channel: msg.channel.id,
+				channel: msg.channelId,
 				message: msg.id,
 				user: msg.author.id,
 				tournament: id,
@@ -63,16 +62,12 @@ const command: CommandDefinition = {
 				event: "success"
 			})
 		);
-		await reply(
-			msg,
-			pie
+		await msg.reply({
+			content: pie
 				? `A list of themes in tournament ${id} with their counts is attached.`
 				: `A list of players for tournament ${id} with their deck is attached.`,
-			{
-				name: `${id}.csv`,
-				file
-			}
-		);
+			files: [{ attachment: file, name: `${id}.csv` }]
+		});
 	}
 };
 

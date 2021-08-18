@@ -1,6 +1,5 @@
 import { CommandDefinition } from "../Command";
 import { TournamentStatus } from "../database/interface";
-import { reply } from "../util/discord";
 import { getLogger } from "../util/logger";
 import { ChallongeTieBreaker } from "../website/interface";
 
@@ -23,7 +22,7 @@ const command: CommandDefinition = {
 		const [id, tb1, tb2, tb3] = args;
 		logger.verbose(
 			JSON.stringify({
-				channel: msg.channel.id,
+				channel: msg.channelId,
 				message: msg.id,
 				user: msg.author.id,
 				tournament: id,
@@ -34,7 +33,7 @@ const command: CommandDefinition = {
 		const tournament = await support.database.authenticateHost(
 			id,
 			msg.author.id,
-			msg.guildID,
+			msg.guildId,
 			TournamentStatus.PREPARING
 		);
 		// if no options provided, display current status
@@ -42,7 +41,7 @@ const command: CommandDefinition = {
 			const webTournament = await support.challonge.getTournament(id);
 			logger.verbose(
 				JSON.stringify({
-					channel: msg.channel.id,
+					channel: msg.channelId,
 					message: msg.id,
 					user: msg.author.id,
 					tournament: id,
@@ -50,8 +49,7 @@ const command: CommandDefinition = {
 					event: "success"
 				})
 			);
-			await reply(
-				msg,
+			await msg.reply(
 				`**${tournament.name}** has the following tie-breaker priority:\n${webTournament.tieBreaks
 					.map((tb, i) => `${i + 1}. ${realTBNames[tb]}`)
 					.join("\n")}`
@@ -60,8 +58,7 @@ const command: CommandDefinition = {
 		}
 		// if invalid options provided, display advice
 		if (!tb2 || !tb3 || !(tb1 in realTBNames) || !(tb2 in realTBNames) || !(tb3 in realTBNames)) {
-			await reply(
-				msg,
+			await msg.reply(
 				`Could not update tie-breakers for **${
 					tournament.name
 				}**. You must provide three valid options in priority order. The valid options and their corresponding meaning are:\n${Object.entries(
@@ -74,8 +71,7 @@ const command: CommandDefinition = {
 		}
 		// if valid options provided, update tournament
 		await support.challonge.updateTieBreakers(id, [tb1, tb2, tb3] as ChallongeTieBreaker[]);
-		await reply(
-			msg,
+		await msg.reply(
 			`Tie-breaker settings updated for **${tournament.name}**.\n${[tb1, tb2, tb3]
 				.map((tb, i) => `${i + 1}. ${realTBNames[tb as ChallongeTieBreaker]}`)
 				.join("\n")}`

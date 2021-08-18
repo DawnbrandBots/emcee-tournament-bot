@@ -23,7 +23,9 @@ describe("createTournamentEmbed", function () {
 	it("returns an embed", () => {
 		const tournament = makeTournament();
 		const embed = createTournamentEmbed(tournament);
-		expect(embed).to.deep.equal({
+		const embedNoFalsy = Object.fromEntries(Object.entries(embed.toJSON() as any).filter(([, value]) => value));
+		expect(embedNoFalsy).to.deep.equal({
+			type: "rich",
 			title: "**Drive Your Fire**",
 			description: "Thrash out against the ignorance of others, it is not a flame hot enough!",
 			url: "https://challonge.com/users/EmceeDiscordBot",
@@ -55,6 +57,7 @@ describe("createTournamentEmbed", function () {
 				}
 			],
 			footer: {
+				icon_url: undefined,
 				text: "Tournament details as of request time"
 			}
 		});
@@ -70,7 +73,9 @@ describe("createTournamentEmbed", function () {
 		tournament.hosts = ["A-ONE", "Rute", "Aki"];
 		tournament.confirmed = [p("Yusei"), p("Jack"), p("Crow"), p("Aki"), p("Ruka"), p("Rua")];
 		const embed = createTournamentEmbed(tournament);
-		expect(embed).to.deep.equal({
+		const embedNoFalsy = Object.fromEntries(Object.entries(embed.toJSON() as any).filter(([, value]) => value));
+		expect(embedNoFalsy).to.deep.equal({
+			type: "rich",
 			title: "**Drive Your Fire**",
 			description: "Thrash out against the ignorance of others, it is not a flame hot enough!",
 			url: "https://challonge.com/users/EmceeDiscordBot",
@@ -107,6 +112,7 @@ describe("createTournamentEmbed", function () {
 				}
 			],
 			footer: {
+				icon_url: undefined,
 				text: "Tournament details as of request time"
 			}
 		});
@@ -121,28 +127,24 @@ describe("command:info", function () {
 		"responds if no match is found",
 		test(async function (this: SinonSandbox) {
 			const findStub = this.stub(ChallongeTournament, "findOne");
-			msg.channel.createMessage = this.spy();
-			msg.guildID = "foo";
+			this.stub(msg, "reply").resolves();
+			msg.guildId = "foo";
 			await command.executor(msg, ["name"], support);
-			msg.guildID = undefined;
+			msg.guildId = null;
 			expect(findStub).to.have.been.calledOnceWithExactly({ tournamentId: "name", owningDiscordServer: "foo" });
-			expect(msg.channel.createMessage).to.have.been.calledOnceWithExactly(
-				sinon.match({
-					content: "No matching tournament in this server."
-				})
-			);
+			expect(msg.reply).to.have.been.calledOnceWithExactly("No matching tournament in this server.");
 		})
 	);
 	it(
 		"displays an embed if found",
 		test(async function (this: SinonSandbox) {
 			const findStub = this.stub(ChallongeTournament, "findOne").resolves(makeTournament());
-			msg.channel.createMessage = this.spy();
-			msg.guildID = "foo";
+			this.stub(msg, "reply").resolves();
+			msg.guildId = "foo";
 			await command.executor(msg, ["name"], support);
-			msg.guildID = undefined;
+			msg.guildId = null;
 			expect(findStub).to.have.been.calledOnce; // same as above
-			expect(msg.channel.createMessage).to.have.been.calledOnceWithExactly(sinon.match({ embed: {} }));
+			expect(msg.reply).to.have.been.calledOnceWithExactly(sinon.match.has("embeds", sinon.match.array));
 		})
 	);
 });

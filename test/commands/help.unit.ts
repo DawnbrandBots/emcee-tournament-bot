@@ -4,9 +4,10 @@ import command from "../../src/commands/help";
 import { msg, support } from "./common";
 
 describe("command:help", function () {
+	before(() => sinon.stub(msg, "reply").resolves());
+	after(() => sinon.restore());
 	it("responds with a help message", async () => {
-		msg.channel.createMessage = sinon.spy();
 		await command.executor(msg, [], support);
-		expect(msg.channel.createMessage).to.have.been.calledOnce;
+		expect(msg.reply).to.have.been.calledOnce;
 	});
 });

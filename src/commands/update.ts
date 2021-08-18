@@ -1,6 +1,5 @@
 import { CommandDefinition } from "../Command";
 import { TournamentStatus } from "../database/interface";
-import { reply } from "../util/discord";
 import { getLogger } from "../util/logger";
 
 const logger = getLogger("command:update");
@@ -10,10 +9,10 @@ const command: CommandDefinition = {
 	requiredArgs: ["id", "name", "description"],
 	executor: async (msg, args, support) => {
 		const [id, name, desc] = args;
-		const tournament = await support.database.authenticateHost(id, msg.author.id, msg.guildID);
+		const tournament = await support.database.authenticateHost(id, msg.author.id, msg.guildId);
 		logger.verbose(
 			JSON.stringify({
-				channel: msg.channel.id,
+				channel: msg.channelId,
 				message: msg.id,
 				user: msg.author.id,
 				tournament: id,
@@ -26,7 +25,7 @@ const command: CommandDefinition = {
 		if (tournament.status === TournamentStatus.COMPLETE) {
 			logger.verbose(
 				JSON.stringify({
-					channel: msg.channel.id,
+					channel: msg.channelId,
 					message: msg.id,
 					user: msg.author.id,
 					tournament: id,
@@ -36,7 +35,7 @@ const command: CommandDefinition = {
 					event: "already complete"
 				})
 			);
-			await reply(msg, `**${tournament.name}** has already concluded!`);
+			await msg.reply(`**${tournament.name}** has already concluded!`);
 			return;
 		}
 		// Update DB first because it performs an important check that might throw
@@ -45,7 +44,7 @@ const command: CommandDefinition = {
 		// TODO: missing failure path
 		logger.verbose(
 			JSON.stringify({
-				channel: msg.channel.id,
+				channel: msg.channelId,
 				message: msg.id,
 				user: msg.author.id,
 				tournament: id,
@@ -55,7 +54,7 @@ const command: CommandDefinition = {
 				event: "success"
 			})
 		);
-		await reply(msg, `Tournament \`${id}\` updated! It now has the name ${name} and the given description.`);
+		await msg.reply(`Tournament \`${id}\` updated! It now has the name ${name} and the given description.`);
 	}
 };
 

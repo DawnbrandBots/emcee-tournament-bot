@@ -1,6 +1,6 @@
 import { expect } from "chai";
 import dotenv from "dotenv";
-import sinon, { SinonSandbox } from "sinon";
+import { SinonSandbox } from "sinon";
 import command from "../../src/commands/csv";
 import { itRejectsNonHosts, msg, support, test, tournament } from "./common";
 
@@ -18,20 +18,20 @@ describe("command:csv", function () {
 				{ discordId: "1234", deck: "ydke://!!!", challongeId: 3 }
 			]);
 			const restStub = this.stub(support.discord, "getRESTUsername").resolves(null);
-			msg.channel.createMessage = this.spy();
+			this.stub(msg, "reply").resolves();
 			await command.executor(msg, args, support);
 			expect(authStub).to.have.been.called;
 			expect(listStub).to.have.been.calledOnce;
 			expect(restStub).to.have.been.calledThrice;
-			expect(msg.channel.createMessage).to.have.been.calledOnceWithExactly(
-				sinon.match({
-					content: "A list of players for tournament battlecity with their deck is attached."
-				}),
-				{
-					name: "battlecity.csv",
-					file: `Player,Theme,Deck\n1312,No themes,"Main: , Extra: , Side: "\n1314,No themes,"Main: , Extra: , Side: "\n1234,No themes,"Main: , Extra: , Side: "`
-				}
-			);
+			expect(msg.reply).to.have.been.calledOnceWithExactly({
+				content: "A list of players for tournament battlecity with their deck is attached.",
+				files: [
+					{
+						name: "battlecity.csv",
+						attachment: `Player,Theme,Deck\n1312,No themes,"Main: , Extra: , Side: "\n1314,No themes,"Main: , Extra: , Side: "\n1234,No themes,"Main: , Extra: , Side: "`
+					}
+				]
+			});
 		})
 	);
 	it(
@@ -39,15 +39,11 @@ describe("command:csv", function () {
 		test(async function (this: SinonSandbox) {
 			const authStub = this.stub(support.database, "authenticateHost").resolves(tournament);
 			const listStub = this.stub(support.database, "getConfirmed").resolves([]);
-			msg.channel.createMessage = this.spy();
+			this.stub(msg, "reply").resolves();
 			await command.executor(msg, args, support);
 			expect(authStub).to.have.been.called;
 			expect(listStub).to.have.been.calledOnce;
-			expect(msg.channel.createMessage).to.have.been.calledOnceWithExactly(
-				sinon.match({
-					content: "**Tournament 1** has no players!"
-				})
-			);
+			expect(msg.reply).to.have.been.calledOnceWithExactly("**Tournament 1** has no players!");
 		})
 	);
 	it(
@@ -59,17 +55,19 @@ describe("command:csv", function () {
 				{ discordId: "1314", deck: "ydke://!!!", challongeId: 2 },
 				{ discordId: "1234", deck: "ydke://!!!", challongeId: 3 }
 			]);
-			msg.channel.createMessage = this.spy();
+			this.stub(msg, "reply").resolves();
 			await command.executor(msg, [args[0], "pie"], support);
 			expect(authStub).to.have.been.called;
 			expect(listStub).to.have.been.calledOnce;
-			expect(msg.channel.createMessage).to.have.been.calledOnceWithExactly(
-				sinon.match({ content: "A list of themes in tournament battlecity with their counts is attached." }),
-				{
-					name: "battlecity.csv",
-					file: `Theme,Count\nNo themes,3`
-				}
-			);
+			expect(msg.reply).to.have.been.calledOnceWithExactly({
+				content: "A list of themes in tournament battlecity with their counts is attached.",
+				files: [
+					{
+						name: "battlecity.csv",
+						attachment: `Theme,Count\nNo themes,3`
+					}
+				]
+			});
 		})
 	);
 	it(
@@ -77,14 +75,14 @@ describe("command:csv", function () {
 		test(async function (this: SinonSandbox) {
 			const authStub = this.stub(support.database, "authenticateHost").resolves();
 			const listStub = this.stub(support.database, "getConfirmed").rejects();
-			msg.channel.createMessage = this.spy();
+			this.stub(msg, "reply").resolves();
 			try {
 				await command.executor(msg, args, support);
 				expect.fail();
 			} catch (e) {
 				expect(authStub).to.have.been.called;
 				expect(listStub).to.have.been.calledOnce;
-				expect(msg.channel.createMessage).to.not.have.been.called;
+				expect(msg.reply).to.not.have.been.called;
 			}
 		})
 	);
@@ -93,18 +91,14 @@ describe("command:csv", function () {
 		test(async function (this: SinonSandbox) {
 			const authStub = this.stub(support.database, "authenticateHost").resolves(tournament);
 			const listStub = this.stub(support.database, "getConfirmed").resolves([]);
-			msg.channel.createMessage = this.stub().rejects();
+			this.stub(msg, "reply").rejects();
 			try {
 				await command.executor(msg, args, support);
 				expect.fail();
 			} catch (e) {
 				expect(authStub).to.have.been.called;
 				expect(listStub).to.have.been.calledOnce;
-				expect(msg.channel.createMessage).to.have.been.calledOnceWithExactly(
-					sinon.match({
-						content: "**Tournament 1** has no players!"
-					})
-				);
+				expect(msg.reply).to.have.been.calledOnceWithExactly("**Tournament 1** has no players!");
 			}
 		})
 	);

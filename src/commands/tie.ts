@@ -1,6 +1,5 @@
 import { CommandDefinition } from "../Command";
 import { TournamentStatus } from "../database/interface";
-import { reply } from "../util/discord";
 import { getLogger } from "../util/logger";
 
 const logger = getLogger("command:tie");
@@ -13,12 +12,12 @@ const command: CommandDefinition = {
 		const tournament = await support.database.authenticateHost(
 			id,
 			msg.author.id,
-			msg.guildID,
+			msg.guildId,
 			TournamentStatus.IPR
 		);
 		logger.verbose(
 			JSON.stringify({
-				channel: msg.channel.id,
+				channel: msg.channelId,
 				message: msg.id,
 				user: msg.author.id,
 				tournament: id,
@@ -35,7 +34,7 @@ const command: CommandDefinition = {
 		}
 		logger.verbose(
 			JSON.stringify({
-				channel: msg.channel.id,
+				channel: msg.channelId,
 				message: msg.id,
 				user: msg.author.id,
 				tournament: id,
@@ -43,8 +42,7 @@ const command: CommandDefinition = {
 				event: "success"
 			})
 		);
-		await reply(
-			msg,
+		await msg.reply(
 			`All outstanding matches in Round ${round} of **${tournament.name}** successfully ended in a tie!`
 		);
 	}
