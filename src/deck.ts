@@ -205,7 +205,7 @@ export class DeckManager {
 
 		return {
 			embeds: [new MessageEmbed().setTitle(title).addFields(fields)],
-			files: [{ name, attachment: deck.ydk }]
+			files: [{ name, attachment: Buffer.from(deck.ydk) }]
 		};
 	}
 

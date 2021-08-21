@@ -28,7 +28,9 @@ describe("command:csv", function () {
 				files: [
 					{
 						name: "battlecity.csv",
-						attachment: `Player,Theme,Deck\n1312,No themes,"Main: , Extra: , Side: "\n1314,No themes,"Main: , Extra: , Side: "\n1234,No themes,"Main: , Extra: , Side: "`
+						attachment: Buffer.from(
+							`Player,Theme,Deck\n1312,No themes,"Main: , Extra: , Side: "\n1314,No themes,"Main: , Extra: , Side: "\n1234,No themes,"Main: , Extra: , Side: "`
+						)
 					}
 				]
 			});
@@ -64,7 +66,7 @@ describe("command:csv", function () {
 				files: [
 					{
 						name: "battlecity.csv",
-						attachment: `Theme,Count\nNo themes,3`
+						attachment: Buffer.from("Theme,Count\nNo themes,3")
 					}
 				]
 			});
