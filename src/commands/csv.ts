@@ -27,7 +27,7 @@ const command: CommandDefinition = {
 			await msg.reply(`**${tournament.name}** has no players!`);
 			return;
 		}
-		let file;
+		let file: Buffer;
 		if (pie) {
 			const themes = players
 				.map(player => {
@@ -35,7 +35,7 @@ const command: CommandDefinition = {
 					return deck.themes.length > 0 ? deck.themes.join("/") : "No themes";
 				})
 				.reduce((map, theme) => map.set(theme, (map.get(theme) || 0) + 1), new Map<string, number>());
-			file = await csv.writeToString([["Theme", "Count"], ...themes.entries()]);
+			file = await csv.writeToBuffer([["Theme", "Count"], ...themes.entries()]);
 		} else {
 			const rows = await Promise.all(
 				players.map(async player => {
@@ -49,7 +49,7 @@ const command: CommandDefinition = {
 					};
 				})
 			);
-			file = await csv.writeToString(rows, { headers: true });
+			file = await csv.writeToBuffer(rows, { headers: true });
 		}
 		logger.verbose(
 			JSON.stringify({

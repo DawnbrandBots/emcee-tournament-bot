@@ -46,7 +46,7 @@ describe("command:deck", function () {
 			const reply = replySpy.args[0][0] as ReplyMessageOptions;
 			const file = reply.files?.[0] as FileOptions;
 			expect(file.name).to.equal("K.0000.ydk");
-			expect(file.attachment).to.equal(sampleDeck.ydk);
+			expect(file.attachment.toString()).to.equal(sampleDeck.ydk);
 		})
 	);
 });

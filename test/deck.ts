@@ -69,7 +69,7 @@ describe("Test embeds", function () {
 		const messageContent = decks.prettyPrint(deck, "test.ydk");
 		const file = messageContent?.files?.[0] as FileOptions;
 		expect(file.name).to.equal("test.ydk");
-		expect(file.attachment).to.equal(
+		expect(file.attachment.toString()).to.equal(
 			"#created by YDeck\n#main\n89631139\n89631139\n89631139\n95788410\n95788410\n95788410\n39674352\n39674352\n39674352\n32626733\n32626733\n32626733\n56649609\n56649609\n56649609\n38999506\n38999506\n38999506\n39111158\n39111158\n39111158\n92176681\n92176681\n92176681\n65957473\n65957473\n65957473\n76232340\n76232340\n76232340\n38955728\n38955728\n38955728\n13140300\n13140300\n13140300\n89189982\n89189982\n89189982\n31447217\n#extra\n62873545\n62873545\n62873545\n!side\n31447217\n31447217\n"
 		);
 		const embed = messageContent?.embeds?.[0];
@@ -96,7 +96,7 @@ describe("Test embeds", function () {
 		]);
 		const file = messageContent?.files?.[0] as FileOptions;
 		expect(file.name).to.equal("blank.ydk");
-		expect(file.attachment).to.equal("#created by YDeck\n#main\n#extra\n!side\n");
+		expect(file.attachment.toString()).to.equal("#created by YDeck\n#main\n#extra\n!side\n");
 		const embed = messageContent?.embeds?.[0];
 		expect(embed?.title).to.equal("Themes: none");
 		const errorField = embed?.fields?.[1];
