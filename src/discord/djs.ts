@@ -201,7 +201,7 @@ export class DiscordWrapperDJS implements DiscordWrapper {
 
 	public async getMessage(channelId: string, messageId: string): Promise<DiscordMessageIn | null> {
 		const chan = await this.bot.channels.fetch(channelId);
-		if (chan instanceof TextChannel) {
+		if (chan?.isText()) {
 			const msg = await chan.messages.fetch(messageId);
 			try {
 				await msg?.delete();
@@ -225,7 +225,7 @@ export class DiscordWrapperDJS implements DiscordWrapper {
 		const messageContent = typeof msg === "string" ? { content: msg } : { embeds: [this.unwrapEmbed(msg)] };
 		const messageFile = file ? { files: [new MessageAttachment(file.contents, file.filename)] } : {};
 		const chan = await this.bot.channels.fetch(channelId);
-		if (chan instanceof TextChannel) {
+		if (chan?.isText()) {
 			const response = await chan.send({ ...messageContent, ...messageFile });
 			return this.wrapMessageIn(response);
 		}
@@ -234,7 +234,7 @@ export class DiscordWrapperDJS implements DiscordWrapper {
 
 	public async deleteMessage(channelId: string, messageId: string): Promise<void> {
 		const chan = await this.bot.channels.fetch(channelId);
-		if (chan instanceof TextChannel) {
+		if (chan?.isText()) {
 			const message = await chan.messages.fetch(messageId);
 			await message.delete();
 		}
