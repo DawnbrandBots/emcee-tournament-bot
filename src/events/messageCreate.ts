@@ -28,7 +28,7 @@ export function makeHandler(
 		if (msg.author.bot || msg.reference) {
 			return;
 		}
-		if (bot.user && msg.mentions.has(bot.user)) {
+		if (bot.user && msg.mentions.has(bot.user, { ignoreEveryone: true })) {
 			await msg.reply(helpMessage).catch(logger.error);
 			return;
 		}

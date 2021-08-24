@@ -1,12 +1,13 @@
 # Changelog
 
-## HEAD ([Chalislime Monthly August 2021](https://challonge.com/csmaugust2021))
+## HEAD
 
 ### New Features
 - Switch to Discord.js from Eris so we can make use of recent Discord features (#325)
 
 ### Bug Fixes
 - Fix all file attachments breaking due to the switch to Discord.js, breaking two commands and part of registration (#327)
+- Do not respond to `@everyone` and `@here`, another effect of the change to Discord.js (#329)
 
 ## 2021-07-31 ([Chalislime Monthly July 2021](https://challonge.com/csmjuly2021))
 ### New Features
