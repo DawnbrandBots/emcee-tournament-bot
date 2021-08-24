@@ -32,24 +32,24 @@ jobs:
           key: ${{ runner.os }}-buildx-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-buildx-
+      - uses: docker/metadata-action@v3
+        id: meta
+        with:
+          images: ghcr.io/${{ github.repository }}
+          flavor: latest=${{ github.ref == 'refs/heads/master' }}
+          tags: |
+            type=ref,event=tag
+            type=sha,format=long
       - uses: docker/login-action@v1
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Infer image tag
-        id: infer
-        if: github.event_name == 'push'
-        run: |
-          # Strip git ref prefix from version
-          VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
-          # Use Docker `latest` tag convention
-          [[ "$VERSION" == "master" ]] && VERSION=latest
-          echo "::set-output name=tag::$VERSION"
       - uses: docker/build-push-action@v2
         with:
           push: ${{ github.event_name == 'push' }}
-          tags: ghcr.io/alphakretin/emcee-discord-bot:${{ steps.infer.outputs.tag || 'latest' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
           build-args: EMCEE_REVISION=${{ github.sha }}
           pull: true
           cache-from: type=local,src=/tmp/.buildx-cache
