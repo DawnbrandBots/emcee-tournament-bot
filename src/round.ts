@@ -173,7 +173,7 @@ async function reportFailure(
 	opponentId: string
 ): Promise<void> {
 	for (const channel of tournament.privateChannels) {
-		logger.warn(JSON.stringify({ tournament: tournament.id, userId, opponentId, event: "direct message fail" }));
+		logger.info(JSON.stringify({ tournament: tournament.id, userId, opponentId, event: "direct message fail" }));
 		await discord
 			.sendMessage(
 				channel,

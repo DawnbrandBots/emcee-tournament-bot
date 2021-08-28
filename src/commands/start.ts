@@ -50,7 +50,7 @@ const command: CommandDefinition = {
 						player,
 						`Sorry, **${tournament.name}** has started and you didn't submit a deck, so you have been dropped.`
 					)
-					.catch(logger.warn);
+					.catch(logger.info);
 			}
 			logger.verbose(log("notify ejected"));
 			await support.challonge.shufflePlayers(id); // must happen before byes assigned!
@@ -80,6 +80,7 @@ const command: CommandDefinition = {
 		}
 		logger.verbose(log("private"));
 		// drop dummy players once the tournament has started to give players with byes the win
+		// TODO: due to the behaviour change documented in #329, this now deletes the byes before the tournament even starts
 		await support.challonge.dropByes(id, tournament.byes.length);
 		logger.info(log("success"));
 	}

@@ -74,7 +74,7 @@ const command: CommandDefinition = {
 					);
 				} catch (err) {
 					log("DM fail", { opponent });
-					logger.warn(err);
+					logger.info(err);
 					for (const channel of player.tournament.privateChannels) {
 						await support.discord
 							.sendMessage(channel, `Failed to send confirmation of score submission to <@${opponent}>.`)
@@ -109,7 +109,7 @@ const command: CommandDefinition = {
 					);
 				} catch (err) {
 					log("DM fail", { opponent });
-					logger.warn(err);
+					logger.info(err);
 					for (const channel of player.tournament.privateChannels) {
 						await support.discord
 							.sendMessage(channel, `Failed to send report of score disagreement to <@${opponent}>.`)

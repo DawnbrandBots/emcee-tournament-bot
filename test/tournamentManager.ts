@@ -1,7 +1,7 @@
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
-import dotenv from "dotenv";
 import { Client } from "discord.js";
+import dotenv from "dotenv";
 import * as fs from "fs/promises";
 import sinon from "sinon";
 import sinonChai from "sinon-chai";
@@ -142,7 +142,7 @@ describe("Misc functions", function () {
 			"stestPlayer1"
 		);
 		expect(discord.getResponse("stestPlayer1")).to.equal(
-			"You are registering for Tournament 1. Please submit a deck to complete your registration, by uploading a YDK file or sending a message with a YDKE URL."
+			"You are registering for **Tournament 1**. Please submit a deck to complete your registration, by uploading a YDK file or sending a message with a YDKE URL."
 		);
 	});
 	it("Register player - blocked DMs", async function () {
@@ -162,7 +162,7 @@ describe("Misc functions", function () {
 		);
 		expect(discord.getResponse("sblockedPlayer")).to.be.undefined;
 		expect(discord.getResponse("channel2")).to.equal(
-			"Player <@sblockedPlayer> (sblockedPlayer) is trying to sign up for Tournament Tournament 1 (tourn1), but I cannot send them DMs. Please ask them to allow DMs from this server."
+			"<@sblockedPlayer> (sblockedPlayer) is trying to sign up for **Tournament 1** (tourn1), but I cannot send them DMs. Please ask them to allow DMs from this server."
 		);
 	});
 	it("Register player - no tournament", async function () {

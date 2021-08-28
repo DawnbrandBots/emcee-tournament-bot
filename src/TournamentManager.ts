@@ -104,12 +104,9 @@ export class TournamentManager implements TournamentInterface {
 			channels.map(async c => {
 				await this.discord.sendMessage(
 					c,
-					`Player ${this.discord.mentionUser(playerId)} (${this.discord.getUsername(
-						playerId,
-						true
-					)}) is trying to sign up for Tournament ${tournament.name} (${
-						tournament.id
-					}), but I cannot send them DMs. Please ask them to allow DMs from this server.`
+					`<@${playerId}> (${this.discord.getUsername(playerId, true)}) is trying to sign up for **${
+						tournament.name
+					}** (${tournament.id}), but I cannot send them DMs. Please ask them to allow DMs from this server.`
 				);
 			})
 		);
@@ -119,20 +116,21 @@ export class TournamentManager implements TournamentInterface {
 		const tournaments = await this.database.getPendingTournaments(playerId);
 		if (tournaments.length > 0) {
 			await this.discord.removeUserReaction(msg.channelId, msg.id, this.CHECK_EMOJI, playerId);
-			// If DMs are blocked, this does end up logging by way of stack trace
-			await this.discord.sendDirectMessage(
-				playerId,
-				`You can only sign up for 1 Tournament at a time! Please either drop from or complete your registration for ${tournaments[0].name}!`
-			);
+			await this.discord
+				.sendDirectMessage(
+					playerId,
+					`You can only sign up for one tournament at a time! Please either drop from or complete your registration for **${tournaments[0].name}**!`
+				)
+				.catch(logger.info);
+			// TODO: we cannot get the tournament by the current register message to inform the hosts
 			return;
 		}
-		// addPendingPlayer needs to status-guard for preparing tournament
 		const tournament = await this.database.addPendingPlayer(msg.channelId, msg.id, playerId);
 		if (tournament) {
 			try {
 				await this.discord.sendDirectMessage(
 					playerId,
-					`You are registering for ${tournament.name}. ` +
+					`You are registering for **${tournament.name}**. ` +
 						"Please submit a deck to complete your registration, by uploading a YDK file or sending a message with a YDKE URL."
 				);
 				logger.verbose(`User ${playerId} registered for tournament ${tournament.id}.`);
@@ -259,7 +257,7 @@ export class TournamentManager implements TournamentInterface {
 						server: participant.tournament.owningDiscordServer
 					});
 				} catch (error) {
-					logger.warn(error);
+					logger.info(error);
 					for (const channel of participant.tournament.privateChannels) {
 						await this.discord
 							.sendMessage(
@@ -270,10 +268,20 @@ export class TournamentManager implements TournamentInterface {
 					}
 				}
 			} else {
-				await this.discord.sendDirectMessage(
-					playerId,
-					`Something went wrong with dropping from **${participant.tournament.name}**. Please try again later or ask your hosts how to proceed.`
-				);
+				for (const channel of participant.tournament.privateChannels) {
+					await this.discord
+						.sendMessage(
+							channel,
+							`Something went wrong on Challonge with dropping ${who} from **${participant.tournament.name}** upon request. Please try again later.`
+						)
+						.catch(logger.error);
+				}
+				await this.discord
+					.sendDirectMessage(
+						playerId,
+						`Something went wrong with dropping from **${participant.tournament.name}**. Please try again later or ask your hosts how to proceed.`
+					)
+					.catch(logger.info);
 				return;
 			}
 		}
@@ -295,7 +303,7 @@ export class TournamentManager implements TournamentInterface {
 					playerId,
 					`Something went wrong with dropping from **${participant.tournament.name}**. Please try again later or ask your hosts how to proceed.`
 				)
-				.catch(logger.error);
+				.catch(logger.info);
 			return;
 		}
 		log({ event: "success" });
@@ -308,6 +316,6 @@ export class TournamentManager implements TournamentInterface {
 		}
 		await this.discord
 			.sendDirectMessage(playerId, `You have dropped from **${participant.tournament.name}**.`)
-			.catch(logger.error);
+			.catch(logger.info);
 	}
 }
