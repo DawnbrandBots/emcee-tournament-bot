@@ -1,5 +1,6 @@
 import {
 	Client,
+	Constants,
 	GuildChannel,
 	Message,
 	MessageAttachment,
@@ -202,19 +203,18 @@ export class DiscordWrapperDJS implements DiscordWrapper {
 	public async getMessage(channelId: string, messageId: string): Promise<DiscordMessageIn | null> {
 		const chan = await this.bot.channels.fetch(channelId);
 		if (chan?.isText()) {
-			const msg = await chan.messages.fetch(messageId);
 			try {
-				await msg?.delete();
+				const msg = await chan.messages.fetch(messageId);
+				return this.wrapMessageIn(msg);
 			} catch (err) {
-				// unknown message
-				if (err.code === 10008) {
+				if (err.code === Constants.APIErrors.UNKNOWN_MESSAGE) {
 					return null;
 				}
 				throw err;
 			}
+		} else {
+			throw new AssertTextChannelError(channelId);
 		}
-		// TODO: handle null channel
-		throw new AssertTextChannelError(channelId);
 	}
 
 	public async sendMessage(
@@ -228,8 +228,9 @@ export class DiscordWrapperDJS implements DiscordWrapper {
 		if (chan?.isText()) {
 			const response = await chan.send({ ...messageContent, ...messageFile });
 			return this.wrapMessageIn(response);
+		} else {
+			throw new AssertTextChannelError(channelId);
 		}
-		throw new AssertTextChannelError(channelId);
 	}
 
 	public async deleteMessage(channelId: string, messageId: string): Promise<void> {
@@ -237,7 +238,8 @@ export class DiscordWrapperDJS implements DiscordWrapper {
 		if (chan?.isText()) {
 			const message = await chan.messages.fetch(messageId);
 			await message.delete();
+		} else {
+			throw new AssertTextChannelError(channelId);
 		}
-		throw new AssertTextChannelError(channelId);
 	}
 }
