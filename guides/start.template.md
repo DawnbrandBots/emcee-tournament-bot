@@ -2,7 +2,7 @@ All **View deck** commands continue to work.
 **Drop players**
 As before, you can still manually drop players.
 ```
-mc!forcedrop {}|@User
+mc!forcedrop {}|@discordtag
 mc!forcedrop {}|id```
 **Report score**
 Players report their own score.

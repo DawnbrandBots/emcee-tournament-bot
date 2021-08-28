@@ -74,21 +74,21 @@ commands for the next step of the [main tournament workflow](#main-tournament-wo
 
 ### Add host
 ```
-mc!addhost id|@user
+mc!addhost id|@discordtag
 ```
 **Caller permission level**: host for the tournament identified by _id_
 
-`@user` must be a valid Discord mention of a user that pings them.
+`@discordtag` must be a valid Discord mention of a user that pings them.
 
 The user is added as a host for the specified tournament, granting them the same permissions as you.
 
 ### Remove host
 ```
-mc!removehost id|@user
+mc!removehost id|@discordtag
 ```
 **Caller permission level**: host for the tournament identified by _id_
 
-`@user` can be a Discord mention, though it does not have to ping, or the user's ID.
+`@discordtag` can be a Discord mention, though it does not have to ping, or the user's ID.
 
 The user is deauthorised as a host for the specified tournament, losing all corresponding permissions.
 You cannot remove yourself if you are the only host; there must always be one host to manage the tournament.
@@ -188,11 +188,11 @@ to click to begin the sign-up process.
 
 ### Add artificial round-one bye
 ```
-mc!addbye id|@user
+mc!addbye id|@discordtag
 ```
 **Caller permission level**: host for the tournament identified by _id_
 
-`@user` must be a valid Discord mention of a user that pings them.
+`@discordtag` must be a valid Discord mention of a user that pings them.
 
 The specified tournament must be in the preparing stage and not have been started.
 If the specified user has confirmed their deck for the specified tournament, they will now
@@ -203,11 +203,11 @@ in that event, you should [tie](#tie-round) the extra final round.
 
 ### Remove artificial round-one bye
 ```
-mc!removebye id|@user
+mc!removebye id|@discordtag
 ```
 **Caller permission level**: host for the tournament identified by _id_
 
-`@user` must be a valid Discord mention of a user that pings them.
+`@discordtag` must be a valid Discord mention of a user that pings them.
 
 The specified tournament must be in the preparing stage and not have been started.
 If the specified user has confirmed their deck for the specified tournament and was
@@ -269,7 +269,7 @@ If the tournament is in progress and either all scores for every round have been
 or the `early` parameter was not provided, all round timers are stopped. An announcement is
 sent to all public channels, pinging all participants, and then the participant role for this
 tournament is deleted. If the `early` parameter was not provided, the tournament is also
-marked as finished on Challonge. 
+marked as finished on Challonge.
 
 ### Start top cut tournament
 ```
@@ -319,11 +319,11 @@ the match outcome, as if playing golf.
 
 ### Drop participant
 ```
-mc!forcedrop id|@user
+mc!forcedrop id|@discordtag
 ```
 **Caller permission level**: host for the tournament identified by _id_
 
-`@user` can be a Discord mention, though it does not have to ping, or the user's ID.
+`@discordtag` can be a Discord mention, though it does not have to ping, or the user's ID.
 
 If the specified user exists and is pending or confirmed for the specified tournament,
 they are dropped. Pending participants are removed from the queue and confirmed participants
@@ -347,11 +347,11 @@ registered participants, format, current status, any round 1 byes, and hosts.
 
 ### Show participant deck
 ```
-mc!deck id|@user
+mc!deck id|@discordtag
 ```
 **Caller permission level**: host for the tournament identified by _id_
 
-`@user` can be a Discord mention, though it does not have to ping, or the user's ID.
+`@discordtag` can be a Discord mention, though it does not have to ping, or the user's ID.
 
 Reposts the deck profile for the mentioned user if they are confirmed for this tournament.
 

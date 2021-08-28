@@ -14,8 +14,8 @@ The above commands affect the _current_ channel.
 Hosts have all the same permissions you do.
 Trust them like you would a moderator.
 ```
-mc!addhost {}|@User
-mc!removehost {}|@User```
+mc!addhost {}|@discordtag
+mc!removehost {}|@discordtag```
 **Change info**
 You can change the name and description.
 ```
