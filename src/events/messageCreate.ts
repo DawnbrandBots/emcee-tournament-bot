@@ -196,7 +196,7 @@ async function verifyDeckAndConfirmPending(
 		await participantRole.grant(msg.author.id, tournament);
 		log("verbose", msg, { event: "role", tournament: tournament.id });
 	} catch (error) {
-		logger.error(error);
+		logger.info(error);
 		roleGrantWarning = " I couldn't assign them a role. Am I missing permissions?";
 	}
 	for (const channel of tournament.privateChannels) {

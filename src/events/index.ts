@@ -13,8 +13,8 @@ export function registerEvents(bot: Client, prefix: string, support: CommandSupp
 	bot.on("warn", logger.warn);
 	bot.on("error", logger.error);
 	bot.on("shardReady", shard => logger.notify(`Shard ${shard} ready`));
-	bot.on("shardReconnecting", shard => logger.notify(`Shard ${shard} reconnecting`));
-	bot.on("shardResume", (shard, replayed) => logger.notify(`Shard ${shard} resumed: ${replayed} events replayed`));
+	bot.on("shardReconnecting", shard => logger.info(`Shard ${shard} reconnecting`));
+	bot.on("shardResume", (shard, replayed) => logger.info(`Shard ${shard} resumed: ${replayed} events replayed`));
 	bot.on("shardDisconnect", (event, shard) =>
 		logger.notify(`Shard ${shard} disconnected (${event.code},${event.wasClean}): ${event.reason}`)
 	);
