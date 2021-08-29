@@ -1,0 +1,10 @@
+export function compute(p: any, t: any): void;
+export const matchpoints: any;
+export const buchholzcut1: any;
+export const solkoff: any;
+export const medianbuchholz: any;
+export const sonnebornberger: any;
+export const cumulative: any;
+export const versus: any;
+export const magictcg: any;
+export const pokemontcg: any;

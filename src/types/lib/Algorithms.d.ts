@@ -1,0 +1,10 @@
+import Match = require("tournament-organizer/src/Match");
+export function bracket(power: number): number[];
+export function blankMatches(array: Match[], count: number, round: number): void;
+export function pairCompare(p1: any, p2: any): any[];
+export function loserFill(num: number, count: number): number[];
+export function elim(matches: Match[], players: any[], thirdPlace: boolean, startRound?: number): void;
+export function doubleElim(matches: Match[], players: any[], startRound?: number): void;
+export function swiss(matches: Match[], players: any[], round: number, maxPoints: number, sort: string): Match[];
+export function dutch(matches: Match[], players: any[], round: number, maxPoints: number): Match[];
+export function robin(players: any[], groups: boolean, double: boolean): Match[];
