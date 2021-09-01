@@ -57,14 +57,14 @@ const command: CommandDefinition = {
 				try {
 					await support.participantRole.ungrant(player, tournament);
 				} catch (error) {
-					logger.warn(error);
+					logger.info(error);
 					await msg
 						.reply(`Failed to remove **${tournament.name}** participant role from ${name}.`)
 						.catch(logger.error);
 				}
 			} else {
 				await msg.reply(
-					"Something went wrong. Please check private channels for problems and try again later."
+					"Something went wrong with Challonge. Please check private channels for problems and try again later."
 				);
 				return;
 			}
@@ -74,13 +74,15 @@ const command: CommandDefinition = {
 			await participant.remove();
 		} catch (error) {
 			logger.error(error);
-			await msg.reply("Something went wrong. Please check private channels for problems and try again later.");
+			await msg.reply(
+				"Something went wrong with Emcee's database. Please report this to developers as this may not be immediately recoverable."
+			);
 			return;
 		}
 		// Notify relevant parties as long as the participant existed
 		await support.discord
 			.sendDirectMessage(player, `You have been dropped from **${tournament.name}** by the hosts.`)
-			.catch(logger.error);
+			.catch(logger.info);
 		for (const channel of tournament.privateChannels) {
 			await support.discord
 				.sendMessage(channel, `${name} has been forcefully dropped from **${tournament.name}**.`)
