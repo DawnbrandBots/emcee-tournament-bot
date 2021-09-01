@@ -2,6 +2,8 @@
 
 ## HEAD
 
+Move GitHub repository to the Dawnbrand Bots organization
+
 ### New Features
 - Switch to Discord.js from Eris so we can make use of recent Discord features (#325)
 
