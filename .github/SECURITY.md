@@ -5,7 +5,7 @@ Only the latest published release and the HEAD of the default branch are support
 ## Reporting a vulnerability
 
 Please report suspected security vulnerabilities to [bastionbotdev@gmail.com](mailto:bastionbotdev@gmail.com).
-You can also send your reports to `AlphaKretin#7990` via direct message on Discord,
+You can also send your reports to `DawnbrandBots#7990` via direct message on Discord,
 but please do not send a friend request; join our [Discord server](https://discord.gg/GrMGspZ)
 if direct messages don't go through.
 

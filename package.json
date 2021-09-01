@@ -3,7 +3,6 @@
 	"version": "0.1.0",
 	"description": "A Discord bot to facilitate organising Challonge tournaments and verify submitted decks.",
 	"private": true,
-	"main": "dist/index.js",
 	"scripts": {
 		"test": "nyc mocha --config test/.mocharc.yml test/*.ts test/**/*.unit.ts",
 		"cover": "nyc report",

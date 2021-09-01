@@ -107,7 +107,7 @@ describe("Direct message submissions", function () {
 			const replySpy = this.stub(sampleMessage, "reply").resolves();
 			await onDirectMessage(sampleMessage, database, decks, challonge, participantRole, mockBotClient);
 			expect(replySpy).to.have.been.calledWith(
-				"Emcee's documentation can be found at https://github.com/AlphaKretin/emcee-tournament-bot/blob/master/README.md.\nRevision: **undefined**\nIf you're trying to sign up for a tournament, make sure you've clicked ✅ on a sign-up message and I'll let you know how to proceed."
+				"Emcee's documentation can be found at https://github.com/DawnbrandBots/emcee-tournament-bot/blob/master/README.md.\nRevision: **undefined**\nIf you're trying to sign up for a tournament, make sure you've clicked ✅ on a sign-up message and I'll let you know how to proceed."
 			);
 		})
 	);

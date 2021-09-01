@@ -3,8 +3,8 @@
 <!-- Unfortunately, GitHub Markdown sanitizes style attributes, so we will have to use a deprecated HTML attribute. -->
 [<img src="https://cdn.discordapp.com/avatars/691882968809209917/1ffd7675f6fb2a4c21b1b356b7856279.png" alt="Emcee avatar" align="right" />](https://yugipedia.com/wiki/MC)
 
-![Build](https://github.com/AlphaKretin/emcee-tournament-bot/workflows/Build/badge.svg)&nbsp;
-[![Coverage Status](https://coveralls.io/repos/github/AlphaKretin/emcee-tournament-bot/badge.svg?t=iUM0Et)](https://coveralls.io/github/AlphaKretin/emcee-tournament-bot)
+![Build](https://github.com/DawnbrandBots/emcee-tournament-bot/workflows/Build/badge.svg)&nbsp;
+[![Coverage Status](https://coveralls.io/repos/github/DawnbrandBots/emcee-tournament-bot/badge.svg?t=iUM0Et)](https://coveralls.io/github/DawnbrandBots/emcee-tournament-bot)
 
 A Discord bot to facilitate organising Yu-Gi-Oh! tournaments online using [Challonge](https://challonge.com/) and verify submitted decks.
 Supports YGOPro deck files (.ydk) and `ydke://` URLs from [Project Ignis: EDOPro](https://github.com/edo9300/edopro) and [YGOPRODECK](https://ygoprodeck.com/).
@@ -52,8 +52,8 @@ The default prefix for all Emcee commands is `mc!`. For developers, this can be 
 environment variable. In the future, this will also be configurable per server. We may add support for
 Discord slash commands in future when the feature is stable in Discord.
 
-- [Commands for tournament hosts](https://github.com/AlphaKretin/emcee-tournament-bot/blob/master/docs/usage-organiser.md)
-- [Commands for participants](https://github.com/AlphaKretin/emcee-tournament-bot/blob/master/docs/usage-participant.md)
+- [Commands for tournament hosts](https://github.com/DawnbrandBots/emcee-tournament-bot/blob/master/docs/usage-organiser.md)
+- [Commands for participants](https://github.com/DawnbrandBots/emcee-tournament-bot/blob/master/docs/usage-participant.md)
 
 ## Support server
 
@@ -107,7 +107,7 @@ Please use Australian English spellings.
 ## Licence
 
 Copyright © 2020&ndash;2021 Luna Brand, Kevin Lu.
-See [COPYING](https://github.com/AlphaKretin/emcee-tournament-bot/blob/master/COPYING) for more details.
+See [COPYING](https://github.com/DawnbrandBots/emcee-tournament-bot/blob/master/COPYING) for more details.
 
 ```
 This program is free software: you can redistribute it and/or modify

@@ -45,7 +45,7 @@ describe("Get deck from message", function () {
 		sampleMessage.attachments.set(
 			"unused",
 			new MessageAttachment("unused", "deck.ydk", {
-				url: "https://raw.githubusercontent.com/AlphaKretin/AlphaKretin.github.io/297c9154cf29214b65bebdd9a85acbdf68fb5eb0/miscstorage/ABC.ydk",
+				url: "https://raw.githubusercontent.com/DawnbrandBots/DawnbrandBots.github.io/297c9154cf29214b65bebdd9a85acbdf68fb5eb0/miscstorage/ABC.ydk",
 				filename: "deck.ydk",
 				id: "unused",
 				proxy_url: "unused",
