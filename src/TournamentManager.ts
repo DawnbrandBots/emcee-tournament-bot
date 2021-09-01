@@ -54,14 +54,13 @@ export class TournamentManager implements TournamentInterface {
 			await this.website.getTournament(url);
 			return true;
 		} catch (e) {
-			// This is an error which means the name is taken,
-			// just not by Emcee.
-			if (e.message === "You only have read access to this tournament") {
-				return true;
-			}
-			// If the error is it not being found on website,
-			// we should continue to the database check
-			if (!(e instanceof ChallongeAPIError)) {
+			if (e instanceof ChallongeAPIError) {
+				// This is an error which means the name is taken, just not by Emcee.
+				if (e.message === "You only have read access to this tournament") {
+					return true;
+				}
+			} else {
+				// If the error is it not being found on website, we should continue to the database check
 				throw e;
 			}
 		}

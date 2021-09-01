@@ -1,6 +1,7 @@
 import {
 	Client,
 	Constants,
+	DiscordAPIError,
 	GuildChannel,
 	Message,
 	MessageAttachment,
@@ -192,8 +193,7 @@ export class DiscordWrapperDJS implements DiscordWrapper {
 			// const messageFile = file ? { files: [new MessageAttachment(file.contents, file.filename)] } : {};
 			// await user.send({ ...messageContent, ...messageFile });
 		} catch (e) {
-			// DiscordRESTError - User blocking DMs
-			if (e.code === 50007) {
+			if (e instanceof DiscordAPIError && e.code === Constants.APIErrors.CANNOT_MESSAGE_USER) {
 				throw new BlockedDMsError(userId);
 			}
 			logger.error(e);
@@ -207,7 +207,7 @@ export class DiscordWrapperDJS implements DiscordWrapper {
 				const msg = await chan.messages.fetch(messageId);
 				return this.wrapMessageIn(msg);
 			} catch (err) {
-				if (err.code === Constants.APIErrors.UNKNOWN_MESSAGE) {
+				if (err instanceof DiscordAPIError && err.code === Constants.APIErrors.UNKNOWN_MESSAGE) {
 					return null;
 				}
 				throw err;

@@ -1,4 +1,4 @@
-import { ChallongeIDConflictError, UserError } from "../util/errors";
+import { ChallongeAPIError, ChallongeIDConflictError, UserError } from "../util/errors";
 // import { getLogger } from "../util/logger";
 
 export interface WebsiteWrapper {
@@ -70,7 +70,7 @@ export class WebsiteInterface {
 			return await this.api.createTournament(name, desc, url, topCut);
 		} catch (e) {
 			// challonge API error message
-			if (e.message === "URL is already taken") {
+			if (e instanceof ChallongeAPIError && e.message === "URL is already taken") {
 				throw new ChallongeIDConflictError(url);
 			}
 			throw e;

@@ -101,7 +101,7 @@ export async function onDirectMessage(
 		}
 		try {
 			await verifyDeckAndConfirmPending(msg, tournament, database, decks, challonge, participantRole, bot);
-		} catch (error) {
+		} catch (error: any) {
 			log("info", msg, { event: "confirm fail", tournament: tournament.id, error: error.message });
 			await msg.reply(
 				`Must provide a valid attached \`.ydk\` file OR valid \`ydke://\` URL for **${tournament.name}**!`
@@ -125,7 +125,7 @@ export async function onDirectMessage(
 		log("info", msg, { event: "update start", tournament: tournament.id });
 		try {
 			await verifyDeckAndUpdateConfirmed(msg, tournament, database, decks, bot);
-		} catch (error) {
+		} catch (error: any) {
 			log("info", msg, { event: "update fail", tournament: tournament.id, error: error.message });
 			await msg.reply(
 				`Must provide a valid attached \`.ydk\` file OR valid \`ydke://\` URL for **${tournament.name}**!`
