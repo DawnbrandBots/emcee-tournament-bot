@@ -61,7 +61,7 @@ services:
       context: .
       args:
         EMCEE_REVISION: "${EMCEE_REVISION}"
-    image: "ghcr.io/dawnbrandbots/emcee-discord-bot:${EMCEE_VERSION:-latest}"
+    image: "ghcr.io/dawnbrandbots/emcee-tournament-bot:${EMCEE_VERSION:-latest}"
     environment:
       DISCORD_TOKEN: "${DISCORD_TOKEN}"
       OCTOKIT_TOKEN: "${OCTOKIT_TOKEN}"
