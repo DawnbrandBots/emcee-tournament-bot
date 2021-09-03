@@ -22,4 +22,4 @@ export function getConfig() {
 	};
 }
 
-export const helpMessage = `Emcee's documentation can be found at https://github.com/AlphaKretin/emcee-tournament-bot/blob/master/README.md.\nRevision: **${process.env.EMCEE_REVISION}**`;
+export const helpMessage = `Emcee's documentation can be found at https://github.com/DawnbrandBots/emcee-tournament-bot/blob/master/README.md.\nRevision: **${process.env.EMCEE_REVISION}**`;

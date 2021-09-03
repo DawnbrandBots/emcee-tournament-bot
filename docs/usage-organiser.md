@@ -1,6 +1,6 @@
 # Commands for tournament hosts
 
-[Back to main](https://github.com/AlphaKretin/emcee-tournament-bot#project-ignis-emcee)
+[Back to main](https://github.com/DawnbrandBots/emcee-tournament-bot#project-ignis-emcee)
 
 Commands have a specific name exactly following the command prefix. If the command accepts parameters,
 these are separated from each other by a pipe `|`, and from the command name by whitespace. For the
@@ -269,7 +269,7 @@ If the tournament is in progress and either all scores for every round have been
 or the `early` parameter was not provided, all round timers are stopped. An announcement is
 sent to all public channels, pinging all participants, and then the participant role for this
 tournament is deleted. If the `early` parameter was not provided, the tournament is also
-marked as finished on Challonge. 
+marked as finished on Challonge.
 
 ### Start top cut tournament
 ```
@@ -427,4 +427,4 @@ any other desired restriction).
 
 ---
 
-[Back to main](https://github.com/AlphaKretin/emcee-tournament-bot#project-ignis-emcee)
+[Back to main](https://github.com/DawnbrandBots/emcee-tournament-bot#project-ignis-emcee)
