@@ -1,7 +1,7 @@
 blank_issues_enabled: false
 contact_links:
   - name: 🔓 Potential security flaw
-    url: https://github.com/AlphaKretin/emcee-tournament-bot/blob/master/.github/SECURITY.md
+    url: https://github.com/DawnbrandBots/emcee-tournament-bot/blob/master/.github/SECURITY.md
     about: Please do not open a public issue. Instead, report it according to the security policy.
   - name: ❓ Help and support, feature requests
     url: https://discord.gg/GrMGspZ

@@ -15,7 +15,7 @@ FROM base
 ARG EMCEE_REVISION
 LABEL org.opencontainers.image.title Emcee Discord bot
 LABEL org.opencontainers.image.authors bastionbotdev@gmail.com
-LABEL org.opencontainers.image.source https://github.com/AlphaKretin/emcee-tournament-bot
+LABEL org.opencontainers.image.source https://github.com/DawnbrandBots/emcee-tournament-bot
 LABEL org.opencontainers.image.licenses AGPL-3.0-or-later
 LABEL org.opencontainers.image.revision ${EMCEE_REVISION}
 ENV EMCEE_REVISION=${EMCEE_REVISION}

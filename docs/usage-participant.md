@@ -1,6 +1,6 @@
 # Commands for participants
 
-[Back to main](https://github.com/AlphaKretin/emcee-tournament-bot#project-ignis-emcee)
+[Back to main](https://github.com/DawnbrandBots/emcee-tournament-bot#project-ignis-emcee)
 
 ## Table of contents
 1. [Help](#help)
@@ -91,4 +91,4 @@ Be careful, this **removes you from the tournament permanently.**
 
 ---
 
-[Back to main](https://github.com/AlphaKretin/emcee-tournament-bot#project-ignis-emcee)
+[Back to main](https://github.com/DawnbrandBots/emcee-tournament-bot#project-ignis-emcee)

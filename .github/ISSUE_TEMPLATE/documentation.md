@@ -9,8 +9,8 @@ assignees: ""
 <!--
   Please follow the template.  If you don't, your issue may be closed.
   Make sure to search existing issues first to avoid creating duplicates.
-  Contributing guidelines: https://github.com/AlphaKretin/emcee-tournament-bot/master/.github/CONTRIBUTING.md
-  Code of conduct: https://github.com/AlphaKretin/emcee-tournament-bot/master/.github/CODE_OF_CONDUCT.md
+  Contributing guidelines: https://github.com/DawnbrandBots/emcee-tournament-bot/master/.github/CONTRIBUTING.md
+  Code of conduct: https://github.com/DawnbrandBots/emcee-tournament-bot/master/.github/CODE_OF_CONDUCT.md
 
 
   Have a question?  This is not the right place for general support or feature requests.
