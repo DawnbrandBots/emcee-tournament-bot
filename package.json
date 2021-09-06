@@ -40,7 +40,7 @@
 		"@alphakretin/essentials": "^2.0.0",
 		"@alphakretin/mocha-ecosystem": "^1.0.0",
 		"@types/debug": "^4.1.7",
-		"@types/node-fetch": "^2.5.10"
+		"@types/node-fetch": "^3.0.3"
 	},
 	"eslintConfig": {
 		"extends": "@alphakretin"
