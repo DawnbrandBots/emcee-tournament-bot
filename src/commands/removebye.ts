@@ -35,8 +35,7 @@ const command: CommandDefinition = {
 				event: "success"
 			})
 		);
-		const tag = (id: string): string =>
-			`${support.discord.mentionUser(id)} (${support.discord.getUsername(id, true)})`;
+		const tag = (id: string): string => `<@${id}> (${support.discord.getUsername(id, true)})`;
 		const names = byes.map(tag).join(", ");
 		await msg.reply(`Bye removed for Player ${tag(player.id)} in **${tournament.name}**!\nAll byes: ${names}`);
 	}

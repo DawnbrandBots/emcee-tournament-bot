@@ -11,12 +11,6 @@ async function noop(): Promise<void> {
 	return;
 }
 
-describe("Simple helpers", function () {
-	it("mentionUser", function () {
-		expect(discord.mentionUser("player")).to.equal("<@player>");
-	});
-});
-
 describe("getUsername", function () {
 	it("No special characters", function () {
 		expect(discord.getUsername("player1", true)).to.equal("player1");

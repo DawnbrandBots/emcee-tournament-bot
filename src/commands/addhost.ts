@@ -34,7 +34,7 @@ const command: CommandDefinition = {
 				event: "success"
 			})
 		);
-		await msg.reply(`${support.discord.mentionUser(newHost.id)} added as a host for **${tournament.name}**!`);
+		await msg.reply(`${newHost} added as a host for **${tournament.name}**!`);
 	}
 };
 

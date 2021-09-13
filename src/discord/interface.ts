@@ -101,10 +101,6 @@ export class DiscordInterface {
 		return await this.api.removeUserReaction(channelId, messageId, emoji, userId);
 	}
 
-	public mentionUser(userId: string): string {
-		return `<@${userId}>`;
-	}
-
 	public async getMessage(channelId: string, messageId: string): Promise<DiscordMessageIn | null> {
 		return await this.api.getMessage(channelId, messageId);
 	}
