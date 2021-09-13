@@ -189,12 +189,12 @@ export class TournamentManager implements TournamentInterface {
 		await this.timeWizard.cancel(tournament.id);
 
 		await this.database.finishTournament(tournamentId);
-		const role = this.discord.mentionRole(await this.participantRole.get(tournament));
+		const role = await this.participantRole.get(tournament);
 		await Promise.all(
 			channels.map(async c => {
 				await this.discord.sendMessage(
 					c,
-					`${tournament.name} has concluded! Thank you all for playing! ${role}\nResults: ${webTourn.url}`
+					`${tournament.name} has concluded! Thank you all for playing! <@&${role}>\nResults: ${webTourn.url}`
 				);
 			})
 		);

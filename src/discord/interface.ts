@@ -105,10 +105,6 @@ export class DiscordInterface {
 		return `<@${userId}>`;
 	}
 
-	public mentionRole(roleId: string): string {
-		return `<@&${roleId}>`;
-	}
-
 	public async getMessage(channelId: string, messageId: string): Promise<DiscordMessageIn | null> {
 		return await this.api.getMessage(channelId, messageId);
 	}
