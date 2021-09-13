@@ -232,14 +232,4 @@ export class DiscordWrapperDJS implements DiscordWrapper {
 			throw new AssertTextChannelError(channelId);
 		}
 	}
-
-	public async deleteMessage(channelId: string, messageId: string): Promise<void> {
-		const chan = await this.bot.channels.fetch(channelId);
-		if (chan?.isText()) {
-			const message = await chan.messages.fetch(messageId);
-			await message.delete();
-		} else {
-			throw new AssertTextChannelError(channelId);
-		}
-	}
 }

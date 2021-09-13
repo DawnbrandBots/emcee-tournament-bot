@@ -55,7 +55,6 @@ export interface DiscordWrapper {
 	removeUserReaction: (channelId: string, messageId: string, emoji: string, userId: string) => Promise<boolean>;
 	getMessage(channelId: string, messageId: string): Promise<DiscordMessageIn | null>;
 	sendMessage(channelId: string, msg: DiscordMessageOut, file?: DiscordAttachmentOut): Promise<DiscordMessageSent>;
-	deleteMessage(channelId: string, messageId: string): Promise<void>;
 	getUsername(userId: string): string;
 	getRESTUsername(userId: string): Promise<string | null>;
 	sendDirectMessage(userId: string, content: DiscordMessageOut): Promise<void>;
@@ -118,10 +117,6 @@ export class DiscordInterface {
 		file?: DiscordAttachmentOut
 	): Promise<DiscordMessageSent> {
 		return await this.api.sendMessage(channelId, msg, file);
-	}
-
-	public async deleteMessage(channelId: string, messageId: string): Promise<void> {
-		await this.api.deleteMessage(channelId, messageId);
 	}
 
 	public escapeUsername(username: string): string {

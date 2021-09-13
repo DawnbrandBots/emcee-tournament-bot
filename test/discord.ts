@@ -65,10 +65,6 @@ describe("Messages", function () {
 		});
 	});
 
-	it("deleteMessage", async function () {
-		await expect(discord.deleteMessage("delChannel", "delMessage")).to.not.be.rejected;
-	});
-
 	it("sendDirectMessage", async function () {
 		await discord.sendDirectMessage("sentUser", "test message");
 		expect(discordMock.getResponse("sentUser")).to.equal("test message");

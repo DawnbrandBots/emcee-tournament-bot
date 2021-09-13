@@ -69,10 +69,6 @@ export class DiscordWrapperMock implements DiscordWrapper {
 		};
 	}
 
-	public async deleteMessage(): Promise<void> {
-		return;
-	}
-
 	public onDelete(handler: DiscordDeleteHandler): void {
 		this.deleteHandlers.push(handler);
 	}

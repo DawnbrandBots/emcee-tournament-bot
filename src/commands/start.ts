@@ -41,7 +41,16 @@ const command: CommandDefinition = {
 			const { registerMessages, ejected } = await support.database.prestartTournament(id);
 			logger.info(log("prestart"));
 			for (const { channelId, messageId } of registerMessages) {
-				await support.discord.deleteMessage(channelId, messageId).catch(logger.warn); // TODO: audit log reason
+				try {
+					const channel = await msg.client.channels.fetch(channelId);
+					if (channel?.isText()) {
+						await channel.messages.delete(messageId);
+					} else {
+						logger.warn(`Failed to delete ${channelId} ${messageId} since this is not a text channel`);
+					}
+				} catch (error) {
+					logger.warn(error);
+				}
 			}
 			logger.verbose(log("delete register messages"));
 			for (const player of ejected) {
