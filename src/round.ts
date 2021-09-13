@@ -1,3 +1,4 @@
+import { Util } from "discord.js";
 import { CommandSupport } from "./Command";
 import { DatabaseTournament, TournamentFormat } from "./database/interface";
 import { DiscordInterface } from "./discord/interface";
@@ -67,8 +68,8 @@ export async function advanceRoundDiscord(
 				let name2 = await getRealUsername(discord, player2);
 				logger.verbose({ tournament: tournament.id, match: match.matchId, player1, player2, name1, name2 });
 				// escape names for Discord printing now that we've logged them
-				name1 = name1 && discord.escapeUsername(name1);
-				name2 = name2 && discord.escapeUsername(name2);
+				name1 = name1 && Util.escapeMarkdown(name1);
+				name2 = name2 && Util.escapeMarkdown(name2);
 				if (name1) {
 					await sendPairing(discord, intro, player1, player2, name2, tournament);
 				} else {

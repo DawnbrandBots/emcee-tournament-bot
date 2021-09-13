@@ -1,3 +1,5 @@
+import { Util } from "discord.js";
+
 export interface DiscordAttachmentIn {
 	filename: string;
 	url: string;
@@ -119,20 +121,15 @@ export class DiscordInterface {
 		return await this.api.sendMessage(channelId, msg, file);
 	}
 
-	public escapeUsername(username: string): string {
-		const mdEscape = /([\\*_`~])/g;
-		return username.replace(mdEscape, "\\$1");
-	}
-
 	// escape markdown characters if destination is discord, but not if being printed into a file, filename, challonge, etc
 	public getUsername(userId: string, escape = false): string {
 		const name = this.api.getUsername(userId);
-		return escape ? this.escapeUsername(name) : name;
+		return escape ? Util.escapeMarkdown(name) : name;
 	}
 
 	public async getRESTUsername(userId: string, escape = false): Promise<string | null> {
 		const name = await this.api.getRESTUsername(userId);
-		return name && escape ? this.escapeUsername(name) : name;
+		return name && escape ? Util.escapeMarkdown(name) : name;
 	}
 
 	public async sendDirectMessage(userId: string, content: DiscordMessageOut): Promise<void> {
