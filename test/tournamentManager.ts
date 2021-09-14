@@ -51,10 +51,6 @@ before(async () => {
 	await templater.load("guides");
 });
 
-async function noop(): Promise<void> {
-	return;
-}
-
 describe("Tournament creation commands", async function () {
 	it("Create tournament", async function () {
 		const [id, url, guide] = await tournament.createTournament("testUser", "testServer", "create", "desc");
@@ -66,16 +62,6 @@ describe("Tournament creation commands", async function () {
 	it("Create tournament - taken URL", async function () {
 		const [id] = await tournament.createTournament("testUser", "testServer", "create1", "desc");
 		expect(id).to.equal("create10");
-	});
-});
-
-describe("Tournament flow commands", function () {
-	it("Cancel tournament", async function () {
-		await tournament.finishTournament("tourn2", true);
-		// same message as normal finish
-		expect(discord.getResponse("channel1")).to.equal(
-			"Tournament 2 has concluded! Thank you all for playing! <@&role>\nResults: https://example.com/url"
-		);
 	});
 });
 

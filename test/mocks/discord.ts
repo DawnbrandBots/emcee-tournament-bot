@@ -1,42 +1,15 @@
 import {
 	DiscordAttachmentOut,
-	DiscordDeleteHandler,
-	DiscordMessageIn,
 	DiscordMessageOut,
 	DiscordMessageSent,
 	DiscordWrapper
 } from "../../src/discord/interface";
-import { BlockedDMsError, UserError } from "../../src/util/errors";
+import { BlockedDMsError } from "../../src/util/errors";
 
 export class DiscordWrapperMock implements DiscordWrapper {
-	private deleteHandlers: DiscordDeleteHandler[];
-
-	private messages: { [channelId: string]: DiscordMessageOut };
-	private files: { [channelId: string]: DiscordAttachmentOut };
-	private emoji: { [messageId: string]: string };
-	constructor() {
-		this.deleteHandlers = [];
-
-		this.messages = {};
-		this.files = {};
-		this.emoji = {};
-	}
-
-	public getResponse(testCode: string): DiscordMessageOut | undefined {
-		return this.messages[testCode];
-	}
-
-	public getFile(testCode: string): DiscordAttachmentOut | undefined {
-		return this.files[testCode];
-	}
-
-	public getEmoji(testCode: string): string | undefined {
-		return this.emoji[testCode];
-	}
-
-	public getMessage(): Promise<DiscordMessageIn> {
-		throw new Error("Not implemented");
-	}
+	private messages: { [channelId: string]: DiscordMessageOut } = {};
+	private files: { [channelId: string]: DiscordAttachmentOut } = {};
+	private emoji: { [messageId: string]: string } = {};
 
 	public async sendMessage(
 		channelId: string,
@@ -69,35 +42,8 @@ export class DiscordWrapperMock implements DiscordWrapper {
 		};
 	}
 
-	public onDelete(handler: DiscordDeleteHandler): void {
-		this.deleteHandlers.push(handler);
-	}
-
-	public onReaction(): void {
-		return; // out of scope for these tests
-	}
-
-	public onReactionRemove(): void {
-		return; // out of scope for these tests
-	}
-
 	public async removeUserReaction(): Promise<boolean> {
 		return true;
-	}
-
-	public async authenticateTO(): Promise<void> {
-		// if implemented properly would throw error if not authenticated
-		// but for these unit tests we will assume authentication
-		return;
-	}
-
-	public getMentionedUser(m: DiscordMessageIn): string {
-		const mentionReg = /<@(.+?)>/;
-		const result = mentionReg.exec(m.content);
-		if (!result) {
-			throw new UserError("User not found in message!");
-		}
-		return result[1];
 	}
 
 	public getUsername(userId: string): string {
