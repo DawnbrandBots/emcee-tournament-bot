@@ -28,14 +28,6 @@ describe("Callback setups", function () {
 		await discordMock.sendMessage("mc!pong", "pong");
 		expect(discordMock.getResponse("pong")).to.be.undefined;
 	});
-
-	it("awaitReaction", async function () {
-		const msg = await discord.awaitReaction("reactionMessage", "pung", "😳", noop, noop);
-		expect(msg.content).to.equal("reactionMessage");
-		expect(discordMock.getResponse("pung")).to.equal("reactionMessage");
-		expect(discordMock.getEmoji("pung")).to.equal("😳");
-		// TODO: mock reactions?
-	});
 });
 
 describe("Messages", function () {

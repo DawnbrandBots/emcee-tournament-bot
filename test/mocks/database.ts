@@ -16,8 +16,7 @@ function findPlayer(id: string): DatabasePlayer | undefined {
 	return {
 		discordId: id,
 		challongeId: parseInt(id.slice(id.length - 1), 10), // will turn player1 into 1
-		deck:
-			"ydke://o6lXBaOpVwWjqVcFep21BXqdtQV6nbUF8GFdAvBhXQLwYV0CLdjxAS3Y8QEt2PEBiWdgA4lnYAOJZ2AD0hVTAtIVUwLSFVMC9slUAvbJVAL2yVQCKYF+BSmBfgUpgX4FYW7uA2Fu7gNhbu4DlDaLBJQ2iwSUNosE0GpSAtBqUgLQalICTIHIAEyByABMgcgAXu5QBV7uUAVe7lAFsdjfAQ==!yV+/A8lfvwPJX78D!sdjfAbHY3wE=!"
+		deck: "ydke://o6lXBaOpVwWjqVcFep21BXqdtQV6nbUF8GFdAvBhXQLwYV0CLdjxAS3Y8QEt2PEBiWdgA4lnYAOJZ2AD0hVTAtIVUwLSFVMC9slUAvbJVAL2yVQCKYF+BSmBfgUpgX4FYW7uA2Fu7gNhbu4DlDaLBJQ2iwSUNosE0GpSAtBqUgLQalICTIHIAEyByABMgcgAXu5QBV7uUAVe7lAFsdjfAQ==!yV+/A8lfvwPJX78D!sdjfAbHY3wE=!"
 	};
 }
 
@@ -332,5 +331,8 @@ export class DatabaseWrapperMock {
 	}
 	setAllowVector(): Promise<void> {
 		throw new Error("Not implemented");
+	}
+	async getRegisterMessage(): Promise<string | undefined> {
+		return;
 	}
 }

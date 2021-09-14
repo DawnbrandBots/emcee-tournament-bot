@@ -90,7 +90,6 @@ const logger = getLogger("index");
 		if (firstReady) {
 			firstReady = false;
 			await timeWizard.load();
-			await tournamentManager.loadButtons();
 		}
 	});
 	bot.login().catch(logger.error);

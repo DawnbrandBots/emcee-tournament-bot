@@ -43,19 +43,8 @@ export interface DiscordAttachmentOut {
 
 export type DiscordDeleteHandler = (msg: DiscordMessageLimited) => Promise<void> | void;
 
-type DiscordReactionResponse = (msg: DiscordMessageIn, userId: string) => Promise<void> | void;
-
-export interface DiscordReactionHandler {
-	msg: string;
-	emoji: string;
-	response: DiscordReactionResponse;
-}
-
 export interface DiscordWrapper {
-	onReaction: (handler: DiscordReactionHandler) => void;
-	onReactionRemove: (handler: DiscordReactionHandler) => void;
 	removeUserReaction: (channelId: string, messageId: string, emoji: string, userId: string) => Promise<boolean>;
-	getMessage(channelId: string, messageId: string): Promise<DiscordMessageIn | null>;
 	sendMessage(channelId: string, msg: DiscordMessageOut, file?: DiscordAttachmentOut): Promise<DiscordMessageSent>;
 	getUsername(userId: string): string;
 	getRESTUsername(userId: string): Promise<string | null>;
@@ -68,30 +57,6 @@ export class DiscordInterface {
 		this.api = api;
 	}
 
-	public async awaitReaction(
-		content: DiscordMessageOut,
-		channelId: string,
-		emoji: string,
-		response: DiscordReactionResponse,
-		removeResponse: DiscordReactionResponse
-	): Promise<DiscordMessageSent> {
-		const msg = await this.sendMessage(channelId, content);
-		await msg.react(emoji);
-		this.api.onReaction({ msg: msg.id, emoji, response });
-		this.api.onReactionRemove({ msg: msg.id, emoji, response: removeResponse });
-		return msg;
-	}
-
-	public restoreReactionButton(
-		msg: DiscordMessageIn,
-		emoji: string,
-		response: DiscordReactionResponse,
-		removeResponse: DiscordReactionResponse
-	): void {
-		this.api.onReaction({ msg: msg.id, emoji, response });
-		this.api.onReactionRemove({ msg: msg.id, emoji, response: removeResponse });
-	}
-
 	public async removeUserReaction(
 		channelId: string,
 		messageId: string,
@@ -99,10 +64,6 @@ export class DiscordInterface {
 		userId: string
 	): Promise<boolean> {
 		return await this.api.removeUserReaction(channelId, messageId, emoji, userId);
-	}
-
-	public async getMessage(channelId: string, messageId: string): Promise<DiscordMessageIn | null> {
-		return await this.api.getMessage(channelId, messageId);
 	}
 
 	public async sendMessage(
