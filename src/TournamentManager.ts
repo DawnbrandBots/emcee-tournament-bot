@@ -1,4 +1,3 @@
-import { TournamentStatus } from "./database/interface";
 import { DatabaseWrapperPostgres } from "./database/postgres";
 import { DiscordInterface, DiscordMessageLimited } from "./discord/interface";
 import { ParticipantRoleProvider } from "./role/participant";
@@ -7,14 +6,11 @@ import { TimeWizard } from "./timer";
 import { ChallongeAPIError, TournamentNotFoundError } from "./util/errors";
 import { getLogger } from "./util/logger";
 import { Public } from "./util/types";
-import { WebsiteInterface, WebsiteTournament } from "./website/interface";
+import { WebsiteInterface } from "./website/interface";
 
 const logger = getLogger("tournament");
 
-export type TournamentInterface = Pick<
-	TournamentManager,
-	"cleanRegistration" | "createTournament" | "finishTournament"
->;
+export type TournamentInterface = Pick<TournamentManager, "cleanRegistration" | "createTournament">;
 
 export class TournamentManager implements TournamentInterface {
 	constructor(
@@ -76,30 +72,5 @@ export class TournamentManager implements TournamentInterface {
 
 	public async cleanRegistration(msg: DiscordMessageLimited): Promise<void> {
 		await this.database.cleanRegistration(msg.channelId, msg.id);
-	}
-
-	public async finishTournament(tournamentId: string, early = false): Promise<void> {
-		const tournament = await this.database.getTournament(tournamentId, TournamentStatus.IPR);
-		const channels = tournament.publicChannels;
-		let webTourn: WebsiteTournament;
-		if (!early) {
-			webTourn = await this.website.finishTournament(tournamentId);
-		} else {
-			// TODO: edit description to say finished?
-			webTourn = await this.website.getTournament(tournamentId);
-		}
-		await this.timeWizard.cancel(tournament.id);
-
-		await this.database.finishTournament(tournamentId);
-		const role = await this.participantRole.get(tournament);
-		await Promise.all(
-			channels.map(async c => {
-				await this.discord.sendMessage(
-					c,
-					`${tournament.name} has concluded! Thank you all for playing! <@&${role}>\nResults: ${webTourn.url}`
-				);
-			})
-		);
-		await this.participantRole.delete(tournament);
 	}
 }

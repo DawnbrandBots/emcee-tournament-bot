@@ -10,6 +10,7 @@ import { ParticipantRoleProvider } from "./role/participant";
 import { Templater } from "./templates";
 import { TimeWizard } from "./timer";
 import { TournamentManager } from "./TournamentManager";
+import { send } from "./util/discord";
 import { getLogger } from "./util/logger";
 import { WebsiteWrapperChallonge } from "./website/challonge";
 import { WebsiteInterface } from "./website/interface";
@@ -45,14 +46,7 @@ const logger = getLogger("index");
 	const organiserRole = new OrganiserRoleProvider(config.defaultTORole, 0x3498db);
 	const participantRole = new ParticipantRoleProvider(bot, 0xe67e22);
 	const timeWizard = new TimeWizard({
-		sendMessage: async (channelId, message) => {
-			const channel = await bot.channels.fetch(channelId);
-			if (channel?.isText()) {
-				const sent = await channel.send(message);
-				return sent.id;
-			}
-			throw new Error(`${channelId} is not a text channel`);
-		},
+		sendMessage: async (...args) => (await send(bot, ...args)).id,
 		editMessage: async (channelId, messageId, newMessage) => {
 			const channel = await bot.channels.fetch(channelId);
 			if (channel?.isText()) {

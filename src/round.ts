@@ -1,7 +1,8 @@
-import { Util } from "discord.js";
+import { Client, Util } from "discord.js";
 import { CommandSupport } from "./Command";
 import { DatabaseTournament, TournamentFormat } from "./database/interface";
 import { DiscordInterface } from "./discord/interface";
+import { send } from "./util/discord";
 import { UserError } from "./util/errors";
 import { getLogger } from "./util/logger";
 import { WebsiteInterface } from "./website/interface";
@@ -38,6 +39,7 @@ export function parseTime(time: string): number {
 
 export async function advanceRoundDiscord(
 	{ timeWizard, participantRole, challonge, discord }: CommandSupport,
+	bot: Client,
 	tournament: DatabaseTournament,
 	minutes: number,
 	skip = false
@@ -50,7 +52,8 @@ export async function advanceRoundDiscord(
 	logger.info(JSON.stringify({ tournament: tournament.id, round }));
 	const role = await participantRole.get(tournament);
 	for (const channel of tournament.publicChannels) {
-		await discord.sendMessage(
+		await send(
+			bot,
 			channel,
 			skip
 				? `${intro} <@&${role}>\nPairings can be found here: https://challonge.com/${tournament.id}`

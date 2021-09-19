@@ -2,33 +2,16 @@ import { GuildMember, PartialGuildMember } from "discord.js";
 import { getConnection } from "typeorm";
 import { CommandSupport } from "../Command";
 import { Participant } from "../database/orm";
-import { DiscordInterface } from "../discord/interface";
 import { dropPlayerChallonge } from "../drop";
+import { send } from "../util/discord";
 import { getLogger } from "../util/logger";
-import { Tail } from "../util/types";
 
 const logger = getLogger("guildMemberRemove");
-
-/**
- * Helper function to send the same message to the list of channels and
- * send any exceptions to the logger.
- * @nothrow
- */
-async function messageChannels(
-	discord: DiscordInterface,
-	channels: string[],
-	...args: Tail<Parameters<DiscordInterface["sendMessage"]>>
-): Promise<void> {
-	for (const channel of channels) {
-		await discord.sendMessage(channel, ...args).catch(logger.error);
-	}
-}
 
 export function makeHandler({ database, discord, challonge }: CommandSupport) {
 	return async function guildMemberRemove(member: GuildMember | PartialGuildMember): Promise<void> {
 		const server = member.guild;
-		const user = member.user!; // TODO handle null case
-		if (user.bot) {
+		if (member.user?.bot) {
 			return;
 		}
 		await getConnection()
@@ -56,20 +39,22 @@ export function makeHandler({ database, discord, challonge }: CommandSupport) {
 				log({
 					server: server.id,
 					name: server.name,
-					username: user.tag,
+					username: member.user?.tag,
 					tournaments: dropped.map(({ tournamentId, confirmed }) => ({
 						tournamentId,
 						challongeId: confirmed?.challongeId
 					}))
 				});
-				const who = `<@${member.id}> (${user.tag})`;
+				const who = `<@${member.id}> (${member.user?.tag})`;
 				for (const participant of dropped) {
 					// For each tournament, inform the private channel that the user left and was dropped.
-					await messageChannels(
-						discord,
-						participant.tournament.privateChannels,
-						`${who} dropped from **${participant.tournamentId}** by leaving the server.`
-					);
+					for (const channel of participant.tournament.privateChannels) {
+						await send(
+							member.client,
+							channel,
+							`${who} dropped from **${participant.tournamentId}** by leaving the server.`
+						).catch(logger.error);
+					}
 					if (participant.confirmed) {
 						if (
 							await dropPlayerChallonge(

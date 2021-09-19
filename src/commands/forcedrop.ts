@@ -2,7 +2,7 @@ import { CommandDefinition } from "../Command";
 import { TournamentStatus } from "../database/interface";
 import { Participant } from "../database/orm";
 import { dropPlayerChallonge } from "../drop";
-import { parseUserMention, removeReaction } from "../util/discord";
+import { parseUserMention, removeReaction, send } from "../util/discord";
 import { getLogger } from "../util/logger";
 
 const logger = getLogger("command:forcedrop");
@@ -84,9 +84,9 @@ const command: CommandDefinition = {
 			.sendDirectMessage(player, `You have been dropped from **${tournament.name}** by the hosts.`)
 			.catch(logger.info);
 		for (const channel of tournament.privateChannels) {
-			await support.discord
-				.sendMessage(channel, `${name} has been forcefully dropped from **${tournament.name}**.`)
-				.catch(logger.error);
+			await send(msg.client, channel, `${name} has been forcefully dropped from **${tournament.name}**.`).catch(
+				logger.error
+			);
 		}
 		await msg.reply(
 			confirmed

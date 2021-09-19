@@ -1,4 +1,5 @@
 import { CommandDefinition } from "../Command";
+import { send } from "../util/discord";
 import { UserError } from "../util/errors";
 import { getLogger } from "../util/logger";
 
@@ -27,7 +28,8 @@ const command: CommandDefinition = {
 			);
 		}
 		for (const channel of channels) {
-			const register = await support.discord.sendMessage(
+			const register = await send(
+				msg.client,
 				channel,
 				`__Registration now open for **${tournament.name}**!__\n${tournament.description}\n__Click the ✅ below to sign up!__`
 			);
@@ -35,7 +37,7 @@ const command: CommandDefinition = {
 			await register.react("✅");
 		}
 		for (const channel of tournament.privateChannels) {
-			await support.discord.sendMessage(channel, support.templater.format("open", id));
+			await send(msg.client, channel, support.templater.format("open", id));
 		}
 		logger.verbose(
 			JSON.stringify({

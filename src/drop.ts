@@ -3,11 +3,10 @@ import { DatabaseWrapperPostgres } from "./database/postgres";
 import { DiscordInterface } from "./discord/interface";
 import { BlockedDMsError } from "./util/errors";
 import { getLogger } from "./util/logger";
+import { Tail } from "./util/types";
 import { WebsiteInterface } from "./website/interface";
 
 const logger = getLogger("drop");
-
-type Tail<T extends unknown[]> = T extends [unknown, ...infer R] ? R : never;
 
 /**
  * Helper function to send the same message to the list of channels and

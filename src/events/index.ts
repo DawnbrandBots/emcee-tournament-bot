@@ -4,6 +4,7 @@ import * as commands from "../commands";
 import { Participant, RegisterMessage } from "../database/orm";
 import { dropPlayerChallonge } from "../drop";
 import { serializeServer } from "../util";
+import { send } from "../util/discord";
 import { getLogger } from "../util/logger";
 import * as guildCreate from "./guildCreate";
 import * as guildMemberRemove from "./guildMemberRemove";
@@ -60,12 +61,11 @@ export function registerEvents(bot: Client, prefix: string, support: CommandSupp
 					} catch (e) {
 						if (e instanceof DiscordAPIError && e.code === Constants.APIErrors.CANNOT_MESSAGE_USER) {
 							for (const channel of tournament.privateChannels) {
-								await support.discord
-									.sendMessage(
-										channel,
-										`${user} (${user.username}) is trying to sign up for **${tournament.name}** (${tournament.id}), but I cannot send them DMs. Please ask them to allow DMs from this server.)`
-									)
-									.catch(logger.error);
+								await send(
+									bot,
+									channel,
+									`${user} (${user.username}) is trying to sign up for **${tournament.name}** (${tournament.id}), but I cannot send them DMs. Please ask them to allow DMs from this server.)`
+								).catch(logger.error);
 							}
 						} else {
 							logger.error(e);
@@ -134,22 +134,20 @@ export function registerEvents(bot: Client, prefix: string, support: CommandSupp
 					} catch (error) {
 						logger.info(error);
 						for (const channel of participant.tournament.privateChannels) {
-							await support.discord
-								.sendMessage(
-									channel,
-									`Failed to remove **${participant.tournament.name}** participant role from ${user}.`
-								)
-								.catch(logger.error);
+							await send(
+								bot,
+								channel,
+								`Failed to remove **${participant.tournament.name}** participant role from ${user}.`
+							).catch(logger.error);
 						}
 					}
 				} else {
 					for (const channel of participant.tournament.privateChannels) {
-						await support.discord
-							.sendMessage(
-								channel,
-								`Something went wrong on Challonge with dropping ${user} from **${participant.tournament.name}** upon request. Please try again later.`
-							)
-							.catch(logger.error);
+						await send(
+							bot,
+							channel,
+							`Something went wrong on Challonge with dropping ${user} from **${participant.tournament.name}** upon request. Please try again later.`
+						).catch(logger.error);
 					}
 					await user
 						.send(
@@ -165,12 +163,11 @@ export function registerEvents(bot: Client, prefix: string, support: CommandSupp
 			} catch (error) {
 				logger.error(error);
 				for (const channel of participant.tournament.privateChannels) {
-					await support.discord
-						.sendMessage(
-							channel,
-							`Failed to drop ${user} from **${participant.tournament.name}** upon request. Please try again later.`
-						)
-						.catch(logger.error);
+					await send(
+						bot,
+						channel,
+						`Failed to drop ${user} from **${participant.tournament.name}** upon request. Please try again later.`
+					).catch(logger.error);
 				}
 				await user
 					.send(
@@ -182,9 +179,7 @@ export function registerEvents(bot: Client, prefix: string, support: CommandSupp
 			log({ event: "success" });
 			if (confirmed) {
 				for (const channel of participant.tournament.privateChannels) {
-					await support.discord
-						.sendMessage(channel, `**${participant.tournament.name}** drop: ${user}`)
-						.catch(logger.error);
+					await send(bot, channel, `**${participant.tournament.name}** drop: ${user}`).catch(logger.error);
 				}
 			}
 			await user.send(`You have dropped from **${participant.tournament.name}**.`).catch(logger.info);

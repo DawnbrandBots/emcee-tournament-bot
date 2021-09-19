@@ -2,7 +2,7 @@ import { CommandDefinition } from "../Command";
 import { TournamentStatus } from "../database/interface";
 import { Participant } from "../database/orm";
 import { dropPlayerChallonge } from "../drop";
-import { removeReaction } from "../util/discord";
+import { removeReaction, send } from "../util/discord";
 import { getLogger } from "../util/logger";
 
 const logger = getLogger("command:drop");
@@ -66,12 +66,11 @@ const command: CommandDefinition = {
 				} catch (error) {
 					logger.warn(error);
 					for (const channel of participant.tournament.privateChannels) {
-						await support.discord
-							.sendMessage(
-								channel,
-								`Failed to remove **${participant.tournament.name}** participant role from ${who}.`
-							)
-							.catch(logger.error);
+						await send(
+							msg.client,
+							channel,
+							`Failed to remove **${participant.tournament.name}** participant role from ${who}.`
+						).catch(logger.error);
 					}
 				}
 			} else {
@@ -85,12 +84,11 @@ const command: CommandDefinition = {
 		} catch (error) {
 			logger.error(error);
 			for (const channel of participant.tournament.privateChannels) {
-				await support.discord
-					.sendMessage(
-						channel,
-						`Failed to drop ${who} from **${participant.tournament.name}** upon request. Please try again later.`
-					)
-					.catch(logger.error);
+				await send(
+					msg.client,
+					channel,
+					`Failed to drop ${who} from **${participant.tournament.name}** upon request. Please try again later.`
+				).catch(logger.error);
 			}
 			await msg.reply("Something went wrong. Please try again later or ask your hosts how to proceed.");
 			return;
@@ -98,9 +96,7 @@ const command: CommandDefinition = {
 		log({ event: "success" });
 		if (confirmed) {
 			for (const channel of participant.tournament.privateChannels) {
-				await support.discord
-					.sendMessage(channel, `**${participant.tournament.name}** drop: ${who}`)
-					.catch(logger.error);
+				await send(msg.client, channel, `**${participant.tournament.name}** drop: ${who}`).catch(logger.error);
 			}
 		}
 		await msg.reply(`You have dropped from **${participant.tournament.name}**.`);

@@ -1,5 +1,6 @@
 import { CommandDefinition } from "../Command";
 import { TournamentStatus } from "../database/interface";
+import { send } from "../util/discord";
 import { UserError } from "../util/errors";
 import { getLogger } from "../util/logger";
 
@@ -76,9 +77,11 @@ const command: CommandDefinition = {
 					log("DM fail", { opponent });
 					logger.info(err);
 					for (const channel of player.tournament.privateChannels) {
-						await support.discord
-							.sendMessage(channel, `Failed to send confirmation of score submission to <@${opponent}>.`)
-							.catch(logger.error);
+						await send(
+							msg.client,
+							channel,
+							`Failed to send confirmation of score submission to <@${opponent}>.`
+						).catch(logger.error);
 					}
 				}
 				// Inform the hosts
@@ -87,7 +90,8 @@ const command: CommandDefinition = {
 					const opponentUsername = await support.discord.getRESTUsername(opponent, true);
 					log("notify", { callerUsername, opponentUsername });
 					for (const channel of player.tournament.privateChannels) {
-						await support.discord.sendMessage(
+						await send(
+							msg.client,
 							channel,
 							`<@${msg.author.id}> (${callerUsername}) and <@${opponent}> (${opponentUsername}) have reported their score of ${scores[0]}-${scores[1]} for **${player.tournament.name}** (${id}).`
 						);
@@ -111,9 +115,11 @@ const command: CommandDefinition = {
 					log("DM fail", { opponent });
 					logger.info(err);
 					for (const channel of player.tournament.privateChannels) {
-						await support.discord
-							.sendMessage(channel, `Failed to send report of score disagreement to <@${opponent}>.`)
-							.catch(logger.error);
+						await send(
+							msg.client,
+							channel,
+							`Failed to send report of score disagreement to <@${opponent}>.`
+						).catch(logger.error);
 					}
 				}
 				await msg.reply(

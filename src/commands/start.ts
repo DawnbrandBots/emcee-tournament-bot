@@ -1,5 +1,6 @@
 import { CommandDefinition } from "../Command";
 import { TournamentStatus } from "../database/interface";
+import { send } from "../util/discord";
 import { UserError } from "../util/errors";
 import { getLogger } from "../util/logger";
 
@@ -80,12 +81,12 @@ const command: CommandDefinition = {
 		}
 		// send command guide to players
 		for (const channel of tournament.publicChannels) {
-			await support.discord.sendMessage(channel, support.templater.format("player", id)).catch(logger.error);
+			await send(msg.client, channel, support.templater.format("player", id)).catch(logger.error);
 		}
 		logger.verbose(log("public"));
 		// send command guide to hosts
 		for (const channel of tournament.privateChannels) {
-			await support.discord.sendMessage(channel, support.templater.format("start", id)).catch(logger.error);
+			await send(msg.client, channel, support.templater.format("start", id)).catch(logger.error);
 		}
 		logger.verbose(log("private"));
 		// drop dummy players once the tournament has started to give players with byes the win
