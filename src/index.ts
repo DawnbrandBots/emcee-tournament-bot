@@ -38,7 +38,7 @@ const logger = getLogger("index");
 			Intents.FLAGS.DIRECT_MESSAGES,
 			Intents.FLAGS.DIRECT_MESSAGE_REACTIONS
 		],
-		partials: ["CHANNEL", "REACTION"]
+		partials: ["CHANNEL", "MESSAGE", "REACTION"]
 	});
 	const djs = new DiscordWrapperDJS(bot);
 	const discord = new DiscordInterface(djs);
