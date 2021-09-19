@@ -31,7 +31,7 @@ const command: CommandDefinition = {
 				channel,
 				`__Registration now open for **${tournament.name}**!__\n${tournament.description}\n__Click the ✅ below to sign up!__`
 			);
-			await support.database.openRegistration(id, msg.channelId, msg.id);
+			await support.database.openRegistration(id, register.channelId, register.id);
 			await register.react("✅");
 		}
 		for (const channel of tournament.privateChannels) {

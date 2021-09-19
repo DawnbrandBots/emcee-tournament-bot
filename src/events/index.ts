@@ -27,7 +27,7 @@ export function registerEvents(bot: Client, prefix: string, support: CommandSupp
 	bot.on("guildMemberRemove", guildMemberRemove.makeHandler(support));
 	bot.on("messageDelete", message => support.database.cleanRegistration(message.channelId, message.id));
 	bot.on("messageReactionAdd", async (reaction, user) => {
-		if (!reaction.me && reaction.emoji.name === "✅") {
+		if (reaction.me && user.id !== bot.user?.id && reaction.emoji.name === "✅") {
 			// TODO: all error logging lacks context
 			// TODO: async lock
 			if (
@@ -75,7 +75,7 @@ export function registerEvents(bot: Client, prefix: string, support: CommandSupp
 		}
 	});
 	bot.on("messageReactionRemove", async (reaction, user) => {
-		if (!reaction.me && reaction.emoji.name === "✅") {
+		if (reaction.me && user.id !== bot.user?.id && reaction.emoji.name === "✅") {
 			// TODO: async lock
 			const participant = await Participant.createQueryBuilder()
 				.where({ discordId: user.id })
