@@ -35,9 +35,8 @@ const command: CommandDefinition = {
 				event: "success"
 			})
 		);
-		const tag = (id: string): string => `<@${id}> (${support.discord.getUsername(id, true)})`;
-		const names = byes.map(tag).join(", ");
-		await msg.reply(`Bye removed for Player ${tag(player.id)} in **${tournament.name}**!\nAll byes: ${names}`);
+		const names = byes.map(snowflake => `<@${snowflake}>`).join(", ");
+		await msg.reply(`Bye removed for ${player} (${player.tag}) in **${tournament.name}**!\nAll byes: ${names}`);
 	}
 };
 

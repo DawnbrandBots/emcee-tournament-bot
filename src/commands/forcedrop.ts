@@ -1,8 +1,9 @@
+import { Util } from "discord.js";
 import { CommandDefinition } from "../Command";
 import { TournamentStatus } from "../database/interface";
 import { Participant } from "../database/orm";
 import { dropPlayerChallonge } from "../drop";
-import { parseUserMention, removeReaction, send } from "../util/discord";
+import { parseUserMention, removeReaction, send, username } from "../util/discord";
 import { getLogger } from "../util/logger";
 
 const logger = getLogger("command:forcedrop");
@@ -28,9 +29,9 @@ const command: CommandDefinition = {
 		}
 		log({ player, event: "attempt" });
 		const participant = await Participant.findOne({ tournamentId: id, discordId: player });
-		const username = await support.discord.getRESTUsername(player, true);
-		log({ player, exists: !!participant, challongeId: participant?.confirmed?.challongeId, username });
-		const name = username ? `<@${player}> (${username})` : who;
+		const tag = await username(msg.client, player);
+		log({ player, exists: !!participant, challongeId: participant?.confirmed?.challongeId, tag });
+		const name = tag ? `<@${player}> (${Util.escapeMarkdown(tag)})` : who;
 		if (!participant) {
 			await msg.reply(`${name} not found in **${tournament.name}**.`);
 			return;

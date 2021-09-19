@@ -42,14 +42,6 @@ export class DiscordWrapperMock implements DiscordWrapper {
 		};
 	}
 
-	public getUsername(userId: string): string {
-		return userId;
-	}
-
-	public async getRESTUsername(): Promise<string> {
-		throw new Error("Not implemented");
-	}
-
 	public async sendDirectMessage(userId: string, content: DiscordMessageOut): Promise<void> {
 		if (userId.includes("block")) {
 			throw new BlockedDMsError(userId);

@@ -1,5 +1,3 @@
-import { Util } from "discord.js";
-
 export interface DiscordAttachmentIn {
 	filename: string;
 	url: string;
@@ -45,8 +43,6 @@ export type DiscordDeleteHandler = (msg: DiscordMessageLimited) => Promise<void>
 
 export interface DiscordWrapper {
 	sendMessage(channelId: string, msg: DiscordMessageOut, file?: DiscordAttachmentOut): Promise<DiscordMessageSent>;
-	getUsername(userId: string): string;
-	getRESTUsername(userId: string): Promise<string | null>;
 	sendDirectMessage(userId: string, content: DiscordMessageOut): Promise<void>;
 }
 
@@ -62,17 +58,6 @@ export class DiscordInterface {
 		file?: DiscordAttachmentOut
 	): Promise<DiscordMessageSent> {
 		return await this.api.sendMessage(channelId, msg, file);
-	}
-
-	// escape markdown characters if destination is discord, but not if being printed into a file, filename, challonge, etc
-	public getUsername(userId: string, escape = false): string {
-		const name = this.api.getUsername(userId);
-		return escape ? Util.escapeMarkdown(name) : name;
-	}
-
-	public async getRESTUsername(userId: string, escape = false): Promise<string | null> {
-		const name = await this.api.getRESTUsername(userId);
-		return name && escape ? Util.escapeMarkdown(name) : name;
 	}
 
 	public async sendDirectMessage(userId: string, content: DiscordMessageOut): Promise<void> {

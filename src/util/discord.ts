@@ -1,5 +1,5 @@
-import { Client, Message, TextChannel, User } from "discord.js";
-import { UserError } from "./errors";
+import { Client, Constants, DiscordAPIError, Message, TextChannel, User } from "discord.js";
+import { BlockedDMsError, UserError } from "./errors";
 
 export async function send(
 	bot: Client,
@@ -11,6 +11,30 @@ export async function send(
 		return await channel.send(...args);
 	}
 	throw new Error(`${channelId} is not a text channel`);
+}
+
+export async function dm(bot: Client, userId: string, ...args: Parameters<TextChannel["send"]>): Promise<void> {
+	const user = await bot.users.fetch(userId);
+	try {
+		await user.send(...args);
+	} catch (e) {
+		if (e instanceof DiscordAPIError && e.code === Constants.APIErrors.CANNOT_MESSAGE_USER) {
+			throw new BlockedDMsError(userId);
+		}
+		// logger.error(e);
+	}
+}
+
+/**
+ * Retrieves user information by the REST API if not cached.
+ */
+export async function username(bot: Client, userId: string): Promise<string | null> {
+	try {
+		const user = await bot.users.fetch(userId);
+		return user.tag;
+	} catch {
+		return null;
+	}
 }
 
 export async function removeReaction(

@@ -2,7 +2,7 @@ import { Client, Util } from "discord.js";
 import { CommandSupport } from "./Command";
 import { DatabaseTournament, TournamentFormat } from "./database/interface";
 import { DiscordInterface } from "./discord/interface";
-import { send } from "./util/discord";
+import { send, username } from "./util/discord";
 import { UserError } from "./util/errors";
 import { getLogger } from "./util/logger";
 import { WebsiteInterface } from "./website/interface";
@@ -67,8 +67,10 @@ export async function advanceRoundDiscord(
 			const player1 = players.get(match.player1);
 			const player2 = players.get(match.player2);
 			if (player1 && player2) {
-				let name1 = await getRealUsername(discord, player1);
-				let name2 = await getRealUsername(discord, player2);
+				// Naive check for an obviously invalid snowflake, such as the BYE# or DUMMY# we insert
+				// This saves the overhead of an HTTP request
+				let name1 = notSnowflake(player1) ? null : await username(bot, player1);
+				let name2 = notSnowflake(player2) ? null : await username(bot, player2);
 				logger.verbose({ tournament: tournament.id, match: match.matchId, player1, player2, name1, name2 });
 				// escape names for Discord printing now that we've logged them
 				name1 = name1 && Util.escapeMarkdown(name1);
@@ -139,15 +141,6 @@ async function getPlayers(challonge: WebsiteInterface, tournamentId: string): Pr
 
 function notSnowflake(userId: string): boolean {
 	return !userId.length || userId[0] < "0" || userId[0] > "9";
-}
-
-async function getRealUsername(discord: DiscordInterface, userId: string): Promise<string | null> {
-	// Naive check for an obviously invalid snowflake, such as the BYE# or DUMMY# we insert
-	// This saves the overhead of an HTTP request
-	if (notSnowflake(userId)) {
-		return null;
-	}
-	return await discord.getRESTUsername(userId); //we need it both escaped and unescaped, so we'll escape manually later
 }
 
 async function sendPairing(

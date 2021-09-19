@@ -1,6 +1,7 @@
+import { Util } from "discord.js";
 import { CommandDefinition } from "../Command";
 import { TournamentStatus } from "../database/interface";
-import { send } from "../util/discord";
+import { send, username } from "../util/discord";
 import { UserError } from "../util/errors";
 import { getLogger } from "../util/logger";
 
@@ -86,8 +87,8 @@ const command: CommandDefinition = {
 				}
 				// Inform the hosts
 				try {
-					const callerUsername = await support.discord.getRESTUsername(msg.author.id, true);
-					const opponentUsername = await support.discord.getRESTUsername(opponent, true);
+					const callerUsername = Util.escapeMarkdown(msg.author.tag);
+					const opponentUsername = Util.escapeMarkdown((await username(msg.client, opponent)) || "null");
 					log("notify", { callerUsername, opponentUsername });
 					for (const channel of player.tournament.privateChannels) {
 						await send(

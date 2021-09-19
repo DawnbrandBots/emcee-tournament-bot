@@ -1,6 +1,6 @@
 import { CommandDefinition } from "../Command";
 import { TournamentStatus } from "../database/interface";
-import { send } from "../util/discord";
+import { send, username } from "../util/discord";
 import { getLogger } from "../util/logger";
 
 const logger = getLogger("command:topcut");
@@ -55,7 +55,7 @@ const command: CommandDefinition = {
 		for (const player of top) {
 			const challongeId = await support.challonge.registerPlayer(
 				newId,
-				support.discord.getUsername(player.discordId),
+				(await username(msg.client, player.discordId)) || player.discordId,
 				player.discordId
 			);
 			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion

@@ -51,23 +51,6 @@ export class DiscordWrapperDJS implements DiscordWrapper {
 		return embed;
 	}
 
-	public getUsername(userId: string): string {
-		const user = this.bot.users.cache.get(userId);
-		return user ? `${user.username}#${user.discriminator}` : userId;
-	}
-
-	/**
-	 * Retrieves user information by the REST API if not cached.
-	 */
-	public async getRESTUsername(userId: string): Promise<string | null> {
-		try {
-			const user = await this.bot.users.fetch(userId);
-			return `${user.username}#${user.discriminator}`;
-		} catch {
-			return null;
-		}
-	}
-
 	public async sendDirectMessage(userId: string, content: DiscordMessageOut): Promise<void> {
 		const user = await this.bot.users.fetch(userId);
 		try {
