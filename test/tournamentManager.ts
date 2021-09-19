@@ -64,14 +64,3 @@ describe("Tournament creation commands", async function () {
 		expect(id).to.equal("create10");
 	});
 });
-
-describe("Misc functions", function () {
-	it("Clean registration", async function () {
-		await expect(
-			tournament.cleanRegistration({
-				id: "testMsg",
-				channelId: "testChannel"
-			})
-		).to.not.be.rejected;
-	});
-});

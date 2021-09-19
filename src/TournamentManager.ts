@@ -1,5 +1,5 @@
 import { DatabaseWrapperPostgres } from "./database/postgres";
-import { DiscordInterface, DiscordMessageLimited } from "./discord/interface";
+import { DiscordInterface } from "./discord/interface";
 import { ParticipantRoleProvider } from "./role/participant";
 import { Templater } from "./templates";
 import { TimeWizard } from "./timer";
@@ -10,7 +10,7 @@ import { WebsiteInterface } from "./website/interface";
 
 const logger = getLogger("tournament");
 
-export type TournamentInterface = Pick<TournamentManager, "cleanRegistration" | "createTournament">;
+export type TournamentInterface = Pick<TournamentManager, "createTournament">;
 
 export class TournamentManager implements TournamentInterface {
 	constructor(
@@ -68,9 +68,5 @@ export class TournamentManager implements TournamentInterface {
 		const web = await this.website.createTournament(name, desc, candidateUrl, topCut);
 		await this.database.createTournament(hostId, serverId, web.id, name, desc, topCut);
 		return [web.id, web.url, this.templater.format("create", web.id)];
-	}
-
-	public async cleanRegistration(msg: DiscordMessageLimited): Promise<void> {
-		await this.database.cleanRegistration(msg.channelId, msg.id);
 	}
 }
