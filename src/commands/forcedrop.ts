@@ -2,7 +2,7 @@ import { CommandDefinition } from "../Command";
 import { TournamentStatus } from "../database/interface";
 import { Participant } from "../database/orm";
 import { dropPlayerChallonge } from "../drop";
-import { parseUserMention } from "../util/discord";
+import { parseUserMention, removeReaction } from "../util/discord";
 import { getLogger } from "../util/logger";
 
 const logger = getLogger("command:forcedrop");
@@ -94,9 +94,11 @@ const command: CommandDefinition = {
 				: `${name} was pending and dropped from **${tournament.name}**.`
 		);
 		log({ player, event: "success" });
-		const messages = await support.database.getRegisterMessages(id);
-		for (const m of messages) {
-			await support.discord.removeUserReaction(m.channelId, m.messageId, "✅", player);
+		if (participant.tournament.status === TournamentStatus.PREPARING) {
+			const messages = await support.database.getRegisterMessages(id);
+			for (const m of messages) {
+				await removeReaction(msg.client, m.channelId, m.messageId, "✅", player).catch(logger.info);
+			}
 		}
 	}
 };

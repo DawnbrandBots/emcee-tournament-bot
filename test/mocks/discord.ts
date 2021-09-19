@@ -42,10 +42,6 @@ export class DiscordWrapperMock implements DiscordWrapper {
 		};
 	}
 
-	public async removeUserReaction(): Promise<boolean> {
-		return true;
-	}
-
 	public getUsername(userId: string): string {
 		return userId;
 	}

@@ -44,7 +44,6 @@ export interface DiscordAttachmentOut {
 export type DiscordDeleteHandler = (msg: DiscordMessageLimited) => Promise<void> | void;
 
 export interface DiscordWrapper {
-	removeUserReaction: (channelId: string, messageId: string, emoji: string, userId: string) => Promise<boolean>;
 	sendMessage(channelId: string, msg: DiscordMessageOut, file?: DiscordAttachmentOut): Promise<DiscordMessageSent>;
 	getUsername(userId: string): string;
 	getRESTUsername(userId: string): Promise<string | null>;
@@ -55,15 +54,6 @@ export class DiscordInterface {
 	private api: DiscordWrapper;
 	constructor(api: DiscordWrapper) {
 		this.api = api;
-	}
-
-	public async removeUserReaction(
-		channelId: string,
-		messageId: string,
-		emoji: string,
-		userId: string
-	): Promise<boolean> {
-		return await this.api.removeUserReaction(channelId, messageId, emoji, userId);
 	}
 
 	public async sendMessage(

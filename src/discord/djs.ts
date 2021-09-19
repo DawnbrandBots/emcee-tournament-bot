@@ -1,13 +1,4 @@
-import {
-	Client,
-	Constants,
-	DiscordAPIError,
-	GuildChannel,
-	Message,
-	MessageAttachment,
-	MessageEmbed,
-	TextChannel
-} from "discord.js";
+import { Client, Constants, DiscordAPIError, GuildChannel, Message, MessageAttachment, MessageEmbed } from "discord.js";
 import { AssertTextChannelError, BlockedDMsError } from "../util/errors";
 import { getLogger } from "../util/logger";
 import {
@@ -58,25 +49,6 @@ export class DiscordWrapperDJS implements DiscordWrapper {
 		embed.setTitle(out.title);
 		embed.setFields(out.fields);
 		return embed;
-	}
-
-	public async removeUserReaction(
-		channelId: string,
-		messageId: string,
-		emoji: string,
-		userId: string
-	): Promise<boolean> {
-		// TODO: Check channel exists and is of text type
-		const channel = (await this.bot.channels.fetch(channelId)) as TextChannel;
-		const msg = await channel.messages.fetch(messageId);
-		try {
-			// TODO: handle null reaction
-			await msg.reactions.cache.get(emoji)?.users.remove(userId);
-			return true;
-		} catch (e) {
-			// TODO: check for specific error for message not having the specified reaction/user
-			return false;
-		}
 	}
 
 	public getUsername(userId: string): string {

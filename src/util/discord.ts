@@ -13,6 +13,22 @@ export async function send(
 	throw new Error(`${channelId} is not a text channel`);
 }
 
+export async function removeReaction(
+	bot: Client,
+	channelId: string,
+	messageId: string,
+	emoji: string,
+	userId: string
+): Promise<void> {
+	const channel = await bot.channels.fetch(channelId);
+	if (channel?.isText()) {
+		const msg = await channel.messages.fetch(messageId);
+		await msg.reactions.cache.get(emoji)?.users.remove(userId);
+	} else {
+		throw new Error(`${channelId} is not a text channel`);
+	}
+}
+
 // returns full user object with d.js due to additional complexity of msg.mentions
 export function firstMentionOrFail(msg: Message): User {
 	const user = msg.mentions.users.first();
