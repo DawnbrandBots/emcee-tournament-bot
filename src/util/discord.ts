@@ -1,5 +1,5 @@
-import { Client, Constants, DiscordAPIError, Message, TextChannel, User } from "discord.js";
-import { BlockedDMsError, UserError } from "./errors";
+import { Client, Message, TextChannel, User } from "discord.js";
+import { UserError } from "./errors";
 
 export async function send(
 	bot: Client,
@@ -15,14 +15,7 @@ export async function send(
 
 export async function dm(bot: Client, userId: string, ...args: Parameters<TextChannel["send"]>): Promise<void> {
 	const user = await bot.users.fetch(userId);
-	try {
-		await user.send(...args);
-	} catch (e) {
-		if (e instanceof DiscordAPIError && e.code === Constants.APIErrors.CANNOT_MESSAGE_USER) {
-			throw new BlockedDMsError(userId);
-		}
-		// logger.error(e);
-	}
+	await user.send(...args);
 }
 
 /**

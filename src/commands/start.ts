@@ -1,6 +1,6 @@
 import { CommandDefinition } from "../Command";
 import { TournamentStatus } from "../database/interface";
-import { send } from "../util/discord";
+import { dm, send } from "../util/discord";
 import { UserError } from "../util/errors";
 import { getLogger } from "../util/logger";
 
@@ -55,12 +55,11 @@ const command: CommandDefinition = {
 			}
 			logger.verbose(log("delete register messages"));
 			for (const player of ejected) {
-				await support.discord
-					.sendDirectMessage(
-						player,
-						`Sorry, **${tournament.name}** has started and you didn't submit a deck, so you have been dropped.`
-					)
-					.catch(logger.info);
+				await dm(
+					msg.client,
+					player,
+					`Sorry, **${tournament.name}** has started and you didn't submit a deck, so you have been dropped.`
+				).catch(logger.info);
 			}
 			logger.verbose(log("notify ejected"));
 			await support.challonge.shufflePlayers(id); // must happen before byes assigned!

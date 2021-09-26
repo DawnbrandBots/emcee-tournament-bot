@@ -1,7 +1,7 @@
 import { Util } from "discord.js";
 import { CommandDefinition } from "../Command";
 import { TournamentStatus } from "../database/interface";
-import { send, username } from "../util/discord";
+import { send } from "../util/discord";
 import { UserError } from "../util/errors";
 import { getLogger } from "../util/logger";
 
@@ -37,7 +37,7 @@ const command: CommandDefinition = {
 		if (!match) {
 			log("no match");
 			await msg.reply(
-				`Could not find an open match in **${player.tournament.name}** including <@${msg.author.id}>. This could mean your opponent dropped, conceding the match. If the score for your current match is incorrect, please ask a host to change it.`
+				`Could not find an open match in **${player.tournament.name}** including ${msg.author}. This could mean your opponent dropped, conceding the match. If the score for your current match is incorrect, please ask a host to change it.`
 			);
 			return;
 		}
@@ -51,6 +51,7 @@ const command: CommandDefinition = {
 				);
 				return;
 			}
+			const opponent = await msg.client.users.fetch(pendingScore.playerDiscord);
 			if (scores[0] === pendingScore.oppScore && scores[1] === pendingScore.playerScore) {
 				// The scores match, so we submit to Challonge
 				const weWon = scores[0] > scores[1];
@@ -63,38 +64,36 @@ const command: CommandDefinition = {
 					await support.challonge.submitScore(id, match, winner, winnerScore, loserScore);
 				} catch (err) {
 					await msg.reply(
-						`Unexpected error submitting a score to Challonge for <@${msg.author.id}>. Please report this and try again later.`
+						`Unexpected error submitting a score to Challonge for ${msg.author}. Please report this and try again later.`
 					);
 					throw err;
 				}
 				// Notify the opponent, but don't fail the command if we can't
-				const opponent = pendingScore.playerDiscord;
 				try {
-					await support.discord.sendDirectMessage(
-						opponent,
+					await opponent.send(
 						`Your opponent has successfully confirmed your score of ${scores[1]}-${scores[0]} for **${player.tournament.name}**, so the score has been saved. Thank you.`
 					);
 				} catch (err) {
-					log("DM fail", { opponent });
+					log("DM fail", { opponent: opponent.id });
 					logger.info(err);
 					for (const channel of player.tournament.privateChannels) {
 						await send(
 							msg.client,
 							channel,
-							`Failed to send confirmation of score submission to <@${opponent}>.`
+							`Failed to send confirmation of score submission to ${opponent}.`
 						).catch(logger.error);
 					}
 				}
 				// Inform the hosts
 				try {
-					const callerUsername = Util.escapeMarkdown(msg.author.tag);
-					const opponentUsername = Util.escapeMarkdown((await username(msg.client, opponent)) || "null");
-					log("notify", { callerUsername, opponentUsername });
+					log("notify", { callerUsername: msg.author.tag, opponentUsername: opponent.tag });
+					const callerTag = Util.escapeMarkdown(msg.author.tag);
+					const oppTag = Util.escapeMarkdown(opponent.tag);
 					for (const channel of player.tournament.privateChannels) {
 						await send(
 							msg.client,
 							channel,
-							`<@${msg.author.id}> (${callerUsername}) and <@${opponent}> (${opponentUsername}) have reported their score of ${scores[0]}-${scores[1]} for **${player.tournament.name}** (${id}).`
+							`${msg.author} (${callerTag}) and ${opponent} (${oppTag}) have reported their score of ${scores[0]}-${scores[1]} for **${player.tournament.name}** (${id}).`
 						);
 					}
 				} catch (err) {
@@ -102,18 +101,16 @@ const command: CommandDefinition = {
 				}
 				// Notify the caller
 				await msg.reply(
-					`You have successfully reported a score of ${scores[0]}-${scores[1]}, and it matches your opponent's report, so the score has been saved. Thank you, <@${msg.author.id}>.`
+					`You have successfully reported a score of ${scores[0]}-${scores[1]}, and it matches your opponent's report, so the score has been saved. Thank you, ${msg.author}.`
 				);
 			} else {
 				// Notify the opponent, but don't fail the command if we can't
-				const opponent = pendingScore.playerDiscord;
 				try {
-					await support.discord.sendDirectMessage(
-						opponent,
+					await opponent.send(
 						`Your opponent submitted a different score of ${scores[1]}-${scores[0]} for **${player.tournament.name}**. Both of you will need to report again.`
 					);
 				} catch (err) {
-					log("DM fail", { opponent });
+					log("DM fail", { opponent: opponent.id });
 					logger.info(err);
 					for (const channel of player.tournament.privateChannels) {
 						await send(
