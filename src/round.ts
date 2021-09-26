@@ -1,8 +1,7 @@
-import { Client, Util } from "discord.js";
+import { Client, User, Util } from "discord.js";
 import { CommandSupport } from "./Command";
 import { DatabaseTournament, TournamentFormat } from "./database/interface";
-import { DiscordInterface } from "./discord/interface";
-import { send, username } from "./util/discord";
+import { dm, send } from "./util/discord";
 import { UserError } from "./util/errors";
 import { getLogger } from "./util/logger";
 import { WebsiteInterface } from "./website/interface";
@@ -38,7 +37,7 @@ export function parseTime(time: string): number {
 }
 
 export async function advanceRoundDiscord(
-	{ timeWizard, participantRole, challonge, discord }: CommandSupport,
+	{ timeWizard, participantRole, challonge }: CommandSupport,
 	bot: Client,
 	tournament: DatabaseTournament,
 	minutes: number,
@@ -64,27 +63,29 @@ export async function advanceRoundDiscord(
 		const players = await getPlayers(challonge, tournament.id);
 		logger.info(JSON.stringify({ tournament: tournament.id, players: players.size, matches: matches.length }));
 		for (const match of matches) {
-			const player1 = players.get(match.player1);
-			const player2 = players.get(match.player2);
-			if (player1 && player2) {
+			const snowflake1 = players.get(match.player1);
+			const snowflake2 = players.get(match.player2);
+			if (snowflake1 && snowflake2) {
 				// Naive check for an obviously invalid snowflake, such as the BYE# or DUMMY# we insert
 				// This saves the overhead of an HTTP request
-				let name1 = notSnowflake(player1) ? null : await username(bot, player1);
-				let name2 = notSnowflake(player2) ? null : await username(bot, player2);
-				logger.verbose({ tournament: tournament.id, match: match.matchId, player1, player2, name1, name2 });
-				// escape names for Discord printing now that we've logged them
-				name1 = name1 && Util.escapeMarkdown(name1);
-				name2 = name2 && Util.escapeMarkdown(name2);
-				if (name1) {
-					await sendPairing(discord, intro, player1, player2, name2, tournament);
-				} else {
-					await reportFailure(discord, tournament, player1, player2);
-				}
-				if (name2) {
-					await sendPairing(discord, intro, player2, player1, name1, tournament);
-				} else {
-					await reportFailure(discord, tournament, player2, player1);
-				}
+				const user1 = await getUser(bot, snowflake1);
+				const user2 = await getUser(bot, snowflake2);
+				logger.verbose(
+					JSON.stringify({
+						tournament: tournament.id,
+						match: match.matchId,
+						player1: snowflake1,
+						player2: snowflake2,
+						name1: user1?.tag,
+						name2: user2?.tag
+					})
+				);
+				await sendPairing(intro, user1, user2).catch(() =>
+					reportFailure(bot, tournament, snowflake1, snowflake2)
+				);
+				await sendPairing(intro, user2, user1).catch(() =>
+					reportFailure(bot, tournament, snowflake2, snowflake1)
+				);
 			} else {
 				// This error occuring is an issue on Challonge's end
 				logger.warn(
@@ -99,10 +100,10 @@ export async function advanceRoundDiscord(
 		if (tournament.format === TournamentFormat.SWISS && players.size) {
 			for (const bye of players.values()) {
 				try {
-					await discord.sendDirectMessage(bye, `${intro} You have a bye for this round.`);
+					await dm(bot, bye, `${intro} You have a bye for this round.`);
 					logger.info(JSON.stringify({ tournament: tournament.id, bye }));
 				} catch {
-					await reportFailure(discord, tournament, bye, "natural bye");
+					await reportFailure(bot, tournament, bye, "natural bye");
 				}
 			}
 			if (players.size > 1) {
@@ -139,43 +140,41 @@ async function getPlayers(challonge: WebsiteInterface, tournamentId: string): Pr
 	return players;
 }
 
-function notSnowflake(userId: string): boolean {
-	return !userId.length || userId[0] < "0" || userId[0] > "9";
+async function getUser(bot: Client, snowflake: string): Promise<User | null> {
+	// Naive check for an obviously invalid snowflake, such as the BYE# or DUMMY# we insert
+	// This saves the overhead of an HTTP request
+	if (!snowflake.length || snowflake[0] < "0" || snowflake[0] > "9") {
+		return null;
+	}
+	return await bot.users.fetch(snowflake).catch(() => null);
 }
 
-async function sendPairing(
-	discord: DiscordInterface,
-	intro: string,
-	receiverId: string,
-	opponentId: string,
-	opponentName: string | null,
-	tournament: DatabaseTournament
-): Promise<void> {
-	try {
-		await discord.sendDirectMessage(
-			receiverId,
-			opponentName
-				? `${intro} Your opponent is <@${opponentId}> (${opponentName}). Make sure to report your score after the match is over!`
+async function sendPairing(intro: string, receiver: User | null, opponent: User | null): Promise<void> {
+	if (receiver) {
+		await receiver.send(
+			opponent
+				? `${intro} Your opponent is ${opponent} (${Util.escapeMarkdown(
+						opponent.tag
+				  )}). Make sure to report your score after the match is over!`
 				: `${intro} I couldn't find your opponent. If you don't think you should have a bye for this round, please check the pairings.`
 		);
-	} catch (err) {
-		await reportFailure(discord, tournament, receiverId, opponentId);
+	} else {
+		throw new Error(`Receiver is null`);
 	}
 }
 
 async function reportFailure(
-	discord: DiscordInterface,
+	bot: Client,
 	tournament: DatabaseTournament,
 	userId: string,
 	opponentId: string
 ): Promise<void> {
 	for (const channel of tournament.privateChannels) {
 		logger.info(JSON.stringify({ tournament: tournament.id, userId, opponentId, event: "direct message fail" }));
-		await discord
-			.sendMessage(
-				channel,
-				`I couldn't send a DM to <@${userId}> about their pairing for **${tournament.name}**. If they're not a human player, this is normal, but otherwise please tell them their opponent is <@${opponentId}>.`
-			)
-			.catch(logger.error);
+		await send(
+			bot,
+			channel,
+			`I couldn't send a DM to <@${userId}> about their pairing for **${tournament.name}**. If they're not a human player, this is normal, but otherwise please tell them their opponent is <@${opponentId}>.`
+		).catch(logger.error);
 	}
 }

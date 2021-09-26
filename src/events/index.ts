@@ -121,7 +121,7 @@ export function registerEvents(bot: Client, prefix: string, support: CommandSupp
 						participant.confirmed.challongeId,
 						`${user}`,
 						log,
-						support.discord,
+						reaction.client,
 						support.challonge,
 						support.database
 					)

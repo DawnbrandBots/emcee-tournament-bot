@@ -64,7 +64,7 @@ export function makeHandler({ database, discord, challonge }: CommandSupport) {
 								participant.confirmed.challongeId,
 								who,
 								log,
-								discord,
+								member.client,
 								challonge,
 								database
 							)

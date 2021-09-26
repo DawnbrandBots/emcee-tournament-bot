@@ -53,7 +53,7 @@ const command: CommandDefinition = {
 					participant.confirmed.challongeId,
 					who,
 					log,
-					support.discord,
+					msg.client,
 					support.challonge,
 					support.database
 				)

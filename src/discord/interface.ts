@@ -39,11 +39,8 @@ export interface DiscordAttachmentOut {
 	contents: string;
 }
 
-export type DiscordDeleteHandler = (msg: DiscordMessageLimited) => Promise<void> | void;
-
 export interface DiscordWrapper {
 	sendMessage(channelId: string, msg: DiscordMessageOut, file?: DiscordAttachmentOut): Promise<DiscordMessageSent>;
-	sendDirectMessage(userId: string, content: DiscordMessageOut): Promise<void>;
 }
 
 export class DiscordInterface {
@@ -58,9 +55,5 @@ export class DiscordInterface {
 		file?: DiscordAttachmentOut
 	): Promise<DiscordMessageSent> {
 		return await this.api.sendMessage(channelId, msg, file);
-	}
-
-	public async sendDirectMessage(userId: string, content: DiscordMessageOut): Promise<void> {
-		await this.api.sendDirectMessage(userId, content);
 	}
 }

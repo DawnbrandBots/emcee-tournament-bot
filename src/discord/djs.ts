@@ -1,6 +1,5 @@
-import { Client, Constants, DiscordAPIError, GuildChannel, Message, MessageAttachment, MessageEmbed } from "discord.js";
-import { AssertTextChannelError, BlockedDMsError } from "../util/errors";
-import { getLogger } from "../util/logger";
+import { Client, GuildChannel, Message, MessageAttachment, MessageEmbed } from "discord.js";
+import { AssertTextChannelError } from "../util/errors";
 import {
 	DiscordAttachmentOut,
 	DiscordEmbed,
@@ -9,8 +8,6 @@ import {
 	DiscordMessageSent,
 	DiscordWrapper
 } from "./interface";
-
-const logger = getLogger("djs");
 
 export class DiscordWrapperDJS implements DiscordWrapper {
 	constructor(private bot: Client) {}
@@ -49,22 +46,6 @@ export class DiscordWrapperDJS implements DiscordWrapper {
 		embed.setTitle(out.title);
 		embed.setFields(out.fields);
 		return embed;
-	}
-
-	public async sendDirectMessage(userId: string, content: DiscordMessageOut): Promise<void> {
-		const user = await this.bot.users.fetch(userId);
-		try {
-			const messageContent =
-				typeof content === "string" ? { content: content } : { embeds: [this.unwrapEmbed(content)] };
-			await user.send(messageContent);
-			// const messageFile = file ? { files: [new MessageAttachment(file.contents, file.filename)] } : {};
-			// await user.send({ ...messageContent, ...messageFile });
-		} catch (e) {
-			if (e instanceof DiscordAPIError && e.code === Constants.APIErrors.CANNOT_MESSAGE_USER) {
-				throw new BlockedDMsError(userId);
-			}
-			logger.error(e);
-		}
 	}
 
 	public async sendMessage(
