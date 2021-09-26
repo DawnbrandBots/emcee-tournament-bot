@@ -5,22 +5,17 @@ import dotenv from "dotenv";
 import * as fs from "fs/promises";
 import sinon from "sinon";
 import sinonChai from "sinon-chai";
-import { DiscordInterface } from "../src/discord/interface";
 import { ParticipantRoleProvider } from "../src/role/participant";
 import { Templater } from "../src/templates";
 import { TimeWizard } from "../src/timer";
 import { TournamentManager } from "../src/TournamentManager";
 import { WebsiteInterface } from "../src/website/interface";
 import { DatabaseWrapperMock } from "./mocks/database";
-import { DiscordWrapperMock } from "./mocks/discord";
 import { WebsiteWrapperMock } from "./mocks/website";
 
 dotenv.config();
 chai.use(chaiAsPromised);
 chai.use(sinonChai);
-
-const discord = new DiscordWrapperMock(); // will be used to fetch responses in some cases
-const mockDiscord = new DiscordInterface(discord);
 
 const mockDb = new DatabaseWrapperMock();
 
@@ -38,7 +33,6 @@ sinon.stub(participantRole, "delete").resolves();
 let tournament: TournamentManager;
 before(async () => {
 	tournament = new TournamentManager(
-		mockDiscord,
 		mockDb,
 		mockWebsite,
 		templater,

@@ -1,20 +1,15 @@
 import { DatabaseWrapperPostgres } from "./database/postgres";
-import { DiscordInterface } from "./discord/interface";
 import { ParticipantRoleProvider } from "./role/participant";
 import { Templater } from "./templates";
 import { TimeWizard } from "./timer";
 import { ChallongeAPIError, TournamentNotFoundError } from "./util/errors";
-import { getLogger } from "./util/logger";
 import { Public } from "./util/types";
 import { WebsiteInterface } from "./website/interface";
-
-const logger = getLogger("tournament");
 
 export type TournamentInterface = Pick<TournamentManager, "createTournament">;
 
 export class TournamentManager implements TournamentInterface {
 	constructor(
-		private discord: DiscordInterface,
 		private database: Public<DatabaseWrapperPostgres>,
 		private website: WebsiteInterface,
 		private templater: Templater,

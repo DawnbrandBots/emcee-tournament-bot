@@ -8,7 +8,7 @@ import { getLogger } from "../util/logger";
 
 const logger = getLogger("guildMemberRemove");
 
-export function makeHandler({ database, discord, challonge }: CommandSupport) {
+export function makeHandler({ database, challonge }: CommandSupport) {
 	return async function guildMemberRemove(member: GuildMember | PartialGuildMember): Promise<void> {
 		const server = member.guild;
 		if (member.user?.bot) {

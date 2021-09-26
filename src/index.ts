@@ -2,8 +2,6 @@ import { Client, Intents } from "discord.js";
 import { getConfig } from "./config"; // Must be imported first among first-party modules
 import { initializeDatabase } from "./database/postgres";
 import { initializeDeckManager } from "./deck";
-import { DiscordWrapperDJS } from "./discord/djs";
-import { DiscordInterface } from "./discord/interface";
 import { registerEvents } from "./events";
 import { OrganiserRoleProvider } from "./role/organiser";
 import { ParticipantRoleProvider } from "./role/participant";
@@ -41,8 +39,6 @@ const logger = getLogger("index");
 		],
 		partials: ["CHANNEL", "MESSAGE", "REACTION"]
 	});
-	const djs = new DiscordWrapperDJS(bot);
-	const discord = new DiscordInterface(djs);
 	const organiserRole = new OrganiserRoleProvider(config.defaultTORole, 0x3498db);
 	const participantRole = new ParticipantRoleProvider(bot, 0xe67e22);
 	const timeWizard = new TimeWizard({
@@ -57,16 +53,8 @@ const logger = getLogger("index");
 			}
 		}
 	});
-	const tournamentManager = new TournamentManager(
-		discord,
-		database,
-		challonge,
-		templater,
-		participantRole,
-		timeWizard
-	);
+	const tournamentManager = new TournamentManager(database, challonge, templater, participantRole, timeWizard);
 	registerEvents(bot, config.defaultPrefix, {
-		discord,
 		tournamentManager,
 		organiserRole,
 		participantRole,

@@ -5,7 +5,6 @@ import sinonChai from "sinon-chai";
 import sinonTest from "sinon-test";
 import { Command, CommandDefinition, CommandSupport } from "../src/Command";
 import { DeckManager } from "../src/deck";
-import { DiscordInterface } from "../src/discord/interface";
 import { OrganiserRoleProvider } from "../src/role/organiser";
 import { ParticipantRoleProvider } from "../src/role/participant";
 import { Templater } from "../src/templates";
@@ -13,7 +12,6 @@ import { TimeWizard } from "../src/timer";
 import { UserError } from "../src/util/errors";
 import { WebsiteInterface } from "../src/website/interface";
 import { DatabaseWrapperMock } from "./mocks/database";
-import { DiscordWrapperMock } from "./mocks/discord";
 import { TournamentMock } from "./mocks/tournament";
 import { WebsiteWrapperMock } from "./mocks/website";
 
@@ -22,7 +20,6 @@ const test = sinonTest(sinon);
 
 describe("Command class", function () {
 	const support: CommandSupport = {
-		discord: new DiscordInterface(new DiscordWrapperMock()),
 		tournamentManager: new TournamentMock(),
 		organiserRole: new OrganiserRoleProvider("MC-TO"),
 		// UNUSED

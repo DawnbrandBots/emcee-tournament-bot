@@ -7,14 +7,12 @@ import sinonTest from "sinon-test";
 import { CommandDefinition, CommandSupport } from "../../src/Command";
 import { DatabaseTournament, TournamentFormat, TournamentStatus } from "../../src/database/interface";
 import { DeckManager } from "../../src/deck";
-import { DiscordInterface } from "../../src/discord/interface";
 import { OrganiserRoleProvider } from "../../src/role/organiser";
 import { ParticipantRoleProvider } from "../../src/role/participant";
 import { Templater } from "../../src/templates";
 import { TimeWizard } from "../../src/timer";
 import { WebsiteInterface } from "../../src/website/interface";
 import { DatabaseWrapperMock } from "../mocks/database";
-import { DiscordWrapperMock } from "../mocks/discord";
 import { TournamentMock } from "../mocks/tournament";
 import { WebsiteWrapperMock } from "../mocks/website";
 
@@ -77,7 +75,6 @@ export const tournament: DatabaseTournament = {
 };
 
 export const support: CommandSupport = {
-	discord: new DiscordInterface(new DiscordWrapperMock()),
 	tournamentManager: new TournamentMock(),
 	organiserRole: new OrganiserRoleProvider("MC-TO"),
 	database: new DatabaseWrapperMock(),
