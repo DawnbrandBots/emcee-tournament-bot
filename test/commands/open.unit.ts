@@ -5,7 +5,7 @@ import { itRejectsNonHosts, msg, support, test } from "./common";
 
 describe("command:open", function () {
 	itRejectsNonHosts(support, command, msg, ["name"]);
-	it(
+	it.skip(
 		"opens registration",
 		test(async function (this: SinonSandbox) {
 			this.stub(msg, "reply").resolves();

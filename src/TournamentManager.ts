@@ -1,7 +1,5 @@
 import { DatabaseWrapperPostgres } from "./database/postgres";
-import { ParticipantRoleProvider } from "./role/participant";
 import { Templater } from "./templates";
-import { TimeWizard } from "./timer";
 import { ChallongeAPIError, TournamentNotFoundError } from "./util/errors";
 import { Public } from "./util/types";
 import { WebsiteInterface } from "./website/interface";
@@ -12,9 +10,7 @@ export class TournamentManager implements TournamentInterface {
 	constructor(
 		private database: Public<DatabaseWrapperPostgres>,
 		private website: WebsiteInterface,
-		private templater: Templater,
-		private participantRole: ParticipantRoleProvider,
-		private timeWizard: TimeWizard
+		private templater: Templater
 	) {}
 
 	private async checkUrlTaken(url: string): Promise<boolean> {
