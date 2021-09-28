@@ -53,7 +53,7 @@ const logger = getLogger("index");
 			}
 		}
 	});
-	const tournamentManager = new TournamentManager(database, challonge, templater, participantRole, timeWizard);
+	const tournamentManager = new TournamentManager(database, challonge, templater);
 	registerEvents(bot, config.defaultPrefix, {
 		tournamentManager,
 		organiserRole,
