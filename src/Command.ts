@@ -1,7 +1,6 @@
 import { Message } from "discord.js";
 import { DatabaseWrapperPostgres } from "./database/postgres";
 import { DeckManager } from "./deck";
-import { DiscordInterface } from "./discord/interface";
 import { OrganiserRoleProvider } from "./role/organiser";
 import { ParticipantRoleProvider } from "./role/participant";
 import { Templater } from "./templates";
@@ -22,7 +21,6 @@ interface MatchScore {
 }
 
 export interface CommandSupport {
-	discord: DiscordInterface;
 	tournamentManager: TournamentInterface;
 	organiserRole: OrganiserRoleProvider;
 	database: Public<DatabaseWrapperPostgres>;

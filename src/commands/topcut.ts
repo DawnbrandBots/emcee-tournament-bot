@@ -1,5 +1,6 @@
 import { CommandDefinition } from "../Command";
 import { TournamentStatus } from "../database/interface";
+import { send, username } from "../util/discord";
 import { getLogger } from "../util/logger";
 
 const logger = getLogger("command:topcut");
@@ -54,7 +55,7 @@ const command: CommandDefinition = {
 		for (const player of top) {
 			const challongeId = await support.challonge.registerPlayer(
 				newId,
-				support.discord.getUsername(player.discordId),
+				(await username(msg.client, player.discordId)) || player.discordId,
 				player.discordId
 			);
 			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -73,11 +74,11 @@ const command: CommandDefinition = {
 		await support.database.startTournament(newId);
 		// send command guide to players
 		for (const channel of tournament.publicChannels) {
-			await support.discord.sendMessage(channel, support.templater.format("player", newId));
+			await send(msg.client, channel, support.templater.format("player", newId));
 		}
 		// send command guide to hosts
 		for (const channel of tournament.privateChannels) {
-			await support.discord.sendMessage(channel, support.templater.format("start", newId));
+			await send(msg.client, channel, support.templater.format("start", newId));
 		}
 		await msg.reply(
 			`Top cut for **${tournament.name}** commenced on Challonge! Use \`mc!round ${newId}\` to send out pairings and start the timer for round 1.`

@@ -247,6 +247,11 @@ export class DatabaseWrapperPostgres {
 		await message.save();
 	}
 
+	async getRegisterMessage(channelId: string, messageId: string): Promise<string | undefined> {
+		const message = await RegisterMessage.findOne({ channelId, messageId });
+		return message?.tournamentId;
+	}
+
 	async getRegisterMessages(tournamentId?: string): Promise<DatabaseMessage[]> {
 		if (!tournamentId) {
 			const messages = await RegisterMessage.find();
@@ -285,7 +290,7 @@ export class DatabaseWrapperPostgres {
 		messageId: string,
 		playerId: string
 	): Promise<DatabaseTournament | undefined> {
-		const message = await RegisterMessage.findOne({ channelId, messageId });
+		const message = await RegisterMessage.findOne({ channelId, messageId }, { relations: ["tournament"] });
 		if (!message || message.tournament.status !== TournamentStatus.PREPARING) {
 			return;
 		}

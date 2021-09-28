@@ -21,7 +21,6 @@ const command: CommandDefinition = {
 				tournament: id,
 				command: "removechannel",
 				type,
-				// destination: channelId,
 				event: "attempt"
 			})
 		);
@@ -38,15 +37,9 @@ const command: CommandDefinition = {
 				tournament: id,
 				command: "removechannel",
 				type,
-				// destination: channelId,
 				event: "success"
 			})
 		);
-		/* await msg.reply(
-			`${support.discord.mentionChannel(
-				channelId
-			)} removed as a ${type} announcement channel for **${tournament.name}**!`
-		); */
 		await msg.reply(`This channel removed as a ${type} announcement channel for **${tournament.name}**!`);
 	}
 };

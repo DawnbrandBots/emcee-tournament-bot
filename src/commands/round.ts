@@ -36,7 +36,7 @@ const command: CommandDefinition = {
 				skip
 			})
 		);
-		await advanceRoundDiscord(support, tournament, timer, skip);
+		await advanceRoundDiscord(support, msg.client, tournament, timer, skip);
 		support.scores.get(id)?.clear();
 		logger.verbose(
 			JSON.stringify({

@@ -20,7 +20,6 @@ const command: CommandDefinition = {
 				tournament: id,
 				command: "addchannel",
 				type,
-				// destination: channelId, // no longer necessary as must === channel
 				event: "attempt"
 			})
 		);
@@ -37,15 +36,9 @@ const command: CommandDefinition = {
 				tournament: id,
 				command: "addchannel",
 				type,
-				// destination: channelId,
 				event: "success"
 			})
 		);
-		/* No longer required as will always be in same channel as reply
-		await msg.reply(
-			`${support.discord.mentionChannel(channelId)} added as a ${type} announcement channel for **${tournament.name}**!`
-		);
-		*/
 		await msg.reply(`This channel added as a ${type} announcement channel for **${tournament.name}**!`);
 	}
 };

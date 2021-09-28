@@ -1,5 +1,6 @@
 import { CommandDefinition } from "../Command";
 import { TournamentStatus } from "../database/interface";
+import { dm, send } from "../util/discord";
 import { UserError } from "../util/errors";
 import { getLogger } from "../util/logger";
 
@@ -41,16 +42,24 @@ const command: CommandDefinition = {
 			const { registerMessages, ejected } = await support.database.prestartTournament(id);
 			logger.info(log("prestart"));
 			for (const { channelId, messageId } of registerMessages) {
-				await support.discord.deleteMessage(channelId, messageId).catch(logger.warn); // TODO: audit log reason
+				try {
+					const channel = await msg.client.channels.fetch(channelId);
+					if (channel?.isText()) {
+						await channel.messages.delete(messageId);
+					} else {
+						logger.warn(`Failed to delete ${channelId} ${messageId} since this is not a text channel`);
+					}
+				} catch (error) {
+					logger.warn(error);
+				}
 			}
 			logger.verbose(log("delete register messages"));
 			for (const player of ejected) {
-				await support.discord
-					.sendDirectMessage(
-						player,
-						`Sorry, **${tournament.name}** has started and you didn't submit a deck, so you have been dropped.`
-					)
-					.catch(logger.info);
+				await dm(
+					msg.client,
+					player,
+					`Sorry, **${tournament.name}** has started and you didn't submit a deck, so you have been dropped.`
+				).catch(logger.info);
 			}
 			logger.verbose(log("notify ejected"));
 			await support.challonge.shufflePlayers(id); // must happen before byes assigned!
@@ -71,12 +80,12 @@ const command: CommandDefinition = {
 		}
 		// send command guide to players
 		for (const channel of tournament.publicChannels) {
-			await support.discord.sendMessage(channel, support.templater.format("player", id)).catch(logger.error);
+			await send(msg.client, channel, support.templater.format("player", id)).catch(logger.error);
 		}
 		logger.verbose(log("public"));
 		// send command guide to hosts
 		for (const channel of tournament.privateChannels) {
-			await support.discord.sendMessage(channel, support.templater.format("start", id)).catch(logger.error);
+			await send(msg.client, channel, support.templater.format("start", id)).catch(logger.error);
 		}
 		logger.verbose(log("private"));
 		// drop dummy players once the tournament has started to give players with byes the win

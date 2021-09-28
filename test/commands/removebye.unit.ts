@@ -28,7 +28,7 @@ describe("command:removebye", function () {
 			this.stub(support.database, "removeBye").resolves([]);
 			await command.executor(msg, ["name"], support);
 			expect(msg.reply).to.have.been.calledOnceWithExactly(
-				"Bye removed for Player <@nova> (nova) in **Tournament 1**!\nAll byes: "
+				"Bye removed for <@nova> (K#0000) in **Tournament 1**!\nAll byes: "
 			);
 		})
 	);

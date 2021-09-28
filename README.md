@@ -1,4 +1,4 @@
-# Emcee [<img src="https://img.shields.io/static/v1?label=invite%20to&message=Discord&color=informational&style=for-the-badge" alt="Invite to Discord" align="right" />](https://discord.com/api/oauth2/authorize?client_id=691882968809209917&permissions=268552256&scope=bot)
+# Emcee [<img src="https://img.shields.io/static/v1?label=invite%20to&message=Discord&color=informational&style=for-the-badge" alt="Invite to Discord" align="right" />](https://discord.com/api/oauth2/authorize?client_id=691882968809209917&permissions=268560448&scope=bot)
 
 <!-- Unfortunately, GitHub Markdown sanitizes style attributes, so we will have to use a deprecated HTML attribute. -->
 [<img src="https://cdn.discordapp.com/avatars/691882968809209917/1ffd7675f6fb2a4c21b1b356b7856279.png" alt="Emcee avatar" align="right" />](https://yugipedia.com/wiki/MC)
@@ -20,10 +20,11 @@ sponsoring the development of Emcee.
 
 ## Discord permissions
 
-Please make sure you use an [invite link](https://discord.com/api/oauth2/authorize?client_id=691882968809209917&permissions=268552256&scope=bot) that automatically grants the following permissions.
+Please make sure you use an [invite link](https://discord.com/api/oauth2/authorize?client_id=691882968809209917&permissions=268560448&scope=bot) that automatically grants the following permissions.
 
 - Manage Roles: Emcee creates a role to designate Tournament Organisers upon joining a server and will create and delete participant roles for each tournament.
 - Send Messages
+- Manage Messages: Emcee automatically removes reactions from "reaction buttons" if participants are dropped via commands.
 - Embed Links: Emcee sends deck profiles in the form of a Discord rich embed.
 - Attach Files: Emcee attaches a YDK file to deck profiles.
 - Read Message History

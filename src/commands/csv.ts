@@ -1,5 +1,6 @@
 import * as csv from "@fast-csv/format";
 import { CommandDefinition } from "../Command";
+import { username } from "../util/discord";
 import { getLogger } from "../util/logger";
 
 const logger = getLogger("command:csv");
@@ -40,10 +41,10 @@ const command: CommandDefinition = {
 			const rows = await Promise.all(
 				players.map(async player => {
 					const deck = support.decks.getDeck(player.deck);
-					const username = (await support.discord.getRESTUsername(player.discordId)) || player.discordId;
+					const tag = (await username(msg.client, player.discordId)) || player.discordId;
 					const text = `Main: ${deck.mainText}, Extra: ${deck.extraText}, Side: ${deck.sideText}`;
 					return {
-						Player: username,
+						Player: tag,
 						Theme: deck.themes.length > 0 ? deck.themes.join("/") : "No themes",
 						Deck: text.replace(/\n/g, ", ")
 					};

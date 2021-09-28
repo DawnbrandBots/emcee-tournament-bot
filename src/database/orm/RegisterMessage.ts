@@ -20,7 +20,6 @@ export class RegisterMessage extends BaseEntity {
 
 	/// The ORM relationship for the above foreign key. Must always exist or this entity is meaningless.
 	@ManyToOne(() => ChallongeTournament, tournament => tournament.registerMessages, {
-		eager: true,
 		nullable: false,
 		onDelete: "CASCADE"
 	})

@@ -1,13 +1,12 @@
+import { Client, TextChannel } from "discord.js";
 import { TournamentStatus } from "./database/interface";
 import { DatabaseWrapperPostgres } from "./database/postgres";
-import { DiscordInterface } from "./discord/interface";
+import { dm, send } from "./util/discord";
 import { BlockedDMsError } from "./util/errors";
 import { getLogger } from "./util/logger";
 import { WebsiteInterface } from "./website/interface";
 
 const logger = getLogger("drop");
-
-type Tail<T extends unknown[]> = T extends [unknown, ...infer R] ? R : never;
 
 /**
  * Helper function to send the same message to the list of channels and
@@ -15,12 +14,12 @@ type Tail<T extends unknown[]> = T extends [unknown, ...infer R] ? R : never;
  * @nothrow
  */
 async function messageChannels(
-	discord: DiscordInterface,
+	bot: Client,
 	channels: string[],
-	...args: Tail<Parameters<DiscordInterface["sendMessage"]>>
+	...args: Parameters<TextChannel["send"]>
 ): Promise<void> {
 	for (const channel of channels) {
-		await discord.sendMessage(channel, ...args).catch(logger.error);
+		await send(bot, channel, ...args).catch(logger.error);
 	}
 }
 
@@ -36,7 +35,7 @@ export async function dropPlayerChallonge(
 	challongeId: number,
 	who: string,
 	log: (payload: Record<string, unknown>) => void,
-	discord: DiscordInterface,
+	bot: Client,
 	challonge: WebsiteInterface,
 	database: Pick<DatabaseWrapperPostgres, "getPlayerByChallonge">
 ): Promise<boolean> {
@@ -57,7 +56,7 @@ export async function dropPlayerChallonge(
 				} catch (error) {
 					logger.error(error);
 					await messageChannels(
-						discord,
+						bot,
 						privateChannels,
 						`Error automatically submitting score for ${who} in **${tournamentId}**. Please manually override later.`
 					);
@@ -69,7 +68,8 @@ export async function dropPlayerChallonge(
 					log({ tournamentId, matchId: match.matchId, oppChallonge, discordId });
 					// Naive guard against non-snowflake values stored on Challonge somehow
 					if (discordId.length && discordId[0] >= "0" && discordId[0] <= "9") {
-						await discord.sendDirectMessage(
+						await dm(
+							bot,
 							discordId,
 							`Your opponent ${who} has dropped from the tournament, conceding this round to you. You don't need to submit a score for this round.`
 						);
@@ -79,7 +79,7 @@ export async function dropPlayerChallonge(
 						logger.error(error);
 					}
 					await messageChannels(
-						discord,
+						bot,
 						privateChannels,
 						error instanceof BlockedDMsError
 							? error.message
@@ -101,7 +101,7 @@ export async function dropPlayerChallonge(
 					} catch (error) {
 						logger.error(error);
 						await messageChannels(
-							discord,
+							bot,
 							privateChannels,
 							`Error automatically resetting score for ${who} in **${tournamentId}**. Please manually override later.`
 						);
@@ -119,7 +119,7 @@ export async function dropPlayerChallonge(
 	} catch (error) {
 		logger.error(error);
 		await messageChannels(
-			discord,
+			bot,
 			privateChannels,
 			`Could not remove ${who} from **${tournamentId}** on Challonge. Please retry later.`
 		);

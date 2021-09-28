@@ -17,12 +17,10 @@ describe("command:csv", function () {
 				{ discordId: "1314", deck: "ydke://!!!", challongeId: 2 },
 				{ discordId: "1234", deck: "ydke://!!!", challongeId: 3 }
 			]);
-			const restStub = this.stub(support.discord, "getRESTUsername").resolves(null);
 			this.stub(msg, "reply").resolves();
 			await command.executor(msg, args, support);
 			expect(authStub).to.have.been.called;
 			expect(listStub).to.have.been.calledOnce;
-			expect(restStub).to.have.been.calledThrice;
 			expect(msg.reply).to.have.been.calledOnceWithExactly({
 				content: "A list of players for tournament battlecity with their deck is attached.",
 				files: [
