@@ -77,26 +77,6 @@ export class WebsiteInterface {
 		}
 	}
 
-	public async updateTournament(tournamentId: string, name: string, desc: string): Promise<void> {
-		return await this.api.updateTournament(tournamentId, name, desc);
-	}
-
-	public async updateTieBreakers(tournamentId: string, tbs: ChallongeTieBreaker[]): Promise<void> {
-		return await this.api.updateTieBreakers(tournamentId, tbs);
-	}
-
-	public async getTournament(tournamentId: string): Promise<WebsiteTournament> {
-		return await this.api.getTournament(tournamentId);
-	}
-
-	public async registerPlayer(tournamentId: string, playerName: string, playerId: string): Promise<number> {
-		return await this.api.registerPlayer(tournamentId, playerName, playerId);
-	}
-
-	public async startTournament(tournamentId: string): Promise<void> {
-		await this.api.startTournament(tournamentId);
-	}
-
 	// public interface is expected to get open matches
 	public async getMatches(tournamentId: string): Promise<WebsiteMatch[]> {
 		return await this.api.getMatches(tournamentId, true);
@@ -140,14 +120,6 @@ export class WebsiteInterface {
 		return matches[0].round;
 	}
 
-	public async getPlayers(tournamentId: string): Promise<WebsitePlayer[]> {
-		return await this.api.getPlayers(tournamentId);
-	}
-
-	public async removePlayer(tournamentId: string, playerId: number): Promise<void> {
-		await this.api.removePlayer(tournamentId, playerId);
-	}
-
 	public async submitScore(
 		tournamentId: string,
 		match: WebsiteMatch,
@@ -167,10 +139,6 @@ export class WebsiteInterface {
 	public async getTopCut(tournamentId: string, cut: number): Promise<WebsitePlayer[]> {
 		const players = await this.api.getPlayers(tournamentId);
 		return players.sort((p1, p2) => p1.rank - p2.rank).slice(0, cut); // descending order
-	}
-
-	private async setSeed(tournamentId: string, playerId: number, seed: number): Promise<void> {
-		await this.api.setSeed(tournamentId, playerId, seed);
 	}
 
 	public async assignByes(tournamentId: string, inPlayersToBye: string[]): Promise<void> {
@@ -296,13 +264,5 @@ export class WebsiteInterface {
 				await this.removePlayer(tournamentId, player.challongeId);
 			}
 		}
-	}
-
-	public async getPlayer(...args: Parameters<WebsiteWrapper["getPlayer"]>): ReturnType<WebsiteWrapper["getPlayer"]> {
-		return await this.api.getPlayer(...args);
-	}
-
-	public async shufflePlayers(tournamentId: string): Promise<void> {
-		await this.api.shufflePlayers(tournamentId);
 	}
 }

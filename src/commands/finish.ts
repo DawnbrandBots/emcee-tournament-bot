@@ -24,9 +24,10 @@ const command: CommandDefinition = {
 		);
 		try {
 			const tournament = await support.database.getTournament(id, TournamentStatus.IPR);
-			const webTourn = await (early
-				? support.challonge.getTournament(id) // TODO: edit description to say finished?
-				: support.challonge.finishTournament(id));
+			if (!early) {
+				await support.challonge.finishTournament(id);
+			} // TODO: else edit description to say finished?
+			const webTourn = await support.challonge.getTournament(id);
 			await support.timeWizard.cancel(tournament.id);
 			await support.database.finishTournament(id);
 			const role = await support.participantRole.get(tournament);
