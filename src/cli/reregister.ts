@@ -12,9 +12,7 @@ if (!args.length) {
 	process.exit(1);
 }
 
-const challonge = new WebsiteInterface(
-	new WebsiteWrapperChallonge(`${process.env.CHALLONGE_USERNAME}`, `${process.env.CHALLONGE_TOKEN}`)
-);
+const challonge = new WebsiteWrapperChallonge(`${process.env.CHALLONGE_USERNAME}`, `${process.env.CHALLONGE_TOKEN}`);
 
 const client = new Client({ intents: [] });
 

@@ -1,9 +1,11 @@
 import { Client, TextChannel } from "discord.js";
 import { TournamentStatus } from "./database/interface";
 import { DatabaseWrapperPostgres } from "./database/postgres";
+import { findClosedMatch } from "./util/challonge";
 import { dm, send } from "./util/discord";
 import { BlockedDMsError } from "./util/errors";
 import { getLogger } from "./util/logger";
+import { WebsiteWrapperChallonge } from "./website/challonge";
 import { WebsiteInterface } from "./website/interface";
 
 const logger = getLogger("drop");
@@ -36,13 +38,13 @@ export async function dropPlayerChallonge(
 	who: string,
 	log: (payload: Record<string, unknown>) => void,
 	bot: Client,
-	challonge: WebsiteInterface,
+	challonge: WebsiteWrapperChallonge,
 	database: Pick<DatabaseWrapperPostgres, "getPlayerByChallonge">
 ): Promise<boolean> {
 	// For each tournament in progress, update the scores and inform the opponent if needed.
 	if (status === TournamentStatus.IPR) {
 		// find last closed or open match
-		const match = await challonge.findClosedMatch(tournamentId, challongeId).catch(logger.error);
+		const match = await findClosedMatch(tournamentId, challongeId, challonge).catch(logger.error);
 		log({ tournamentId, match });
 		// If there's no match, the dropping player had the natural bye.
 		if (match) {
