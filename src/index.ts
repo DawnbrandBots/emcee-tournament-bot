@@ -11,7 +11,6 @@ import { TournamentManager } from "./TournamentManager";
 import { send } from "./util/discord";
 import { getLogger } from "./util/logger";
 import { WebsiteWrapperChallonge } from "./website/challonge";
-import { WebsiteInterface } from "./website/interface";
 
 const logger = getLogger("index");
 
@@ -24,9 +23,7 @@ const logger = getLogger("index");
 	const guides = await templater.load("guides");
 	logger.info(`Loaded ${guides} templates from "guides".`);
 
-	const challonge = new WebsiteInterface(
-		new WebsiteWrapperChallonge(config.challongeUsername, config.challongeToken)
-	);
+	const challonge = new WebsiteWrapperChallonge(config.challongeUsername, config.challongeToken);
 
 	const bot = new Client({
 		intents: [

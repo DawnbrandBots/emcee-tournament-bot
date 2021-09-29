@@ -9,7 +9,7 @@ import { ParticipantRoleProvider } from "../role/participant";
 import { send } from "../util/discord";
 import { getLogger } from "../util/logger";
 import { Public } from "../util/types";
-import { WebsiteInterface } from "../website/interface";
+import { WebsiteWrapperChallonge } from "../website/challonge";
 
 const logger = getLogger("messageCreate");
 
@@ -71,7 +71,7 @@ export async function onDirectMessage(
 	msg: Message,
 	database: Public<DatabaseWrapperPostgres>,
 	decks: DeckManager,
-	challonge: WebsiteInterface,
+	challonge: WebsiteWrapperChallonge,
 	participantRole: ParticipantRoleProvider,
 	bot: Client
 ): Promise<void> {
@@ -166,7 +166,7 @@ async function verifyDeckAndConfirmPending(
 	tournament: DatabaseTournament,
 	database: Public<DatabaseWrapperPostgres>,
 	decks: DeckManager,
-	challonge: WebsiteInterface,
+	challonge: WebsiteWrapperChallonge,
 	participantRole: ParticipantRoleProvider,
 	bot: Client
 ): Promise<void> {
