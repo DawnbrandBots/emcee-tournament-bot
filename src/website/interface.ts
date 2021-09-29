@@ -78,10 +78,8 @@ export class WebsiteInterface {
 		// don't filter for open so we can submit to closed
 		// don't filter for player so we can get correct round no.
 		const matches = await this.api.getMatches(tournamentId, false);
-		// filter open matches to get round no.
-		const openMatches = matches.filter(m => m.open);
-		// passing an array of matches skips the excessive call
-		const round = matches[0].round;
+		// get round number from first open round
+		const round = matches.filter(m => m.open)[0].round;
 		const match = matches.find(m => m.round === round && (m.player1 === playerId || m.player2 === playerId));
 		if (!match) {
 			// may have the bye
