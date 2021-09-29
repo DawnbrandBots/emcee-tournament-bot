@@ -10,7 +10,6 @@ import { UserError } from "./util/errors";
 import { getLogger } from "./util/logger";
 import { Public } from "./util/types";
 import { WebsiteWrapperChallonge } from "./website/challonge";
-import { WebsiteInterface } from "./website/interface";
 
 const logger = getLogger("command");
 

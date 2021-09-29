@@ -1,6 +1,5 @@
 import fetch from "node-fetch";
 import { ChallongeAPIError } from "../util/errors";
-import { WebsiteWrapper } from "./interface";
 
 export interface WebsitePlayer {
 	challongeId: number;
@@ -232,7 +231,7 @@ interface AddParticipantSettings {
 	misc?: string;
 }
 
-export class WebsiteWrapperChallonge implements WebsiteWrapper {
+export class WebsiteWrapperChallonge {
 	private baseUrl: string;
 	constructor(user: string, token: string) {
 		this.baseUrl = `https://${user}:${token}@api.challonge.com/v1/`;

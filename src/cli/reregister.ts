@@ -3,7 +3,6 @@ import dotenv from "dotenv";
 import { getConnection } from "typeorm";
 import { ConfirmedParticipant, initializeConnection } from "../database/orm";
 import { WebsiteWrapperChallonge } from "../website/challonge";
-import { WebsiteInterface } from "../website/interface";
 dotenv.config();
 
 const args = process.argv.slice(2);
