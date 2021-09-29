@@ -4,6 +4,7 @@ import { DatabaseTournament, TournamentFormat } from "./database/interface";
 import { dm, send } from "./util/discord";
 import { UserError } from "./util/errors";
 import { getLogger } from "./util/logger";
+import { WebsiteWrapperChallonge } from "./website/challonge";
 import { WebsiteInterface } from "./website/interface";
 
 const logger = getLogger("round");
@@ -45,8 +46,8 @@ export async function advanceRoundDiscord(
 ): Promise<void> {
 	await timeWizard.cancel(tournament.id);
 	logger.info(JSON.stringify({ tournament: tournament.id, minutes, skip }));
-	const matches = await challonge.getMatches(tournament.id);
-	const round = await challonge.getRound(tournament.id, matches);
+	const matches = await challonge.getMatches(tournament.id, true);
+	const round = matches[0].round;
 	const intro = `Round ${round} of ${tournament.name} has begun!`;
 	logger.info(JSON.stringify({ tournament: tournament.id, round }));
 	const role = await participantRole.get(tournament);
@@ -129,7 +130,7 @@ export async function advanceRoundDiscord(
  * @param challonge
  * @param tournamentId
  */
-async function getPlayers(challonge: WebsiteInterface, tournamentId: string): Promise<Map<number, string>> {
+async function getPlayers(challonge: WebsiteWrapperChallonge, tournamentId: string): Promise<Map<number, string>> {
 	const raw = await challonge.getPlayers(tournamentId);
 	const players = new Map();
 	for (const player of raw) {

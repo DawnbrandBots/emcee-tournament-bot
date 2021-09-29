@@ -77,11 +77,6 @@ export class WebsiteInterface {
 		}
 	}
 
-	// public interface is expected to get open matches
-	public async getMatches(tournamentId: string): Promise<WebsiteMatch[]> {
-		return await this.api.getMatches(tournamentId, true);
-	}
-
 	public async findMatch(tournamentId: string, playerId: number): Promise<WebsiteMatch | undefined> {
 		// an open match will be in the current round
 		const matches = await this.api.getMatches(tournamentId, true, playerId);
@@ -98,7 +93,7 @@ export class WebsiteInterface {
 		// filter open matches to get round no.
 		const openMatches = matches.filter(m => m.open);
 		// passing an array of matches skips the excessive call
-		const round = await this.getRound(tournamentId, openMatches);
+		const round = matches[0].round;
 		const match = matches.find(m => m.round === round && (m.player1 === playerId || m.player2 === playerId));
 		if (!match) {
 			// may have the bye
@@ -107,16 +102,5 @@ export class WebsiteInterface {
 			);
 		}
 		return match;
-	}
-
-	public async getRound(tournamentId: string, cachedMatches?: WebsiteMatch[]): Promise<number> {
-		const matches = cachedMatches || (await this.api.getMatches(tournamentId, true));
-		if (matches.length < 1) {
-			throw new UserError(
-				`No matches found for Tournament ${tournamentId}! This likely means the tournament either has not started or is finished!`
-			);
-		}
-		// All open matches should have the same round in Swiss. In Elim, we expect the array to be sorted by age and the lowest round should be the current.
-		return matches[0].round;
 	}
 }
