@@ -119,25 +119,4 @@ export class WebsiteInterface {
 		// All open matches should have the same round in Swiss. In Elim, we expect the array to be sorted by age and the lowest round should be the current.
 		return matches[0].round;
 	}
-
-	public async submitScore(
-		tournamentId: string,
-		match: WebsiteMatch,
-		winner: number,
-		winnerScore: number,
-		loserScore: number
-	): Promise<void> {
-		await this.api.submitScore(tournamentId, match, winner, winnerScore, loserScore);
-	}
-
-	public async finishTournament(tournamentId: string): Promise<WebsiteTournament> {
-		const tournament = await this.api.getTournament(tournamentId);
-		await this.api.finishTournament(tournamentId);
-		return tournament;
-	}
-
-	public async getTopCut(tournamentId: string, cut: number): Promise<WebsitePlayer[]> {
-		const players = await this.api.getPlayers(tournamentId);
-		return players.sort((p1, p2) => p1.rank - p2.rank).slice(0, cut); // descending order
-	}
 }
