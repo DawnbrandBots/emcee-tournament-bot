@@ -1,6 +1,42 @@
 import fetch from "node-fetch";
 import { ChallongeAPIError } from "../util/errors";
-import { ChallongeTieBreaker, WebsiteMatch, WebsitePlayer, WebsiteTournament, WebsiteWrapper } from "./interface";
+import { WebsiteWrapper } from "./interface";
+
+export interface WebsitePlayer {
+	challongeId: number;
+	discordId: string;
+	active: boolean; // !dropped
+	rank: number;
+	seed: number;
+}
+
+export type ChallongeTieBreaker =
+	| "match wins"
+	| "game wins"
+	| "game win percentage"
+	| "points scored"
+	| "points difference"
+	| "match wins vs tied"
+	| "median buchholz";
+
+// interface structure WIP as fleshed out command-by-command
+export interface WebsiteTournament {
+	id: string;
+	name: string;
+	desc: string;
+	url: string;
+	players: WebsitePlayer[];
+	rounds: number;
+	tieBreaks: ChallongeTieBreaker[];
+}
+
+export interface WebsiteMatch {
+	player1: number;
+	player2: number;
+	matchId: number;
+	open: boolean;
+	round: number;
+}
 
 type TournamentType = "single elimination" | "double elimination" | "round robin" | "swiss";
 type RankedBy = "match wins" | "game wins" | "points scored" | "points difference" | "custom";

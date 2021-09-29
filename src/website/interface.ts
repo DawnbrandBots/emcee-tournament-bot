@@ -1,4 +1,5 @@
-import { ChallongeAPIError, ChallongeIDConflictError, UserError } from "../util/errors";
+import { UserError } from "../util/errors";
+import { ChallongeTieBreaker, WebsiteMatch, WebsitePlayer, WebsiteTournament } from "./challonge";
 // import { getLogger } from "../util/logger";
 
 export interface WebsiteWrapper {
@@ -22,42 +23,6 @@ export interface WebsiteWrapper {
 	setSeed(tournamentId: string, playerId: number, newSeed: number): Promise<void>;
 	getPlayer(tournamentId: string, playerId: number): Promise<WebsitePlayer>;
 	shufflePlayers(tournamentId: string): Promise<void>;
-}
-
-export interface WebsitePlayer {
-	challongeId: number;
-	discordId: string;
-	active: boolean; // !dropped
-	rank: number;
-	seed: number;
-}
-
-export type ChallongeTieBreaker =
-	| "match wins"
-	| "game wins"
-	| "game win percentage"
-	| "points scored"
-	| "points difference"
-	| "match wins vs tied"
-	| "median buchholz";
-
-// interface structure WIP as fleshed out command-by-command
-export interface WebsiteTournament {
-	id: string;
-	name: string;
-	desc: string;
-	url: string;
-	players: WebsitePlayer[];
-	rounds: number;
-	tieBreaks: ChallongeTieBreaker[];
-}
-
-export interface WebsiteMatch {
-	player1: number;
-	player2: number;
-	matchId: number;
-	open: boolean;
-	round: number;
 }
 
 // const logger = getLogger("website");
