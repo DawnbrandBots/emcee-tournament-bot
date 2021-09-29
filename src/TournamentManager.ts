@@ -63,7 +63,7 @@ export class TournamentManager implements TournamentInterface {
 		} catch (e) {
 			// challonge API error message
 			if (e instanceof ChallongeAPIError && e.message === "URL is already taken") {
-				throw new ChallongeAPIError(url);
+				throw new ChallongeAPIError(candidateUrl);
 			}
 			throw e;
 		}
