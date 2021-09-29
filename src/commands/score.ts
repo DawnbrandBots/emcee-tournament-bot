@@ -1,6 +1,7 @@
 import { Util } from "discord.js";
 import { CommandDefinition } from "../Command";
 import { TournamentStatus } from "../database/interface";
+import { findMatch } from "../util/challonge";
 import { send } from "../util/discord";
 import { UserError } from "../util/errors";
 import { getLogger } from "../util/logger";
@@ -33,7 +34,7 @@ const command: CommandDefinition = {
 			);
 		}
 		const player = await support.database.authenticatePlayer(id, msg.author.id, msg.guildId, TournamentStatus.IPR);
-		const match = await support.challonge.findMatch(id, player.challongeId);
+		const match = await findMatch(id, player.challongeId, support.challonge);
 		if (!match) {
 			log("no match");
 			await msg.reply(

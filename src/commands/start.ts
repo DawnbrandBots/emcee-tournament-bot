@@ -1,5 +1,6 @@
 import { CommandDefinition } from "../Command";
 import { TournamentStatus } from "../database/interface";
+import { findMatch } from "../util/challonge";
 import { dm, send } from "../util/discord";
 import { UserError } from "../util/errors";
 import { getLogger } from "../util/logger";
@@ -173,7 +174,7 @@ const command: CommandDefinition = {
 			   and this is simpler than calculating that again.
 			   This also neatly handles edge cases like a bye player being manually dropped. */
 			if (player) {
-				const match = await support.challonge.findMatch(id, player.challongeId);
+				const match = await findMatch(id, player.challongeId, support.challonge);
 				/* We assume the match will exist and be open since the tournament just started
 				   But checking handles edge cases like a human theoretically changing the score before Emcee can
 				   Considering how slow the startTournament function is, that's not impossible */

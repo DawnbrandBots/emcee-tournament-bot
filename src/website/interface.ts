@@ -65,14 +65,6 @@ export interface WebsiteMatch {
 export class WebsiteInterface {
 	constructor(private api: WebsiteWrapper) {}
 
-	public async findMatch(tournamentId: string, playerId: number): Promise<WebsiteMatch | undefined> {
-		// an open match will be in the current round
-		const matches = await this.api.getMatches(tournamentId, true, playerId);
-		if (matches.length > 0) {
-			return matches[0];
-		}
-	}
-
 	// this can also find open matches, but uses a weighter query to include closed matches
 	public async findClosedMatch(tournamentId: string, playerId: number): Promise<WebsiteMatch | undefined> {
 		// don't filter for open so we can submit to closed
