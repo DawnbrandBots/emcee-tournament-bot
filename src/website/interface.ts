@@ -65,18 +65,6 @@ export interface WebsiteMatch {
 export class WebsiteInterface {
 	constructor(private api: WebsiteWrapper) {}
 
-	public async createTournament(name: string, desc: string, url: string, topCut = false): Promise<WebsiteTournament> {
-		try {
-			return await this.api.createTournament(name, desc, url, topCut);
-		} catch (e) {
-			// challonge API error message
-			if (e instanceof ChallongeAPIError && e.message === "URL is already taken") {
-				throw new ChallongeIDConflictError(url);
-			}
-			throw e;
-		}
-	}
-
 	public async findMatch(tournamentId: string, playerId: number): Promise<WebsiteMatch | undefined> {
 		// an open match will be in the current round
 		const matches = await this.api.getMatches(tournamentId, true, playerId);
