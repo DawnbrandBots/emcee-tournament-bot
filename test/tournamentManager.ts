@@ -5,9 +5,8 @@ import * as fs from "fs/promises";
 import sinonChai from "sinon-chai";
 import { Templater } from "../src/templates";
 import { TournamentManager } from "../src/TournamentManager";
-import { WebsiteInterface } from "../src/website/interface";
+import { WebsiteWrapperChallonge } from "../src/website/challonge";
 import { DatabaseWrapperMock } from "./mocks/database";
-import { WebsiteWrapperMock } from "./mocks/website";
 
 dotenv.config();
 chai.use(chaiAsPromised);
@@ -15,14 +14,13 @@ chai.use(sinonChai);
 
 const mockDb = new DatabaseWrapperMock();
 
-const mockWebsiteWrapper = new WebsiteWrapperMock();
-const mockWebsite = new WebsiteInterface(mockWebsiteWrapper);
+const mockWebsiteWrapper = new WebsiteWrapperChallonge("", ""); // dummy parameters won't matter because we'll stub any functions we use
 
 const templater = new Templater();
 
 let tournament: TournamentManager;
 before(async () => {
-	tournament = new TournamentManager(mockDb, mockWebsite, templater);
+	tournament = new TournamentManager(mockDb, mockWebsiteWrapper, templater);
 	await templater.load("guides");
 });
 

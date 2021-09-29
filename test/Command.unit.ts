@@ -10,10 +10,9 @@ import { ParticipantRoleProvider } from "../src/role/participant";
 import { Templater } from "../src/templates";
 import { TimeWizard } from "../src/timer";
 import { UserError } from "../src/util/errors";
-import { WebsiteInterface } from "../src/website/interface";
+import { WebsiteWrapperChallonge } from "../src/website/challonge";
 import { DatabaseWrapperMock } from "./mocks/database";
 import { TournamentMock } from "./mocks/tournament";
-import { WebsiteWrapperMock } from "./mocks/website";
 
 chai.use(sinonChai);
 const test = sinonTest(sinon);
@@ -24,7 +23,7 @@ describe("Command class", function () {
 		organiserRole: new OrganiserRoleProvider("MC-TO"),
 		// UNUSED
 		database: new DatabaseWrapperMock(),
-		challonge: new WebsiteInterface(new WebsiteWrapperMock()),
+		challonge: new WebsiteWrapperChallonge("", ""), // dummy parameters won't matter because we'll stub any functions we use
 		scores: new Map(),
 		decks: new DeckManager(new Map()),
 		participantRole: new ParticipantRoleProvider(new Client({ intents: [] })),

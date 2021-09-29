@@ -2,6 +2,7 @@ import { expect } from "chai";
 import { MessageMentions } from "discord.js";
 import { SinonSandbox } from "sinon";
 import command from "../../src/commands/forcescore";
+import { findClosedMatch } from "../../src/util/challonge";
 import { msg, support, test } from "./common";
 
 describe("command:forcescore", function () {
@@ -25,7 +26,7 @@ describe("command:forcescore", function () {
 			);
 			this.stub(msg, "reply").resolves();
 			this.stub(support.database, "getConfirmedPlayer").resolves({ challongeId: 0, discordId: "", deck: "" });
-			this.stub(support.challonge, "findClosedMatch").resolves({
+			this.stub(findClosedMatch).resolves({
 				player1: 0,
 				player2: 1,
 				matchId: 0,
