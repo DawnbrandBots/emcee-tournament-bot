@@ -33,7 +33,7 @@
 		"pg": "^8.7.1",
 		"reflect-metadata": "^0.1.13",
 		"supports-color": "^9.0.0",
-		"typeorm": "^0.2.36",
+		"typeorm": "^0.2.38",
 		"ydeck": "^0.2.2",
 		"ydke": "^1.1.0",
 		"ygopro-data": "1.3.6"
