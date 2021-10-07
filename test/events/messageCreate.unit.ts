@@ -7,9 +7,9 @@ import { TournamentFormat, TournamentStatus } from "../../src/database/interface
 import { DeckManager, initializeDeckManager } from "../../src/deck";
 import { onDirectMessage } from "../../src/events/messageCreate";
 import { ParticipantRoleProvider } from "../../src/role/participant";
-import { WebsiteInterface } from "../../src/website/interface";
+import { WebsiteWrapperChallonge } from "../../src/website/challonge";
+import { support } from "../commands/common";
 import { DatabaseWrapperMock } from "../mocks/database";
-import { WebsiteWrapperMock } from "../mocks/website";
 chai.use(sinonChai);
 const test = sinonTest(sinon);
 
@@ -36,7 +36,7 @@ const sampleMessage = new Message(mockBotClient, {
 });
 const database = new DatabaseWrapperMock();
 let decks: DeckManager;
-const challonge = new WebsiteInterface(new WebsiteWrapperMock());
+const challonge = new WebsiteWrapperChallonge("", "");
 const participantRole = new ParticipantRoleProvider(mockBotClient);
 
 before(async () => {
@@ -70,6 +70,7 @@ describe("Direct message submissions", function () {
 			const printResult = { embeds: [], files: [] };
 			this.stub(decks, "prettyPrint").returns(printResult);
 			this.stub(participantRole, "grant").resolves();
+			this.stub(challonge, "registerPlayer").resolves();
 			const replySpy = this.stub(sampleMessage, "reply").resolves();
 			const send = this.spy();
 			const fetchStub = this.stub(mockBotClient.channels, "fetch").resolves({ isText: () => true, send } as any);

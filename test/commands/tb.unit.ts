@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import { SinonSandbox } from "sinon";
 import command from "../../src/commands/tb";
-import { itRejectsNonHosts, msg, support, test } from "./common";
+import { itRejectsNonHosts, msg, support, test, websiteTournament } from "./common";
 
 describe("command:tb", function () {
 	itRejectsNonHosts(support, command, msg, ["name"]);
@@ -10,6 +10,7 @@ describe("command:tb", function () {
 		test(async function (this: SinonSandbox) {
 			this.spy(support.challonge, "updateTieBreakers");
 			this.stub(msg, "reply").resolves();
+			this.stub(support.challonge, "getTournament").resolves(websiteTournament);
 			await command.executor(msg, ["name"], support);
 			expect(support.challonge.updateTieBreakers).to.not.have.been.called;
 			expect(msg.reply).to.have.been.calledOnceWithExactly(
@@ -20,8 +21,8 @@ describe("command:tb", function () {
 	it(
 		"updates tie-breaker settings",
 		test(async function (this: SinonSandbox) {
-			this.spy(support.challonge, "updateTieBreakers");
 			this.stub(msg, "reply").resolves();
+			this.stub(support.challonge, "updateTieBreakers").resolves();
 			await command.executor(msg, ["name", "match wins", "game wins", "points scored"], support);
 			expect(support.challonge.updateTieBreakers).to.have.been.calledOnce;
 			expect(msg.reply).to.have.been.calledOnceWithExactly(

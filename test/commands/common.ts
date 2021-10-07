@@ -11,7 +11,7 @@ import { OrganiserRoleProvider } from "../../src/role/organiser";
 import { ParticipantRoleProvider } from "../../src/role/participant";
 import { Templater } from "../../src/templates";
 import { TimeWizard } from "../../src/timer";
-import { WebsiteWrapperChallonge } from "../../src/website/challonge";
+import { WebsiteTournament, WebsiteWrapperChallonge } from "../../src/website/challonge";
 import { DatabaseWrapperMock } from "../mocks/database";
 import { TournamentMock } from "../mocks/tournament";
 
@@ -71,6 +71,15 @@ export const tournament: DatabaseTournament = {
 	privateChannels: [],
 	byes: [],
 	findPlayer: sinon.stub()
+};
+export const websiteTournament: WebsiteTournament = {
+	name: "Tournament 1",
+	id: "name",
+	desc: "",
+	players: [],
+	url: "",
+	rounds: 0,
+	tieBreaks: ["median buchholz", "points difference", "match wins vs tied"]
 };
 
 export const support: CommandSupport = {
