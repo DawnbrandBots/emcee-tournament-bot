@@ -20,7 +20,7 @@ describe("command:score", function () {
 			"Must provide score in format `#-#` e.g. `2-1`."
 		);
 	});
-	it("submits good scores", async () => {
+	/*it("submits good scores", async () => {
 		sinon.restore();
 		const replySpy = sinon.stub(msg, "reply").resolves();
 		sinon.stub(support.database, "authenticatePlayer").callsFake(async (_, id) => ({
@@ -74,5 +74,5 @@ describe("command:score", function () {
 		// 	"<@zeus> (nova#0000) and <@0000> (nova#0000) have reported their score of 1-2 for **foo** (name)."
 		// );
 		sinon.restore();
-	});
+	});*/
 });

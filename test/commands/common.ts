@@ -11,10 +11,9 @@ import { OrganiserRoleProvider } from "../../src/role/organiser";
 import { ParticipantRoleProvider } from "../../src/role/participant";
 import { Templater } from "../../src/templates";
 import { TimeWizard } from "../../src/timer";
-import { WebsiteInterface } from "../../src/website/interface";
+import { WebsiteTournament, WebsiteWrapperChallonge } from "../../src/website/challonge";
 import { DatabaseWrapperMock } from "../mocks/database";
 import { TournamentMock } from "../mocks/tournament";
-import { WebsiteWrapperMock } from "../mocks/website";
 
 chai.use(chaiAsPromised);
 chai.use(sinonChai);
@@ -73,12 +72,21 @@ export const tournament: DatabaseTournament = {
 	byes: [],
 	findPlayer: sinon.stub()
 };
+export const websiteTournament: WebsiteTournament = {
+	name: "Tournament 1",
+	id: "name",
+	desc: "",
+	players: [],
+	url: "",
+	rounds: 0,
+	tieBreaks: ["median buchholz", "points difference", "match wins vs tied"]
+};
 
 export const support: CommandSupport = {
 	tournamentManager: new TournamentMock(),
 	organiserRole: new OrganiserRoleProvider("MC-TO"),
 	database: new DatabaseWrapperMock(),
-	challonge: new WebsiteInterface(new WebsiteWrapperMock()),
+	challonge: new WebsiteWrapperChallonge("", ""), // dummy parameters won't matter because we'll stub any functions we use
 	scores: new Map(),
 	decks: new DeckManager(new Map()),
 	participantRole: new ParticipantRoleProvider(mockBotClient),

@@ -2,14 +2,14 @@ import { DatabaseWrapperPostgres } from "./database/postgres";
 import { Templater } from "./templates";
 import { ChallongeAPIError, TournamentNotFoundError } from "./util/errors";
 import { Public } from "./util/types";
-import { WebsiteInterface } from "./website/interface";
+import { WebsiteWrapperChallonge } from "./website/challonge";
 
 export type TournamentInterface = Pick<TournamentManager, "createTournament">;
 
 export class TournamentManager implements TournamentInterface {
 	constructor(
 		private database: Public<DatabaseWrapperPostgres>,
-		private website: WebsiteInterface,
+		private website: WebsiteWrapperChallonge,
 		private templater: Templater
 	) {}
 
@@ -56,8 +56,16 @@ export class TournamentManager implements TournamentInterface {
 			i++;
 		}
 
-		const web = await this.website.createTournament(name, desc, candidateUrl, topCut);
-		await this.database.createTournament(hostId, serverId, web.id, name, desc, topCut);
-		return [web.id, web.url, this.templater.format("create", web.id)];
+		try {
+			const web = await this.website.createTournament(name, desc, candidateUrl, topCut);
+			await this.database.createTournament(hostId, serverId, web.id, name, desc, topCut);
+			return [web.id, web.url, this.templater.format("create", web.id)];
+		} catch (e) {
+			// challonge API error message
+			if (e instanceof ChallongeAPIError && e.message === "URL is already taken") {
+				throw new ChallongeAPIError(candidateUrl);
+			}
+			throw e;
+		}
 	}
 }

@@ -9,6 +9,7 @@ describe("command:update", function () {
 		"responds with an update message",
 		test(async function (this: SinonSandbox) {
 			this.stub(msg, "reply").resolves();
+			this.stub(support.challonge, "updateTournament").resolves();
 			await command.executor(msg, ["name", "newName", "newDesc"], support);
 			expect(msg.reply).to.have.been.calledOnceWithExactly(
 				"Tournament `name` updated! It now has the name newName and the given description."

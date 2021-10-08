@@ -26,8 +26,8 @@ const command: CommandDefinition = {
 			})
 		);
 		// gets only open matches
-		const matches = await support.challonge.getMatches(id);
-		const round = await support.challonge.getRound(id, matches); // for reply
+		const matches = await support.challonge.getMatches(id, true);
+		const round = matches[0].round; // for reply
 		for (const match of matches) {
 			// choice of player is arbitray, challonge correctly does not highlight a winner
 			await support.challonge.submitScore(id, match, match.player1, 0, 0);

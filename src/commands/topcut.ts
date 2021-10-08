@@ -36,7 +36,11 @@ const command: CommandDefinition = {
 			await msg.reply(`**${tournament.name}** only has ${tournament.players.length} participants!`);
 			return;
 		}
-		const top = await support.challonge.getTopCut(id, size);
+
+		// fetch top cut
+		const players = await support.challonge.getPlayers(id);
+		const top = players.sort((p1, p2) => p1.rank - p2.rank).slice(0, size); // descending order
+
 		const [newId] = await support.tournamentManager.createTournament(
 			tournament.hosts[0], // tournament cannot have 0 hosts by addition on creation and guard on removal
 			tournament.server,

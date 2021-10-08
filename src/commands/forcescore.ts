@@ -1,5 +1,6 @@
 import { CommandDefinition } from "../Command";
 import { TournamentStatus } from "../database/interface";
+import { findClosedMatch } from "../util/challonge";
 import { firstMentionOrFail } from "../util/discord";
 import { UserError } from "../util/errors";
 import { getLogger } from "../util/logger";
@@ -42,7 +43,7 @@ const command: CommandDefinition = {
 			throw new UserError(`${player} isn't playing in **${tournament.name}**.`);
 		}
 		// can also find open matches, just depends on current round
-		const match = await support.challonge.findClosedMatch(id, challongeId);
+		const match = await findClosedMatch(id, challongeId, support.challonge);
 		if (!match) {
 			throw new UserError(`Could not find an open match in **${tournament.name}** including ${player}.`);
 		}

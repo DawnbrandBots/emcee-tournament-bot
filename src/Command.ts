@@ -9,7 +9,7 @@ import { TournamentInterface } from "./TournamentManager";
 import { UserError } from "./util/errors";
 import { getLogger } from "./util/logger";
 import { Public } from "./util/types";
-import { WebsiteInterface } from "./website/interface";
+import { WebsiteWrapperChallonge } from "./website/challonge";
 
 const logger = getLogger("command");
 
@@ -24,7 +24,7 @@ export interface CommandSupport {
 	tournamentManager: TournamentInterface;
 	organiserRole: OrganiserRoleProvider;
 	database: Public<DatabaseWrapperPostgres>;
-	challonge: WebsiteInterface;
+	challonge: WebsiteWrapperChallonge;
 	scores: Map<string, Map<number, MatchScore>>;
 	decks: DeckManager;
 	participantRole: ParticipantRoleProvider;

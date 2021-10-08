@@ -1,7 +1,7 @@
 import { CommandDefinition } from "../Command";
 import { TournamentStatus } from "../database/interface";
 import { getLogger } from "../util/logger";
-import { ChallongeTieBreaker } from "../website/interface";
+import { ChallongeTieBreaker } from "../website/challonge";
 
 const logger = getLogger("command:tb");
 
