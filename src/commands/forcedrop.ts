@@ -75,6 +75,7 @@ const command: CommandDefinition = {
 				return;
 			}
 		}
+		// Properties of the entity will be undefined after it is deleted
 		const confirmed = !!participant.confirmed;
 		try {
 			await participant.remove();
@@ -97,7 +98,7 @@ const command: CommandDefinition = {
 				: `${name} was pending and dropped from **${tournament.name}**.`
 		);
 		log({ player: snowflake, event: "success" });
-		if (participant.tournament.status === TournamentStatus.PREPARING) {
+		if (tournament.status === TournamentStatus.PREPARING) {
 			const messages = await support.database.getRegisterMessages(id);
 			for (const m of messages) {
 				await removeReaction(msg.client, m.channelId, m.messageId, "✅", snowflake).catch(logger.info);

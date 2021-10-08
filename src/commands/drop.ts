@@ -38,9 +38,10 @@ const command: CommandDefinition = {
 			);
 			return;
 		}
-		if (participant.tournament.status === TournamentStatus.COMPLETE) {
+		const tournament = participant.tournament;
+		if (tournament.status === TournamentStatus.COMPLETE) {
 			log({ event: "already complete" });
-			await msg.reply(`**${participant.tournament.name}** has already concluded!`);
+			await msg.reply(`**${tournament.name}** has already concluded!`);
 			return;
 		}
 		const who = `<@${msg.author.id}> (${msg.author.username}#${msg.author.discriminator})`;
@@ -48,8 +49,8 @@ const command: CommandDefinition = {
 			if (
 				await dropPlayerChallonge(
 					id,
-					participant.tournament.privateChannels,
-					participant.tournament.status,
+					tournament.privateChannels,
+					tournament.status,
 					participant.confirmed.challongeId,
 					who,
 					log,
@@ -61,15 +62,15 @@ const command: CommandDefinition = {
 				try {
 					await support.participantRole.ungrant(msg.author.id, {
 						id,
-						server: participant.tournament.owningDiscordServer
+						server: tournament.owningDiscordServer
 					});
 				} catch (error) {
 					logger.warn(error);
-					for (const channel of participant.tournament.privateChannels) {
+					for (const channel of tournament.privateChannels) {
 						await send(
 							msg.client,
 							channel,
-							`Failed to remove **${participant.tournament.name}** participant role from ${who}.`
+							`Failed to remove **${tournament.name}** participant role from ${who}.`
 						).catch(logger.error);
 					}
 				}
@@ -78,16 +79,17 @@ const command: CommandDefinition = {
 				return;
 			}
 		}
+		// Properties of the entity will be undefined after it is deleted
 		const confirmed = !!participant.confirmed;
 		try {
 			await participant.remove();
 		} catch (error) {
 			logger.error(error);
-			for (const channel of participant.tournament.privateChannels) {
+			for (const channel of tournament.privateChannels) {
 				await send(
 					msg.client,
 					channel,
-					`Failed to drop ${who} from **${participant.tournament.name}** upon request. Please try again later.`
+					`Failed to drop ${who} from **${tournament.name}** upon request. Please try again later.`
 				).catch(logger.error);
 			}
 			await msg.reply("Something went wrong. Please try again later or ask your hosts how to proceed.");
@@ -95,12 +97,12 @@ const command: CommandDefinition = {
 		}
 		log({ event: "success" });
 		if (confirmed) {
-			for (const channel of participant.tournament.privateChannels) {
-				await send(msg.client, channel, `**${participant.tournament.name}** drop: ${who}`).catch(logger.error);
+			for (const channel of tournament.privateChannels) {
+				await send(msg.client, channel, `**${tournament.name}** drop: ${who}`).catch(logger.error);
 			}
 		}
-		await msg.reply(`You have dropped from **${participant.tournament.name}**.`);
-		if (participant.tournament.status === TournamentStatus.PREPARING) {
+		await msg.reply(`You have dropped from **${tournament.name}**.`);
+		if (tournament.status === TournamentStatus.PREPARING) {
 			const messages = await support.database.getRegisterMessages(id);
 			for (const m of messages) {
 				await removeReaction(msg.client, m.channelId, m.messageId, "✅", msg.author.id).catch(logger.info);
