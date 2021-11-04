@@ -23,7 +23,10 @@ export async function findClosedMatch(
 	// don't filter for player so we can get correct round no.
 	const matches = await challonge.getMatches(tournamentId, false);
 	// get round number from first open round
-	const round = matches.filter(m => m.open)[0].round;
+	const round = getRound(
+		tournamentId,
+		matches.filter(m => m.open)
+	);
 	const match = matches.find(m => m.round === round && (m.player1 === playerId || m.player2 === playerId));
 	if (!match) {
 		// may have the bye
@@ -32,4 +35,15 @@ export async function findClosedMatch(
 		);
 	}
 	return match;
+}
+
+export function getRound(tournamentId: string, cachedMatches: WebsiteMatch[]): number {
+	const matches = cachedMatches;
+	if (matches.length < 1) {
+		throw new UserError(
+			`No matches found for Tournament ${tournamentId}! This likely means the tournament either has not started or is finished!`
+		);
+	}
+	// All open matches should have the same round in Swiss. In Elim, we expect the array to be sorted by age and the lowest round should be the current.
+	return matches[0].round;
 }

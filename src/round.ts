@@ -1,6 +1,7 @@
 import { Client, User, Util } from "discord.js";
 import { CommandSupport } from "./Command";
 import { DatabaseTournament, TournamentFormat } from "./database/interface";
+import { getRound } from "./util/challonge";
 import { dm, send } from "./util/discord";
 import { UserError } from "./util/errors";
 import { getLogger } from "./util/logger";
@@ -46,7 +47,7 @@ export async function advanceRoundDiscord(
 	await timeWizard.cancel(tournament.id);
 	logger.info(JSON.stringify({ tournament: tournament.id, minutes, skip }));
 	const matches = await challonge.getMatches(tournament.id, true);
-	const round = matches[0].round;
+	const round = getRound(tournament.id, matches);
 	const intro = `Round ${round} of ${tournament.name} has begun!`;
 	logger.info(JSON.stringify({ tournament: tournament.id, round }));
 	const role = await participantRole.get(tournament);
