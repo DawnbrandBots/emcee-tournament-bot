@@ -11,6 +11,7 @@ Move GitHub repository to the Dawnbrand Bots organization
 - Fix all file attachments breaking due to the switch to Discord.js, breaking two commands and part of registration (#327)
 - Do not respond to `@everyone` and `@here`, another effect of the change to Discord.js (#330)
 - Fix register messages being deleted on bot startup (#332)
+- Fix race condition causing multiple round finish messages (#347)
 
 ## 2021-07-31 ([Chalislime Monthly July 2021](https://challonge.com/csmjuly2021))
 ### New Features
