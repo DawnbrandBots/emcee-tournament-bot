@@ -1,3 +1,4 @@
+import { Constants, DiscordAPIError } from "discord.js";
 import { getConnection } from "typeorm";
 import { Countdown } from "../database/orm";
 import { getLogger } from "../util/logger";
@@ -118,12 +119,12 @@ export class PersistentTimer {
 	protected async tick(): Promise<void> {
 		const now = new Date();
 		if (this.entity.end <= now) {
+			await this.abort();
 			try {
 				await this.discord.sendMessage(this.entity.channelId, this.entity.finalMessage);
 			} catch (error) {
 				logger.warn(error);
 			}
-			await this.abort();
 		}
 		const secondsRemaining = Math.ceil((now.getTime() - this.entity.end.getTime()) / 1000);
 		if (secondsRemaining % this.entity.cronIntervalSeconds == 0) {
@@ -135,9 +136,12 @@ export class PersistentTimer {
 					`Time left in the round: \`${left}\``
 				);
 			} catch (error) {
-				// Most likely culprit: the message was removed
 				logger.warn(`tick: could not edit ${this.entity.channelId} ${this.entity.messageId}`);
 				logger.warn(error);
+				if (error instanceof DiscordAPIError && error.code === Constants.APIErrors.UNKNOWN_MESSAGE) {
+					logger.notify(`aborting timer <#${this.entity.channelId}> ${this.entity.messageId}`);
+					await this.abort();
+				}
 			}
 		}
 	}
