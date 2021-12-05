@@ -6,6 +6,7 @@ Move GitHub repository to the Dawnbrand Bots organization
 
 ### New Features
 - Switch to Discord.js from Eris so we can make use of recent Discord features (#325)
+- Refer to tournament host for time procedures instead of modern synchronous TCG rules (#358)
 
 ### Bug Fixes
 - Fix all file attachments breaking due to the switch to Discord.js, breaking two commands and part of registration (#327)
