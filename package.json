@@ -34,7 +34,7 @@
 		"reflect-metadata": "^0.1.13",
 		"supports-color": "^9.1.0",
 		"typeorm": "^0.2.41",
-		"ydeck": "^0.2.3",
+		"ydeck": "^0.2.4",
 		"ydke": "^1.1.0",
 		"ygopro-data": "1.3.6"
 	},
