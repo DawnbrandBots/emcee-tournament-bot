@@ -4221,10 +4221,10 @@ yargs@^17.0.1:
     y18n "^5.0.5"
     yargs-parser "^20.2.2"
 
-ydeck@^0.2.2:
-  version "0.2.2"
-  resolved "https://registry.yarnpkg.com/ydeck/-/ydeck-0.2.2.tgz#101ebd8c5fb5ad71c25d6dd35e4a4a8bd88e60c8"
-  integrity sha512-mKJdbN6j9w/qCAkY0Xpu+Pz65CjoJ863Xv75je1kHtgquyQkrZIkb5ByxxIDXfVk8qYm5VTdVlIbj7CGqk/JeQ==
+ydeck@^0.2.3:
+  version "0.2.3"
+  resolved "https://registry.yarnpkg.com/ydeck/-/ydeck-0.2.3.tgz#5d7c011d36ead4e6e3f4e1935169c87ff7fca027"
+  integrity sha512-j6gNm3DKYHVT4agMRzhQmSQxSrNgOY/kdhuHZvwGu6ZCjQIWWbv59Y52MYBzD2ZtcMpJDa9QFVJ6Znv7N3xreQ==
   dependencies:
     ydke "^1.1.0"
 
