@@ -117,7 +117,7 @@ export async function advanceRoundDiscord(
 			tournament.id,
 			tournament.publicChannels,
 			new Date(Date.now() + minutes * 60 * 1000),
-			`That's time in the round, <@&${role}>! Please end the current phase, then the player with the lower LP must forfeit!`,
+			`That's time in the round, <@&${role}>! Please follow appropriate time procedures as determined by your tournament hosts.`,
 			5 // update every 5 seconds
 		);
 	}
