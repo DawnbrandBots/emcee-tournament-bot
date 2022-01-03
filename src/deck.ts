@@ -1,4 +1,4 @@
-import { Message, MessageAttachment, MessageEmbed, ReplyMessageOptions } from "discord.js";
+import { Message, MessageAttachment, MessageEmbed, ReplyMessageOptions, Util } from "discord.js";
 import fetch from "node-fetch";
 import { CardIndex, CardVector, createAllowVector, Deck, DeckError, ICard } from "ydeck";
 import { Card, enums, YgoData } from "ygopro-data";
@@ -107,13 +107,11 @@ export class DeckManager {
 		// TODO: inconsistencies with banlist upload handling
 		const attachment = msg.attachments.first();
 		if (attachment && attachment.name?.endsWith(".ydk")) {
-			// cap filezie for security
+			// cap filesize for security
 			if (attachment.size > MAX_BYTES) {
-				// report potential abuse internally
 				// TODO: Would be useful to report tournament and server, but we don't have that data in this scope
-				logger.notify(
-					`Potential abuse warning! User ${msg.author.id} (@${msg.author.username}#${msg.author.discriminator}) submitted oversized deck file of ${attachment.size}B.`
-				);
+				const who = `${Util.escapeMarkdown(msg.author.tag)} (${msg.author.id})`;
+				logger.notify(`Potential abuse warning! ${who} submitted oversized deck file of ${attachment.size}B.`);
 				throw new UserError("YDK file too large! Please try again with a smaller file.");
 			}
 			const ydk = await this.extractYdk(attachment); // throws on network error
