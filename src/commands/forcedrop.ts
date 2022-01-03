@@ -47,6 +47,7 @@ const command: CommandDefinition = {
 			return;
 		}
 		if (participant.confirmed) {
+			await msg.reply(":hammer: Working…");
 			if (
 				await dropPlayerChallonge(
 					id,

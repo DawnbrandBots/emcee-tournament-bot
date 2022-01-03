@@ -28,6 +28,7 @@ const command: CommandDefinition = {
 			await msg.reply(`**${tournament.name}** has no players!`);
 			return;
 		}
+		await msg.reply(":hammer: Working…");
 		let file: Buffer;
 		if (pie) {
 			const themes = players

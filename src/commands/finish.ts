@@ -22,6 +22,7 @@ const command: CommandDefinition = {
 				event: "attempt"
 			})
 		);
+		await msg.reply(":hammer: Working…");
 		try {
 			const tournament = await support.database.getTournament(id, TournamentStatus.IPR);
 			if (!early) {

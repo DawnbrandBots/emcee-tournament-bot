@@ -42,6 +42,7 @@ const command: CommandDefinition = {
 		} catch {
 			throw new UserError(`${player} isn't playing in **${tournament.name}**.`);
 		}
+		await msg.reply(":hammer: Working…");
 		// can also find open matches, just depends on current round
 		const match = await findClosedMatch(id, challongeId, support.challonge);
 		if (!match) {

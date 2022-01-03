@@ -38,6 +38,7 @@ const command: CommandDefinition = {
 			await msg.reply(`**${tournament.name}** has already concluded!`);
 			return;
 		}
+		await msg.reply(":hammer: Working…");
 		// Update DB first because it performs an important check that might throw
 		await support.database.updateTournament(id, name, desc);
 		await support.challonge.updateTournament(id, name, desc);

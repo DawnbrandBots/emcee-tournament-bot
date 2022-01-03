@@ -37,6 +37,7 @@ const command: CommandDefinition = {
 			return;
 		}
 
+		await msg.reply(":hammer: Working…");
 		// fetch top cut
 		const players = await support.challonge.getPlayers(id);
 		const top = players.sort((p1, p2) => p1.rank - p2.rank).slice(0, size); // descending order

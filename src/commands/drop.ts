@@ -44,6 +44,7 @@ const command: CommandDefinition = {
 			await msg.reply(`**${tournament.name}** has already concluded!`);
 			return;
 		}
+		await msg.reply(":hammer: Working…");
 		const who = `<@${msg.author.id}> (${msg.author.username}#${msg.author.discriminator})`;
 		if (participant.confirmed) {
 			if (

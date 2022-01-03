@@ -36,6 +36,7 @@ const command: CommandDefinition = {
 				skip
 			})
 		);
+		await msg.reply(":hammer: Working…");
 		await advanceRoundDiscord(support, msg.client, tournament, timer, skip);
 		support.scores.get(id)?.clear();
 		logger.verbose(

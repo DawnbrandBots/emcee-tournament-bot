@@ -38,6 +38,7 @@ const command: CommandDefinition = {
 		);
 		// if no options provided, display current status
 		if (!tb1) {
+			await msg.reply(":hammer: Working…");
 			const webTournament = await support.challonge.getTournament(id);
 			logger.verbose(
 				JSON.stringify({
@@ -69,6 +70,7 @@ const command: CommandDefinition = {
 			);
 			return;
 		}
+		await msg.reply(":hammer: Working…");
 		// if valid options provided, update tournament
 		await support.challonge.updateTieBreakers(id, [tb1, tb2, tb3] as ChallongeTieBreaker[]);
 		await msg.reply(

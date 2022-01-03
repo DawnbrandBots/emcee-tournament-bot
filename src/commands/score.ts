@@ -34,6 +34,7 @@ const command: CommandDefinition = {
 			);
 		}
 		const player = await support.database.authenticatePlayer(id, msg.author.id, msg.guildId, TournamentStatus.IPR);
+		await msg.reply(":hammer: Working…");
 		const match = await findMatch(id, player.challongeId, support.challonge);
 		if (!match) {
 			log("no match");

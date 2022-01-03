@@ -21,6 +21,7 @@ const command: CommandDefinition = {
 				event: "attempt"
 			})
 		);
+		await msg.reply(":hammer: Working…");
 		try {
 			const [id, url, guide] = await support.tournamentManager.createTournament(
 				msg.author.id,

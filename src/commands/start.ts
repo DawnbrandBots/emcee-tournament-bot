@@ -39,6 +39,7 @@ const command: CommandDefinition = {
 		if (tournament.players.length < 2) {
 			throw new UserError("Cannot start a tournament without at least 2 confirmed participants!");
 		}
+		await msg.reply(":hammer: Working…");
 		try {
 			const { registerMessages, ejected } = await support.database.prestartTournament(id);
 			logger.info(log("prestart"));
