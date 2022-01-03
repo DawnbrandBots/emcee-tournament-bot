@@ -1,5 +1,7 @@
 import { Mutex } from "async-mutex";
-import fetch from "node-fetch";
+import npmFetch from "make-fetch-happen";
+import nodeFetch from "node-fetch";
+import { tmpdir } from "os";
 import { ChallongeAPIError } from "../util/errors";
 
 export interface WebsitePlayer {
@@ -232,6 +234,13 @@ interface AddParticipantSettings {
 	misc?: string;
 }
 
+// Challonge has weak ETags, so we use a client aware of HTTP cache semantics
+// to improve performance for frequently called APIs.
+const cacheAwareFetch = npmFetch.defaults({
+	cachePath: tmpdir(),
+	retry: 1
+});
+
 export class WebsiteWrapperChallonge {
 	private baseUrl: string;
 	private mutex = new Mutex();
@@ -239,14 +248,18 @@ export class WebsiteWrapperChallonge {
 		this.baseUrl = `https://${user}:${token}@api.challonge.com/v1/`;
 	}
 
-	// TODO: upgrade to ajv to be type-safe
-	private async fetch<T>(...args: Parameters<typeof fetch>): Promise<T> {
-		// Through empirical testing, Challonge handles concurrency tremendously poorly.
-		// Multiple requests on the same tournament when one has yet to respond could fatally break
-		// the tournament outright. This synchronizes all requests made by this client,
-		// so we only make one request at a time, though we probably only need to synchronize
-		// requests on the same tournament.
-		const response = await this.mutex.runExclusive(async () => await fetch(...args));
+	// Through empirical testing, Challonge handles concurrency tremendously poorly.
+	// Multiple requests on the same tournament when one has yet to respond could fatally break
+	// the tournament outright. This synchronizes all requests made by this client,
+	// so we only make one request at a time, though we probably only need to synchronize
+	// requests on the same tournament.
+	// TODO: use to ajv to verify responses and be type-safe
+	private async fetch<T>(...args: Parameters<typeof nodeFetch>): Promise<T> {
+		// Though node-fetch and make-fetch-happen have compatible call signatures, they are subtly
+		// incompatible at the TypeScript level, and Parameters cannot extract the correct signature
+		// for make-fetch-happen because it uses overloads instead of optional parameters like node-fetch.
+		// eslint-disable-next-line prefer-spread,@typescript-eslint/no-explicit-any
+		const response = await this.mutex.runExclusive(async () => await cacheAwareFetch.apply(undefined, args as any));
 		const body = await response.json().catch(() => ({
 			errors: [
 				`Invalid ${response.headers.get("Content-Type")} response: ${response.status} ${response.statusText}`
