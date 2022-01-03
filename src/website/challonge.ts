@@ -1,3 +1,4 @@
+import { Mutex } from "async-mutex";
 import fetch from "node-fetch";
 import { ChallongeAPIError } from "../util/errors";
 
@@ -233,14 +234,19 @@ interface AddParticipantSettings {
 
 export class WebsiteWrapperChallonge {
 	private baseUrl: string;
+	private mutex = new Mutex();
 	constructor(user: string, token: string) {
 		this.baseUrl = `https://${user}:${token}@api.challonge.com/v1/`;
 	}
 
-	// this whole function sucks for typechecking because of the uncertaintly of parsing arbitrary JSON
-	// TODO: document assumptions made based on challonge API documentation
+	// TODO: upgrade to ajv to be type-safe
 	private async fetch<T>(...args: Parameters<typeof fetch>): Promise<T> {
-		const response = await fetch(...args);
+		// Through empirical testing, Challonge handles concurrency tremendously poorly.
+		// Multiple requests on the same tournament when one has yet to respond could fatally break
+		// the tournament outright. This synchronizes all requests made by this client,
+		// so we only make one request at a time, though we probably only need to synchronize
+		// requests on the same tournament.
+		const response = await this.mutex.runExclusive(async () => await fetch(...args));
 		const body = await response.json().catch(() => ({
 			errors: [
 				`Invalid ${response.headers.get("Content-Type")} response: ${response.status} ${response.statusText}`
