@@ -1,4 +1,5 @@
 import { Message } from "discord.js";
+import { FetchError } from "node-fetch";
 import { DatabaseWrapperPostgres } from "./database/postgres";
 import { DeckManager } from "./deck";
 import { OrganiserRoleProvider } from "./role/organiser";
@@ -6,7 +7,7 @@ import { ParticipantRoleProvider } from "./role/participant";
 import { Templater } from "./templates";
 import { TimeWizard } from "./timer";
 import { TournamentInterface } from "./TournamentManager";
-import { UserError } from "./util/errors";
+import { ChallongeAPIError, UserError } from "./util/errors";
 import { getLogger } from "./util/logger";
 import { Public } from "./util/types";
 import { WebsiteWrapperChallonge } from "./website/challonge";
@@ -83,7 +84,13 @@ export class Command {
 				await msg.reply(e.message).catch(logger.error);
 				return;
 			}
-			logger.error(e); // internal error
+			// make-fetch-happen and minipass-fetch do not export their otherwise identical FetchError
+			if (e instanceof ChallongeAPIError || (e as FetchError).name === "FetchError") {
+				logger.warn(this.log(msg, { args }), e);
+				await msg.reply(`Something went wrong with Challonge! Please try again later.`).catch(logger.error);
+				return;
+			}
+			logger.error(this.log(msg, { args }), e); // internal error
 		}
 	}
 }
