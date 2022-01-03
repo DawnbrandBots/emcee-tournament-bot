@@ -9,7 +9,7 @@ describe("command:addhost", function () {
 	it(
 		"requires a mentioned user",
 		test(async function (this: SinonSandbox) {
-			msg.mentions = new MessageMentions(msg, [], [], false);
+			msg.mentions = Reflect.construct(MessageMentions, [msg, [], [], false]);
 			this.stub(msg, "reply").resolves();
 			expect(command.executor(msg, ["name"], support)).to.be.rejectedWith("Message does not mention a user!");
 			expect(msg.reply).to.not.have.been.called;
@@ -18,15 +18,15 @@ describe("command:addhost", function () {
 	it(
 		"adds the mentioned user",
 		test(async function (this: SinonSandbox) {
-			msg.mentions = new MessageMentions(
+			msg.mentions = Reflect.construct(MessageMentions, [
 				msg,
-				[{ id: "nova", username: "K", discriminator: "1234", avatar: "k.png" }],
+				[{ id: "2021", username: "K", discriminator: "1234", avatar: "k.png" }],
 				[],
 				false
-			);
+			]);
 			this.stub(msg, "reply").resolves();
 			await command.executor(msg, ["name"], support);
-			expect(msg.reply).to.have.been.calledOnceWithExactly("<@nova> added as a host for **Tournament 1**!");
+			expect(msg.reply).to.have.been.calledOnceWithExactly("<@2021> added as a host for **Tournament 1**!");
 		})
 	);
 });

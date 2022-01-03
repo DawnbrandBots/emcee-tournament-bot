@@ -33,22 +33,25 @@ describe("Command class", function () {
 			editMessage: sinon.stub()
 		})
 	};
-	const msg = new Message(new Client({ intents: [] }), {
-		id: "007",
-		channel_id: "foo",
-		author: { id: "0000", username: "K", discriminator: "1234", avatar: "k.png" },
-		content: ".",
-		timestamp: "1",
-		edited_timestamp: "1",
-		tts: false,
-		mention_everyone: false,
-		mentions: [],
-		mention_roles: [],
-		attachments: [],
-		embeds: [],
-		pinned: false,
-		type: 0
-	});
+	const msg = Reflect.construct(Message, [
+		new Client({ intents: [] }),
+		{
+			id: "007",
+			channel_id: "foo",
+			author: { id: "0000", username: "K", discriminator: "1234", avatar: "k.png" },
+			content: ".",
+			timestamp: "1",
+			edited_timestamp: "1",
+			tts: false,
+			mention_everyone: false,
+			mentions: [],
+			mention_roles: [],
+			attachments: [],
+			embeds: [],
+			pinned: false,
+			type: 0
+		}
+	]);
 	const testCommand: CommandDefinition = {
 		name: "test",
 		requiredArgs: ["unused", "failmode"],
