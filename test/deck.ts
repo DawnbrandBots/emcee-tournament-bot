@@ -7,22 +7,25 @@ chai.use(chaiAsPromised);
 // This is created so we can stub out methods. Most DJS objects also need this as a constructor parameter.
 const mockBotClient = new Client({ intents: [] });
 // For the purposes of most commands, most fields don't matter. This is the minimum to make the constructor run.
-export const sampleMessage = new Message(mockBotClient, {
-	id: "007",
-	channel_id: "foo",
-	author: { id: "0000", username: "K", discriminator: "1234", avatar: "k.png" },
-	content: ".",
-	timestamp: "1",
-	edited_timestamp: "1",
-	tts: false,
-	mention_everyone: false,
-	mentions: [],
-	mention_roles: [],
-	attachments: [],
-	embeds: [],
-	pinned: false,
-	type: 0
-});
+export const sampleMessage = Reflect.construct(Message, [
+	mockBotClient,
+	{
+		id: "007",
+		channel_id: "foo",
+		author: { id: "0000", username: "K", discriminator: "1234", avatar: "k.png" },
+		content: ".",
+		timestamp: "1",
+		edited_timestamp: "1",
+		tts: false,
+		mention_everyone: false,
+		mentions: [],
+		mention_roles: [],
+		attachments: [],
+		embeds: [],
+		pinned: false,
+		type: 0
+	}
+]);
 
 let decks: DeckManager;
 

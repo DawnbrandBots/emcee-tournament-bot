@@ -8,7 +8,6 @@ import { DeckManager, initializeDeckManager } from "../../src/deck";
 import { onDirectMessage } from "../../src/events/messageCreate";
 import { ParticipantRoleProvider } from "../../src/role/participant";
 import { WebsiteWrapperChallonge } from "../../src/website/challonge";
-import { support } from "../commands/common";
 import { DatabaseWrapperMock } from "../mocks/database";
 chai.use(sinonChai);
 const test = sinonTest(sinon);
@@ -16,24 +15,27 @@ const test = sinonTest(sinon);
 // This is created so we can stub out methods. Most DJS objects also need this as a constructor parameter.
 const mockBotClient = new Client({ intents: [] });
 // For the purposes of most commands, most fields don't matter. This is the minimum to make the constructor run.
-const sampleMessage = new Message(mockBotClient, {
-	id: "testMessage",
-	channel_id: "testChannel",
-	author: { id: "testUser", username: "K", discriminator: "1234", avatar: "k.png" },
-	mentions: [],
-	attachments: [],
-	content:
-		"ydke://o6lXBaOpVwWjqVcFep21BXqdtQV6nbUF8GFdAvBhXQLwYV0CLdjxAS3Y8QEt2PEBiWdgA4lnYAOJZ2AD0hVTAtIVUwLSFVMC9slUAvbJVAL2yVQCKYF+BSmBfgUpgX4FYW7uA2Fu7gNhbu4DlDaLBJQ2iwSUNosE0GpSAtBqUgLQalICTIHIAEyByABMgcgAXu5QBV7uUAVe7lAFsdjfAQ==!yV+/A8lfvwPJX78D!sdjfAbHY3wE=!",
-	timestamp: "1",
-	edited_timestamp: "1",
-	tts: false,
-	mention_everyone: false,
-	mention_roles: [],
-	mention_channels: [],
-	embeds: [],
-	pinned: false,
-	type: 0
-});
+const sampleMessage = Reflect.construct(Message, [
+	mockBotClient,
+	{
+		id: "123456789",
+		channel_id: "testChannel",
+		author: { id: "testUser", username: "K", discriminator: "1234", avatar: "k.png" },
+		mentions: [],
+		attachments: [],
+		content:
+			"ydke://o6lXBaOpVwWjqVcFep21BXqdtQV6nbUF8GFdAvBhXQLwYV0CLdjxAS3Y8QEt2PEBiWdgA4lnYAOJZ2AD0hVTAtIVUwLSFVMC9slUAvbJVAL2yVQCKYF+BSmBfgUpgX4FYW7uA2Fu7gNhbu4DlDaLBJQ2iwSUNosE0GpSAtBqUgLQalICTIHIAEyByABMgcgAXu5QBV7uUAVe7lAFsdjfAQ==!yV+/A8lfvwPJX78D!sdjfAbHY3wE=!",
+		timestamp: "1",
+		edited_timestamp: "1",
+		tts: false,
+		mention_everyone: false,
+		mention_roles: [],
+		mention_channels: [],
+		embeds: [],
+		pinned: false,
+		type: 0
+	}
+]);
 const database = new DatabaseWrapperMock();
 let decks: DeckManager;
 const challonge = new WebsiteWrapperChallonge("", "");

@@ -17,7 +17,7 @@ describe("command:deck", function () {
 	it(
 		"requires a mentioned user",
 		test(async function (this: SinonSandbox) {
-			msg.mentions = new MessageMentions(msg, [], [], false);
+			msg.mentions = Reflect.construct(MessageMentions, [msg, [], [], false]);
 			this.stub(msg, "reply").resolves();
 			expect(command.executor(msg, ["name"], support)).to.be.rejectedWith("Message does not mention a user!");
 			expect(msg.reply).to.not.have.been.called;
@@ -26,22 +26,22 @@ describe("command:deck", function () {
 	it(
 		"retrieves the deck for the mentioned user",
 		test(async function (this: SinonSandbox) {
-			msg.mentions = new MessageMentions(
+			msg.mentions = Reflect.construct(MessageMentions, [
 				msg,
-				[{ id: "nova", username: "K", discriminator: "0000", avatar: "k.png" }],
+				[{ id: "2021", username: "K", discriminator: "0000", avatar: "k.png" }],
 				[],
 				false
-			);
+			]);
 			const replySpy = this.stub(msg, "reply").resolves();
 			this.stub(support.database, "getConfirmedPlayer").resolves({
 				challongeId: 0,
 				deck: sampleDeck.url,
-				discordId: "nova"
+				discordId: "2021"
 			});
 			this.stub(support.decks, "getDeck").returns(sampleDeck);
 			await command.executor(msg, ["name"], support);
 			expect(msg.reply).to.have.been.calledOnce;
-			expect(support.database.getConfirmedPlayer).to.have.been.calledOnceWithExactly("nova", "name");
+			expect(support.database.getConfirmedPlayer).to.have.been.calledOnceWithExactly("2021", "name");
 			expect(support.decks.getDeck).to.have.been.calledOnceWithExactly(sampleDeck.url);
 			const reply = replySpy.args[0][0] as ReplyMessageOptions;
 			const file = reply.files?.[0] as FileOptions;
