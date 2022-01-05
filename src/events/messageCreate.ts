@@ -1,4 +1,4 @@
-import { Client, Message } from "discord.js";
+import { Client, Message, Util } from "discord.js";
 import { CardVector } from "ydeck";
 import { Command, CommandDefinition, CommandSupport } from "../Command";
 import { helpMessage } from "../config";
@@ -58,7 +58,7 @@ export function makeHandler(
 function log(level: keyof typeof logger, msg: Message, payload: Record<string, unknown>): void {
 	return logger[level](
 		JSON.stringify({
-			handle: `${msg.author.username}#${msg.author.discriminator}`,
+			handle: msg.author.tag,
 			user: msg.author.id,
 			message: msg.id,
 			...payload
@@ -101,6 +101,7 @@ export async function onDirectMessage(
 		}
 		try {
 			await verifyDeckAndConfirmPending(msg, tournament, database, decks, challonge, participantRole, bot);
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		} catch (error: any) {
 			log("info", msg, { event: "confirm fail", tournament: tournament.id, error: error.message });
 			await msg.reply(
@@ -125,6 +126,7 @@ export async function onDirectMessage(
 		log("info", msg, { event: "update start", tournament: tournament.id });
 		try {
 			await verifyDeckAndUpdateConfirmed(msg, tournament, database, decks, bot);
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		} catch (error: any) {
 			log("info", msg, { event: "update fail", tournament: tournament.id, error: error.message });
 			await msg.reply(
@@ -171,9 +173,9 @@ async function verifyDeckAndConfirmPending(
 	bot: Client
 ): Promise<void> {
 	const { deck, formattedDeckMessage } = await verifyDeck(msg, decks, tournament.allowVector);
-	const username = `${msg.author.username}#${msg.author.discriminator}`;
+	const who = `${msg.author} (${Util.escapeMarkdown(msg.author.tag)})`;
 	try {
-		const challongeId = await challonge.registerPlayer(tournament.id, username, msg.author.id);
+		const challongeId = await challonge.registerPlayer(tournament.id, msg.author.tag, msg.author.id);
 		log("verbose", msg, { event: "challonge", tournament: tournament.id });
 		await database.confirmPlayer(tournament.id, msg.author.id, challongeId, deck.url);
 		log("verbose", msg, { event: "database", tournament: tournament.id });
@@ -183,7 +185,7 @@ async function verifyDeckAndConfirmPending(
 			await send(
 				bot,
 				channelId,
-				`Something went really wrong while trying to register <@${msg.author.id}> (${username}) for **${tournament.name}**!`
+				`Something went really wrong while trying to register ${who} for **${tournament.name}**!`
 			).catch(logger.error);
 		}
 		await msg
@@ -204,7 +206,7 @@ async function verifyDeckAndConfirmPending(
 			await send(
 				bot,
 				channel,
-				`<@${msg.author.id}> (${username}) has signed up for **${tournament.name}** with the following deck!${roleGrantWarning}`
+				`${who} has signed up for **${tournament.name}** with the following deck!${roleGrantWarning}`
 			);
 			await send(bot, channel, formattedDeckMessage);
 		} catch (error) {
@@ -231,7 +233,7 @@ async function verifyDeckAndUpdateConfirmed(
 	bot: Client
 ): Promise<void> {
 	const { deck, formattedDeckMessage } = await verifyDeck(msg, decks, tournament.allowVector);
-	const username = `${msg.author.username}#${msg.author.discriminator}`;
+	const who = `${msg.author} (${Util.escapeMarkdown(msg.author.tag)})`;
 	try {
 		await database.updateDeck(tournament.id, msg.author.id, deck.url);
 		log("verbose", msg, { event: "database", tournament: tournament.id });
@@ -241,7 +243,7 @@ async function verifyDeckAndUpdateConfirmed(
 			await send(
 				bot,
 				channel,
-				`Something went really wrong while trying to update deck of <@${msg.author.id}> (${username}) for **${tournament.name}**!`
+				`Something went really wrong while trying to update deck of ${who} for **${tournament.name}**!`
 			).catch(logger.error);
 		}
 		await msg
@@ -251,11 +253,7 @@ async function verifyDeckAndUpdateConfirmed(
 	}
 	for (const channel of tournament.privateChannels) {
 		try {
-			await send(
-				bot,
-				channel,
-				`<@${msg.author.id}> (${username}) has updated their deck for **${tournament.name}** to the following!`
-			);
+			await send(bot, channel, `${who} has updated their deck for **${tournament.name}** to the following!`);
 			await send(bot, channel, formattedDeckMessage);
 		} catch (error) {
 			logger.error(error);

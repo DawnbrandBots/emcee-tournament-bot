@@ -7,12 +7,14 @@ Move GitHub repository to the Dawnbrand Bots organization
 ### New Features
 - Switch to Discord.js from Eris so we can make use of recent Discord features (#325)
 - Refer to tournament host for time procedures instead of modern synchronous TCG rules (#358)
+- Potentially improve stability with Challonge (#363)
 
 ### Bug Fixes
 - Fix all file attachments breaking due to the switch to Discord.js, breaking two commands and part of registration (#327)
 - Do not respond to `@everyone` and `@here`, another effect of the change to Discord.js (#330)
 - Fix register messages being deleted on bot startup (#332)
 - Fix race condition causing multiple round finish messages (#347)
+- Fix Discord tags sometimes formatting as markdown (#364)
 
 ## 2021-07-31 ([Chalislime Monthly July 2021](https://challonge.com/csmjuly2021))
 ### New Features

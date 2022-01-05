@@ -111,7 +111,6 @@ export function registerEvents(bot: Client, prefix: string, support: CommandSupp
 					})
 				);
 			};
-			// TODO: username + discriminator should be known here
 			if (participant.confirmed) {
 				if (
 					await dropPlayerChallonge(

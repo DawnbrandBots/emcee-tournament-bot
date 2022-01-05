@@ -1,3 +1,4 @@
+import { Util } from "discord.js";
 import { CommandDefinition } from "../Command";
 import { TournamentStatus } from "../database/interface";
 import { Participant } from "../database/orm";
@@ -45,7 +46,7 @@ const command: CommandDefinition = {
 			return;
 		}
 		await msg.reply(":hammer: Working…");
-		const who = `<@${msg.author.id}> (${msg.author.username}#${msg.author.discriminator})`;
+		const who = `${msg.author} (${Util.escapeMarkdown(msg.author.tag)})`;
 		if (participant.confirmed) {
 			if (
 				await dropPlayerChallonge(

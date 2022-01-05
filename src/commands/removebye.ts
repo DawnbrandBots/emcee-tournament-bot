@@ -1,3 +1,4 @@
+import { Util } from "discord.js";
 import { CommandDefinition } from "../Command";
 import { firstMentionOrFail } from "../util/discord";
 import { getLogger } from "../util/logger";
@@ -36,7 +37,8 @@ const command: CommandDefinition = {
 			})
 		);
 		const names = byes.map(snowflake => `<@${snowflake}>`).join(", ");
-		await msg.reply(`Bye removed for ${player} (${player.tag}) in **${tournament.name}**!\nAll byes: ${names}`);
+		const who = `${player} (${Util.escapeMarkdown(player.tag)})`;
+		await msg.reply(`Bye removed for ${who} in **${tournament.name}**!\nAll byes: ${names}`);
 	}
 };
 

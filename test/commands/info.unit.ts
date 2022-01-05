@@ -23,7 +23,7 @@ describe("createTournamentEmbed", function () {
 	it("returns an embed", () => {
 		const tournament = makeTournament();
 		const embed = createTournamentEmbed(tournament);
-		const embedNoFalsy = Object.fromEntries(Object.entries(embed.toJSON() as any).filter(([, value]) => value));
+		const embedNoFalsy = Object.fromEntries(Object.entries(embed.toJSON()).filter(([, value]) => value));
 		expect(embedNoFalsy).to.deep.equal({
 			type: "rich",
 			title: "**Drive Your Fire**",
@@ -73,7 +73,7 @@ describe("createTournamentEmbed", function () {
 		tournament.hosts = ["A-ONE", "Rute", "Aki"];
 		tournament.confirmed = [p("Yusei"), p("Jack"), p("Crow"), p("Aki"), p("Ruka"), p("Rua")];
 		const embed = createTournamentEmbed(tournament);
-		const embedNoFalsy = Object.fromEntries(Object.entries(embed.toJSON() as any).filter(([, value]) => value));
+		const embedNoFalsy = Object.fromEntries(Object.entries(embed.toJSON()).filter(([, value]) => value));
 		expect(embedNoFalsy).to.deep.equal({
 			type: "rich",
 			title: "**Drive Your Fire**",
