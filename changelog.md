@@ -13,6 +13,7 @@ Move GitHub repository to the Dawnbrand Bots organization
 - Do not respond to `@everyone` and `@here`, another effect of the change to Discord.js (#330)
 - Fix register messages being deleted on bot startup (#332)
 - Fix race condition causing multiple round finish messages (#347)
+- Fix Discord tags sometimes formatting as markdown (#364)
 
 ## 2021-07-31 ([Chalislime Monthly July 2021](https://challonge.com/csmjuly2021))
 ### New Features
