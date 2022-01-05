@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import sinon, { SinonSandbox } from "sinon";
+import { SinonSandbox } from "sinon";
 import command from "../../src/commands/score";
 import { TournamentStatus } from "../../src/database/interface";
 import { msg, support, test } from "./common";

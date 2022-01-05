@@ -75,6 +75,7 @@ describe("Direct message submissions", function () {
 			this.stub(challonge, "registerPlayer").resolves();
 			const replySpy = this.stub(sampleMessage, "reply").resolves();
 			const send = this.spy();
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			const fetchStub = this.stub(mockBotClient.channels, "fetch").resolves({ isText: () => true, send } as any);
 			await onDirectMessage(sampleMessage, database, decks, challonge, participantRole, mockBotClient);
 			expect(fetchStub).to.have.been.calledWith("channel2");
@@ -174,6 +175,7 @@ describe("Direct message submissions", function () {
 			this.stub(database, "updateDeck").resolves();
 			const replySpy = this.stub(sampleMessage, "reply").resolves();
 			const send = this.spy();
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			const fetchStub = this.stub(mockBotClient.channels, "fetch").resolves({ isText: () => true, send } as any);
 			await onDirectMessage(sampleMessage, database, decks, challonge, participantRole, mockBotClient);
 			expect(fetchStub).to.have.been.calledWith("channel2");
