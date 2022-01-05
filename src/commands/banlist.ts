@@ -1,5 +1,5 @@
 import { createHash } from "crypto";
-import { MessageAttachment } from "discord.js";
+import { MessageAttachment, Util } from "discord.js";
 import fetch from "node-fetch";
 import { CommandDefinition } from "../Command";
 import { TournamentStatus } from "../database/interface";
@@ -54,8 +54,9 @@ const command: CommandDefinition = {
 			if (msg.attachments.size === 1 && attachment && attachment.name?.endsWith(".json")) {
 				// cap filesize for security at 0.5 MB
 				if (attachment.size > 512 * 1024) {
+					const who = `${Util.escapeMarkdown(msg.author.tag)} (${msg.author.id})`;
 					logger.notify(
-						`Potential abuse warning! ${msg.author.username}#${msg.author.discriminator} (${msg.author.id}) uploaded oversized card pool JSON "${attachment.name}" (${attachment.size}B).`
+						`Potential abuse warning! ${who} uploaded oversized card pool JSON "${attachment.name}" (${attachment.size}B).`
 					);
 					throw new UserError("JSON file too large! Please try again with a smaller file.");
 				}
