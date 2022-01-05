@@ -101,6 +101,7 @@ export async function onDirectMessage(
 		}
 		try {
 			await verifyDeckAndConfirmPending(msg, tournament, database, decks, challonge, participantRole, bot);
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		} catch (error: any) {
 			log("info", msg, { event: "confirm fail", tournament: tournament.id, error: error.message });
 			await msg.reply(
@@ -125,6 +126,7 @@ export async function onDirectMessage(
 		log("info", msg, { event: "update start", tournament: tournament.id });
 		try {
 			await verifyDeckAndUpdateConfirmed(msg, tournament, database, decks, bot);
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		} catch (error: any) {
 			log("info", msg, { event: "update fail", tournament: tournament.id, error: error.message });
 			await msg.reply(

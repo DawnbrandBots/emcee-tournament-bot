@@ -129,7 +129,7 @@ export class ParticipantRoleProvider {
 			try {
 				const role = await server.roles.fetch(id);
 				// TODO: handle null role
-				await role!.delete();
+				await role?.delete();
 			} catch (e) {
 				logger.error(e);
 			}
