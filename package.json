@@ -47,6 +47,9 @@
 		"@types/make-fetch-happen": "^9.0.1",
 		"@types/node-fetch": "^2.5.10"
 	},
+	"resolutions": {
+		"@types/node": "^16.11.19"
+	},
 	"eslintConfig": {
 		"extends": "@alphakretin"
 	},
