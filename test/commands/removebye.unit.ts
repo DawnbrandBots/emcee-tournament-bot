@@ -9,7 +9,7 @@ describe("command:removebye", function () {
 	it(
 		"requires a mentioned user",
 		test(async function (this: SinonSandbox) {
-			msg.mentions = new MessageMentions(msg, [], [], false);
+			msg.mentions = Reflect.construct(MessageMentions, [msg, [], [], false]);
 			this.stub(msg, "reply").resolves();
 			expect(command.executor(msg, ["name"], support)).to.be.rejectedWith("Message does not mention a user!");
 			expect(msg.reply).to.not.have.been.called;
@@ -18,17 +18,17 @@ describe("command:removebye", function () {
 	it(
 		"removes the mentioned user",
 		test(async function (this: SinonSandbox) {
-			msg.mentions = new MessageMentions(
+			msg.mentions = Reflect.construct(MessageMentions, [
 				msg,
-				[{ id: "nova", username: "K", discriminator: "0000", avatar: "k.png" }],
+				[{ id: "2021", username: "K", discriminator: "0000", avatar: "k.png" }],
 				[],
 				false
-			);
+			]);
 			this.stub(msg, "reply").resolves();
 			this.stub(support.database, "removeBye").resolves([]);
 			await command.executor(msg, ["name"], support);
 			expect(msg.reply).to.have.been.calledOnceWithExactly(
-				"Bye removed for <@nova> (K#0000) in **Tournament 1**!\nAll byes: "
+				"Bye removed for <@2021> (K#0000) in **Tournament 1**!\nAll byes: "
 			);
 		})
 	);

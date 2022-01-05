@@ -1,3 +1,4 @@
+import { Util } from "discord.js";
 import { CommandDefinition } from "../Command";
 import { TournamentStatus } from "../database/interface";
 import { findClosedMatch } from "../util/challonge";
@@ -62,9 +63,8 @@ const command: CommandDefinition = {
 				event: "success"
 			})
 		);
-		await msg.reply(
-			`Score of ${scores[0]}-${scores[1]} submitted in favour of ${player} (${player.tag}) in **${tournament.name}**!`
-		);
+		const who = `${player} (${Util.escapeMarkdown(player.tag)})`;
+		await msg.reply(`Score of ${scores[0]}-${scores[1]} submitted in favour of ${who} in **${tournament.name}**!`);
 	}
 };
 

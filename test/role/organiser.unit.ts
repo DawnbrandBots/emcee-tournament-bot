@@ -10,9 +10,9 @@ describe("OrganiserRoleProvider", function () {
 	it("creates and caches roles", async function () {
 		const role = new OrganiserRoleProvider("MC-TO");
 		const mockBotClient = new Client({ intents: [] });
-		const server = new Guild(mockBotClient, { id: "mock", unavailable: true });
+		const server = Reflect.construct(Guild, [mockBotClient, { id: "mock", unavailable: true }]);
 		const createRoleStub = sinon.stub(server.roles, "create").resolves(
-			new Role(
+			Reflect.construct(Role, [
 				mockBotClient,
 				{
 					id: "mock role",
@@ -25,7 +25,7 @@ describe("OrganiserRoleProvider", function () {
 					mentionable: false
 				},
 				server
-			)
+			])
 		);
 
 		const result = await role.create(server);
@@ -40,10 +40,10 @@ describe("OrganiserRoleProvider", function () {
 	it("finds existing roles to cache", async function () {
 		const role = new OrganiserRoleProvider("MC-TO");
 		const mockBotClient = new Client({ intents: [] });
-		const server = new Guild(mockBotClient, { id: "mock", unavailable: true });
+		const server = Reflect.construct(Guild, [mockBotClient, { id: "mock", unavailable: true }]);
 		server.roles.cache.set(
 			"existing mock role",
-			new Role(
+			Reflect.construct(Role, [
 				mockBotClient,
 				{
 					id: "existing mock role",
@@ -56,10 +56,10 @@ describe("OrganiserRoleProvider", function () {
 					mentionable: false
 				},
 				server
-			)
+			])
 		);
 		const createRoleStub = sinon.stub(server.roles, "create").resolves(
-			new Role(
+			Reflect.construct(Role, [
 				mockBotClient,
 				{
 					id: "mock role",
@@ -72,7 +72,7 @@ describe("OrganiserRoleProvider", function () {
 					mentionable: false
 				},
 				server
-			)
+			])
 		);
 
 		const result = await role.get(server);
@@ -82,25 +82,23 @@ describe("OrganiserRoleProvider", function () {
 	it("recreates roles", async function () {
 		const role = new OrganiserRoleProvider("MC-TO");
 		const mockBotClient = new Client({ intents: [] });
-		const server = new Guild(mockBotClient, { id: "mock", unavailable: true });
-		const createRoleStub = sinon
-			.stub(server.roles, "create")
-			.resolves(
-				new Role(
-					mockBotClient,
-					{
-						id: "mock role",
-						name: "",
-						color: 0,
-						hoist: false,
-						position: 0,
-						permissions: "",
-						managed: false,
-						mentionable: false
-					},
-					server
-				)
-			);
+		const server = Reflect.construct(Guild, [mockBotClient, { id: "mock", unavailable: true }]);
+		const createRoleStub = sinon.stub(server.roles, "create").resolves(
+			Reflect.construct(Role, [
+				mockBotClient,
+				{
+					id: "mock role",
+					name: "",
+					color: 0,
+					hoist: false,
+					position: 0,
+					permissions: "",
+					managed: false,
+					mentionable: false
+				},
+				server
+			])
+		);
 
 		const result = await role.get(server);
 		expect(result).to.equal("mock role");
