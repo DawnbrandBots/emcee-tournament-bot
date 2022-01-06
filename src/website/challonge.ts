@@ -412,9 +412,13 @@ export class WebsiteWrapperChallonge {
 	}
 
 	public async removePlayer(tournamentId: string, playerId: number): Promise<void> {
-		await fetch(`${this.baseUrl}tournaments/${tournamentId}/participants/${playerId}.json`, {
-			method: "DELETE"
-		});
+		// This endpoint has no response payload to parse
+		await this.mutex.runExclusive(
+			async () =>
+				await cacheAwareFetch(`${this.baseUrl}tournaments/${tournamentId}/participants/${playerId}.json`, {
+					method: "DELETE"
+				})
+		);
 	}
 
 	private async indexMatches(
