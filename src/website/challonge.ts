@@ -412,7 +412,7 @@ export class WebsiteWrapperChallonge {
 	}
 
 	public async removePlayer(tournamentId: string, playerId: number): Promise<void> {
-		await fetch(`${this.baseUrl}tournaments/${tournamentId}/participants/${playerId}.json`, {
+		await this.fetch(`${this.baseUrl}tournaments/${tournamentId}/participants/${playerId}.json`, {
 			method: "DELETE"
 		});
 	}
