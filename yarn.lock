@@ -860,12 +860,12 @@
   resolved "https://registry.yarnpkg.com/@types/json-schema/-/json-schema-7.0.9.tgz#97edc9037ea0c38585320b28964dde3b39e4660d"
   integrity sha512-qcUXuemtEu+E5wZSJHNxUXeCZhAfXKQ41D+duX+VYPde7xyEVZci+/oXKJL13tnRs9lR2pr4fod59GT6/X1/yQ==
 
-"@types/make-fetch-happen@^9.0.1":
-  version "9.0.1"
-  resolved "https://registry.yarnpkg.com/@types/make-fetch-happen/-/make-fetch-happen-9.0.1.tgz#90d391c9b8f6ba1470302e9f44d6c83f77bf7835"
-  integrity sha512-lWBdQyt4O5Tci3fkl60ZBiLohj2ZJSTmd/N+rLUtlXeVhAzRZojzpJOWuJLULdQijtIhhwXkaJM2cPi3ufd+hA==
+"@types/make-fetch-happen@^9.0.2":
+  version "9.0.2"
+  resolved "https://registry.yarnpkg.com/@types/make-fetch-happen/-/make-fetch-happen-9.0.2.tgz#999f0869c17e7ef2b8e4c8e5204ad5730b56bcf1"
+  integrity sha512-T67G7rguwzJT1wAxNwim+d3shYcQsPnAKVLfXVMm2O0LHgdsR/xmG95LavgELe2OTaimTQKPsovjK4wFftg01g==
   dependencies:
-    "@types/node-fetch" "^2.5.12"
+    "@types/node-fetch" "*"
     "@types/retry" "*"
     "@types/ssri" "*"
 
@@ -879,10 +879,10 @@
   resolved "https://registry.yarnpkg.com/@types/ms/-/ms-0.7.31.tgz#31b7ca6407128a3d2bbc27fe2d21b345397f6197"
   integrity sha512-iiUgKzV9AuaEkZqkOLDIvlQiL6ltuZd9tGcW3gwpnX8JbuiuhFlEGmmFXEXkN50Cvq7Os88IY2v0dkDqXYWVgA==
 
-"@types/node-fetch@^2.5.10", "@types/node-fetch@^2.5.12":
-  version "2.5.12"
-  resolved "https://registry.yarnpkg.com/@types/node-fetch/-/node-fetch-2.5.12.tgz#8a6f779b1d4e60b7a57fb6fd48d84fb545b9cc66"
-  integrity sha512-MKgC4dlq4kKNa/mYrwpKfzQMB5X3ee5U6fSprkKpToBqBmX4nFZL9cW5jl6sWn+xpRJ7ypWh2yyqqr8UUCstSw==
+"@types/node-fetch@*", "@types/node-fetch@^2.5.10", "@types/node-fetch@^2.5.12":
+  version "2.6.1"
+  resolved "https://registry.yarnpkg.com/@types/node-fetch/-/node-fetch-2.6.1.tgz#8f127c50481db65886800ef496f20bbf15518975"
+  integrity sha512-oMqjURCaxoSIsHSr1E47QHzbmzNR5rK8McHuNb11BOM9cHcIK3Avy0s/b2JlXHoQGTYS3NsvWzV1M0iK7l0wbA==
   dependencies:
     "@types/node" "*"
     form-data "^3.0.0"
