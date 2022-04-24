@@ -27,15 +27,15 @@
 	"dependencies": {
 		"@fast-csv/format": "^4.3.5",
 		"async-mutex": "^0.3.2",
-		"debug": "^4.3.3",
+		"debug": "^4.3.4",
 		"discord.js": "^13.6.0",
-		"dotenv": "10.0.0",
-		"make-fetch-happen": "^9.1.0",
+		"dotenv": "^16.0.0",
+		"make-fetch-happen": "^10.1.2",
 		"node-fetch": "^2.6.7",
-		"pg": "^8.7.1",
+		"pg": "^8.7.3",
 		"reflect-metadata": "^0.1.13",
-		"supports-color": "^9.2.1",
-		"typeorm": "^0.2.41",
+		"supports-color": "^9.2.2",
+		"typeorm": "^0.2.45",
 		"ydeck": "^0.2.4",
 		"ydke": "^1.1.0",
 		"ygopro-data": "1.3.6"
@@ -44,11 +44,11 @@
 		"@alphakretin/essentials": "^3.0.0",
 		"@alphakretin/mocha-ecosystem": "^1.1.0",
 		"@types/debug": "^4.1.7",
-		"@types/make-fetch-happen": "^9.0.1",
-		"@types/node-fetch": "^2.5.10"
+		"@types/make-fetch-happen": "^9.0.2",
+		"@types/node-fetch": "^2.6.1"
 	},
 	"resolutions": {
-		"@types/node": "^16.11.19"
+		"@types/node": "^16.11.27"
 	},
 	"eslintConfig": {
 		"extends": "@alphakretin"
