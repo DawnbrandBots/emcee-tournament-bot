@@ -6,7 +6,7 @@ const logger = getLogger("timewizard");
 
 export class TimeWizard {
 	private timers: Map<string, PersistentTimer[]> = new Map(); // index: tournament id
-	constructor(private delegate: PersistentTimerDiscordDelegate) {}
+	constructor(public readonly delegate: PersistentTimerDiscordDelegate) {}
 
 	public async load(): Promise<void> {
 		if (this.timers.size) {
