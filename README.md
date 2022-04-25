@@ -1,3 +1,5 @@
+## ❗ [Request for Comments: Emcee's future is uncertain](https://github.com/DawnbrandBots/emcee-tournament-bot/issues/395). Your input is appreciated!
+
 # Emcee [<img src="https://img.shields.io/static/v1?label=invite%20to&message=Discord&color=informational&style=for-the-badge" alt="Invite to Discord" align="right" />](https://discord.com/api/oauth2/authorize?client_id=691882968809209917&permissions=275146467392&scope=bot)
 
 <!-- Unfortunately, GitHub Markdown sanitizes style attributes, so we will have to use a deprecated HTML attribute. -->
