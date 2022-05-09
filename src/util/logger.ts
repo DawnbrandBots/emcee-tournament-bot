@@ -13,7 +13,8 @@ function withWebhook(log: debug.Debugger): Debug["log"] {
 			webhook
 				.send({
 					username: log.namespace,
-					content: util.format(...args)
+					content: util.format(...args),
+					allowedMentions: { parse: [] }
 				})
 				.catch(error => {
 					log("Failed to notify webhook.", error);
