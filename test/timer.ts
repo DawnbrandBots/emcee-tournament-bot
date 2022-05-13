@@ -43,7 +43,10 @@ describe("PersistentTimer is a timer", function () {
 				5
 			);
 			expect(timer.isActive()).to.be.true;
-			expect(send).to.have.been.calledWith("1234567890", "Time left in the round: `00:10`");
+			expect(send).to.have.been.calledWith(
+				"1234567890",
+				"Time left in the round: `00:10`. Ends <t:10> (<t:10:R>)."
+			);
 			expect(Countdown).to.have.been.called;
 			expect(countdownEntityStub.save).to.have.been.called;
 			expect(send).to.have.been.calledBefore(countdownEntityStub.save);
@@ -65,15 +68,27 @@ describe("PersistentTimer is a timer", function () {
 			expect(edit).to.not.have.been.called;
 			// First tick
 			await this.clock.tickAsync(4500);
-			expect(edit).to.have.been.calledOnceWith("1234567890", "testId", "Time left in the round: `00:10`");
+			expect(edit).to.have.been.calledOnceWith(
+				"1234567890",
+				"testId",
+				"Time left in the round: `00:10`. Ends <t:15> (<t:15:R>)."
+			);
 			// Second tick
 			await this.clock.tickAsync(5000);
 			expect(edit).to.have.been.calledTwice;
-			expect(edit).to.have.been.calledWith("1234567890", "testId", "Time left in the round: `00:05`");
+			expect(edit).to.have.been.calledWith(
+				"1234567890",
+				"testId",
+				"Time left in the round: `00:05`. Ends <t:15> (<t:15:R>)."
+			);
 			// Third tick, we should be finished
 			await this.clock.tickAsync(5000);
 			expect(edit).to.have.been.calledThrice;
-			expect(edit).to.have.been.calledWith("1234567890", "testId", "Time left in the round: `00:00`");
+			expect(edit).to.have.been.calledWith(
+				"1234567890",
+				"testId",
+				"Time left in the round: `00:00`. Ends <t:15> (<t:15:R>)."
+			);
 			expect(send).to.have.been.calledWith("1234567890", "Test timer done");
 			expect(countdownEntityStub.remove).to.have.been.called;
 			// Nothing else should happen now
