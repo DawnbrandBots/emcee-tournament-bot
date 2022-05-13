@@ -1,3 +1,4 @@
+import { time } from "@discordjs/builders";
 import { Constants, DiscordAPIError } from "discord.js";
 import { getConnection } from "typeorm";
 import { Countdown } from "../database/orm";
@@ -47,7 +48,10 @@ export class PersistentTimer {
 		const endMilli = end.getTime();
 		const nowMilli = Date.now();
 		const left = this.formatTime(endMilli - nowMilli);
-		const messageId = await discord.sendMessage(channelId, `Time left in the round: \`${left}\``);
+		const messageId = await discord.sendMessage(
+			channelId,
+			`Time left in the round: \`${left}\`. Ends ${time(end)} (${time(end, "R")}).`
+		);
 
 		const entity = new Countdown();
 		entity.end = end;
@@ -117,8 +121,9 @@ export class PersistentTimer {
 
 	/// Only to be called by setInterval
 	protected async tick(): Promise<void> {
+		const end = this.entity.end;
 		const now = new Date();
-		if (this.entity.end <= now) {
+		if (end <= now) {
 			await this.abort();
 			try {
 				await this.discord.sendMessage(this.entity.channelId, this.entity.finalMessage);
@@ -126,14 +131,14 @@ export class PersistentTimer {
 				logger.warn(error);
 			}
 		}
-		const secondsRemaining = Math.ceil((now.getTime() - this.entity.end.getTime()) / 1000);
+		const secondsRemaining = Math.ceil((now.getTime() - end.getTime()) / 1000);
 		if (secondsRemaining % this.entity.cronIntervalSeconds == 0) {
-			const left = PersistentTimer.formatTime(this.entity.end.getTime() - Date.now());
+			const left = PersistentTimer.formatTime(end.getTime() - Date.now());
 			try {
 				await this.discord.editMessage(
 					this.entity.channelId,
 					this.entity.messageId,
-					`Time left in the round: \`${left}\``
+					`Time left in the round: \`${left}\`. Ends ${time(end)} (${time(end, "R")}).`
 				);
 			} catch (error) {
 				logger.warn(`tick: could not edit ${this.entity.channelId} ${this.entity.messageId}`);
