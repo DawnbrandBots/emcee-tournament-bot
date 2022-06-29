@@ -4584,10 +4584,10 @@ ydke@^1.1.0:
   resolved "https://registry.yarnpkg.com/ydke/-/ydke-1.1.0.tgz#acfbe5fed8b82716c5280594f7f815eec34a9b1e"
   integrity sha512-q6EbAMtup1stTOER9/PNLH/uDQ1guYmiTU/+jn1BSePmkfvm9Rky49byQDNqYQjwrSXoLaoygkQMGIwNQRr+cg==
 
-ygopro-data@1.3.6:
-  version "1.3.6"
-  resolved "https://registry.yarnpkg.com/ygopro-data/-/ygopro-data-1.3.6.tgz#98028f9586185722004ee1c93b2f775143386008"
-  integrity sha512-+3OV6mVSNXTDqdmftX8LiECgX0qbXVrIxVpig/E22n1lOMQBnpLRKf9uHkxEclUHYvkq5xWzhKhO8qaYSVES1g==
+ygopro-data@1.4.1:
+  version "1.4.1"
+  resolved "https://registry.yarnpkg.com/ygopro-data/-/ygopro-data-1.4.1.tgz#21ed6e619013cd4b45a63d6dd1cd15b8c8c3aad9"
+  integrity sha512-qbfjBZgv1+j4asPAAZ1KQIpUzauI/98JrA+AIHJ1h2PNf6pL8h/qPc/pfrQJcE/ZFIzWKl0a2MToRNMsZZFRqQ==
   dependencies:
     "@octokit/rest" "^18.2.0"
     better-sqlite3 "^7.1.2"
