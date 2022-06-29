@@ -42,7 +42,7 @@
 		"ygopro-data": "1.3.6"
 	},
 	"devDependencies": {
-		"@alphakretin/essentials": "^3.0.0",
+		"@alphakretin/essentials": "^4.0.0",
 		"@alphakretin/mocha-ecosystem": "^1.1.0",
 		"@types/debug": "^4.1.7",
 		"@types/make-fetch-happen": "^9.0.2",
