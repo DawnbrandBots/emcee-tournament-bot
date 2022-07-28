@@ -45,7 +45,7 @@
 		"@alphakretin/essentials": "^4.0.0",
 		"@alphakretin/mocha-ecosystem": "^1.1.0",
 		"@types/debug": "^4.1.7",
-		"@types/make-fetch-happen": "^9.0.2",
+		"@types/make-fetch-happen": "^10.0.0",
 		"@types/node-fetch": "^2.6.2"
 	},
 	"resolutions": {
