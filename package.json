@@ -33,7 +33,7 @@
 		"dotenv": "^16.0.1",
 		"make-fetch-happen": "^10.1.8",
 		"node-fetch": "^2.6.7",
-		"pg": "^8.7.3",
+		"pg": "^8.8.0",
 		"reflect-metadata": "^0.1.13",
 		"supports-color": "^9.2.2",
 		"typeorm": "^0.2.45",
