@@ -30,7 +30,7 @@
 		"async-mutex": "^0.3.2",
 		"debug": "^4.3.4",
 		"discord.js": "^13.10.3",
-		"dotenv": "^16.0.1",
+		"dotenv": "^16.0.3",
 		"make-fetch-happen": "^10.1.8",
 		"node-fetch": "^2.6.7",
 		"pg": "^8.8.0",
