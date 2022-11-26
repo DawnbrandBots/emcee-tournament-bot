@@ -966,10 +966,10 @@
     "@types/node" "*"
     form-data "^3.0.0"
 
-"@types/node@*", "@types/node@16.9.1", "@types/node@^14.0.1", "@types/node@^16.11.35", "@types/node@^16.18.2":
-  version "16.18.2"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-16.18.2.tgz#77878acc68c5f6241454008beedd39513bd8e851"
-  integrity sha512-KIGQJyya+opDCFvDSZMNNS899ov5jlNdtN7PypgHWeb8e+5vWISdwTRo/ClsNVlmDihzOGqFyNBDamUs7TQQCA==
+"@types/node@*", "@types/node@16.9.1", "@types/node@^14.0.1", "@types/node@^16.11.35", "@types/node@^16.18.3":
+  version "16.18.3"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-16.18.3.tgz#d7f7ba828ad9e540270f01ce00d391c54e6e0abc"
+  integrity sha512-jh6m0QUhIRcZpNv7Z/rpN+ZWXOicUUQbSoWks7Htkbb9IjFQj4kzcX/xFCkjstCj5flMsN8FiSvt+q+Tcs4Llg==
 
 "@types/proxyquire@^1.3.28":
   version "1.3.28"
@@ -1765,10 +1765,10 @@ dir-glob@^3.0.1:
   dependencies:
     path-type "^4.0.0"
 
-discord-api-types@^0.33.5, discord-api-types@^0.36.2, discord-api-types@^0.37.12, discord-api-types@^0.37.15:
-  version "0.37.15"
-  resolved "https://registry.yarnpkg.com/discord-api-types/-/discord-api-types-0.37.15.tgz#2b158b75091cd573dfd7d8c79b25dde3241d65e6"
-  integrity sha512-2SpscsamTtctJflnz1J6cPp99PLs10DNGi2rrOdjID3KhP1nwsoJHPvcLe6zwcYxZnRdA/71M85RCNOQl83u1A==
+discord-api-types@^0.33.5, discord-api-types@^0.36.2, discord-api-types@^0.37.12, discord-api-types@^0.37.20:
+  version "0.37.20"
+  resolved "https://registry.yarnpkg.com/discord-api-types/-/discord-api-types-0.37.20.tgz#f23894e3e6b894abb5431ff6c4aa52471360377c"
+  integrity sha512-uAO+55E11rMkYR36/paE1vKN8c2bZa1mgrIaiQIBgIZRKZTDIGOZB+8I5eMRPFJcGxrg16riUu+0aTu2JQEPew==
 
 discord.js@^13.12.0:
   version "13.12.0"
@@ -4548,10 +4548,10 @@ yargs@^17.0.1:
     y18n "^5.0.5"
     yargs-parser "^21.0.0"
 
-ydeck@^0.2.9:
-  version "0.2.9"
-  resolved "https://registry.yarnpkg.com/ydeck/-/ydeck-0.2.9.tgz#4a51162801e75f78364f4550e0e29f113b11ffce"
-  integrity sha512-W9I1vhXqzlhLsondS+D59TIbtTHJ2qCRV3JqYmkuprWWvWqGa3D1RtcmehfQ6Zyw0/rgD91NRV9TyEhga5Rfxg==
+ydeck@^0.2.10:
+  version "0.2.10"
+  resolved "https://registry.yarnpkg.com/ydeck/-/ydeck-0.2.10.tgz#cad560fc875580232be635c8e0ea822f336f15bc"
+  integrity sha512-KL0jYtXLXYm+NaiAv6YFGyRepFb2C7a56EM1tbiWSmxo6YptnSvzVbD6HELMFXfL2oWuWazX+d6BKiF+R5Ua1w==
   dependencies:
     ydke "^1.1.0"
 

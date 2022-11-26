@@ -37,7 +37,7 @@
 		"reflect-metadata": "^0.1.13",
 		"supports-color": "^9.2.3",
 		"typeorm": "^0.2.45",
-		"ydeck": "^0.2.9",
+		"ydeck": "^0.2.10",
 		"ydke": "^1.1.0",
 		"ygopro-data": "1.4.1"
 	},
@@ -49,8 +49,8 @@
 		"@types/node-fetch": "^2.6.2"
 	},
 	"resolutions": {
-		"@types/node": "^16.18.2",
-		"discord-api-types": "^0.37.15"
+		"@types/node": "^16.18.3",
+		"discord-api-types": "^0.37.20"
 	},
 	"eslintConfig": {
 		"extends": "@alphakretin"
