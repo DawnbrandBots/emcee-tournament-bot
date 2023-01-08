@@ -21,7 +21,7 @@
 	],
 	"license": "AGPL-3.0-or-later",
 	"engines": {
-		"node": ">=16.6",
+		"node": ">=18",
 		"yarn": "1.22.x"
 	},
 	"dependencies": {
@@ -42,14 +42,14 @@
 		"ygopro-data": "1.4.1"
 	},
 	"devDependencies": {
-		"@alphakretin/essentials": "^4.0.0",
+		"@alphakretin/essentials": "^5.0.0",
 		"@alphakretin/mocha-ecosystem": "^1.1.0",
 		"@types/debug": "^4.1.7",
 		"@types/make-fetch-happen": "^10.0.0",
 		"@types/node-fetch": "^2.6.2"
 	},
 	"resolutions": {
-		"@types/node": "^16.18.3",
+		"@types/node": "^18.11.18",
 		"discord-api-types": "^0.37.20"
 	},
 	"eslintConfig": {
