@@ -1,6 +1,6 @@
 import { REST } from "@discordjs/rest";
-import { APIUser, RESTPostAPIApplicationCommandsJSONBody, Routes } from "discord-api-types/v9";
-import { ApplicationCommandOptionTypes } from "discord.js/typings/enums";
+import { APIUser, RESTPostAPIApplicationCommandsJSONBody, Routes } from "discord-api-types/v10";
+import { ApplicationCommandOptionType } from "discord.js";
 
 // Copied from Bastion and hardcoded for the one experimental command
 
@@ -15,13 +15,13 @@ export async function registerSlashCommands(guild?: `${bigint}`): Promise<void> 
 			description: "Starts a timer in the current channel.",
 			options: [
 				{
-					type: ApplicationCommandOptionTypes.STRING.valueOf(),
+					type: ApplicationCommandOptionType.String.valueOf(),
 					name: "duration",
 					description: "How long to run the timer for in the form `hh:mm` or `mm`.",
 					required: true
 				},
 				{
-					type: ApplicationCommandOptionTypes.STRING.valueOf(),
+					type: ApplicationCommandOptionType.String.valueOf(),
 					name: "final_message",
 					description: "What to send out when the timer runs out",
 					required: true
