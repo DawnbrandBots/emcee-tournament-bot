@@ -1,4 +1,4 @@
-import { Message, MessageAttachment, MessageEmbed, ReplyMessageOptions, Util } from "discord.js";
+import { escapeMarkdown, Message, MessageAttachment, MessageEmbed, ReplyMessageOptions } from "discord.js";
 import fetch from "node-fetch";
 import { CardIndex, CardVector, createAllowVector, Deck, DeckError, ICard } from "ydeck";
 import { Card, enums, YgoData } from "ygopro-data";
@@ -110,7 +110,7 @@ export class DeckManager {
 			// cap filesize for security
 			if (attachment.size > MAX_BYTES) {
 				// TODO: Would be useful to report tournament and server, but we don't have that data in this scope
-				const who = `${Util.escapeMarkdown(msg.author.tag)} (${msg.author.id})`;
+				const who = `${escapeMarkdown(msg.author.tag)} (${msg.author.id})`;
 				logger.notify(`Potential abuse warning! ${who} submitted oversized deck file of ${attachment.size}B.`);
 				throw new UserError("YDK file too large! Please try again with a smaller file.");
 			}
