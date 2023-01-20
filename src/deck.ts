@@ -1,4 +1,4 @@
-import { escapeMarkdown, Message, MessageAttachment, MessageEmbed, ReplyMessageOptions } from "discord.js";
+import { Attachment, escapeMarkdown, Message, MessageEmbed, ReplyMessageOptions } from "discord.js";
 import fetch from "node-fetch";
 import { CardIndex, CardVector, createAllowVector, Deck, DeckError, ICard } from "ydeck";
 import { Card, enums, YgoData } from "ygopro-data";
@@ -207,7 +207,7 @@ export class DeckManager {
 		};
 	}
 
-	private async extractYdk(attach: MessageAttachment): Promise<string> {
+	private async extractYdk(attach: Attachment): Promise<string> {
 		const file = await fetch(attach.url);
 		const ydk = await file.text();
 		return ydk;

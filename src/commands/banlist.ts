@@ -1,5 +1,5 @@
 import { createHash } from "crypto";
-import { escapeMarkdown, MessageAttachment } from "discord.js";
+import { Attachment, AttachmentBuilder, escapeMarkdown } from "discord.js";
 import fetch from "node-fetch";
 import { CommandDefinition } from "../Command";
 import { TournamentStatus } from "../database/interface";
@@ -8,7 +8,7 @@ import { getLogger } from "../util/logger";
 
 const logger = getLogger("command:banlist");
 
-async function download(attach: MessageAttachment): Promise<unknown> {
+async function download(attach: Attachment): Promise<unknown> {
 	try {
 		const response = await fetch(attach.url);
 		const json = await response.json();
@@ -142,7 +142,7 @@ const command: CommandDefinition = {
 				: `This is the _default_ allowed card pool in vector form.\nSHA256: \`${hash}\``;
 			await msg.reply({
 				content: memo,
-				files: [new MessageAttachment(Buffer.from(file), `${id}.allowVector.json`)]
+				files: [new AttachmentBuilder(Buffer.from(file)).setName(`${id}.allowVector.json`)]
 			});
 		}
 	}
