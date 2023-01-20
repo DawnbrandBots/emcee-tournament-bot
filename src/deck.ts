@@ -1,4 +1,4 @@
-import { Attachment, escapeMarkdown, Message, MessageEmbed, ReplyMessageOptions } from "discord.js";
+import { Attachment, EmbedBuilder, escapeMarkdown, Message, ReplyMessageOptions } from "discord.js";
 import fetch from "node-fetch";
 import { CardIndex, CardVector, createAllowVector, Deck, DeckError, ICard } from "ydeck";
 import { Card, enums, YgoData } from "ygopro-data";
@@ -202,7 +202,7 @@ export class DeckManager {
 		}
 
 		return {
-			embeds: [new MessageEmbed().setTitle(title).addFields(fields)],
+			embeds: [new EmbedBuilder().setTitle(title).addFields(fields)],
 			files: [{ name, attachment: Buffer.from(deck.ydk) }]
 		};
 	}
