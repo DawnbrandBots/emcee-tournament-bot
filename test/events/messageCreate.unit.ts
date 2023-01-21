@@ -75,8 +75,11 @@ describe("Direct message submissions", function () {
 			this.stub(challonge, "registerPlayer").resolves();
 			const replySpy = this.stub(sampleMessage, "reply").resolves();
 			const send = this.spy();
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any
-			const fetchStub = this.stub(mockBotClient.channels, "fetch").resolves({ isText: () => true, send } as any);
+			const fetchStub = this.stub(mockBotClient.channels, "fetch").resolves({
+				isTextBased: () => true,
+				send
+				// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			} as any);
 			await onDirectMessage(sampleMessage, database, decks, challonge, participantRole, mockBotClient);
 			expect(fetchStub).to.have.been.calledWith("channel2");
 			expect(send).to.have.been.calledWith(
@@ -126,7 +129,7 @@ describe("Direct message submissions", function () {
 			const reply = replySpy.args[0][0];
 			expect(reply).to.have.property("embeds");
 			if (typeof reply === "object" && "embeds" in reply) {
-				expect(reply.embeds?.[0]?.data.fields?.[1]?.value).to.equal(
+				expect(reply.embeds?.[0]?.data?.fields?.[1]?.value).to.equal(
 					"Main Deck too small! Should be at least 40, is 0!"
 				);
 			}
@@ -175,8 +178,11 @@ describe("Direct message submissions", function () {
 			this.stub(database, "updateDeck").resolves();
 			const replySpy = this.stub(sampleMessage, "reply").resolves();
 			const send = this.spy();
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any
-			const fetchStub = this.stub(mockBotClient.channels, "fetch").resolves({ isText: () => true, send } as any);
+			const fetchStub = this.stub(mockBotClient.channels, "fetch").resolves({
+				isTextBased: () => true,
+				send
+				// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			} as any);
 			await onDirectMessage(sampleMessage, database, decks, challonge, participantRole, mockBotClient);
 			expect(fetchStub).to.have.been.calledWith("channel2");
 			expect(send).to.have.been.calledWith(
@@ -220,7 +226,7 @@ describe("Direct message submissions", function () {
 			const reply = replySpy.args[0][0];
 			expect(reply).to.have.property("embeds");
 			if (typeof reply === "object" && "embeds" in reply) {
-				expect(reply.embeds?.[0]?.data.fields?.[1]?.value).to.equal(
+				expect(reply.embeds?.[0]?.data?.fields?.[1]?.value).to.equal(
 					"Main Deck too small! Should be at least 40, is 0!"
 				);
 			}
