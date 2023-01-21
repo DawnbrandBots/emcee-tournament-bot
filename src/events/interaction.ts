@@ -10,7 +10,7 @@ const logger = getLogger("interaction");
 
 export function makeHandler({ organiserRole, timeWizard }: CommandSupport) {
 	return async function interactionCreate(interaction: Interaction): Promise<void> {
-		if (!interaction.isCommand() || !interaction.inCachedGuild() || interaction.commandName !== "timer") {
+		if (!interaction.isChatInputCommand() || !interaction.inCachedGuild() || interaction.commandName !== "timer") {
 			return;
 		}
 		// Should be replaced by the built-in system

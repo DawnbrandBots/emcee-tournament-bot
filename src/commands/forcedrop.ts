@@ -1,4 +1,4 @@
-import { Util } from "discord.js";
+import { escapeMarkdown } from "discord.js";
 import { CommandDefinition } from "../Command";
 import { TournamentStatus } from "../database/interface";
 import { Participant } from "../database/orm";
@@ -36,7 +36,7 @@ const command: CommandDefinition = {
 			challongeId: participant?.confirmed?.challongeId,
 			tag: player.tag
 		});
-		const name = `${player} (${Util.escapeMarkdown(player.tag)})`;
+		const name = `${player} (${escapeMarkdown(player.tag)})`;
 		if (!participant) {
 			await msg.reply(`${name} not found in **${tournament.name}**.`);
 			return;

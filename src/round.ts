@@ -1,4 +1,4 @@
-import { Client, User, Util } from "discord.js";
+import { Client, escapeMarkdown, User } from "discord.js";
 import { CommandSupport } from "./Command";
 import { DatabaseTournament, TournamentFormat } from "./database/interface";
 import { getRound } from "./util/challonge";
@@ -154,7 +154,7 @@ async function sendPairing(intro: string, receiver: User | null, opponent: User 
 	if (receiver) {
 		await receiver.send(
 			opponent
-				? `${intro} Your opponent is ${opponent} (${Util.escapeMarkdown(
+				? `${intro} Your opponent is ${opponent} (${escapeMarkdown(
 						opponent.tag
 				  )}). Make sure to report your score after the match is over!`
 				: `${intro} I couldn't find your opponent. If you don't think you should have a bye for this round, please check the pairings.`

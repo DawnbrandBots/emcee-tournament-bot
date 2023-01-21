@@ -1,4 +1,4 @@
-import { Util } from "discord.js";
+import { escapeMarkdown } from "discord.js";
 import { CommandDefinition } from "../Command";
 import { TournamentStatus } from "../database/interface";
 import { Participant } from "../database/orm";
@@ -45,7 +45,7 @@ const command: CommandDefinition = {
 			await msg.reply(`**${tournament.name}** has already concluded!`);
 			return;
 		}
-		const who = `${msg.author} (${Util.escapeMarkdown(msg.author.tag)})`;
+		const who = `${msg.author} (${escapeMarkdown(msg.author.tag)})`;
 		if (participant.confirmed) {
 			if (
 				await dropPlayerChallonge(

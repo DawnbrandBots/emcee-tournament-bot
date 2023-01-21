@@ -45,7 +45,7 @@ const command: CommandDefinition = {
 			for (const { channelId, messageId } of registerMessages) {
 				try {
 					const channel = await msg.client.channels.fetch(channelId);
-					if (channel?.isText()) {
+					if (channel?.isTextBased()) {
 						await channel.messages.delete(messageId);
 					} else {
 						logger.warn(`Failed to delete ${channelId} ${messageId} since this is not a text channel`);

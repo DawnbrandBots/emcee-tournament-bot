@@ -1,4 +1,4 @@
-import { Client, Intents } from "discord.js";
+import { Client, GatewayIntentBits, Partials } from "discord.js";
 import { getConfig } from "./config"; // Must be imported first among first-party modules
 import { initializeDatabase } from "./database/postgres";
 import { initializeDeckManager } from "./deck";
@@ -27,14 +27,15 @@ const logger = getLogger("index");
 
 	const bot = new Client({
 		intents: [
-			Intents.FLAGS.GUILDS,
-			Intents.FLAGS.GUILD_MEMBERS,
-			Intents.FLAGS.GUILD_MESSAGES,
-			Intents.FLAGS.GUILD_MESSAGE_REACTIONS,
-			Intents.FLAGS.DIRECT_MESSAGES,
-			Intents.FLAGS.DIRECT_MESSAGE_REACTIONS
+			GatewayIntentBits.Guilds,
+			GatewayIntentBits.GuildMembers,
+			GatewayIntentBits.GuildMessages,
+			GatewayIntentBits.GuildMessageReactions,
+			GatewayIntentBits.DirectMessages,
+			GatewayIntentBits.DirectMessageReactions,
+			GatewayIntentBits.MessageContent
 		],
-		partials: ["CHANNEL", "MESSAGE", "REACTION"]
+		partials: [Partials.Channel, Partials.Message, Partials.Reaction]
 	});
 	const organiserRole = new OrganiserRoleProvider(config.defaultTORole, 0x3498db);
 	const participantRole = new ParticipantRoleProvider(bot, 0xe67e22);
@@ -42,7 +43,7 @@ const logger = getLogger("index");
 		sendMessage: async (...args) => (await send(bot, ...args)).id,
 		editMessage: async (channelId, messageId, newMessage) => {
 			const channel = await bot.channels.fetch(channelId);
-			if (channel?.isText()) {
+			if (channel?.isTextBased()) {
 				const sent = await channel.messages.fetch(messageId);
 				await sent.edit(newMessage);
 			} else {

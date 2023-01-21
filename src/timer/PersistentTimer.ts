@@ -1,5 +1,5 @@
 import { time } from "@discordjs/builders";
-import { Constants, DiscordAPIError } from "discord.js";
+import { DiscordAPIError, RESTJSONErrorCodes } from "discord.js";
 import { getConnection } from "typeorm";
 import { Countdown } from "../database/orm";
 import { getLogger } from "../util/logger";
@@ -143,7 +143,7 @@ export class PersistentTimer {
 			} catch (error) {
 				logger.warn(`tick: could not edit ${this.entity.channelId} ${this.entity.messageId}`);
 				logger.warn(error);
-				if (error instanceof DiscordAPIError && error.code === Constants.APIErrors.UNKNOWN_MESSAGE) {
+				if (error instanceof DiscordAPIError && error.code === RESTJSONErrorCodes.UnknownMessage) {
 					logger.notify(`aborting timer <#${this.entity.channelId}> ${this.entity.messageId}`);
 					await this.abort();
 				}

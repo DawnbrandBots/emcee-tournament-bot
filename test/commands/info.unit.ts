@@ -25,7 +25,6 @@ describe("createTournamentEmbed", function () {
 		const embed = createTournamentEmbed(tournament);
 		const embedNoFalsy = Object.fromEntries(Object.entries(embed.toJSON()).filter(([, value]) => value));
 		expect(embedNoFalsy).to.deep.equal({
-			type: "rich",
 			title: "**Drive Your Fire**",
 			description: "Thrash out against the ignorance of others, it is not a flame hot enough!",
 			url: "https://challonge.com/users/EmceeDiscordBot",
@@ -75,7 +74,6 @@ describe("createTournamentEmbed", function () {
 		const embed = createTournamentEmbed(tournament);
 		const embedNoFalsy = Object.fromEntries(Object.entries(embed.toJSON()).filter(([, value]) => value));
 		expect(embedNoFalsy).to.deep.equal({
-			type: "rich",
 			title: "**Drive Your Fire**",
 			description: "Thrash out against the ignorance of others, it is not a flame hot enough!",
 			url: "https://challonge.com/users/EmceeDiscordBot",
