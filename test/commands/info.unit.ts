@@ -129,7 +129,9 @@ describe("command:info", function () {
 			msg.guildId = "foo";
 			await command.executor(msg, ["name"], support);
 			msg.guildId = null;
-			expect(findStub).to.have.been.calledOnceWithExactly({ tournamentId: "name", owningDiscordServer: "foo" });
+			expect(findStub).to.have.been.calledOnceWithExactly({
+				where: { tournamentId: "name", owningDiscordServer: "foo" }
+			});
 			expect(msg.reply).to.have.been.calledOnceWithExactly("No matching tournament in this server.");
 		})
 	);
