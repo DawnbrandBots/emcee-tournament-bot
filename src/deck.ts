@@ -124,7 +124,8 @@ export class DeckManager {
 	}
 
 	// return type from discord.js message sending
-	public prettyPrint(deck: Deck, name: string, errors: DeckError[] = []): MessageReplyOptions {
+	// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+	public prettyPrint(deck: Deck, name: string, errors: DeckError[] = []) {
 		const title = `Themes: ${deck.themes.join(",") || "none"}`;
 		let mainHeader = `Main Deck (${deck.contents.main.length} cards — `;
 		const mainHeaderParts: string[] = [];
@@ -201,10 +202,13 @@ export class DeckManager {
 			}
 		}
 
-		return {
+		const reply = {
 			embeds: [new EmbedBuilder().setTitle(title).addFields(fields)],
 			files: [{ name, attachment: Buffer.from(deck.ydk) }]
 		};
+		const replyCheckTyping: MessageReplyOptions = reply;
+		void replyCheckTyping;
+		return reply;
 	}
 
 	private async extractYdk(attach: Attachment): Promise<string> {
