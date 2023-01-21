@@ -42,7 +42,7 @@ const logger = getLogger("index");
 		sendMessage: async (...args) => (await send(bot, ...args)).id,
 		editMessage: async (channelId, messageId, newMessage) => {
 			const channel = await bot.channels.fetch(channelId);
-			if (channel?.isText()) {
+			if (channel?.isTextBased()) {
 				const sent = await channel.messages.fetch(messageId);
 				await sent.edit(newMessage);
 			} else {

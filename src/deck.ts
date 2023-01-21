@@ -1,4 +1,4 @@
-import { Attachment, EmbedBuilder, escapeMarkdown, Message, ReplyMessageOptions } from "discord.js";
+import { Attachment, EmbedBuilder, escapeMarkdown, Message, MessageReplyOptions } from "discord.js";
 import fetch from "node-fetch";
 import { CardIndex, CardVector, createAllowVector, Deck, DeckError, ICard } from "ydeck";
 import { Card, enums, YgoData } from "ygopro-data";
@@ -124,7 +124,7 @@ export class DeckManager {
 	}
 
 	// return type from discord.js message sending
-	public prettyPrint(deck: Deck, name: string, errors: DeckError[] = []): ReplyMessageOptions {
+	public prettyPrint(deck: Deck, name: string, errors: DeckError[] = []): MessageReplyOptions {
 		const title = `Themes: ${deck.themes.join(",") || "none"}`;
 		let mainHeader = `Main Deck (${deck.contents.main.length} cards — `;
 		const mainHeaderParts: string[] = [];
