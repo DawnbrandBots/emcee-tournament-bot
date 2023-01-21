@@ -1,4 +1,4 @@
-import { Message, MessageAttachment, MessageEmbed, ReplyMessageOptions, Util } from "discord.js";
+import { Attachment, EmbedBuilder, escapeMarkdown, Message, MessageReplyOptions } from "discord.js";
 import fetch from "node-fetch";
 import { CardIndex, CardVector, createAllowVector, Deck, DeckError, ICard } from "ydeck";
 import { Card, enums, YgoData } from "ygopro-data";
@@ -110,7 +110,7 @@ export class DeckManager {
 			// cap filesize for security
 			if (attachment.size > MAX_BYTES) {
 				// TODO: Would be useful to report tournament and server, but we don't have that data in this scope
-				const who = `${Util.escapeMarkdown(msg.author.tag)} (${msg.author.id})`;
+				const who = `${escapeMarkdown(msg.author.tag)} (${msg.author.id})`;
 				logger.notify(`Potential abuse warning! ${who} submitted oversized deck file of ${attachment.size}B.`);
 				throw new UserError("YDK file too large! Please try again with a smaller file.");
 			}
@@ -124,7 +124,8 @@ export class DeckManager {
 	}
 
 	// return type from discord.js message sending
-	public prettyPrint(deck: Deck, name: string, errors: DeckError[] = []): ReplyMessageOptions {
+	// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+	public prettyPrint(deck: Deck, name: string, errors: DeckError[] = []) {
 		const title = `Themes: ${deck.themes.join(",") || "none"}`;
 		let mainHeader = `Main Deck (${deck.contents.main.length} cards — `;
 		const mainHeaderParts: string[] = [];
@@ -201,13 +202,16 @@ export class DeckManager {
 			}
 		}
 
-		return {
-			embeds: [new MessageEmbed().setTitle(title).addFields(fields)],
+		const reply = {
+			embeds: [new EmbedBuilder().setTitle(title).addFields(fields)],
 			files: [{ name, attachment: Buffer.from(deck.ydk) }]
 		};
+		const replyCheckTyping: MessageReplyOptions = reply;
+		void replyCheckTyping;
+		return reply;
 	}
 
-	private async extractYdk(attach: MessageAttachment): Promise<string> {
+	private async extractYdk(attach: Attachment): Promise<string> {
 		const file = await fetch(attach.url);
 		const ydk = await file.text();
 		return ydk;

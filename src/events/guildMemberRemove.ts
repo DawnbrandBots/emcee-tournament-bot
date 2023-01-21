@@ -1,4 +1,4 @@
-import { GuildMember, PartialGuildMember, Util } from "discord.js";
+import { escapeMarkdown, GuildMember, PartialGuildMember } from "discord.js";
 import { getConnection } from "typeorm";
 import { CommandSupport } from "../Command";
 import { Participant } from "../database/orm";
@@ -46,7 +46,7 @@ export function makeHandler({ database, challonge }: CommandSupport) {
 					}))
 				});
 				// eslint-disable-next-line prefer-template
-				const who = `<@${member.id}> (` + Util.escapeMarkdown(`${member.user?.tag}`) + ")";
+				const who = `<@${member.id}> (` + escapeMarkdown(`${member.user?.tag}`) + ")";
 				for (const participant of dropped) {
 					// For each tournament, inform the private channel that the user left and was dropped.
 					for (const channel of participant.tournament.privateChannels) {

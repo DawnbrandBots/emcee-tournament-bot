@@ -1,4 +1,4 @@
-import { Util } from "discord.js";
+import { escapeMarkdown } from "discord.js";
 import { CommandDefinition } from "../Command";
 import { firstMentionOrFail } from "../util/discord";
 import { getLogger } from "../util/logger";
@@ -36,7 +36,7 @@ const command: CommandDefinition = {
 			})
 		);
 		const names = byes.map(snowflake => `<@${snowflake}>`).join(", ");
-		const who = `${player} (${Util.escapeMarkdown(player.tag)})`;
+		const who = `${player} (${escapeMarkdown(player.tag)})`;
 		await msg.reply(`Bye registered for ${who} in **${tournament.name}**!\nAll byes: ${names}`);
 	}
 };

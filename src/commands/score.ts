@@ -1,4 +1,4 @@
-import { Util } from "discord.js";
+import { escapeMarkdown } from "discord.js";
 import { CommandDefinition } from "../Command";
 import { TournamentStatus } from "../database/interface";
 import { findMatch } from "../util/challonge";
@@ -88,8 +88,8 @@ const command: CommandDefinition = {
 				// Inform the hosts
 				try {
 					log("notify", { callerUsername: msg.author.tag, opponentUsername: opponent.tag });
-					const callerTag = Util.escapeMarkdown(msg.author.tag);
-					const oppTag = Util.escapeMarkdown(opponent.tag);
+					const callerTag = escapeMarkdown(msg.author.tag);
+					const oppTag = escapeMarkdown(opponent.tag);
 					for (const channel of player.tournament.privateChannels) {
 						await send(
 							msg.client,

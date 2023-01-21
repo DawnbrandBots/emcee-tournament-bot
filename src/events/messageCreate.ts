@@ -1,4 +1,4 @@
-import { Client, Message, Util } from "discord.js";
+import { Client, escapeMarkdown, Message } from "discord.js";
 import { CardVector } from "ydeck";
 import { Command, CommandDefinition, CommandSupport } from "../Command";
 import { helpMessage } from "../config";
@@ -173,7 +173,7 @@ async function verifyDeckAndConfirmPending(
 	bot: Client
 ): Promise<void> {
 	const { deck, formattedDeckMessage } = await verifyDeck(msg, decks, tournament.allowVector);
-	const who = `${msg.author} (${Util.escapeMarkdown(msg.author.tag)})`;
+	const who = `${msg.author} (${escapeMarkdown(msg.author.tag)})`;
 	try {
 		const challongeId = await challonge.registerPlayer(tournament.id, msg.author.tag, msg.author.id);
 		log("verbose", msg, { event: "challonge", tournament: tournament.id });
@@ -233,7 +233,7 @@ async function verifyDeckAndUpdateConfirmed(
 	bot: Client
 ): Promise<void> {
 	const { deck, formattedDeckMessage } = await verifyDeck(msg, decks, tournament.allowVector);
-	const who = `${msg.author} (${Util.escapeMarkdown(msg.author.tag)})`;
+	const who = `${msg.author} (${escapeMarkdown(msg.author.tag)})`;
 	try {
 		await database.updateDeck(tournament.id, msg.author.id, deck.url);
 		log("verbose", msg, { event: "database", tournament: tournament.id });

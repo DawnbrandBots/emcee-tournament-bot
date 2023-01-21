@@ -1,13 +1,10 @@
 import { Client, Message, TextChannel, User } from "discord.js";
 import { UserError } from "./errors";
 
-export async function send(
-	bot: Client,
-	channelId: string,
-	...args: Parameters<TextChannel["send"]>
-): ReturnType<TextChannel["send"]> {
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+export async function send(bot: Client, channelId: string, ...args: Parameters<TextChannel["send"]>) {
 	const channel = await bot.channels.fetch(channelId);
-	if (channel?.isText()) {
+	if (channel?.isTextBased()) {
 		return await channel.send(...args);
 	}
 	throw new Error(`${channelId} is not a text channel`);
@@ -38,7 +35,7 @@ export async function removeReaction(
 	userId: string
 ): Promise<void> {
 	const channel = await bot.channels.fetch(channelId);
-	if (channel?.isText()) {
+	if (channel?.isTextBased()) {
 		const msg = await channel.messages.fetch(messageId);
 		await msg.reactions.cache.get(emoji)?.users.remove(userId);
 	} else {

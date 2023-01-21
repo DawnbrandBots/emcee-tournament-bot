@@ -1,4 +1,4 @@
-import { Client, Constants, DiscordAPIError } from "discord.js";
+import { Client, DiscordAPIError, RESTJSONErrorCodes } from "discord.js";
 import { CommandSupport } from "../Command";
 import * as commands from "../commands";
 import { Participant, RegisterMessage } from "../database/orm";
@@ -61,7 +61,10 @@ export function registerEvents(bot: Client, prefix: string, support: CommandSupp
 						);
 						logger.verbose(`User ${user.id} registered for tournament ${tournament.id}.`);
 					} catch (e) {
-						if (e instanceof DiscordAPIError && e.code === Constants.APIErrors.CANNOT_MESSAGE_USER) {
+						if (
+							e instanceof DiscordAPIError &&
+							e.code === RESTJSONErrorCodes.CannotSendMessagesToThisUser
+						) {
 							for (const channel of tournament.privateChannels) {
 								await send(
 									bot,

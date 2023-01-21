@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import { FileOptions, MessageMentions, ReplyMessageOptions } from "discord.js";
+import { MessageMentions } from "discord.js";
 import dotenv from "dotenv";
 import { SinonSandbox } from "sinon";
 import { Deck } from "ydeck";
@@ -43,8 +43,8 @@ describe("command:deck", function () {
 			expect(msg.reply).to.have.been.calledOnce;
 			expect(support.database.getConfirmedPlayer).to.have.been.calledOnceWithExactly("2021", "name");
 			expect(support.decks.getDeck).to.have.been.calledOnceWithExactly(sampleDeck.url);
-			const reply = replySpy.args[0][0] as ReplyMessageOptions;
-			const file = reply.files?.[0] as FileOptions;
+			const reply = replySpy.args[0][0];
+			const file = reply.files?.[0];
 			expect(file.name).to.equal("K.0000.ydk");
 			expect(file.attachment.toString()).to.equal(sampleDeck.ydk);
 		})
