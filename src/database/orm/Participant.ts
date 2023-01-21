@@ -18,7 +18,6 @@ export class Participant extends BaseEntity {
 
 	/// The ORM relationship for the above foreign key. Must always exist or this entity is meaningless.
 	@ManyToOne(() => ChallongeTournament, tournament => tournament.participants, {
-		primary: true,
 		onDelete: "CASCADE"
 	})
 	@JoinColumn({ name: "tournamentId" })

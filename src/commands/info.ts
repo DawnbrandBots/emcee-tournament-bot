@@ -43,8 +43,10 @@ const command: CommandDefinition = {
 			throw new UserError("This can only be used in a server!");
 		}
 		const tournament = await ChallongeTournament.findOne({
-			tournamentId: id,
-			owningDiscordServer: msg.guildId
+			where: {
+				tournamentId: id,
+				owningDiscordServer: msg.guildId
+			}
 		});
 		if (tournament) {
 			logger.verbose(

@@ -28,7 +28,7 @@ const command: CommandDefinition = {
 			);
 		}
 		log({ player: snowflake, event: "attempt" });
-		const participant = await Participant.findOne({ tournamentId: id, discordId: snowflake });
+		const participant = await Participant.findOne({ where: { tournamentId: id, discordId: snowflake } });
 		const player = await msg.client.users.fetch(snowflake);
 		log({
 			player: snowflake,

@@ -28,7 +28,7 @@ export class ConfirmedParticipant extends BaseEntity {
 	hasBye!: boolean;
 
 	/// Identical to Participant.tournament. Must always exist or this entity is meaningless.
-	@ManyToOne(() => ChallongeTournament, tournament => tournament.confirmed, { primary: true, onDelete: "CASCADE" })
+	@ManyToOne(() => ChallongeTournament, tournament => tournament.confirmed, { onDelete: "CASCADE" })
 	@JoinColumn({ name: "tournamentId" })
 	tournament!: ChallongeTournament;
 
