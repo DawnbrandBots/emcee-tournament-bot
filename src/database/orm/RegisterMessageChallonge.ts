@@ -1,11 +1,11 @@
 import { BaseEntity, Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from "typeorm";
-import { ChallongeTournament } from "./ChallongeTournament";
+import { TournamentChallonge } from "./TournamentChallonge";
 
 /**
  * A registration message for a tournament, which can be used to identify a tournament.
  */
 @Entity()
-export class RegisterMessage extends BaseEntity {
+export class RegisterMessageChallonge extends BaseEntity {
 	/// Explicitly specify the foreign key for the below relation to avoid jank ORM naming.
 	@Column()
 	tournamentId!: string;
@@ -19,10 +19,10 @@ export class RegisterMessage extends BaseEntity {
 	messageId!: string;
 
 	/// The ORM relationship for the above foreign key. Must always exist or this entity is meaningless.
-	@ManyToOne(() => ChallongeTournament, tournament => tournament.registerMessages, {
+	@ManyToOne(() => TournamentChallonge, tournament => tournament.registerMessages, {
 		nullable: false,
 		onDelete: "CASCADE"
 	})
 	@JoinColumn({ name: "tournamentId" })
-	tournament!: ChallongeTournament;
+	tournament!: TournamentChallonge;
 }

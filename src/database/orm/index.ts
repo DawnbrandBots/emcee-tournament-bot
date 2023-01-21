@@ -1,11 +1,11 @@
 import "reflect-metadata";
 import { createConnection } from "typeorm";
 import { getLogger } from "../../util/logger";
-import { ChallongeTournament } from "./ChallongeTournament";
-import { ConfirmedParticipant } from "./ConfirmedParticipant";
+import { TournamentChallonge } from "./TournamentChallonge";
+import { ParticipantChallongeConfirmed } from "./ParticipantChallongeConfirmed";
 import { Countdown } from "./Countdown";
-import { Participant } from "./Participant";
-import { RegisterMessage } from "./RegisterMessage";
+import { ParticipantChallongeBase } from "./ParticipantChallongeBase";
+import { RegisterMessageChallonge } from "./RegisterMessageChallonge";
 
 const logger = getLogger("typeorm");
 
@@ -13,7 +13,13 @@ export async function initializeConnection(postgresqlUrl: string): Promise<void>
 	await createConnection({
 		type: "postgres",
 		url: postgresqlUrl,
-		entities: [ChallongeTournament, ConfirmedParticipant, Countdown, Participant, RegisterMessage],
+		entities: [
+			TournamentChallonge,
+			ParticipantChallongeConfirmed,
+			Countdown,
+			ParticipantChallongeBase,
+			RegisterMessageChallonge
+		],
 		logging: "all",
 		logger: "debug",
 		synchronize: true // TODO: process.env.NODE_ENV === "development" and investigate migrations
@@ -21,4 +27,10 @@ export async function initializeConnection(postgresqlUrl: string): Promise<void>
 	logger.info(`Connected to PostgreSQL via TypeORM`);
 }
 
-export { ChallongeTournament, ConfirmedParticipant, Countdown, Participant, RegisterMessage };
+export {
+	TournamentChallonge as ChallongeTournament,
+	ParticipantChallongeConfirmed as ConfirmedParticipant,
+	Countdown,
+	ParticipantChallongeBase as Participant,
+	RegisterMessageChallonge as RegisterMessage
+};

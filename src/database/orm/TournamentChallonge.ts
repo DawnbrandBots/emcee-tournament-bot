@@ -1,16 +1,16 @@
 import { BaseEntity, Column, Entity, OneToMany, PrimaryColumn } from "typeorm";
 import { CardVector } from "ydeck";
 import { TournamentFormat, TournamentStatus } from "../interface";
-import { ConfirmedParticipant } from "./ConfirmedParticipant";
+import { ParticipantChallongeConfirmed } from "./ParticipantChallongeConfirmed";
 import { Countdown } from "./Countdown";
-import { Participant } from "./Participant";
-import { RegisterMessage } from "./RegisterMessage";
+import { ParticipantChallongeBase } from "./ParticipantChallongeBase";
+import { RegisterMessageChallonge } from "./RegisterMessageChallonge";
 
 /**
  * The main entity for all information related to one tournament.
  */
 @Entity()
-export class ChallongeTournament extends BaseEntity {
+export class TournamentChallonge extends BaseEntity {
 	/// Challonge ID. Guaranteed to be unique on Challonge and meaningful.
 	@PrimaryColumn()
 	tournamentId!: string;
@@ -66,20 +66,23 @@ export class ChallongeTournament extends BaseEntity {
 	allowVector?: CardVector;
 
 	/// The ORM relationship to the registration messages that identify this tournament.
-	@OneToMany(() => RegisterMessage, rm => rm.tournament, { cascade: true, onDelete: "CASCADE" })
-	registerMessages!: RegisterMessage[];
+	@OneToMany(() => RegisterMessageChallonge, rm => rm.tournament, { cascade: true, onDelete: "CASCADE" })
+	registerMessages!: RegisterMessageChallonge[];
 
 	/// The ORM relationship for all participants, pending and confirmed.
-	@OneToMany(() => Participant, participant => participant.tournament, { cascade: true, onDelete: "CASCADE" })
-	participants!: Participant[];
+	@OneToMany(() => ParticipantChallongeBase, participant => participant.tournament, {
+		cascade: true,
+		onDelete: "CASCADE"
+	})
+	participants!: ParticipantChallongeBase[];
 
 	/// The ORM relationship for just the confirmed participants.
-	@OneToMany(() => ConfirmedParticipant, participant => participant.tournament, {
+	@OneToMany(() => ParticipantChallongeConfirmed, participant => participant.tournament, {
 		cascade: true,
 		eager: true,
 		onDelete: "CASCADE"
 	})
-	confirmed!: ConfirmedParticipant[];
+	confirmed!: ParticipantChallongeConfirmed[];
 
 	@OneToMany(() => Countdown, countdown => countdown.tournament, { cascade: true, onDelete: "CASCADE" })
 	countdowns!: Countdown[];

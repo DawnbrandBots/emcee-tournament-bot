@@ -1,12 +1,12 @@
 import { BaseEntity, Column, Entity, JoinColumn, ManyToOne, OneToOne, PrimaryColumn } from "typeorm";
-import { ChallongeTournament } from "./ChallongeTournament";
-import { Participant } from "./Participant";
+import { TournamentChallonge } from "./TournamentChallonge";
+import { ParticipantChallongeBase } from "./ParticipantChallongeBase";
 
 /**
  * Additional information for a Participant once they have submitted a valid deck.
  */
 @Entity()
-export class ConfirmedParticipant extends BaseEntity {
+export class ParticipantChallongeConfirmed extends BaseEntity {
 	/// Identical to Participant.tournamentId
 	@PrimaryColumn()
 	tournamentId!: string;
@@ -28,12 +28,12 @@ export class ConfirmedParticipant extends BaseEntity {
 	hasBye!: boolean;
 
 	/// Identical to Participant.tournament. Must always exist or this entity is meaningless.
-	@ManyToOne(() => ChallongeTournament, tournament => tournament.confirmed, { primary: true, onDelete: "CASCADE" })
+	@ManyToOne(() => TournamentChallonge, tournament => tournament.confirmed, { primary: true, onDelete: "CASCADE" })
 	@JoinColumn({ name: "tournamentId" })
-	tournament!: ChallongeTournament;
+	tournament!: TournamentChallonge;
 
 	/// The ORM relationship to the Participant with the same primary keys. Must always exist.
-	@OneToOne(() => Participant, participant => participant.confirmed, { onDelete: "CASCADE" })
+	@OneToOne(() => ParticipantChallongeBase, participant => participant.confirmed, { onDelete: "CASCADE" })
 	@JoinColumn()
-	participant!: Participant;
+	participant!: ParticipantChallongeBase;
 }

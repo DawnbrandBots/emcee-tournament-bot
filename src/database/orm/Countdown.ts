@@ -1,5 +1,5 @@
 import { BaseEntity, Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
-import { ChallongeTournament } from "./ChallongeTournament";
+import { TournamentChallonge } from "./TournamentChallonge";
 
 /**
  * Represents a persistent scheduled timer that will update a Discord message
@@ -36,10 +36,10 @@ export class Countdown extends BaseEntity {
 	tournamentId?: string;
 
 	/// The associated tournament, if this is meant for a tournament.
-	@ManyToOne(() => ChallongeTournament, tournament => tournament.confirmed, {
+	@ManyToOne(() => TournamentChallonge, tournament => tournament.confirmed, {
 		nullable: true,
 		onDelete: "CASCADE"
 	})
 	@JoinColumn({ name: "tournamentId" })
-	tournament?: ChallongeTournament;
+	tournament?: TournamentChallonge;
 }
