@@ -32,7 +32,8 @@ const logger = getLogger("index");
 			GatewayIntentBits.GuildMessages,
 			GatewayIntentBits.GuildMessageReactions,
 			GatewayIntentBits.DirectMessages,
-			GatewayIntentBits.DirectMessageReactions
+			GatewayIntentBits.DirectMessageReactions,
+			GatewayIntentBits.MessageContent
 		],
 		partials: [Partials.Channel, Partials.Message, Partials.Reaction]
 	});
