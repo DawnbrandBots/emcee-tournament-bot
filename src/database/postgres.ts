@@ -82,7 +82,7 @@ export class DatabaseWrapperPostgres {
 	// This wrapper is only needed because the exception class is part of the call signature
 	private async findTournament(tournamentId: string, relations: string[] = []): Promise<ChallongeTournament> {
 		try {
-			return await ChallongeTournament.findOneOrFail(tournamentId, { relations });
+			return await ChallongeTournament.findOneOrFail({ where: { tournamentId }, relations });
 		} catch (err) {
 			throw new TournamentNotFoundError(tournamentId);
 		}
@@ -119,10 +119,10 @@ export class DatabaseWrapperPostgres {
 	): Promise<DatabasePlayerWithTournament> {
 		try {
 			// eslint-disable-next-line no-var
-			var participant = await ConfirmedParticipant.findOneOrFail(
-				{ discordId, tournamentId },
-				{ relations: ["tournament"] }
-			);
+			var participant = await ConfirmedParticipant.findOneOrFail({
+				where: { discordId, tournamentId },
+				relations: ["tournament"]
+			});
 		} catch {
 			throw new UnauthorisedPlayerError(discordId, tournamentId);
 		}
@@ -248,7 +248,7 @@ export class DatabaseWrapperPostgres {
 	}
 
 	async getRegisterMessage(channelId: string, messageId: string): Promise<string | undefined> {
-		const message = await RegisterMessage.findOne({ channelId, messageId });
+		const message = await RegisterMessage.findOne({ where: { channelId, messageId } });
 		return message?.tournamentId;
 	}
 
@@ -268,7 +268,7 @@ export class DatabaseWrapperPostgres {
 	}
 
 	async cleanRegistration(channelId: string, messageId: string): Promise<void> {
-		const message = await RegisterMessage.findOne({ channelId, messageId });
+		const message = await RegisterMessage.findOne({ where: { channelId, messageId } });
 		if (!message) {
 			return; // failure is OK
 		}
@@ -290,11 +290,11 @@ export class DatabaseWrapperPostgres {
 		messageId: string,
 		playerId: string
 	): Promise<DatabaseTournament | undefined> {
-		const message = await RegisterMessage.findOne({ channelId, messageId }, { relations: ["tournament"] });
+		const message = await RegisterMessage.findOne({ where: { channelId, messageId }, relations: ["tournament"] });
 		if (!message || message.tournament.status !== TournamentStatus.PREPARING) {
 			return;
 		}
-		if (!(await Participant.findOne({ tournamentId: message.tournamentId, discordId: playerId }))) {
+		if (!(await Participant.findOne({ where: { tournamentId: message.tournamentId, discordId: playerId } }))) {
 			const participant = new Participant();
 			participant.tournamentId = message.tournamentId;
 			participant.discordId = playerId;
@@ -315,7 +315,9 @@ export class DatabaseWrapperPostgres {
 	): Promise<{ registerMessages: DatabaseMessage[]; ejected: string[] }> {
 		return await getConnection().transaction(async entityManager => {
 			logger.verbose(`prestartTournament: ${tournamentId} transaction`);
-			const registerMessageEntities = await entityManager.getRepository(RegisterMessage).find({ tournamentId });
+			const registerMessageEntities = await entityManager
+				.getRepository(RegisterMessage)
+				.find({ where: { tournamentId } });
 			const registerMessages = registerMessageEntities.map(m => ({
 				channelId: m.channelId,
 				messageId: m.messageId
@@ -325,7 +327,7 @@ export class DatabaseWrapperPostgres {
 				await entityManager.remove(message);
 			}
 			logger.verbose(`prestartTournament: searching for pending participants`);
-			const participants = await entityManager.getRepository(Participant).find({ tournamentId });
+			const participants = await entityManager.getRepository(Participant).find({ where: { tournamentId } });
 			logger.verbose(`prestartTournament: loaded ${participants.length} participants for ${tournamentId}`);
 			const ejectEntities = participants.filter(p => !p.confirmed);
 			const ejected = ejectEntities.map(p => p.discordId);
@@ -356,7 +358,7 @@ export class DatabaseWrapperPostgres {
 	}
 
 	async confirmPlayer(tournamentId: string, playerId: string, challongeId: number, deck: string): Promise<void> {
-		let participant = await Participant.findOne({ tournamentId, discordId: playerId });
+		let participant = await Participant.findOne({ where: { tournamentId, discordId: playerId } });
 		await getConnection().transaction(async entityManager => {
 			if (!participant) {
 				participant = new Participant();
@@ -432,10 +434,10 @@ export class DatabaseWrapperPostgres {
 		if (tournament.status !== TournamentStatus.PREPARING) {
 			throw new AssertStatusError(tournamentId, TournamentStatus.PREPARING, tournament.status);
 		}
-		const participant = await ConfirmedParticipant.findOneOrFail({ tournamentId, discordId: playerId });
+		const participant = await ConfirmedParticipant.findOneOrFail({ where: { tournamentId, discordId: playerId } });
 		await operation(participant);
 		await participant.save();
-		const byes = await ConfirmedParticipant.find({ tournamentId, hasBye: true });
+		const byes = await ConfirmedParticipant.find({ where: { tournamentId, hasBye: true } });
 		return byes.map(p => p.discordId);
 	}
 
@@ -458,11 +460,11 @@ export class DatabaseWrapperPostgres {
 	}
 
 	async getConfirmed(tournamentId: string): Promise<DatabasePlayer[]> {
-		return await ConfirmedParticipant.find({ tournamentId });
+		return await ConfirmedParticipant.find({ where: { tournamentId } });
 	}
 
 	async getConfirmedPlayer(discordId: string, tournamentId: string): Promise<DatabasePlayer> {
-		const p = await ConfirmedParticipant.findOneOrFail({ discordId, tournamentId });
+		const p = await ConfirmedParticipant.findOneOrFail({ where: { discordId, tournamentId } });
 		return {
 			discordId: p.discordId,
 			challongeId: p.challongeId,
@@ -471,7 +473,7 @@ export class DatabaseWrapperPostgres {
 	}
 
 	async getPlayerByChallonge(challongeId: number, tournamentId: string): Promise<DatabasePlayer> {
-		const p = await ConfirmedParticipant.findOneOrFail({ challongeId, tournamentId });
+		const p = await ConfirmedParticipant.findOneOrFail({ where: { challongeId, tournamentId } });
 		return {
 			discordId: p.discordId,
 			challongeId: p.challongeId,

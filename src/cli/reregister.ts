@@ -18,7 +18,7 @@ const client = new Client({ intents: [] });
 (async () => {
 	await initializeConnection(`${process.env.POSTGRESQL_URL}`);
 	await client.login();
-	const participants = await ConfirmedParticipant.find({ tournamentId: args[0] });
+	const participants = await ConfirmedParticipant.find({ where: { tournamentId: args[0] } });
 	console.log(`${participants.length} participants to process.`);
 	for (const participant of participants) {
 		console.group(`Processing <@${participant.discordId}>...`);
