@@ -64,7 +64,7 @@ Discord slash commands in future when the feature is stable in Discord.
 
 ## Development
 
-Emcee is written in TypeScript. It targets Node.js 16.6+ and can be run with or without Docker.
+Emcee is written in TypeScript. It targets Node.js 18+ and can be run with or without Docker.
 It uses Discord.js to talk to Discord and PostgreSQL for persistence.
 
 
@@ -74,7 +74,6 @@ It uses Discord.js to talk to Discord and PostgreSQL for persistence.
     - In Docker:
 
         ```
-        POSTGRES_VERSION=13-alpine
         POSTGRES_HOST_PORT=127.0.0.1:5432
         POSTGRES_USER=
         POSTGRES_PASSWORD=
@@ -109,7 +108,7 @@ Please use Australian English spellings.
 
 ## Licence
 
-Copyright © 2020&ndash;2022 Luna Brand, Kevin Lu.
+Copyright © 2020&ndash;2023 Luna Brand, Kevin Lu.
 See [COPYING](https://github.com/DawnbrandBots/emcee-tournament-bot/blob/master/COPYING) for more details.
 
 ```
