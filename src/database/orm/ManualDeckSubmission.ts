@@ -28,7 +28,7 @@ export class ManualDeckSubmission extends BaseEntity {
 	label?: string;
 
 	/// Identical to ManualParticipant.tournament. Must always exist or this entity is meaningless.
-	@ManyToOne(() => ManualTournament, tournament => tournament.confirmed, { onDelete: "CASCADE" })
+	@ManyToOne(() => ManualTournament, tournament => tournament.decks, { onDelete: "CASCADE" })
 	@JoinColumn({ name: "tournamentId" })
 	tournament!: ManualTournament;
 

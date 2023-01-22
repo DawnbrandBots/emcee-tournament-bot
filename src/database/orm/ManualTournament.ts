@@ -1,6 +1,6 @@
 import { BaseEntity, Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { TournamentStatus } from "../interface";
-import { ConfirmedParticipant } from "./ConfirmedParticipant";
+import { ManualDeckSubmission } from "./ManualDeckSubmission";
 import { ManualParticipant } from "./ManualParticipant";
 
 /**
@@ -58,15 +58,15 @@ export class ManualTournament extends BaseEntity {
 	@Column({ length: 20, nullable: true })
 	registerMessage?: string;
 
-	/// The ORM relationship for all participants, pending and confirmed.
+	/// The ORM relationship for all participants, registering, submitted, confirmed, and dropped.
 	@OneToMany(() => ManualParticipant, participant => participant.tournament, { cascade: true, onDelete: "CASCADE" })
 	participants!: ManualParticipant[];
 
-	/// The ORM relationship for just the confirmed participants.
-	@OneToMany(() => ConfirmedParticipant, participant => participant.tournament, {
+	/// The ORM relationship for submitted decklists.
+	@OneToMany(() => ManualDeckSubmission, deck => deck.tournament, {
 		cascade: true,
 		eager: true,
 		onDelete: "CASCADE"
 	})
-	confirmed!: ConfirmedParticipant[];
+	decks!: ManualDeckSubmission[];
 }
