@@ -31,12 +31,12 @@ export class ManualTournament extends BaseEntity {
 	hosts!: string[];
 
 	/// Discord channel snowflake. A uint64 is at most 20 digits in decimal.
-	@Column({ length: 20 })
-	publicChannel!: string;
+	@Column({ length: 20, nullable: true })
+	publicChannel?: string;
 
 	/// Discord channel snowflake. A uint64 is at most 20 digits in decimal.
-	@Column({ length: 20 })
-	privateChannel!: string;
+	@Column({ length: 20, nullable: true })
+	privateChannel?: string;
 
 	/// Simple state progression in the listed order above.
 	@Column({ type: "enum", enum: TournamentStatus, default: TournamentStatus.PREPARING })
