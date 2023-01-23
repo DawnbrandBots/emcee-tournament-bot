@@ -4,6 +4,9 @@ import { getLogger } from "../../util/logger";
 import { ChallongeTournament } from "./ChallongeTournament";
 import { ConfirmedParticipant } from "./ConfirmedParticipant";
 import { Countdown } from "./Countdown";
+import { ManualDeckSubmission } from "./ManualDeckSubmission";
+import { ManualParticipant } from "./ManualParticipant";
+import { ManualTournament } from "./ManualTournament";
 import { Participant } from "./Participant";
 import { RegisterMessage } from "./RegisterMessage";
 
@@ -13,7 +16,16 @@ export async function initializeConnection(postgresqlUrl: string): Promise<void>
 	await createConnection({
 		type: "postgres",
 		url: postgresqlUrl,
-		entities: [ChallongeTournament, ConfirmedParticipant, Countdown, Participant, RegisterMessage],
+		entities: [
+			ChallongeTournament,
+			ConfirmedParticipant,
+			Countdown,
+			Participant,
+			RegisterMessage,
+			ManualTournament,
+			ManualParticipant,
+			ManualDeckSubmission
+		],
 		logging: "all",
 		logger: "debug",
 		synchronize: true // TODO: process.env.NODE_ENV === "development" and investigate migrations
@@ -21,4 +33,13 @@ export async function initializeConnection(postgresqlUrl: string): Promise<void>
 	logger.info(`Connected to PostgreSQL via TypeORM`);
 }
 
-export { ChallongeTournament, ConfirmedParticipant, Countdown, Participant, RegisterMessage };
+export {
+	ChallongeTournament,
+	ConfirmedParticipant,
+	Countdown,
+	Participant,
+	RegisterMessage,
+	ManualTournament,
+	ManualParticipant,
+	ManualDeckSubmission
+};

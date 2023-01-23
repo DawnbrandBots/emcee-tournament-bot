@@ -45,7 +45,8 @@
 		"@alphakretin/mocha-ecosystem": "^1.1.0",
 		"@types/debug": "^4.1.7",
 		"@types/make-fetch-happen": "^10.0.1",
-		"@types/node-fetch": "^2.6.2"
+		"@types/node-fetch": "^2.6.2",
+		"testcontainers": "^9.1.1"
 	},
 	"resolutions": {
 		"@types/node": "^18.11.18"
