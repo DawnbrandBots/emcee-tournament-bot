@@ -1,5 +1,6 @@
 import { Interaction } from "discord.js";
 import { CommandSupport } from "../Command";
+import { CreateCommand } from "../slash/create";
 import { TimerCommand } from "../slash/timer";
 import { AutocompletableCommand, SlashCommand } from "../SlashCommand";
 import { serialiseInteraction } from "../util";
@@ -11,7 +12,8 @@ const logger = getLogger("interaction");
 export function makeHandler({ organiserRole, timeWizard }: CommandSupport) {
 	const commandArray = [
 		// Construct SlashCommand objects here
-		new TimerCommand(organiserRole, timeWizard)
+		new TimerCommand(organiserRole, timeWizard),
+		new CreateCommand(organiserRole)
 	];
 	const commands = new Map<string, SlashCommand>();
 	const autocompletes = new Map<string, AutocompletableCommand>();
