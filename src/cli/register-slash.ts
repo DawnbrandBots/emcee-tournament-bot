@@ -2,6 +2,7 @@
 import { REST } from "@discordjs/rest";
 import { APIUser, Routes } from "discord-api-types/v10";
 import dotenv from "dotenv";
+import { CapacityCommand } from "../slash/capacity";
 import { ChannelCommand } from "../slash/channel";
 import { CreateCommand } from "../slash/create";
 import { DropCommand } from "../slash/drop";
@@ -19,7 +20,8 @@ export const classes = [
 	UpdateCommand,
 	InfoCommand,
 	ForceDropCommand,
-	DropCommand
+	DropCommand,
+	CapacityCommand
 ];
 
 // Register Slash Commands on CI
