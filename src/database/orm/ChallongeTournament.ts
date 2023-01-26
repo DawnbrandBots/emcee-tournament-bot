@@ -3,6 +3,7 @@ import { CardVector } from "ydeck";
 import { TournamentFormat, TournamentStatus } from "../interface";
 import { ConfirmedParticipant } from "./ConfirmedParticipant";
 import { Countdown } from "./Countdown";
+import { EnumColumn, JsonArrayColumn } from "./decorators";
 import { Participant } from "./Participant";
 import { RegisterMessage } from "./RegisterMessage";
 
@@ -28,28 +29,24 @@ export class ChallongeTournament extends BaseEntity {
 	owningDiscordServer!: string;
 
 	/// Formats supported by Challonge, named the same way.
-	@Column({ type: "enum", enum: TournamentFormat, default: TournamentFormat.SWISS })
+	@EnumColumn(TournamentFormat, "SWISS")
 	format!: TournamentFormat;
 
 	/// An array of Discord user snowflakes. Whenever hosts are queried, the rest
 	/// of the tournament information is wanted anyway. Should be distinct.
-	// @Column("varchar", { length: 20, array: true, default: "{}" })
-	// https://github.com/typeorm/typeorm/issues/6990
-	@Column("json", { default: [] })
+	@JsonArrayColumn()
 	hosts!: string[];
 
 	/// An array of Discord channel snowflakes. Should be distinct.
-	// @Column("varchar", { length: 20, array: true, default: "{}" })
-	@Column("json", { default: [] })
+	@JsonArrayColumn()
 	publicChannels!: string[];
 
 	/// An array of Discord channel snowflakes. Should be distinct.
-	// @Column("varchar", { length: 20, array: true, default: "{}" })
-	@Column("json", { default: [] })
+	@JsonArrayColumn()
 	privateChannels!: string[];
 
 	/// Simple state progression in the listed order above.
-	@Column({ type: "enum", enum: TournamentStatus, default: TournamentStatus.PREPARING })
+	@EnumColumn(TournamentStatus, "PREPARING")
 	status!: TournamentStatus;
 
 	/// Optional maximum capacity of this tournament. 0 indicates no limit. Negatives invalid.

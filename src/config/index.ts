@@ -2,11 +2,11 @@ import dotenv from "dotenv";
 dotenv.config();
 
 function assertEnv(envvar: string): string {
-	if (process.env[envvar] === undefined) {
+	const value = process.env[envvar];
+	if (value === undefined) {
 		throw new Error(`Missing environment variable ${envvar}`);
 	}
-	// For some reason with indexed access, the cast is needed despite the if check
-	return process.env[envvar] as string;
+	return value;
 }
 
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/explicit-function-return-type
