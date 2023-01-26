@@ -4,6 +4,7 @@ import { APIUser, Routes } from "discord-api-types/v10";
 import dotenv from "dotenv";
 import { ChannelCommand } from "../slash/channel";
 import { CreateCommand } from "../slash/create";
+import { DropCommand } from "../slash/drop";
 import { ForceDropCommand } from "../slash/forcedrop";
 import { HostCommand } from "../slash/host";
 import { InfoCommand } from "../slash/info";
@@ -17,7 +18,8 @@ export const classes = [
 	ChannelCommand,
 	UpdateCommand,
 	InfoCommand,
-	ForceDropCommand
+	ForceDropCommand,
+	DropCommand
 ];
 
 // Register Slash Commands on CI

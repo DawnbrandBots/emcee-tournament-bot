@@ -1,6 +1,6 @@
 import { AutocompleteInteraction, CacheType, ChatInputCommandInteraction, SlashCommandStringOption } from "discord.js";
 import { TournamentStatus } from "../database/interface";
-import { ManualTournament } from "../database/orm";
+import { ManualParticipant, ManualTournament } from "../database/orm";
 
 export const tournamentOption = new SlashCommandStringOption()
 	.setName("tournament")
@@ -46,4 +46,23 @@ export async function authenticateHost(
 		return false;
 	}
 	return true;
+}
+
+export async function authenticatePlayer(
+	tournament: ManualTournament,
+	interaction: ChatInputCommandInteraction
+): Promise<ManualParticipant | undefined> {
+	if (!interaction.inCachedGuild()) {
+		return;
+	}
+	if (tournament.owningDiscordServer !== interaction.guildId) {
+		await interaction.reply({ content: `That tournament isn't in this server.`, ephemeral: true });
+		return;
+	}
+	const player = tournament.participants.find(p => (p.discordId = interaction.id));
+	if (!player) {
+		await interaction.reply({ content: `You are not in that tournament.`, ephemeral: true });
+		return;
+	}
+	return player;
 }
