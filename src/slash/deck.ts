@@ -9,7 +9,13 @@ import {
 import { ManualTournament } from "../database/orm";
 import { AutocompletableCommand } from "../SlashCommand";
 import { getLogger, Logger } from "../util/logger";
-import { authenticateHost, autocompleteTournament, tournamentOption } from "./database";
+import {
+	authenticateHost,
+	autocompleteTournament,
+	awaitDeckValidationButtons,
+	generateDeckValidateButtons,
+	tournamentOption
+} from "./database";
 
 export class DeckCommand extends AutocompletableCommand {
 	#logger = getLogger("command:deck");
@@ -73,7 +79,9 @@ export class DeckCommand extends AutocompletableCommand {
 			outMessage += `\n**Theme**: ${player.deck.label}`;
 		}
 		outMessage += `\n${player.deck.content}`;
-		await interaction.reply(outMessage);
-		// TODO: include button for validation
+		const row = generateDeckValidateButtons();
+		const response = await interaction.reply({ content: outMessage, fetchReply: true, components: [row] });
+		// errors handled by internal callbacks
+		awaitDeckValidationButtons(interaction, response, tournament, this.logger, player.deck);
 	}
 }
