@@ -24,8 +24,7 @@ export class CapacityCommand extends AutocompletableCommand {
 					.setName("capacity")
 					.setDescription("The new capacity fpr the tournament.")
 					.setRequired(true)
-					.setMinValue(2)
-					.setMaxValue(256)
+					.setMinValue(0)
 			)
 			.toJSON();
 	}
@@ -50,7 +49,8 @@ export class CapacityCommand extends AutocompletableCommand {
 		// enforce integer cap
 		const capacity = Math.floor(interaction.options.getNumber("capacity", true));
 		const playerCount = tournament.participants.filter(p => p.deck?.approved).length;
-		if (playerCount > capacity) {
+		// cap 0 means uncapped
+		if (capacity > 0 && playerCount > capacity) {
 			await interaction.reply(
 				`You have more players (${playerCount}) registered than the new cap. Please drop enough players then try again.`
 			);
@@ -60,7 +60,10 @@ export class CapacityCommand extends AutocompletableCommand {
 		tournament.participantLimit = capacity;
 
 		await tournament.save();
-
+		if (capacity === 0) {
+			await interaction.reply(`Tournament ${tournament.name} updated with an unlimited capcity of players.`);
+			return;
+		}
 		await interaction.reply(`Tournament ${tournament.name} updated with a capacity of ${capacity} players.`);
 	}
 }

@@ -47,7 +47,11 @@ export class InfoCommand extends AutocompletableCommand {
 		}
 
 		const fields: EmbedField[] = [
-			{ name: ":ticket: Capacity", value: `${tournament.participantLimit || 256}`, inline: true },
+			{
+				name: ":ticket: Capacity",
+				value: `${tournament.participantLimit === 0 ? "Uncapped" : tournament.participantLimit}`,
+				inline: true
+			},
 			{
 				name: ":tickets: Registered",
 				value: `**${tournament.participants.filter(p => p.deck?.approved).length}** participants`,
