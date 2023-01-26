@@ -21,7 +21,7 @@ export class DeckCommand extends AutocompletableCommand {
 	static override get meta(): RESTPostAPIApplicationCommandsJSONBody {
 		return new SlashCommandBuilder()
 			.setName("deck")
-			.setDescription("Check the contents of a player's deck.")
+			.setDescription("Check and validate the contents of a player's deck.")
 			.setDMPermission(false)
 			.setDefaultMemberPermissions(0)
 			.addStringOption(tournamentOption)
@@ -74,5 +74,6 @@ export class DeckCommand extends AutocompletableCommand {
 		}
 		outMessage += `\n${player.deck.content}`;
 		await interaction.reply(outMessage);
+		// TODO: include button for validation
 	}
 }
