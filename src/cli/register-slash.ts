@@ -5,6 +5,7 @@ import dotenv from "dotenv";
 import { CapacityCommand } from "../slash/capacity";
 import { ChannelCommand } from "../slash/channel";
 import { CreateCommand } from "../slash/create";
+import { DeckCommand } from "../slash/deck";
 import { DropCommand } from "../slash/drop";
 import { ForceDropCommand } from "../slash/forcedrop";
 import { HostCommand } from "../slash/host";
@@ -21,7 +22,8 @@ export const classes = [
 	InfoCommand,
 	ForceDropCommand,
 	DropCommand,
-	CapacityCommand
+	CapacityCommand,
+	DeckCommand
 ];
 
 // Register Slash Commands on CI
