@@ -1,6 +1,12 @@
-import { AutocompleteInteraction, CacheType, ChatInputCommandInteraction } from "discord.js";
+import { AutocompleteInteraction, CacheType, ChatInputCommandInteraction, SlashCommandStringOption } from "discord.js";
 import { TournamentStatus } from "../database/interface";
 import { ManualTournament } from "../database/orm";
+
+export const tournamentOption = new SlashCommandStringOption()
+	.setName("tournament")
+	.setDescription("The name of the tournament to edit.")
+	.setRequired(true)
+	.setAutocomplete(true);
 
 export async function autocompleteTournament(interaction: AutocompleteInteraction<CacheType>): Promise<void> {
 	if (!interaction.inCachedGuild()) {
@@ -28,6 +34,9 @@ export async function authenticateHost(
 	tournament: ManualTournament,
 	interaction: ChatInputCommandInteraction
 ): Promise<boolean> {
+	if (!interaction.inCachedGuild()) {
+		return false;
+	}
 	if (tournament.owningDiscordServer !== interaction.guildId) {
 		await interaction.reply({ content: `That tournament isn't in this server.`, ephemeral: true });
 		return false;

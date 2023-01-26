@@ -4,14 +4,13 @@ import {
 	CacheType,
 	ChatInputCommandInteraction,
 	SlashCommandBuilder,
-	SlashCommandStringOption,
 	SlashCommandSubcommandBuilder,
 	userMention
 } from "discord.js";
 import { ManualTournament } from "../database/orm";
 import { AutocompletableCommand } from "../SlashCommand";
 import { getLogger, Logger } from "../util/logger";
-import { authenticateHost, autocompleteTournament } from "./database";
+import { authenticateHost, autocompleteTournament, tournamentOption } from "./database";
 
 export class HostCommand extends AutocompletableCommand {
 	#logger = getLogger("command:host");
@@ -21,11 +20,6 @@ export class HostCommand extends AutocompletableCommand {
 	}
 
 	static override get meta(): RESTPostAPIApplicationCommandsJSONBody {
-		const tournamentOption = new SlashCommandStringOption()
-			.setName("tournament")
-			.setDescription("The name of the tournament to edit.")
-			.setRequired(true)
-			.setAutocomplete(true);
 		const addSubcommand = new SlashCommandSubcommandBuilder()
 			.setName("add")
 			.setDescription("Add a host to the tournament.")
@@ -57,10 +51,6 @@ export class HostCommand extends AutocompletableCommand {
 	}
 
 	protected override async execute(interaction: ChatInputCommandInteraction): Promise<void> {
-		if (!interaction.inCachedGuild()) {
-			return;
-		}
-
 		const tournamentName = interaction.options.getString("tournament", true);
 		const tournament = await ManualTournament.findOneOrFail({ where: { name: tournamentName } });
 		const host = interaction.options.getUser("user", true);

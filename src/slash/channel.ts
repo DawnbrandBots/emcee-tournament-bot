@@ -11,7 +11,7 @@ import {
 import { ManualTournament } from "../database/orm";
 import { AutocompletableCommand } from "../SlashCommand";
 import { getLogger, Logger } from "../util/logger";
-import { authenticateHost, autocompleteTournament } from "./database";
+import { authenticateHost, autocompleteTournament, tournamentOption } from "./database";
 
 export class ChannelCommand extends AutocompletableCommand {
 	#logger = getLogger("command:channel");
@@ -21,11 +21,6 @@ export class ChannelCommand extends AutocompletableCommand {
 	}
 
 	static override get meta(): RESTPostAPIApplicationCommandsJSONBody {
-		const tournamentOption = new SlashCommandStringOption()
-			.setName("tournament")
-			.setDescription("The name of the tournament to edit.")
-			.setRequired(true)
-			.setAutocomplete(true);
 		const typeOption = new SlashCommandStringOption()
 			.setName("type")
 			.setDescription("Whether to edit a public announcement channel or a private deck channel.")
@@ -68,10 +63,6 @@ export class ChannelCommand extends AutocompletableCommand {
 	}
 
 	protected override async execute(interaction: ChatInputCommandInteraction): Promise<void> {
-		if (!interaction.inCachedGuild()) {
-			return;
-		}
-
 		const tournamentName = interaction.options.getString("tournament", true);
 		const tournament = await ManualTournament.findOneOrFail({ where: { name: tournamentName } });
 
