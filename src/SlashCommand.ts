@@ -1,8 +1,8 @@
 // Adapted from https://github.com/DawnbrandBots/bastion-bot/blob/master/src/Command.ts
 import { RESTPostAPIApplicationCommandsJSONBody } from "discord-api-types/v10";
 import { AutocompleteInteraction, ChatInputCommandInteraction } from "discord.js";
+import { serialiseInteraction } from "./util";
 import { Logger } from "./util/logger";
-import { serialiseInteraction } from "./utils";
 
 export abstract class SlashCommand {
 	static get meta(): RESTPostAPIApplicationCommandsJSONBody {
@@ -21,7 +21,6 @@ export abstract class SlashCommand {
 	 * provided to the user.
 	 *
 	 * @param interaction
-	 * @returns latency metric in milliseconds
 	 */
 	protected abstract execute(interaction: ChatInputCommandInteraction): Promise<void>;
 

@@ -1,10 +1,10 @@
 // Adapted from https://github.com/DawnbrandBots/bastion-bot/blob/master/src/commands/index.ts
 import { REST } from "@discordjs/rest";
 import { APIUser, Routes } from "discord-api-types/v10";
-import { TimerCommand } from "./timer";
+import dotenv from "dotenv";
+import { TimerCommand } from "../slash/timer";
 
 export const classes = [TimerCommand];
-export { TimerCommand };
 
 // Register Slash Commands on CI
 // Specify the guild snowflake to instantly deploy commands on the specified server.
@@ -30,4 +30,16 @@ export async function registerSlashCommands(guild?: `${bigint}`): Promise<void> 
 	);
 	console.log("Created Slash Commands:");
 	console.log(JSON.stringify(created, null, 4));
+}
+
+if (require.main === module) {
+	const args = process.argv.slice(2);
+	if (!args.length) {
+		console.error("Missing guild ID arguments!");
+		process.exit(1);
+	}
+	dotenv.config();
+	for (const server of args) {
+		registerSlashCommands(server as `${bigint}`);
+	}
 }

@@ -1,48 +1,35 @@
-import { time } from "@discordjs/builders";
 import { Interaction } from "discord.js";
 import { CommandSupport } from "../Command";
-import { parseTime } from "../round";
-import { PersistentTimer } from "../timer";
-import { UserError } from "../util/errors";
+import { TimerCommand } from "../slash/timer";
+import { AutocompletableCommand, SlashCommand } from "../SlashCommand";
+import { serialiseInteraction } from "../util";
 import { getLogger } from "../util/logger";
 
 const logger = getLogger("interaction");
 
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export function makeHandler({ organiserRole, timeWizard }: CommandSupport) {
+	const commandArray = [
+		// Construct SlashCommand objects here
+		new TimerCommand(organiserRole, timeWizard)
+	];
+	const commands = new Map<string, SlashCommand>();
+	const autocompletes = new Map<string, AutocompletableCommand>();
+
+	for (const command of commandArray) {
+		commands.set(command.meta.name, command);
+		if (command instanceof AutocompletableCommand) {
+			autocompletes.set(command.meta.name, command);
+		}
+	}
+
 	return async function interactionCreate(interaction: Interaction): Promise<void> {
-		if (!interaction.isChatInputCommand() || !interaction.inCachedGuild() || interaction.commandName !== "timer") {
-			return;
-		}
-		// Should be replaced by the built-in system
-		const role = await organiserRole.get(interaction.guild);
-		if (!interaction.member.roles.cache.has(role)) {
-			logger.verbose(`Rejected /timer attempt from ${interaction.user} in ${interaction.guildId}.`);
-			await interaction.reply({ content: `You cannot use this.`, ephemeral: true });
-			return;
-		}
-		// Main body, analogous to a simplified mc!round
-		const duration = interaction.options.getString("duration", true);
-		const finalMessage = interaction.options.getString("final_message", true);
-		logger.verbose(`/timer: ${interaction.guildId} ${interaction.user} ${duration} ${finalMessage}`);
-		try {
-			const timerMinutes = parseTime(duration);
-			const end = new Date(Date.now() + timerMinutes * 60 * 1000);
-			logger.info(`/timer: creating timer that ends at ${end}`);
-			await interaction.reply(`Creating timer that ends at ${time(end)} (${time(end, "R")}).`);
-			await PersistentTimer.create(
-				timeWizard.delegate,
-				end,
-				interaction.channelId,
-				finalMessage,
-				5 // update every 5 seconds, matches mc!round
-			);
-		} catch (error) {
-			if (error instanceof UserError) {
-				await interaction.reply({ content: error.message, ephemeral: true });
-			} else {
-				logger.error(error);
-				await interaction.reply({ content: "Something went wrong!", ephemeral: true });
-			}
+		if (interaction.isChatInputCommand()) {
+			logger.verbose(serialiseInteraction(interaction));
+			await commands.get(interaction.commandName)?.run(interaction);
+		} else if (interaction.isAutocomplete()) {
+			logger.verbose(serialiseInteraction(interaction, { autocomplete: interaction.options.getFocused() }));
+			await autocompletes.get(interaction.commandName)?.autocomplete(interaction);
 		}
 	};
 }
