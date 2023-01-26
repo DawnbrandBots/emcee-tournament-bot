@@ -9,15 +9,14 @@ import {
 	userMention
 } from "discord.js";
 import { ManualTournament } from "../database/orm";
-import { TournamentStatus } from "../database/interface";
-import { OrganiserRoleProvider } from "../role/organiser";
 import { AutocompletableCommand } from "../SlashCommand";
 import { getLogger, Logger } from "../util/logger";
+import { authenticateHost, autocompleteTournament } from "./database";
 
 export class HostCommand extends AutocompletableCommand {
 	#logger = getLogger("command:host");
 
-	constructor(private organiserRole: OrganiserRoleProvider) {
+	constructor() {
 		super();
 	}
 
@@ -25,17 +24,20 @@ export class HostCommand extends AutocompletableCommand {
 		const tournamentOption = new SlashCommandStringOption()
 			.setName("tournament")
 			.setDescription("The name of the tournament to edit.")
+			.setRequired(true)
 			.setAutocomplete(true);
 		const addSubcommand = new SlashCommandSubcommandBuilder()
 			.setName("add")
 			.setDescription("Add a host to the tournament.")
 			.addStringOption(tournamentOption)
-			.addUserOption(option => option.setName("user").setDescription("The user to add as host."));
+			.addUserOption(option =>
+				option.setName("user").setDescription("The user to add as host.").setRequired(true)
+			);
 		const removeSubcommand = new SlashCommandSubcommandBuilder()
 			.setName("remove")
 			.setDescription("Remove a host from the tournament.")
 			.addStringOption(tournamentOption)
-			.addUserOption(option => option.setName("user").setDescription("The host to remove."));
+			.addUserOption(option => option.setName("user").setDescription("The host to remove.").setRequired(true));
 		return new SlashCommandBuilder()
 			.setName("host")
 			.setDescription("Edit the hosts of a tournament.")
@@ -51,25 +53,7 @@ export class HostCommand extends AutocompletableCommand {
 	}
 
 	override async autocomplete(interaction: AutocompleteInteraction<CacheType>): Promise<void> {
-		if (!interaction.inCachedGuild()) {
-			return;
-		}
-		const partialName = interaction.options.getFocused();
-		const owningDiscordServer = interaction.guildId;
-		const tournaments = await ManualTournament.find({
-			where: [
-				{ owningDiscordServer, status: TournamentStatus.IPR },
-				{ owningDiscordServer, status: TournamentStatus.PREPARING }
-			]
-		});
-		// can we do this natively with .find? should match all for blank input
-		const matchingTournaments = tournaments
-			.filter(t => t.name.includes(partialName))
-			.slice(0, 25)
-			.map(t => {
-				return { name: t.name, value: t.name };
-			});
-		await interaction.respond(matchingTournaments);
+		autocompleteTournament(interaction);
 	}
 
 	protected override async execute(interaction: ChatInputCommandInteraction): Promise<void> {
@@ -81,13 +65,8 @@ export class HostCommand extends AutocompletableCommand {
 		const tournament = await ManualTournament.findOneOrFail({ where: { name: tournamentName } });
 		const host = interaction.options.getUser("user", true);
 
-		if (tournament.owningDiscordServer !== interaction.guildId) {
-			await interaction.reply({ content: `That tournament isn't in this server.`, ephemeral: true });
-			return;
-		}
-		if (!tournament.hosts.includes(interaction.user.id)) {
-			this.#logger.verbose(`Rejected /create attempt from ${interaction.user} in ${interaction.guildId}.`);
-			await interaction.reply({ content: `You cannot use this.`, ephemeral: true });
+		if (!(await authenticateHost(tournament, interaction))) {
+			// rejection messages handled in helper
 			return;
 		}
 

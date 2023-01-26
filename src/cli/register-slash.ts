@@ -3,9 +3,10 @@ import { REST } from "@discordjs/rest";
 import { APIUser, Routes } from "discord-api-types/v10";
 import dotenv from "dotenv";
 import { CreateCommand } from "../slash/create";
+import { HostCommand } from "../slash/host";
 import { TimerCommand } from "../slash/timer";
 
-export const classes = [TimerCommand, CreateCommand];
+export const classes = [TimerCommand, CreateCommand, HostCommand];
 
 // Register Slash Commands on CI
 // Specify the guild snowflake to instantly deploy commands on the specified server.
