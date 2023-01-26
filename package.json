@@ -15,7 +15,7 @@
 		"reregister": "ts-node src/cli/reregister",
 		"reregister:docker": "node --enable-source-maps cli/reregister",
 		"register-slash": "ts-node src/cli/register-slash",
-		"reregister-slash:docker": "node --enable-source-maps cli/reregister-slash"
+		"register-slash:docker": "node --enable-source-maps cli/register-slash"
 	},
 	"author": "Luna Brand",
 	"contributors": [
