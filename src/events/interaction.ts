@@ -4,6 +4,7 @@ import { ChannelCommand } from "../slash/channel";
 import { CreateCommand } from "../slash/create";
 import { HostCommand } from "../slash/host";
 import { TimerCommand } from "../slash/timer";
+import { UpdateCommand } from "../slash/update";
 import { AutocompletableCommand, SlashCommand } from "../SlashCommand";
 import { serialiseInteraction } from "../util";
 import { getLogger } from "../util/logger";
@@ -17,7 +18,8 @@ export function makeHandler({ organiserRole, timeWizard }: CommandSupport) {
 		new TimerCommand(organiserRole, timeWizard),
 		new CreateCommand(organiserRole),
 		new HostCommand(),
-		new ChannelCommand()
+		new ChannelCommand(),
+		new UpdateCommand()
 	];
 	const commands = new Map<string, SlashCommand>();
 	const autocompletes = new Map<string, AutocompletableCommand>();
