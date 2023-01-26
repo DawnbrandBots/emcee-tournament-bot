@@ -1,5 +1,6 @@
 import { Interaction } from "discord.js";
 import { CommandSupport } from "../Command";
+import { ChannelCommand } from "../slash/channel";
 import { CreateCommand } from "../slash/create";
 import { HostCommand } from "../slash/host";
 import { TimerCommand } from "../slash/timer";
@@ -15,7 +16,8 @@ export function makeHandler({ organiserRole, timeWizard }: CommandSupport) {
 		// Construct SlashCommand objects here
 		new TimerCommand(organiserRole, timeWizard),
 		new CreateCommand(organiserRole),
-		new HostCommand()
+		new HostCommand(),
+		new ChannelCommand()
 	];
 	const commands = new Map<string, SlashCommand>();
 	const autocompletes = new Map<string, AutocompletableCommand>();
