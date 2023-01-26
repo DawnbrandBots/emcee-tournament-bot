@@ -74,11 +74,18 @@ export class DeckCommand extends AutocompletableCommand {
 			});
 			return;
 		}
+
 		let outMessage = `__**${userMention(user.id)}'s deck**__:`;
 		if (player.deck.label) {
 			outMessage += `\n**Theme**: ${player.deck.label}`;
 		}
 		outMessage += `\n${player.deck.content}`;
+
+		if (player.deck.approved) {
+			await interaction.reply(outMessage);
+			return;
+		}
+
 		const row = generateDeckValidateButtons();
 		const response = await interaction.reply({ content: outMessage, fetchReply: true, components: [row] });
 		// errors handled by internal callbacks

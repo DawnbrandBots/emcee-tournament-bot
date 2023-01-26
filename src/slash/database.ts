@@ -152,6 +152,7 @@ export function awaitDeckValidationButtons(
 						await player.send(
 							`Your deck has been accepted by the hosts! You are now registered for ${tournament.name}.`
 						);
+						// TODO: Give player participant role
 						// log success to TO
 						if (tournament.privateChannel) {
 							await send(
