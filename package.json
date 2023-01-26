@@ -13,7 +13,9 @@
 		"leave": "ts-node src/cli/leave",
 		"leave:docker": "node --enable-source-maps cli/leave",
 		"reregister": "ts-node src/cli/reregister",
-		"reregister:docker": "node --enable-source-maps cli/reregister"
+		"reregister:docker": "node --enable-source-maps cli/reregister",
+		"register-slash": "ts-node src/cli/register-slash",
+		"register-slash:docker": "node --enable-source-maps cli/register-slash"
 	},
 	"author": "Luna Brand",
 	"contributors": [
