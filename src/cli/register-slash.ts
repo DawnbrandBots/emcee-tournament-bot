@@ -13,6 +13,7 @@ import { InfoCommand } from "../slash/info";
 import { TimerCommand } from "../slash/timer";
 import { UpdateCommand } from "../slash/update";
 import { FinishCommand } from "../slash/finish";
+import { OpenCommand } from "../slash/open";
 
 export const classes = [
 	TimerCommand,
@@ -25,7 +26,8 @@ export const classes = [
 	DropCommand,
 	CapacityCommand,
 	DeckCommand,
-	FinishCommand
+	FinishCommand,
+	OpenCommand
 ];
 
 // Register Slash Commands on CI
