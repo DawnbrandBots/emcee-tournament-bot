@@ -1,6 +1,5 @@
 import { Interaction } from "discord.js";
 import { CommandSupport } from "../Command";
-import { CapacityCommand } from "../slash/capacity";
 import { ChannelCommand } from "../slash/channel";
 import { CreateCommand } from "../slash/create";
 import { DeckCommand } from "../slash/deck";
@@ -29,7 +28,6 @@ export function makeHandler({ organiserRole, timeWizard }: CommandSupport) {
 		new InfoCommand(),
 		new ForceDropCommand(), // will include participantRole if adapted later
 		new DropCommand(),
-		new CapacityCommand(),
 		new DeckCommand(),
 		new FinishCommand()
 	];
