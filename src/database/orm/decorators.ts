@@ -6,8 +6,9 @@ export function JsonArrayColumn(): PropertyDecorator {
 		? Column("text", {
 				default: "[]",
 				transformer: {
-					from: (raw: string | null) => (raw ? JSON.parse(raw) : []),
-					to: (entity?: string[]) => (entity ? JSON.stringify(entity) : "[]")
+					// Workaround for https://github.com/typeorm/typeorm/issues/5719 (transformer called twice)
+					from: (raw: string) => (Array.isArray(raw) ? raw : JSON.parse(raw)),
+					to: (entity?: string[]) => entity && JSON.stringify(entity)
 				}
 		  })
 		: // @Column("varchar", { length: 20, array: true, default: "{}" })
