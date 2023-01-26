@@ -5,6 +5,7 @@ import { ChannelCommand } from "../slash/channel";
 import { CreateCommand } from "../slash/create";
 import { DeckCommand } from "../slash/deck";
 import { DropCommand } from "../slash/drop";
+import { FinishCommand } from "../slash/finish";
 import { ForceDropCommand } from "../slash/forcedrop";
 import { HostCommand } from "../slash/host";
 import { InfoCommand } from "../slash/info";
@@ -29,7 +30,8 @@ export function makeHandler({ organiserRole, timeWizard }: CommandSupport) {
 		new ForceDropCommand(), // will include participantRole if adapted later
 		new DropCommand(),
 		new CapacityCommand(),
-		new DeckCommand()
+		new DeckCommand(),
+		new FinishCommand()
 	];
 	const commands = new Map<string, SlashCommand>();
 	const autocompletes = new Map<string, AutocompletableCommand>();
