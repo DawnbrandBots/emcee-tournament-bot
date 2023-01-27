@@ -22,12 +22,12 @@ export class CreateCommand extends SlashCommand {
 				option.setName("name").setDescription("The name of the tournament.").setRequired(true)
 			)
 			.addStringOption(option =>
-				option.setName("desc").setDescription("A description of the tournament.").setRequired(true)
+				option.setName("description").setDescription("A description of the tournament.").setRequired(true)
 			)
 			.addBooleanOption(option =>
 				option
-					.setName("topCut")
-					.setDescription("Whether to run the tournament as a single-elimination top cut. ")
+					.setName("requirecode")
+					.setDescription("Whether to require a Master Duel friend code from participants.")
 			)
 			.toJSON();
 	}
@@ -42,8 +42,8 @@ export class CreateCommand extends SlashCommand {
 		}
 
 		// Should be replaced by the built-in system
-		const role = await this.organiserRole.get(interaction.guild);
-		if (!interaction.member.roles.cache.has(role)) {
+		const toRole = await this.organiserRole.get(interaction.guild);
+		if (!interaction.member.roles.cache.has(toRole)) {
 			this.#logger.verbose(`Rejected /create attempt from ${interaction.user} in ${interaction.guildId}.`);
 			await interaction.reply({ content: `You cannot use this.`, ephemeral: true });
 			return;
@@ -51,12 +51,18 @@ export class CreateCommand extends SlashCommand {
 
 		const name = interaction.options.getString("name", true);
 		const description = interaction.options.getString("description", true);
+		const requireCode = interaction.options.getBoolean("requirecode") || false;
 		const tournament = new ManualTournament();
 		// compared to challonge tournaments, tournamentId autoincrements
 		tournament.name = name;
 		tournament.description = description;
 		tournament.owningDiscordServer = interaction.guild.id;
 		tournament.hosts = [interaction.user.id];
+		tournament.requireFriendCode = requireCode;
+
+		const playerRole = await interaction.guild.roles.create({ name: `${tournament.name} Participant` });
+
+		tournament.participantRole = playerRole.id;
 
 		await tournament.save();
 

@@ -20,7 +20,7 @@ export class ChannelCommand extends AutocompletableCommand {
 
 	static override get meta(): RESTPostAPIApplicationCommandsJSONBody {
 		return new SlashCommandBuilder()
-			.setName("host")
+			.setName("channel")
 			.setDescription("Edit the channels of a tournament.")
 			.setDMPermission(false)
 			.setDefaultMemberPermissions(0)
