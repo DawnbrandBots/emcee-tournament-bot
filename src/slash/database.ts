@@ -11,6 +11,7 @@ import {
 	DiscordjsErrorCodes,
 	Message,
 	ModalBuilder,
+	ModalSubmitInteraction,
 	SlashCommandStringOption,
 	TextInputBuilder,
 	TextInputStyle,
@@ -91,6 +92,57 @@ export function generateDeckValidateButtons(): ActionRowBuilder<ButtonBuilder> {
 	return row;
 }
 
+async function awaitModalInteraction(
+	modalInteraction: ModalSubmitInteraction<CacheType>,
+	deck: ManualDeckSubmission,
+	tournament: ManualTournament,
+	response: Message
+): Promise<void> {
+	const player = await response.client.users.fetch(deck.discordId);
+	if (modalInteraction.customId === "acceptModal") {
+		// mark deck as approved
+		deck.approved = true;
+		const label = modalInteraction.fields.getTextInputValue("acceptDeckLabel");
+		if (label.length > 0) {
+			deck.label = label;
+		}
+		await deck.save();
+		// provide feedback to player
+		await player.send(`Your deck has been accepted by the hosts! You are now registered for ${tournament.name}.`);
+		// TODO: Give player participant role
+		// log success to TO
+		if (tournament.privateChannel) {
+			await send(
+				response.client,
+				tournament.privateChannel,
+				`${userMention}'s deck for ${tournament.name} has been approved by ${userMention(
+					modalInteraction.user.id
+				)}`
+			);
+		}
+		return;
+	}
+	// if (modalInteraction.customId === "rejectModal")
+	// clear deck submission
+	await deck.remove(); // do we need to update the link on the player's end?
+	// provide feedback to player
+	let message = `Your deck has been rejected by the hosts. Please update your deck and try again.`;
+	const reason = modalInteraction.fields.getTextInputValue("rejectReason");
+	if (reason.length > 0) {
+		message += `\nReason: ${reason}`;
+	}
+	await player.send(message);
+	// log success to TO
+	if (tournament.privateChannel) {
+		await send(
+			response.client,
+			tournament.privateChannel,
+			`${userMention}'s deck for ${tournament.name} has been rejected by ${userMention(modalInteraction.user.id)}`
+		);
+	}
+	return;
+}
+
 export function awaitDeckValidationButtons(
 	commandInteraction: ChatInputCommandInteraction,
 	response: Message,
@@ -135,55 +187,7 @@ export function awaitDeckValidationButtons(
 			}
 			buttonInteraction
 				.awaitModalSubmit({ componentType: ComponentType.TextInput, time: 15000 })
-				.then(async modalInteraction => {
-					const player = await response.client.users.fetch(deck.discordId);
-					if (modalInteraction.customId === "acceptModal") {
-						// mark deck as approved
-						deck.approved = true;
-						const label = modalInteraction.fields.getTextInputValue("acceptDeckLabel");
-						if (label.length > 0) {
-							deck.label = label;
-						}
-						await deck.save();
-						// provide feedback to player
-						await player.send(
-							`Your deck has been accepted by the hosts! You are now registered for ${tournament.name}.`
-						);
-						// TODO: Give player participant role
-						// log success to TO
-						if (tournament.privateChannel) {
-							await send(
-								response.client,
-								tournament.privateChannel,
-								`${userMention}'s deck for ${tournament.name} has been approved by ${userMention(
-									modalInteraction.user.id
-								)}`
-							);
-						}
-						return;
-					}
-					// if (modalInteraction.customId === "rejectModal")
-					// clear deck submission
-					await deck.remove(); // do we need to update the link on the player's end?
-					// provide feedback to player
-					let message = `Your deck has been rejected by the hosts. Please update your deck and try again.`;
-					const reason = modalInteraction.fields.getTextInputValue("rejectReason");
-					if (reason.length > 0) {
-						message += `\nReason: ${reason}`;
-					}
-					await player.send(message);
-					// log success to TO
-					if (tournament.privateChannel) {
-						await send(
-							response.client,
-							tournament.privateChannel,
-							`${userMention}'s deck for ${tournament.name} has been rejected by ${userMention(
-								modalInteraction.user.id
-							)}`
-						);
-					}
-					return;
-				})
+				.then(m => awaitModalInteraction(m, deck, tournament, response))
 				.catch(e => logger.error(e));
 		})
 		.catch(async (err: DiscordAPIError) => {
