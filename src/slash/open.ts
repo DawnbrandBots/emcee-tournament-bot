@@ -63,6 +63,8 @@ export class OpenCommand extends AutocompletableCommand {
 				await message.reply(
 					"You need to upload screenshots of your deck to register. Please click the button and try again."
 				);
+				// TODO: do we need to destroy the player entry here?
+				return;
 			}
 			player.deck = new ManualDeckSubmission();
 			player.deck.approved = false;
@@ -73,6 +75,13 @@ export class OpenCommand extends AutocompletableCommand {
 			if (!isNaN(friendCode) && friendCode.toString(10).length === 9) {
 				player.friendCode = friendCode;
 				// TODO: Edit player nickname with friend code
+			}
+			if (!player.friendCode && tournament.requireFriendCode) {
+				await message.reply(
+					"This tournament requires you to submit a valid, 9-digit Master Duel friend code! Please click the button and try again"
+				);
+				// TODO: do we need to destroy the player entry here?
+				return;
 			}
 			await player.deck.save();
 			await player.save();
