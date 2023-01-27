@@ -5,6 +5,7 @@ import {
 	ButtonBuilder,
 	ButtonInteraction,
 	CacheType,
+	channelMention,
 	ChatInputCommandInteraction,
 	Collection,
 	Message,
@@ -184,5 +185,11 @@ export class OpenCommand extends AutocompletableCommand {
 		});
 
 		collector.on("collect", i => this.collectButtonInteraction(i, interaction, tournament));
+
+		await interaction.reply(
+			`Registration for ${tournament.name} is now open in ${channelMention(
+				tournament.publicChannel
+			)}. Look for decks in ${channelMention(tournament.privateChannel)}.`
+		);
 	}
 }
