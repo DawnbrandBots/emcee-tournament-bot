@@ -13,24 +13,45 @@ import { RegisterMessage } from "./RegisterMessage";
 const logger = getLogger("typeorm");
 
 export async function initializeConnection(postgresqlUrl: string): Promise<void> {
-	await createConnection({
-		type: "postgres",
-		url: postgresqlUrl,
-		entities: [
-			ChallongeTournament,
-			ConfirmedParticipant,
-			Countdown,
-			Participant,
-			RegisterMessage,
-			ManualTournament,
-			ManualParticipant,
-			ManualDeckSubmission
-		],
-		logging: "all",
-		logger: "debug",
-		synchronize: true // TODO: process.env.NODE_ENV === "development" and investigate migrations
-	});
-	logger.info(`Connected to PostgreSQL via TypeORM`);
+	if (process.env.SQLITE_DB) {
+		await createConnection({
+			type: "better-sqlite3",
+			database: process.env.SQLITE_DB,
+			entities: [
+				ChallongeTournament,
+				ConfirmedParticipant,
+				Countdown,
+				Participant,
+				RegisterMessage,
+				ManualTournament,
+				ManualParticipant,
+				ManualDeckSubmission
+			],
+			logging: "all",
+			logger: "debug",
+			synchronize: true
+		});
+		logger.info(`Connected to SQLite via TypeORM`);
+	} else {
+		await createConnection({
+			type: "postgres",
+			url: postgresqlUrl,
+			entities: [
+				ChallongeTournament,
+				ConfirmedParticipant,
+				Countdown,
+				Participant,
+				RegisterMessage,
+				ManualTournament,
+				ManualParticipant,
+				ManualDeckSubmission
+			],
+			logging: "all",
+			logger: "debug",
+			synchronize: true // TODO: process.env.NODE_ENV === "development" and investigate migrations
+		});
+		logger.info(`Connected to PostgreSQL via TypeORM`);
+	}
 }
 
 export {

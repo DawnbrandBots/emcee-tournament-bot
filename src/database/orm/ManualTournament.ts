@@ -1,5 +1,6 @@
 import { BaseEntity, Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { TournamentStatus } from "../interface";
+import { EnumColumn, JsonArrayColumn } from "./decorators";
 import { ManualDeckSubmission } from "./ManualDeckSubmission";
 import { ManualParticipant } from "./ManualParticipant";
 
@@ -25,9 +26,7 @@ export class ManualTournament extends BaseEntity {
 
 	/// An array of Discord user snowflakes. Whenever hosts are queried, the rest
 	/// of the tournament information is wanted anyway. Should be distinct.
-	// @Column("varchar", { length: 20, array: true, default: "{}" })
-	// https://github.com/typeorm/typeorm/issues/6990
-	@Column("json", { default: [] })
+	@JsonArrayColumn()
 	hosts!: string[];
 
 	/// Discord channel snowflake. A uint64 is at most 20 digits in decimal.
@@ -39,7 +38,7 @@ export class ManualTournament extends BaseEntity {
 	privateChannel?: string;
 
 	/// Simple state progression in the listed order above.
-	@Column({ type: "enum", enum: TournamentStatus, default: TournamentStatus.PREPARING })
+	@EnumColumn(TournamentStatus, "PREPARING")
 	status!: TournamentStatus;
 
 	/// Optional maximum capacity of this tournament. 0 indicates no limit. Negatives invalid.

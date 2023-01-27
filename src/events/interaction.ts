@@ -1,8 +1,8 @@
 import { Interaction } from "discord.js";
 import { CommandSupport } from "../Command";
-import { CapacityCommand } from "../slash/capacity";
 import { ChannelCommand } from "../slash/channel";
 import { CreateCommand } from "../slash/create";
+import { CsvCommand } from "../slash/csv";
 import { DeckCommand } from "../slash/deck";
 import { DropCommand } from "../slash/drop";
 import { FinishCommand } from "../slash/finish";
@@ -30,10 +30,10 @@ export function makeHandler({ organiserRole, timeWizard }: CommandSupport) {
 		new InfoCommand(),
 		new ForceDropCommand(), // will include participantRole if adapted later
 		new DropCommand(),
-		new CapacityCommand(),
 		new DeckCommand(),
 		new FinishCommand(),
-		new OpenCommand()
+		new OpenCommand(),
+		new CsvCommand()
 	];
 	const commands = new Map<string, SlashCommand>();
 	const autocompletes = new Map<string, AutocompletableCommand>();

@@ -74,11 +74,17 @@ export class HostCommand extends AutocompletableCommand {
 			return;
 		}
 		// if (mode === "remove")
-		if (!tournament.hosts.includes(host.id)) {
+		// use index instead of includes because we need to splice it later
+		const hostIndex = tournament.hosts.indexOf(host.id);
+		if (hostIndex === -1) {
 			await interaction.reply({ content: `That user is not a host.`, ephemeral: true });
 			return;
 		}
-		tournament.hosts.push(host.id);
+		if (tournament.hosts.length < 2) {
+			await interaction.reply({ content: `You cannot remove the last host from a tournament.`, ephemeral: true });
+			return;
+		}
+		tournament.hosts.splice(hostIndex, 1);
 		await tournament.save();
 		await interaction.reply({
 			content: `${userMention(host.id)} has been removed as a host from ${tournament.name}!`

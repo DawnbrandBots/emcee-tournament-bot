@@ -2,7 +2,6 @@
 import { REST } from "@discordjs/rest";
 import { APIUser, Routes } from "discord-api-types/v10";
 import dotenv from "dotenv";
-import { CapacityCommand } from "../slash/capacity";
 import { ChannelCommand } from "../slash/channel";
 import { CreateCommand } from "../slash/create";
 import { DeckCommand } from "../slash/deck";
@@ -14,6 +13,7 @@ import { TimerCommand } from "../slash/timer";
 import { UpdateCommand } from "../slash/update";
 import { FinishCommand } from "../slash/finish";
 import { OpenCommand } from "../slash/open";
+import { CsvCommand } from "../slash/csv";
 
 export const classes = [
 	TimerCommand,
@@ -24,10 +24,10 @@ export const classes = [
 	InfoCommand,
 	ForceDropCommand,
 	DropCommand,
-	CapacityCommand,
 	DeckCommand,
 	FinishCommand,
-	OpenCommand
+	OpenCommand,
+	CsvCommand
 ];
 
 // Register Slash Commands on CI

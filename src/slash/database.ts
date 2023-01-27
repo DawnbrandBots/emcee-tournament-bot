@@ -17,6 +17,7 @@ import {
 	userMention
 } from "discord.js";
 import { Logger } from "../util/logger";
+import { ILike } from "typeorm";
 import { TournamentStatus } from "../database/interface";
 import { ManualDeckSubmission, ManualParticipant, ManualTournament } from "../database/orm";
 import { send } from "../util/discord";
@@ -35,17 +36,13 @@ export async function autocompleteTournament(interaction: AutocompleteInteractio
 	const owningDiscordServer = interaction.guildId;
 	const tournaments = await ManualTournament.find({
 		where: [
-			{ owningDiscordServer, status: TournamentStatus.IPR },
-			{ owningDiscordServer, status: TournamentStatus.PREPARING }
+			{ owningDiscordServer, status: TournamentStatus.IPR, name: ILike(`%${partialName}%`) },
+			{ owningDiscordServer, status: TournamentStatus.PREPARING, name: ILike(`%${partialName}%`) }
 		]
 	});
-	// can we do this natively with .find? should match all for blank input
-	const matchingTournaments = tournaments
-		.filter(t => t.name.includes(partialName))
-		.slice(0, 25)
-		.map(t => {
-			return { name: t.name, value: t.name };
-		});
+	const matchingTournaments = tournaments.slice(0, 25).map(t => {
+		return { name: t.name, value: t.name };
+	});
 	await interaction.respond(matchingTournaments);
 }
 
