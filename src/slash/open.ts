@@ -129,8 +129,6 @@ export class OpenCommand extends AutocompletableCommand {
 		player.dropped = false;
 		player.tournament = tournament;
 		await player.save();
-		tournament.participants.push(player);
-		await tournament.save();
 
 		// we just sent a DM so the DM channel will be created
 		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
