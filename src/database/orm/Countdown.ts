@@ -12,7 +12,7 @@ export class Countdown extends BaseEntity {
 	id!: number;
 
 	/// Store the end time as a UTC timestamp in Postgres, avoid shenanigans.
-	@Column("timestamptz")
+	@Column(process.env.SQLITE_DB ? "datetime" : "timestamptz")
 	end!: Date;
 
 	/// Discord channel snowflake. A uint64 is at most 20 digits in decimal.
