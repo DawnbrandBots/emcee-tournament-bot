@@ -10,6 +10,7 @@ import { ForceDropCommand } from "../slash/forcedrop";
 import { HostCommand } from "../slash/host";
 import { InfoCommand } from "../slash/info";
 import { OpenCommand } from "../slash/open";
+import { StartCommand } from "../slash/start";
 import { TimerCommand } from "../slash/timer";
 import { UpdateCommand } from "../slash/update";
 import { AutocompletableCommand, SlashCommand } from "../SlashCommand";
@@ -33,7 +34,8 @@ export function makeHandler({ organiserRole, timeWizard }: CommandSupport) {
 		new DeckCommand(),
 		new FinishCommand(),
 		new OpenCommand(),
-		new CsvCommand()
+		new CsvCommand(),
+		new StartCommand()
 	];
 	const commands = new Map<string, SlashCommand>();
 	const autocompletes = new Map<string, AutocompletableCommand>();

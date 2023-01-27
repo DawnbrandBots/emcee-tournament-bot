@@ -14,6 +14,7 @@ import { UpdateCommand } from "../slash/update";
 import { FinishCommand } from "../slash/finish";
 import { OpenCommand } from "../slash/open";
 import { CsvCommand } from "../slash/csv";
+import { StartCommand } from "../slash/start";
 
 export const classes = [
 	TimerCommand,
@@ -27,7 +28,8 @@ export const classes = [
 	DeckCommand,
 	FinishCommand,
 	OpenCommand,
-	CsvCommand
+	CsvCommand,
+	StartCommand
 ];
 
 // Register Slash Commands on CI

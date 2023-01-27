@@ -11,6 +11,7 @@ import {
 	SlashCommandBuilder,
 	userMention
 } from "discord.js";
+import { TournamentStatus } from "../database/interface";
 import { ManualDeckSubmission, ManualParticipant, ManualTournament } from "../database/orm";
 import { AutocompletableCommand } from "../SlashCommand";
 import { send } from "../util/discord";
@@ -101,6 +102,10 @@ export class OpenCommand extends AutocompletableCommand {
 		baseInteraction: ChatInputCommandInteraction,
 		tournament: ManualTournament
 	): Promise<void> {
+		if (tournament.status !== TournamentStatus.PREPARING) {
+			await buttonInteraction.user.send("Sorry, registration for the tournament has closed!");
+			return;
+		}
 		if (tournament.participantLimit > 0 && tournament.participants?.length >= tournament.participantLimit) {
 			await buttonInteraction.user.send("Sorry, the tournament is currently full!");
 			return;
