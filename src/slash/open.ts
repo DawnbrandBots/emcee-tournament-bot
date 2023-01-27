@@ -91,6 +91,10 @@ export class OpenCommand extends AutocompletableCommand {
 		});
 
 		collector.on("collect", async (buttonInteraction: ButtonInteraction) => {
+			if (tournament.participantLimit > 0 && tournament.participants?.length >= tournament.participantLimit) {
+				await buttonInteraction.user.send("Sorry, the tournament is currently full!");
+				return;
+			}
 			await buttonInteraction.user.send(
 				"Please upload screenshots of your decklist to register.\nYou can also type in a Master Duel friend code.\n**Important**: Please do not delete your message! This can make your decklist invisible to tournament hosts, which they may interpret as cheating."
 			);
