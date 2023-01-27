@@ -20,7 +20,7 @@ export class UpdateCommand extends AutocompletableCommand {
 			.setDefaultMemberPermissions(0)
 			.addStringOption(tournamentOption)
 			.addStringOption(option => option.setName("name").setDescription("The name of the tournament."))
-			.addStringOption(option => option.setName("desc").setDescription("A description of the tournament."))
+			.addStringOption(option => option.setName("description").setDescription("A description of the tournament."))
 			.addNumberOption(option =>
 				option.setName("capacity").setDescription("The new capacity for the tournament.").setMinValue(0)
 			)
@@ -62,7 +62,7 @@ export class UpdateCommand extends AutocompletableCommand {
 		if (rawCap) {
 			// enforce integer cap
 			const capacity = Math.floor(rawCap);
-			const playerCount = tournament.participants.filter(p => p.deck?.approved).length;
+			const playerCount = tournament.participants?.filter(p => p.deck?.approved).length || 0;
 			// cap 0 means uncapped
 			if (capacity > 0 && playerCount > capacity) {
 				await interaction.reply(
