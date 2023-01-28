@@ -56,19 +56,20 @@ export class CsvCommand extends AutocompletableCommand {
 		let file: Buffer;
 
 		if (pie) {
-			const themes = tournament.participants
-				.filter(p => p.deck?.approved)
-				.map(p => p.deck?.label || "No theme")
+			const themes = tournament.decks
+				.filter(d => d.approved)
+				.map(d => d.label || "No theme")
 				.reduce((map, theme) => map.set(theme, (map.get(theme) || 0) + 1), new Map<string, number>());
 			file = await csv.writeToBuffer([["Theme", "Count"], ...themes.entries()]);
 		} else {
-			const players = tournament.participants
-				.filter(p => p.deck?.approved)
-				.map(async player => {
-					const tag = (await username(interaction.client, player.discordId)) || player.discordId;
+			const players = tournament.decks
+				.filter(d => d.approved)
+				.map(async deck => {
+					const tag =
+						(await username(interaction.client, deck.participant.discordId)) || deck.participant.discordId;
 					return {
 						Player: tag,
-						Theme: player.deck?.label || "No theme"
+						Theme: deck.label || "No theme"
 					};
 				});
 			file = await csv.writeToBuffer(await Promise.all(players), { headers: true });

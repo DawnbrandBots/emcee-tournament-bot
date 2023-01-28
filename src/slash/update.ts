@@ -62,7 +62,7 @@ export class UpdateCommand extends AutocompletableCommand {
 		if (rawCap) {
 			// enforce integer cap
 			const capacity = Math.floor(rawCap);
-			const playerCount = tournament.participants?.filter(p => p.deck?.approved).length || 0;
+			const playerCount = tournament.decks.filter(d => d.approved).length;
 			// cap 0 means uncapped
 			if (capacity > 0 && playerCount > capacity) {
 				await interaction.reply(
