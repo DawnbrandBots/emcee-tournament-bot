@@ -75,16 +75,15 @@ export class OpenCommand extends AutocompletableCommand {
 				// TODO: do we need to destroy the player entry here?
 				return;
 			}
-			player.deck = new ManualDeckSubmission();
-			player.deck.approved = false;
-			player.deck.content = images.map(i => i.url).join("\n");
-			player.deck.participant = player;
-			player.deck.tournament = tournament;
-			await player.deck.save();
-			await player.save();
+			const deck = new ManualDeckSubmission();
+			deck.approved = false;
+			deck.content = images.map(i => i.url).join("\n");
+			deck.participant = player;
+			deck.tournament = tournament;
+			await deck.save();
 
 			let outMessage = `__**${userMention(modalInteraction.user.id)}'s deck**__:`;
-			outMessage += `\n${player.deck.content}`;
+			outMessage += `\n${deck.content}`;
 
 			const row = generateDeckValidateButtons();
 			// channel *should* exist, but can be removed in the interim. if so, TOs have to check decks manually and that's on them :/
@@ -94,7 +93,7 @@ export class OpenCommand extends AutocompletableCommand {
 					components: [row]
 				});
 				// errors handled by internal callbacks
-				awaitDeckValidationButtons(baseInteraction, response, tournament, this.logger, player.deck);
+				awaitDeckValidationButtons(baseInteraction, response, tournament, this.logger, deck);
 			}
 
 			await message.reply(
