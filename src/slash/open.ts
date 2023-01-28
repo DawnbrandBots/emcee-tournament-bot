@@ -1,4 +1,9 @@
-import { ButtonStyle, ComponentType, RESTPostAPIApplicationCommandsJSONBody } from "discord-api-types/v10";
+import {
+	ButtonStyle,
+	ComponentType,
+	RESTPostAPIApplicationCommandsJSONBody,
+	TextInputStyle
+} from "discord-api-types/v10";
 import {
 	ActionRowBuilder,
 	AutocompleteInteraction,
@@ -9,7 +14,10 @@ import {
 	ChatInputCommandInteraction,
 	Collection,
 	Message,
+	ModalBuilder,
+	ModalSubmitInteraction,
 	SlashCommandBuilder,
+	TextInputBuilder,
 	userMention
 } from "discord.js";
 import { TournamentStatus } from "../database/interface";
@@ -53,7 +61,7 @@ export class OpenCommand extends AutocompletableCommand {
 	async collectRegisterMessages(
 		messages: Collection<string, Message<boolean>>,
 		player: ManualParticipant,
-		buttonInteraction: ButtonInteraction,
+		modalInteraction: ModalSubmitInteraction,
 		baseInteraction: ChatInputCommandInteraction,
 		tournament: ManualTournament
 	): Promise<void> {
@@ -72,22 +80,10 @@ export class OpenCommand extends AutocompletableCommand {
 			player.deck.content = images.map(i => i.url).join("\n");
 			player.deck.participant = player;
 			player.deck.tournament = tournament;
-			const friendCode = parseInt(message.content);
-			if (!isNaN(friendCode) && friendCode.toString(10).length === 9) {
-				player.friendCode = friendCode;
-				// TODO: Edit player nickname with friend code
-			}
-			if (!player.friendCode && tournament.requireFriendCode) {
-				await message.reply(
-					"This tournament requires you to submit a valid, 9-digit Master Duel friend code! Please click the button and try again"
-				);
-				// TODO: do we need to destroy the player entry here?
-				return;
-			}
 			await player.deck.save();
 			await player.save();
 
-			let outMessage = `__**${userMention(buttonInteraction.user.id)}'s deck**__:`;
+			let outMessage = `__**${userMention(modalInteraction.user.id)}'s deck**__:`;
 			outMessage += `\n${player.deck.content}`;
 
 			const row = generateDeckValidateButtons();
@@ -107,6 +103,50 @@ export class OpenCommand extends AutocompletableCommand {
 		}
 	}
 
+	validateFriendCode(input: string): number | undefined {
+		const friendCode = parseInt(input.replace(/[^\d]/g, ""));
+		if (!isNaN(friendCode) && friendCode.toString(10).length === 9) {
+			return friendCode;
+		}
+	}
+
+	async collectModalInteraction(
+		modalInteraction: ModalSubmitInteraction,
+		baseInteraction: ChatInputCommandInteraction,
+		tournament: ManualTournament
+	): Promise<void> {
+		const friendCodeString = modalInteraction.fields.getTextInputValue("acceptDeckLabel");
+		const friendCode = this.validateFriendCode(friendCodeString);
+		if (!friendCode) {
+			if (tournament.requireFriendCode) {
+				await modalInteraction.user.send(
+					`This tournament requires a Master Duel friend code, and you did not enter a valid one! Please try again.`
+				);
+				return;
+			}
+			await modalInteraction.user.send(
+				`You did not enter a valid Master Duel friend code. However, you can still register.`
+			);
+		}
+		await modalInteraction.user.send(
+			"Please upload screenshots of your decklist to register.\n**Important**: Please do not delete your message! This can make your decklist invisible to tournament hosts, which they may interpret as cheating."
+		);
+
+		const player: ManualParticipant = new ManualParticipant();
+		player.discordId = modalInteraction.user.id;
+		player.dropped = false;
+		player.tournament = tournament;
+		player.friendCode = friendCode;
+		await player.save();
+
+		// we just sent a DM so the DM channel will be created
+		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+		modalInteraction.user
+			.dmChannel!.awaitMessages({ max: 1, time: 30000 })
+			.then(m => this.collectRegisterMessages(m, player, modalInteraction, baseInteraction, tournament))
+			.catch(e => this.logger.error(e));
+	}
+
 	async collectButtonInteraction(
 		buttonInteraction: ButtonInteraction,
 		baseInteraction: ChatInputCommandInteraction,
@@ -120,21 +160,19 @@ export class OpenCommand extends AutocompletableCommand {
 			await buttonInteraction.user.send("Sorry, the tournament is currently full!");
 			return;
 		}
-		await buttonInteraction.user.send(
-			"Please upload screenshots of your decklist to register.\nYou can also type in a Master Duel friend code.\n**Important**: Please do not delete your message! This can make your decklist invisible to tournament hosts, which they may interpret as cheating."
-		);
+		const modal = new ModalBuilder().setCustomId("registerModal").setTitle(`Register for ${tournament.name}`);
+		const deckLabelInput = new TextInputBuilder()
+			.setCustomId("friendCode")
+			.setLabel("Master Duel Friend Code")
+			.setStyle(TextInputStyle.Short)
+			.setRequired(tournament.requireFriendCode);
+		const actionRow = new ActionRowBuilder<TextInputBuilder>().addComponents(deckLabelInput);
+		modal.addComponents(actionRow);
+		await buttonInteraction.showModal(modal);
 
-		const player: ManualParticipant = new ManualParticipant();
-		player.discordId = buttonInteraction.user.id;
-		player.dropped = false;
-		player.tournament = tournament;
-		await player.save();
-
-		// we just sent a DM so the DM channel will be created
-		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-		buttonInteraction.user
-			.dmChannel!.awaitMessages({ max: 1, time: 30000 })
-			.then(m => this.collectRegisterMessages(m, player, buttonInteraction, baseInteraction, tournament))
+		buttonInteraction
+			.awaitModalSubmit({ componentType: ComponentType.TextInput, time: 15000 })
+			.then(m => this.collectModalInteraction(m, baseInteraction, tournament))
 			.catch(e => this.logger.error(e));
 	}
 
@@ -171,7 +209,7 @@ export class OpenCommand extends AutocompletableCommand {
 		row.addComponents(button);
 
 		const message = await send(interaction.client, tournament.publicChannel, {
-			content: `__Registration for **${tournament.name}** is now open!__\nClick the button below to register, then upload screenshots of your decklist.\nA tournament host will then manually verify your deck.\nYou can also type in a Master Duel friend code in the same message.`,
+			content: `__Registration for **${tournament.name}** is now open!__\nClick the button below to register, then follow the prompts.\nA tournament host will then manually verify your deck.`,
 			components: [row]
 		});
 		tournament.registerMessage = message.id;
