@@ -1,7 +1,7 @@
 import { ApplicationCommandType, RESTPostAPIApplicationCommandsJSONBody } from "discord-api-types/v10";
 import { ContextMenuCommandBuilder, UserContextMenuCommandInteraction, userMention } from "discord.js";
 import { ContextCommand } from "../ContextCommand";
-import { ManualTournament } from "../database/orm";
+import { ManualParticipant } from "../database/orm";
 import { getLogger, Logger } from "../util/logger";
 import { authenticateHost } from "./database";
 
@@ -24,22 +24,24 @@ export class ForceDropCommand extends ContextCommand {
 		if (!interaction.inCachedGuild()) {
 			return;
 		}
-		const tournamentName = "dummy"; // TODO: Get by modal
-		const tournament = await ManualTournament.findOneOrFail({ where: { name: tournamentName } });
-
-		if (!(await authenticateHost(tournament, interaction))) {
-			// rejection messages handled in helper
-			return;
-		}
 
 		// more useful than user since we need to manage roles, still has the id
 		const member = interaction.targetMember;
-		const player = tournament.participants.find(p => (p.discordId = member.id));
-		if (!player) {
-			await interaction.reply({
-				content: `That player is not in the tournament.`,
-				ephemeral: true
-			});
+
+		const players = await ManualParticipant.find({ where: { discordId: member.id } });
+
+		if (players.length < 1) {
+			await interaction.reply({ content: `That user is not in any tournaments.`, ephemeral: true });
+			return;
+		}
+
+		// TODO: if length > 1, modal to select
+		const player = players[0];
+
+		const tournament = player.tournament;
+
+		if (!(await authenticateHost(tournament, interaction))) {
+			// rejection messages handled in helper
 			return;
 		}
 
