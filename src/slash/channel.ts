@@ -90,7 +90,6 @@ export class ChannelCommand extends AutocompletableCommand {
 		const type = interaction.options.getString("type", true);
 		// default to current channel if not specified
 		const channel = interaction.options.getChannel("channel")?.id || this.getChannel(interaction);
-		// code cleaned up somewhat but still repetetive between public/private. way to reuse code acting on different properties?
 		await this.toggleChannel(
 			channel,
 			type === "public" ? "publicChannel" : "privateChannel",
