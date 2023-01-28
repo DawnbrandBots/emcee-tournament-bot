@@ -53,6 +53,31 @@ export class ChannelCommand extends AutocompletableCommand {
 		return (interaction.channel?.isThread() && interaction.channel.parentId) || interaction.channelId;
 	}
 
+	async toggleChannel(
+		channel: string,
+		key: "publicChannel" | "privateChannel",
+		tournament: ManualTournament,
+		interaction: ChatInputCommandInteraction
+	): Promise<void> {
+		const prettyKey = key === "publicChannel" ? "public announcement channel" : "private deck channel";
+		if (tournament[key] === channel) {
+			tournament[key] = undefined;
+			await tournament.save();
+			await interaction.reply(`${channelMention(channel)} removed as the ${prettyKey} for ${tournament.name}.`);
+			return;
+		}
+		// if other channel or not set
+		const oldChannel = tournament[key];
+		tournament[key] = channel;
+		await tournament.save();
+		await interaction.reply(
+			`${channelMention(channel)} set as the new ${prettyKey} for ${tournament.name}${
+				oldChannel ? `, replacing ${channelMention(oldChannel)}` : ""
+			}.`
+		);
+		return;
+	}
+
 	protected override async execute(interaction: ChatInputCommandInteraction): Promise<void> {
 		const tournamentName = interaction.options.getString("tournament", true);
 		const tournament = await ManualTournament.findOneOrFail({ where: { name: tournamentName } });
@@ -66,44 +91,11 @@ export class ChannelCommand extends AutocompletableCommand {
 		// default to current channel if not specified
 		const channel = interaction.options.getChannel("channel")?.id || this.getChannel(interaction);
 		// code cleaned up somewhat but still repetetive between public/private. way to reuse code acting on different properties?
-		if (type === "public") {
-			if (tournament.publicChannel === channel) {
-				tournament.publicChannel = undefined;
-				await tournament.save();
-				await interaction.reply(
-					`${channelMention(channel)} removed as the public announcement channel for ${tournament.name}.`
-				);
-				return;
-			}
-			// if other channel or not set
-			const oldChannel = tournament.publicChannel;
-			tournament.publicChannel = channel;
-			await tournament.save();
-			await interaction.reply(
-				`${channelMention(channel)} set as the new public announcement channel for ${tournament.name}${
-					oldChannel ? `, replacing ${channelMention(oldChannel)}` : ""
-				}.`
-			);
-			return;
-		}
-		// if (type === "private")
-		if (tournament.privateChannel === channel) {
-			tournament.privateChannel = undefined;
-			await tournament.save();
-			await interaction.reply(
-				`${channelMention(channel)} removed as the private deck channel for ${tournament.name}.`
-			);
-			return;
-		}
-		// if other channel or not set
-		const oldChannel = tournament.privateChannel;
-		tournament.privateChannel = channel;
-		await tournament.save();
-		await interaction.reply(
-			`${channelMention(channel)} set as the new private deck channel for ${tournament.name}${
-				oldChannel ? `, replacing ${channelMention(oldChannel)}` : ""
-			}.`
+		await this.toggleChannel(
+			channel,
+			type === "public" ? "publicChannel" : "privateChannel",
+			tournament,
+			interaction
 		);
-		return;
 	}
 }
