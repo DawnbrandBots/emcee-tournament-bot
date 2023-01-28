@@ -6,6 +6,7 @@ import { ChannelCommand } from "../slash/channel";
 import { CreateCommand } from "../slash/create";
 import { HostCommand } from "../slash/host";
 import { InfoCommand } from "../slash/info";
+import { ListCommand } from "../slash/list";
 import { TimerCommand } from "../slash/timer";
 import { UpdateCommand } from "../slash/update";
 
@@ -16,7 +17,8 @@ export const classes = [
 	HostCommand,
 	ChannelCommand,
 	UpdateCommand,
-	InfoCommand
+	InfoCommand,
+	ListCommand
 ];
 
 // Register Slash Commands on CI
