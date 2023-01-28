@@ -1,4 +1,10 @@
-import { AutocompleteInteraction, CacheType, ChatInputCommandInteraction, SlashCommandStringOption } from "discord.js";
+import {
+	AutocompleteInteraction,
+	CacheType,
+	ChatInputCommandInteraction,
+	ContextMenuCommandInteraction,
+	SlashCommandStringOption
+} from "discord.js";
 import { ILike } from "typeorm";
 import { TournamentStatus } from "../database/interface";
 import { ManualParticipant, ManualTournament } from "../database/orm";
@@ -29,7 +35,7 @@ export async function autocompleteTournament(interaction: AutocompleteInteractio
 
 export async function authenticateHost(
 	tournament: ManualTournament,
-	interaction: ChatInputCommandInteraction
+	interaction: ChatInputCommandInteraction | ContextMenuCommandInteraction
 ): Promise<boolean> {
 	if (!interaction.inCachedGuild()) {
 		return false;
