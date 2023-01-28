@@ -44,7 +44,6 @@ export class ListCommand extends SlashCommand {
 			ManualTournament.find({ where: { owningDiscordServer }, relations: [] }),
 			ChallongeTournament.find({ where: { owningDiscordServer }, relations: [] })
 		]);
-		interaction.guild.commands.cache;
 		let text = "__Manual (name | description | status)__\n";
 		if (manual.length) {
 			text += manual.map(t => `${t.name} | ${t.description} | ${t.status}`).join("\n");
