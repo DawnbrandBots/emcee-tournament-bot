@@ -146,6 +146,22 @@ export class OpenCommand extends AutocompletableCommand {
 	}
 }
 
+async function registerParticipant(
+	interaction: ButtonInteraction | ModalMessageModalSubmitInteraction,
+	tournament: ManualTournament,
+	friendCode?: number
+): Promise<void> {
+	const player: ManualParticipant = new ManualParticipant();
+	player.discordId = interaction.user.id;
+	player.tournament = tournament;
+	player.friendCode = friendCode;
+	await player.save();
+	await interaction.update({});
+	await interaction.user.send(
+		"Please upload screenshots of your decklist to register.\n**Important**: Please do not delete your message! This can make your decklist invisible to tournament hosts, which they may interpret as cheating."
+	);
+}
+
 export class RegisterButtonHandler implements ButtonClickHandler {
 	readonly buttonIds = ["registerButton"];
 
@@ -166,18 +182,22 @@ export class RegisterButtonHandler implements ButtonClickHandler {
 			await interaction.user.send("Sorry, the tournament is currently full!");
 			return;
 		}
-		const modal = new ModalBuilder().setCustomId("registerModal").setTitle(`Register for ${tournament.name}`);
-		const deckLabelInput = new TextInputBuilder()
-			.setCustomId("friendCode")
-			.setLabel("Master Duel Friend Code")
-			.setStyle(TextInputStyle.Short)
-			.setRequired(tournament.requireFriendCode)
-			.setPlaceholder("000000000")
-			.setMinLength(9)
-			.setMaxLength(11);
-		const actionRow = new ActionRowBuilder<TextInputBuilder>().addComponents(deckLabelInput);
-		modal.addComponents(actionRow);
-		await interaction.showModal(modal);
+		if (tournament.requireFriendCode) {
+			const modal = new ModalBuilder().setCustomId("registerModal").setTitle(`Register for ${tournament.name}`);
+			const deckLabelInput = new TextInputBuilder()
+				.setCustomId("friendCode")
+				.setLabel("Master Duel Friend Code")
+				.setStyle(TextInputStyle.Short)
+				.setRequired(tournament.requireFriendCode)
+				.setPlaceholder("000000000")
+				.setMinLength(9)
+				.setMaxLength(11);
+			const actionRow = new ActionRowBuilder<TextInputBuilder>().addComponents(deckLabelInput);
+			modal.addComponents(actionRow);
+			await interaction.showModal(modal);
+		} else {
+			await registerParticipant(interaction, tournament);
+		}
 	}
 }
 
@@ -209,14 +229,6 @@ export class FriendCodeModalHandler implements MessageModalSubmitHandler {
 			});
 			return;
 		}
-		const player: ManualParticipant = new ManualParticipant();
-		player.discordId = interaction.user.id;
-		player.tournament = tournament;
-		player.friendCode = friendCode;
-		await player.save();
-		await interaction.update({});
-		await interaction.user.send(
-			"Please upload screenshots of your decklist to register.\n**Important**: Please do not delete your message! This can make your decklist invisible to tournament hosts, which they may interpret as cheating."
-		);
+		await registerParticipant(interaction, tournament, friendCode);
 	}
 }
