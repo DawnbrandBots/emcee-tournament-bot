@@ -1,8 +1,9 @@
 import { escapeMarkdown, GuildMember, PartialGuildMember } from "discord.js";
 import { getConnection } from "typeorm";
 import { CommandSupport } from "../Command";
-import { Participant } from "../database/orm";
+import { ManualParticipant, Participant } from "../database/orm";
 import { dropPlayerChallonge } from "../drop";
+import { dropPlayer } from "../slash/database";
 import { send } from "../util/discord";
 import { getLogger } from "../util/logger";
 
@@ -76,5 +77,21 @@ export function makeHandler({ database, challonge }: CommandSupport) {
 				}
 			})
 			.catch(logger.error);
+		try {
+			const manualParticipants = await ManualParticipant.getRepository()
+				.createQueryBuilder()
+				.innerJoinAndSelect(
+					"ManualParticipant.tournament",
+					"T",
+					"(T.status = 'preparing' OR T.status = 'in progress') AND T.owningDiscordServer = :server AND Participant.discordId = :playerId",
+					{ server: server.id, playerId: member.id }
+				)
+				.getMany();
+			for (const participant of manualParticipants) {
+				await dropPlayer(participant.tournament, participant, member);
+			}
+		} catch (e) {
+			logger.error(e);
+		}
 	};
 }

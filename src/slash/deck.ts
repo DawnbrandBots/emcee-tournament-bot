@@ -50,7 +50,9 @@ export class DeckCommand extends AutocompletableCommand {
 			return;
 		}
 		const tournamentName = interaction.options.getString("tournament", true);
-		const tournament = await ManualTournament.findOneOrFail({ where: { name: tournamentName } });
+		const tournament = await ManualTournament.findOneOrFail({
+			where: { name: tournamentName }
+		});
 
 		if (!(await authenticateHost(tournament, interaction))) {
 			// rejection messages handled in helper
@@ -58,30 +60,22 @@ export class DeckCommand extends AutocompletableCommand {
 		}
 
 		const user = interaction.options.getUser("player", true);
-		const player = tournament.participants.find(p => (p.discordId = user.id));
-		if (!player) {
+		const playerDeck = tournament.decks.find(d => d.discordId === user.id);
+		if (!playerDeck) {
 			await interaction.reply({
-				content: `That player is not in the tournament.`,
-				ephemeral: true
-			});
-			return;
-		}
-
-		if (!player.deck) {
-			await interaction.reply({
-				content: `That player has not submitted a deck yet.`,
+				content: `That player is not in the tournament, or has not submitted a deck.`,
 				ephemeral: true
 			});
 			return;
 		}
 
 		let outMessage = `__**${userMention(user.id)}'s deck**__:`;
-		if (player.deck.label) {
-			outMessage += `\n**Theme**: ${player.deck.label}`;
+		if (playerDeck.label) {
+			outMessage += `\n**Theme**: ${playerDeck.label}`;
 		}
-		outMessage += `\n${player.deck.content}`;
-
-		if (player.deck.approved) {
+		outMessage += `\n${playerDeck.content}`;
+    
+    if (playerDeck.approved) {
 			await interaction.reply(outMessage);
 			return;
 		}

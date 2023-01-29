@@ -19,10 +19,17 @@ export class UpdateCommand extends AutocompletableCommand {
 			.setDMPermission(false)
 			.setDefaultMemberPermissions(0)
 			.addStringOption(tournamentOption)
-			.addStringOption(option => option.setName("name").setDescription("The name of the tournament."))
-			.addStringOption(option => option.setName("description").setDescription("A description of the tournament."))
+			.addStringOption(option => option.setName("name").setDescription("The new name of the tournament."))
+			.addStringOption(option =>
+				option.setName("description").setDescription("The new description of the tournament.")
+			)
 			.addNumberOption(option =>
 				option.setName("capacity").setDescription("The new capacity for the tournament.").setMinValue(0)
+			)
+			.addBooleanOption(option =>
+				option
+					.setName("requirecode")
+					.setDescription("Whether to require a Master Duel friend code from participants.")
 			)
 			.toJSON();
 	}
@@ -47,6 +54,7 @@ export class UpdateCommand extends AutocompletableCommand {
 		const name = interaction.options.getString("name");
 		const description = interaction.options.getString("description");
 		const rawCap = interaction.options.getNumber("capacity");
+		const requireCode = interaction.options.getBoolean("requirecode");
 
 		let updated = false;
 
@@ -72,6 +80,19 @@ export class UpdateCommand extends AutocompletableCommand {
 			tournament.participantLimit = capacity;
 			updated = true;
 		}
+    
+		if (requireCode !== null) {
+			const noCodePlayers = tournament.participants.filter(p => !p.friendCode).length;
+			if (requireCode && noCodePlayers > 0) {
+				await interaction.reply({
+					content: `${noCodePlayers} players do not have friend codes listed. Please note that they will be grandfathered in.`,
+					ephemeral: true
+				});
+			}
+			tournament.requireFriendCode = requireCode;
+			updated = true;
+		}
+
 		if (!updated) {
 			await interaction.reply(`You must provide at least one detail to update a tournament.`);
 			return;
@@ -82,7 +103,9 @@ export class UpdateCommand extends AutocompletableCommand {
 		await interaction.reply(
 			`Tournament updated with the following details:\nName: ${tournament.name}\nDescription: ${
 				tournament.description
-			}\nCapacity: ${tournament.participantLimit === 0 ? "Uncapped" : tournament.participantLimit}`
+			}\nCapacity: ${
+				tournament.participantLimit === 0 ? "Uncapped" : tournament.participantLimit
+			}\nFriend Code Required: ${tournament.requireFriendCode}`
 		);
 	}
 }

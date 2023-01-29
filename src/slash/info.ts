@@ -54,7 +54,7 @@ export class InfoCommand extends AutocompletableCommand {
 			},
 			{
 				name: ":tickets: Registered",
-				value: `**${tournament.participants?.filter(p => p.deck?.approved).length || 0}** participants`,
+				value: `**${tournament.decks.filter(d => d.approved).length}** participants`,
 				inline: true
 			},
 			{ name: ":hourglass: Status", value: tournament.status, inline: true }

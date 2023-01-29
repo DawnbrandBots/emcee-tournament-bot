@@ -1,17 +1,21 @@
 import {
 	ActionRowBuilder,
 	AutocompleteInteraction,
+  CacheType,
 	ButtonBuilder,
 	ButtonInteraction,
 	ButtonStyle,
 	CacheType,
 	ChatInputCommandInteraction,
 	ComponentType,
+  ContextMenuCommandInteraction,
 	DiscordAPIError,
 	DiscordjsErrorCodes,
+  GuildMember,
 	Message,
 	ModalBuilder,
 	ModalSubmitInteraction,
+  PartialGuildMember,
 	SlashCommandStringOption,
 	TextInputBuilder,
 	TextInputStyle,
@@ -49,17 +53,20 @@ export async function autocompleteTournament(interaction: AutocompleteInteractio
 
 export async function authenticateHost(
 	tournament: ManualTournament,
-	interaction: ChatInputCommandInteraction
+	interaction: ChatInputCommandInteraction | ContextMenuCommandInteraction,
+	isDeferred = false
 ): Promise<boolean> {
+	const func = isDeferred ? "editReply" : "reply";
 	if (!interaction.inCachedGuild()) {
 		return false;
 	}
 	if (tournament.owningDiscordServer !== interaction.guildId) {
-		await interaction.reply({ content: `That tournament isn't in this server.`, ephemeral: true });
+		// ephemeral response preferred but deferred commands have to stay consistent and should be public in success
+		await interaction[func]({ content: `That tournament isn't in this server.`, ephemeral: !isDeferred });
 		return false;
 	}
 	if (!tournament.hosts.includes(interaction.user.id)) {
-		await interaction.reply({ content: `You cannot use this.`, ephemeral: true });
+		await interaction[func]({ content: `You cannot use this.`, ephemeral: !isDeferred });
 		return false;
 	}
 	return true;
@@ -214,4 +221,37 @@ export function checkParticipantCap(tournament: ManualTournament, capacity?: num
 		return true;
 	}
 	return tournament.decks.length < capacity;
+
+export async function dropPlayer(
+	tournament: ManualTournament,
+	player: ManualParticipant,
+	member: GuildMember | PartialGuildMember,
+	interaction?: ChatInputCommandInteraction | ContextMenuCommandInteraction
+): Promise<void> {
+	// don't use participantRoleProvider because it's made for ChallongeTournaments with exposed ids
+	// TODO: fix above? also handle when can't find role
+	await member.roles.remove(tournament.participantRole);
+	if (tournament.status === TournamentStatus.PREPARING) {
+		await player.remove();
+	} else {
+		player.dropped = true;
+		await player.save();
+	}
+
+	const playerMessage = `You have been dropped from ${tournament.name}.`;
+
+	if (interaction?.commandName === "drop") {
+		await interaction.reply(playerMessage);
+	} else {
+		await member.send(playerMessage);
+	}
+
+	const hostMessage = `${userMention(member.user.id)} has been dropped from ${tournament.name}.`;
+
+	if (interaction && interaction.commandName !== "drop") {
+		await interaction.reply(hostMessage);
+	} else if (tournament.privateChannel) {
+		await send(member.client, tournament.privateChannel, hostMessage);
+	}
+	return;
 }

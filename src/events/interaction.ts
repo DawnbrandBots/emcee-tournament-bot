@@ -1,15 +1,17 @@
 import { Interaction } from "discord.js";
 import { CommandSupport } from "../Command";
+import { ContextCommand } from "../ContextCommand";
 import { ChannelCommand } from "../slash/channel";
 import { CreateCommand } from "../slash/create";
 import { CsvCommand } from "../slash/csv";
 import { DeckCommand } from "../slash/deck";
 import { DropCommand } from "../slash/drop";
 import { FinishCommand } from "../slash/finish";
-import { ForceDropCommand } from "../slash/forcedrop";
+import { ForceDropContextCommand, ForceDropSlashCommand } from "../slash/forcedrop";
 import { HostCommand } from "../slash/host";
 import { InfoCommand } from "../slash/info";
 import { FriendCodeModalHandler, OpenCommand, RegisterButtonHandler } from "../slash/open";
+import { ListCommand } from "../slash/list";
 import { StartCommand } from "../slash/start";
 import { TimerCommand } from "../slash/timer";
 import { UpdateCommand } from "../slash/update";
@@ -29,13 +31,14 @@ export function makeHandler({ organiserRole, timeWizard }: CommandSupport) {
 		new ChannelCommand(),
 		new UpdateCommand(),
 		new InfoCommand(),
-		new ForceDropCommand(), // will include participantRole if adapted later
-		new DropCommand(),
+		new DropCommand(), // will include participantRole if adapted later
+		new ForceDropSlashCommand(),
 		new DeckCommand(),
 		new FinishCommand(),
 		new OpenCommand(),
 		new CsvCommand(),
-		new StartCommand()
+		new StartCommand(),
+    new ListCommand(organiserRole)
 	];
 	const buttonArray = [new RegisterButtonHandler()];
 	const messageModalArray = [new FriendCodeModalHandler()];
@@ -44,6 +47,7 @@ export function makeHandler({ organiserRole, timeWizard }: CommandSupport) {
 	const autocompletes = new Map<string, AutocompletableCommand>();
 	const buttons = new Map<string, ButtonClickHandler>();
 	const messageModals = new Map<string, MessageModalSubmitHandler>();
+	const contexts = new Map<string, ContextCommand>();
 
 	for (const command of commandArray) {
 		commands.set(command.meta.name, command);
@@ -60,6 +64,10 @@ export function makeHandler({ organiserRole, timeWizard }: CommandSupport) {
 		for (const id of modal.modalIds) {
 			messageModals.set(id, modal);
 		}
+	}
+
+	for (const context of contextArray) {
+		contexts.set(context.meta.name, context);
 	}
 
 	return async function interactionCreate(interaction: Interaction): Promise<void> {
@@ -93,6 +101,9 @@ export function makeHandler({ organiserRole, timeWizard }: CommandSupport) {
 				})
 			);
 			await messageModals.get(interaction.customId)?.submit(interaction);
+		} else if (interaction.isContextMenuCommand()) {
+			logger.verbose(serialiseInteraction(interaction));
+			await contexts.get(interaction.commandName)?.run(interaction);
 		}
 	};
 }
