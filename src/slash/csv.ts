@@ -43,10 +43,11 @@ export class CsvCommand extends AutocompletableCommand {
 	}
 
 	protected override async execute(interaction: ChatInputCommandInteraction): Promise<void> {
+		await interaction.deferReply({ ephemeral: true });
 		const tournamentName = interaction.options.getString("tournament", true);
 		const tournament = await ManualTournament.findOneOrFail({ where: { name: tournamentName } });
 
-		if (!(await authenticateHost(tournament, interaction))) {
+		if (!(await authenticateHost(tournament, interaction, true))) {
 			// rejection messages handled in helper
 			return;
 		}
@@ -74,7 +75,7 @@ export class CsvCommand extends AutocompletableCommand {
 			file = await csv.writeToBuffer(await Promise.all(players), { headers: true });
 		}
 
-		await interaction.reply({
+		await interaction.editReply({
 			content: `A list of ${pie ? "deck themes" : "players"} in ${tournament.name} with their ${
 				pie ? "counts" : "deck themes"
 			} is attached.`,

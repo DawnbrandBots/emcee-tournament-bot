@@ -29,17 +29,19 @@ export async function autocompleteTournament(interaction: AutocompleteInteractio
 
 export async function authenticateHost(
 	tournament: ManualTournament,
-	interaction: ChatInputCommandInteraction
+	interaction: ChatInputCommandInteraction,
+	isDeferred = false
 ): Promise<boolean> {
+	const func = isDeferred ? "editReply" : "reply";
 	if (!interaction.inCachedGuild()) {
 		return false;
 	}
 	if (tournament.owningDiscordServer !== interaction.guildId) {
-		await interaction.reply({ content: `That tournament isn't in this server.`, ephemeral: true });
+		await interaction[func]({ content: `That tournament isn't in this server.`, ephemeral: true });
 		return false;
 	}
 	if (!tournament.hosts.includes(interaction.user.id)) {
-		await interaction.reply({ content: `You cannot use this.`, ephemeral: true });
+		await interaction[func]({ content: `You cannot use this.`, ephemeral: true });
 		return false;
 	}
 	return true;
