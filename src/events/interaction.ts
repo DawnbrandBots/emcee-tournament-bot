@@ -9,11 +9,11 @@ import { FinishCommand } from "../slash/finish";
 import { ForceDropCommand } from "../slash/forcedrop";
 import { HostCommand } from "../slash/host";
 import { InfoCommand } from "../slash/info";
-import { OpenCommand } from "../slash/open";
+import { FriendCodeModalHandler, OpenCommand, RegisterButtonHandler } from "../slash/open";
 import { StartCommand } from "../slash/start";
 import { TimerCommand } from "../slash/timer";
 import { UpdateCommand } from "../slash/update";
-import { AutocompletableCommand, SlashCommand } from "../SlashCommand";
+import { AutocompletableCommand, ButtonClickHandler, MessageModalSubmitHandler, SlashCommand } from "../SlashCommand";
 import { serialiseInteraction } from "../util";
 import { getLogger } from "../util/logger";
 
@@ -37,13 +37,28 @@ export function makeHandler({ organiserRole, timeWizard }: CommandSupport) {
 		new CsvCommand(),
 		new StartCommand()
 	];
+	const buttonArray = [new RegisterButtonHandler()];
+	const messageModalArray = [new FriendCodeModalHandler()];
+
 	const commands = new Map<string, SlashCommand>();
 	const autocompletes = new Map<string, AutocompletableCommand>();
+	const buttons = new Map<string, ButtonClickHandler>();
+	const messageModals = new Map<string, MessageModalSubmitHandler>();
 
 	for (const command of commandArray) {
 		commands.set(command.meta.name, command);
 		if (command instanceof AutocompletableCommand) {
 			autocompletes.set(command.meta.name, command);
+		}
+	}
+	for (const button of buttonArray) {
+		for (const id of button.buttonIds) {
+			buttons.set(id, button);
+		}
+	}
+	for (const modal of messageModalArray) {
+		for (const id of modal.modalIds) {
+			messageModals.set(id, modal);
 		}
 	}
 
@@ -54,6 +69,30 @@ export function makeHandler({ organiserRole, timeWizard }: CommandSupport) {
 		} else if (interaction.isAutocomplete()) {
 			logger.verbose(serialiseInteraction(interaction, { autocomplete: interaction.options.getFocused() }));
 			await autocompletes.get(interaction.commandName)?.autocomplete(interaction);
+		} else if (interaction.isButton()) {
+			logger.verbose(
+				JSON.stringify({
+					channel: interaction.channelId,
+					message: interaction.message.id,
+					guild: interaction.guildId,
+					author: interaction.user.id,
+					id: interaction.id,
+					buttonId: interaction.customId
+				})
+			);
+			await buttons.get(interaction.customId)?.click(interaction);
+		} else if (interaction.isModalSubmit() && interaction.isFromMessage()) {
+			logger.verbose(
+				JSON.stringify({
+					channel: interaction.channelId,
+					message: interaction.message.id,
+					guild: interaction.guildId,
+					author: interaction.user.id,
+					id: interaction.id,
+					modalId: interaction.customId
+				})
+			);
+			await messageModals.get(interaction.customId)?.submit(interaction);
 		}
 	};
 }

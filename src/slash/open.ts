@@ -1,9 +1,4 @@
-import {
-	ButtonStyle,
-	ComponentType,
-	RESTPostAPIApplicationCommandsJSONBody,
-	TextInputStyle
-} from "discord-api-types/v10";
+import { ButtonStyle, RESTPostAPIApplicationCommandsJSONBody, TextInputStyle } from "discord-api-types/v10";
 import {
 	ActionRowBuilder,
 	AutocompleteInteraction,
@@ -15,6 +10,7 @@ import {
 	Collection,
 	Message,
 	ModalBuilder,
+	ModalMessageModalSubmitInteraction,
 	ModalSubmitInteraction,
 	SlashCommandBuilder,
 	TextInputBuilder,
@@ -22,7 +18,7 @@ import {
 } from "discord.js";
 import { TournamentStatus } from "../database/interface";
 import { ManualDeckSubmission, ManualParticipant, ManualTournament } from "../database/orm";
-import { AutocompletableCommand } from "../SlashCommand";
+import { AutocompletableCommand, ButtonClickHandler, MessageModalSubmitHandler } from "../SlashCommand";
 import { send } from "../util/discord";
 import { getLogger, Logger } from "../util/logger";
 import {
@@ -102,79 +98,6 @@ export class OpenCommand extends AutocompletableCommand {
 		}
 	}
 
-	validateFriendCode(input: string): number | undefined {
-		const friendCode = parseInt(input.replace(/[^\d]/g, ""));
-		if (!isNaN(friendCode) && friendCode.toString(10).length === 9) {
-			return friendCode;
-		}
-	}
-
-	async collectModalInteraction(
-		modalInteraction: ModalSubmitInteraction,
-		baseInteraction: ChatInputCommandInteraction,
-		tournament: ManualTournament
-	): Promise<void> {
-		const friendCodeString = modalInteraction.fields.getTextInputValue("acceptDeckLabel");
-		const friendCode = this.validateFriendCode(friendCodeString);
-		if (!friendCode) {
-			if (tournament.requireFriendCode) {
-				await modalInteraction.user.send(
-					`This tournament requires a Master Duel friend code, and you did not enter a valid one! Please try again.`
-				);
-				return;
-			}
-			await modalInteraction.user.send(
-				`You did not enter a valid Master Duel friend code. However, you can still register.`
-			);
-		}
-		await modalInteraction.user.send(
-			"Please upload screenshots of your decklist to register.\n**Important**: Please do not delete your message! This can make your decklist invisible to tournament hosts, which they may interpret as cheating."
-		);
-
-		const player: ManualParticipant = new ManualParticipant();
-		player.discordId = modalInteraction.user.id;
-		player.dropped = false;
-		player.tournament = tournament;
-		player.friendCode = friendCode;
-		await player.save();
-
-		// we just sent a DM so the DM channel will be created
-		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-		modalInteraction.user
-			.dmChannel!.awaitMessages({ max: 1, time: 30000 })
-			.then(m => this.collectRegisterMessages(m, player, modalInteraction, baseInteraction, tournament))
-			.catch(e => this.logger.error(e));
-	}
-
-	async collectButtonInteraction(
-		buttonInteraction: ButtonInteraction,
-		baseInteraction: ChatInputCommandInteraction,
-		tournament: ManualTournament
-	): Promise<void> {
-		if (tournament.status !== TournamentStatus.PREPARING) {
-			await buttonInteraction.user.send("Sorry, registration for the tournament has closed!");
-			return;
-		}
-		if (tournament.participantLimit > 0 && tournament.participants?.length >= tournament.participantLimit) {
-			await buttonInteraction.user.send("Sorry, the tournament is currently full!");
-			return;
-		}
-		const modal = new ModalBuilder().setCustomId("registerModal").setTitle(`Register for ${tournament.name}`);
-		const deckLabelInput = new TextInputBuilder()
-			.setCustomId("friendCode")
-			.setLabel("Master Duel Friend Code")
-			.setStyle(TextInputStyle.Short)
-			.setRequired(tournament.requireFriendCode);
-		const actionRow = new ActionRowBuilder<TextInputBuilder>().addComponents(deckLabelInput);
-		modal.addComponents(actionRow);
-		await buttonInteraction.showModal(modal);
-
-		buttonInteraction
-			.awaitModalSubmit({ componentType: ComponentType.TextInput, time: 15000 })
-			.then(m => this.collectModalInteraction(m, baseInteraction, tournament))
-			.catch(e => this.logger.error(e));
-	}
-
 	protected override async execute(interaction: ChatInputCommandInteraction): Promise<void> {
 		const tournamentName = interaction.options.getString("tournament", true);
 		const tournament = await ManualTournament.findOneOrFail({ where: { name: tournamentName } });
@@ -204,7 +127,8 @@ export class OpenCommand extends AutocompletableCommand {
 		const button = new ButtonBuilder()
 			.setCustomId("registerButton")
 			.setLabel("Click here to register!")
-			.setStyle(ButtonStyle.Success);
+			.setStyle(ButtonStyle.Success)
+			.setEmoji("✅");
 		row.addComponents(button);
 
 		const message = await send(interaction.client, tournament.publicChannel, {
@@ -213,18 +137,86 @@ export class OpenCommand extends AutocompletableCommand {
 		});
 		tournament.registerMessage = message.id;
 		await tournament.save();
-		// awaitMessageComponent only collects one response so we need to use the callback version
-		const collector = message.createMessageComponentCollector({
-			componentType: ComponentType.Button,
-			time: 604800 // one week. hopefully no cap? this needs to stay open long term.
-		});
-
-		collector.on("collect", i => this.collectButtonInteraction(i, interaction, tournament));
 
 		await interaction.reply(
 			`Registration for ${tournament.name} is now open in ${channelMention(
 				tournament.publicChannel
 			)}. Look for decks in ${channelMention(tournament.privateChannel)}.`
+		);
+	}
+}
+
+export class RegisterButtonHandler implements ButtonClickHandler {
+	readonly buttonIds = ["registerButton"];
+
+	async click(interaction: ButtonInteraction): Promise<void> {
+		if (!interaction.inCachedGuild()) {
+			return;
+		}
+
+		const tournament = await ManualTournament.findOneOrFail({
+			where: { owningDiscordServer: interaction.guildId, registerMessage: interaction.message.id }
+		});
+
+		if (tournament.status !== TournamentStatus.PREPARING) {
+			await interaction.user.send("Sorry, registration for the tournament has closed!");
+			return;
+		}
+		if (tournament.participantLimit > 0 && tournament.participants?.length >= tournament.participantLimit) {
+			await interaction.user.send("Sorry, the tournament is currently full!");
+			return;
+		}
+		const modal = new ModalBuilder().setCustomId("registerModal").setTitle(`Register for ${tournament.name}`);
+		const deckLabelInput = new TextInputBuilder()
+			.setCustomId("friendCode")
+			.setLabel("Master Duel Friend Code")
+			.setStyle(TextInputStyle.Short)
+			.setRequired(tournament.requireFriendCode)
+			.setPlaceholder("000000000")
+			.setMinLength(9)
+			.setMaxLength(11);
+		const actionRow = new ActionRowBuilder<TextInputBuilder>().addComponents(deckLabelInput);
+		modal.addComponents(actionRow);
+		await interaction.showModal(modal);
+	}
+}
+
+function parseFriendCode(input: string): number | undefined {
+	const friendCode = parseInt(input.replaceAll(/[^\d]/g, ""));
+	if (friendCode < 10e9) {
+		return friendCode;
+	}
+}
+
+export class FriendCodeModalHandler implements MessageModalSubmitHandler {
+	readonly modalIds = ["registerModal"];
+
+	async submit(interaction: ModalMessageModalSubmitInteraction): Promise<void> {
+		if (!interaction.inCachedGuild()) {
+			return;
+		}
+
+		const tournament = await ManualTournament.findOneOrFail({
+			where: { owningDiscordServer: interaction.guildId, registerMessage: interaction.message.id }
+		});
+
+		const friendCodeString = interaction.fields.getTextInputValue("friendCode");
+		const friendCode = parseFriendCode(friendCodeString);
+		if (!friendCode && tournament.requireFriendCode) {
+			await interaction.reply({
+				content: `This tournament requires a Master Duel friend code, and you did not enter a valid one! Please try again, ${interaction.user}!`,
+				ephemeral: true
+			});
+			return;
+		}
+		const player: ManualParticipant = new ManualParticipant();
+		player.discordId = interaction.user.id;
+		player.tournament = tournament;
+		player.friendCode = friendCode;
+		await player.save();
+		await interaction.update({});
+		await interaction.user.send(
+			"Please upload screenshots of your decklist to register.\n**Important**: Please do not delete your message! This can make your decklist invisible to tournament hosts, which they may interpret as cheating."
 		);
 	}
 }
