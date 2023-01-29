@@ -26,6 +26,7 @@ import {
 	authenticateHost,
 	autocompleteTournament,
 	awaitDeckValidationButtons,
+	checkParticipantCap,
 	generateDeckValidateButtons,
 	tournamentOption
 } from "./database";
@@ -199,7 +200,7 @@ export class RegisterButtonHandler implements ButtonClickHandler {
 			});
 			return;
 		}
-		if (tournament.participantLimit > 0 && tournament.decks.length >= tournament.participantLimit) {
+		if (!checkParticipantCap(tournament)) {
 			await interaction.reply({
 				content: `Sorry ${interaction.user}, the tournament is currently full!`,
 				ephemeral: true

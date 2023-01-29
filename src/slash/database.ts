@@ -205,3 +205,13 @@ export function awaitDeckValidationButtons(
 			commandInteraction.editReply({ content: outMessage, components: [] }).catch(e => logger.error(e));
 		});
 }
+
+export function checkParticipantCap(tournament: ManualTournament, capacity?: number): boolean {
+	if (!capacity) {
+		capacity = tournament.participantLimit;
+	}
+	if (capacity === 0) {
+		return true;
+	}
+	return tournament.decks.length < capacity;
+}
