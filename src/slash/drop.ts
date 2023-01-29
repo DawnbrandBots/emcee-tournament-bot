@@ -10,7 +10,7 @@ import { ManualParticipant } from "../database/orm";
 import { AutocompletableCommand } from "../SlashCommand";
 import { send } from "../util/discord";
 import { getLogger, Logger } from "../util/logger";
-import { authenticatePlayer, autocompleteTournament, tournamentOption } from "./database";
+import { autocompleteTournament, tournamentOption } from "./database";
 
 export class DropCommand extends AutocompletableCommand {
 	#logger = getLogger("command:drop");
@@ -44,7 +44,7 @@ export class DropCommand extends AutocompletableCommand {
 		// more useful than user since we need to manage roles, still has the id
 		const member = interaction.member;
 
-		const players = await ManualParticipant.find({ where: { discordId: member.id } });
+		const players = await ManualParticipant.find({ where: { discordId: member.id }, relations: ["tournament"] });
 
 		const tournamentName = interaction.options.getString("tournament", true);
 		const player = players.filter(p => p.tournament.name === tournamentName).pop();
@@ -55,11 +55,6 @@ export class DropCommand extends AutocompletableCommand {
 		}
 
 		const tournament = player.tournament;
-
-		if (!(await authenticatePlayer(tournament, interaction))) {
-			// rejection messages handled in helper
-			return;
-		}
 
 		// don't use participantRoleProvider because it's made for ChallongeTournaments with exposed ids
 		// TODO: fix above?
