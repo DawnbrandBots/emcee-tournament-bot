@@ -1,7 +1,17 @@
-import { AutocompleteInteraction, CacheType, ChatInputCommandInteraction, SlashCommandStringOption } from "discord.js";
+import {
+	AutocompleteInteraction,
+	CacheType,
+	ChatInputCommandInteraction,
+	ContextMenuCommandInteraction,
+	GuildMember,
+	PartialGuildMember,
+	SlashCommandStringOption,
+	userMention
+} from "discord.js";
 import { ILike } from "typeorm";
 import { TournamentStatus } from "../database/interface";
 import { ManualParticipant, ManualTournament } from "../database/orm";
+import { send } from "../util/discord";
 
 export const tournamentOption = new SlashCommandStringOption()
 	.setName("tournament")
@@ -29,7 +39,7 @@ export async function autocompleteTournament(interaction: AutocompleteInteractio
 
 export async function authenticateHost(
 	tournament: ManualTournament,
-	interaction: ChatInputCommandInteraction,
+	interaction: ChatInputCommandInteraction | ContextMenuCommandInteraction,
 	isDeferred = false
 ): Promise<boolean> {
 	const func = isDeferred ? "editReply" : "reply";
@@ -65,4 +75,38 @@ export async function authenticatePlayer(
 		return;
 	}
 	return player;
+}
+
+export async function dropPlayer(
+	tournament: ManualTournament,
+	player: ManualParticipant,
+	member: GuildMember | PartialGuildMember,
+	interaction?: ChatInputCommandInteraction | ContextMenuCommandInteraction
+): Promise<void> {
+	// don't use participantRoleProvider because it's made for ChallongeTournaments with exposed ids
+	// TODO: fix above? also handle when can't find role
+	await member.roles.remove(tournament.participantRole);
+	if (tournament.status === TournamentStatus.PREPARING) {
+		await player.remove();
+	} else {
+		player.dropped = true;
+		await player.save();
+	}
+
+	const playerMessage = `You have been dropped from ${tournament.name}.`;
+
+	if (interaction?.commandName === "drop") {
+		await interaction.reply(playerMessage);
+	} else {
+		await member.send(playerMessage);
+	}
+
+	const hostMessage = `${userMention(member.user.id)} has been dropped from ${tournament.name}.`;
+
+	if (interaction && interaction.commandName !== "drop") {
+		await interaction.reply(hostMessage);
+	} else if (tournament.privateChannel) {
+		await send(member.client, tournament.privateChannel, hostMessage);
+	}
+	return;
 }

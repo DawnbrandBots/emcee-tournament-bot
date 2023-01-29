@@ -1,16 +1,9 @@
 import { RESTPostAPIApplicationCommandsJSONBody } from "discord-api-types/v10";
-import {
-	AutocompleteInteraction,
-	CacheType,
-	ChatInputCommandInteraction,
-	SlashCommandBuilder,
-	userMention
-} from "discord.js";
-import { ManualParticipant } from "../database/orm";
+import { AutocompleteInteraction, CacheType, ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
+import { ManualTournament } from "../database/orm";
 import { AutocompletableCommand } from "../SlashCommand";
-import { send } from "../util/discord";
 import { getLogger, Logger } from "../util/logger";
-import { autocompleteTournament, tournamentOption } from "./database";
+import { authenticatePlayer, autocompleteTournament, dropPlayer, tournamentOption } from "./database";
 
 export class DropCommand extends AutocompletableCommand {
 	#logger = getLogger("command:drop");
@@ -41,33 +34,17 @@ export class DropCommand extends AutocompletableCommand {
 		if (!interaction.inCachedGuild()) {
 			return;
 		}
-		// more useful than user since we need to manage roles, still has the id
-		const member = interaction.member;
-
-		const players = await ManualParticipant.find({ where: { discordId: member.id }, relations: ["tournament"] });
-
 		const tournamentName = interaction.options.getString("tournament", true);
-		const player = players.filter(p => p.tournament.name === tournamentName).pop();
+		const tournament = await ManualTournament.findOneOrFail({ where: { name: tournamentName } });
+
+		const player = await authenticatePlayer(tournament, interaction);
 
 		if (!player) {
-			await interaction.reply({ content: `You are not in that tournament.`, ephemeral: true });
+			// rejection messages handled in helper
 			return;
 		}
 
-		const tournament = player.tournament;
-
-		// don't use participantRoleProvider because it's made for ChallongeTournaments with exposed ids
-		// TODO: fix above?
-		await member.roles.remove(tournament.participantRole);
-
-		await player.remove();
-		await interaction.reply(`You have dropped from ${tournament.name}.`);
-		if (tournament.privateChannel) {
-			await send(
-				interaction.client,
-				tournament.privateChannel,
-				`${userMention(member.id)} has dropped from ${tournament.name}.`
-			);
-		}
+		const member = interaction.member || interaction.guild.members.fetch(interaction.user.id);
+		await dropPlayer(tournament, player, member, interaction);
 	}
 }

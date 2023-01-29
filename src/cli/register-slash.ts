@@ -4,10 +4,9 @@ import { APIUser, Routes } from "discord-api-types/v10";
 import dotenv from "dotenv";
 import { ChannelCommand } from "../slash/channel";
 import { CreateCommand } from "../slash/create";
-
 import { DeckCommand } from "../slash/deck";
 import { DropCommand } from "../slash/drop";
-import { ForceDropCommand } from "../slash/forcedrop";
+import { ForceDropContextCommand, ForceDropSlashCommand } from "../slash/forcedrop";
 import { HostCommand } from "../slash/host";
 import { InfoCommand } from "../slash/info";
 import { TimerCommand } from "../slash/timer";
@@ -18,14 +17,14 @@ import { ListCommand } from "../slash/list";
 
 export const classes = [
 	// Register here and in events/interaction.ts
-
 	TimerCommand,
 	CreateCommand,
 	HostCommand,
 	ChannelCommand,
 	UpdateCommand,
 	InfoCommand,
-	ForceDropCommand,
+	ForceDropSlashCommand,
+	ForceDropContextCommand,
 	DropCommand,
 	DeckCommand,
 	FinishCommand,

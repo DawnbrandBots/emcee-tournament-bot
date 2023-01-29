@@ -1,12 +1,13 @@
 import { Interaction } from "discord.js";
 import { CommandSupport } from "../Command";
+import { ContextCommand } from "../ContextCommand";
 import { ChannelCommand } from "../slash/channel";
 import { CreateCommand } from "../slash/create";
 import { CsvCommand } from "../slash/csv";
 import { DeckCommand } from "../slash/deck";
 import { DropCommand } from "../slash/drop";
 import { FinishCommand } from "../slash/finish";
-import { ForceDropCommand } from "../slash/forcedrop";
+import { ForceDropContextCommand, ForceDropSlashCommand } from "../slash/forcedrop";
 import { HostCommand } from "../slash/host";
 import { InfoCommand } from "../slash/info";
 import { ListCommand } from "../slash/list";
@@ -28,21 +29,29 @@ export function makeHandler({ organiserRole, timeWizard }: CommandSupport) {
 		new ChannelCommand(),
 		new UpdateCommand(),
 		new InfoCommand(),
-		new ForceDropCommand(), // will include participantRole if adapted later
-		new DropCommand(),
+		new DropCommand(), // will include participantRole if adapted later
+		new ForceDropSlashCommand(),
 		new DeckCommand(),
 		new FinishCommand(),
 		new CsvCommand(),
 		new ListCommand(organiserRole)
 	];
+
+	const contextArray = [new ForceDropContextCommand()];
+
 	const commands = new Map<string, SlashCommand>();
 	const autocompletes = new Map<string, AutocompletableCommand>();
+	const contexts = new Map<string, ContextCommand>();
 
 	for (const command of commandArray) {
 		commands.set(command.meta.name, command);
 		if (command instanceof AutocompletableCommand) {
 			autocompletes.set(command.meta.name, command);
 		}
+	}
+
+	for (const context of contextArray) {
+		contexts.set(context.meta.name, context);
 	}
 
 	return async function interactionCreate(interaction: Interaction): Promise<void> {
@@ -52,6 +61,9 @@ export function makeHandler({ organiserRole, timeWizard }: CommandSupport) {
 		} else if (interaction.isAutocomplete()) {
 			logger.verbose(serialiseInteraction(interaction, { autocomplete: interaction.options.getFocused() }));
 			await autocompletes.get(interaction.commandName)?.autocomplete(interaction);
+		} else if (interaction.isContextMenuCommand()) {
+			logger.verbose(serialiseInteraction(interaction));
+			await contexts.get(interaction.commandName)?.run(interaction);
 		}
 	};
 }
