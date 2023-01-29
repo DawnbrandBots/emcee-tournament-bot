@@ -4,6 +4,7 @@ import { APIUser, Routes } from "discord-api-types/v10";
 import dotenv from "dotenv";
 import { ChannelCommand } from "../slash/channel";
 import { CreateCommand } from "../slash/create";
+
 import { DeckCommand } from "../slash/deck";
 import { DropCommand } from "../slash/drop";
 import { ForceDropCommand } from "../slash/forcedrop";
@@ -13,8 +14,11 @@ import { TimerCommand } from "../slash/timer";
 import { UpdateCommand } from "../slash/update";
 import { FinishCommand } from "../slash/finish";
 import { CsvCommand } from "../slash/csv";
+import { ListCommand } from "../slash/list";
 
 export const classes = [
+	// Register here and in events/interaction.ts
+
 	TimerCommand,
 	CreateCommand,
 	HostCommand,
@@ -25,7 +29,8 @@ export const classes = [
 	DropCommand,
 	DeckCommand,
 	FinishCommand,
-	CsvCommand
+	CsvCommand,
+	ListCommand
 ];
 
 // Register Slash Commands on CI
