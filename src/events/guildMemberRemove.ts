@@ -77,37 +77,12 @@ export function makeHandler({ database, challonge }: CommandSupport) {
 				}
 			})
 			.catch(logger.error);
-		await getConnection()
-			.transaction(async entityManager => {
-				// Prepare to remove Participant from every preparing or in progress tournament in the database
-				const dropped = await entityManager
-					.getRepository(ManualParticipant)
-					.createQueryBuilder()
-					// Fill in the tournament relation while filtering only for the relevant tournaments.
-					.innerJoinAndSelect(
-						"ManualParticipant.tournament",
-						"T",
-						"(T.status = 'preparing' OR T.status = 'in progress') AND T.owningDiscordServer = :server AND ManualParticipant.discordId = :playerId",
-						{ server: server.id, playerId: member.id }
-					)
-					.getMany();
-				if (!dropped.length) {
-					return;
-				}
-				function log(payload: Record<string, unknown>): void {
-					logger.verbose(JSON.stringify({ id: member.id, ...payload }));
-				}
-				log({
-					server: server.id,
-					name: server.name,
-					username: member.user?.tag,
-					tournaments: dropped.map(p => p.tournament.name)
-				});
-
-				for (const participant of dropped) {
-					await dropPlayer(participant.tournament, participant, member);
-				}
-			})
-			.catch(logger.error);
+		const manualParticipants = await ManualParticipant.find({
+			where: { discordId: member.id },
+			relations: ["tournament "]
+		});
+		for (const participant of manualParticipants) {
+			await dropPlayer(participant.tournament, participant, member);
+		}
 	};
 }
