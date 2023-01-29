@@ -44,8 +44,6 @@ export class DropCommand extends AutocompletableCommand {
 			return;
 		}
 
-		// don't use participantRoleProvider because it's made for ChallongeTournaments with exposed ids
-		// TODO: fix above?
 		const member = interaction.member || interaction.guild.members.fetch(interaction.user.id);
 		await dropPlayer(tournament, player, member);
 	}
