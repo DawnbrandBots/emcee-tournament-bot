@@ -13,8 +13,11 @@ import { TimerCommand } from "../slash/timer";
 import { UpdateCommand } from "../slash/update";
 import { FinishCommand } from "../slash/finish";
 import { CsvCommand } from "../slash/csv";
+import { ListCommand } from "../slash/list";
 
 export const classes = [
+	// Register here and in events/interaction.ts
+
 	TimerCommand,
 	CreateCommand,
 	HostCommand,
@@ -26,7 +29,8 @@ export const classes = [
 	DropCommand,
 	DeckCommand,
 	FinishCommand,
-	CsvCommand
+	CsvCommand,
+	ListCommand
 ];
 
 // Register Slash Commands on CI

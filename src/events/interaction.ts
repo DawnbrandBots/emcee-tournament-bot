@@ -8,8 +8,7 @@ import { DeckCommand } from "../slash/deck";
 import { DropCommand } from "../slash/drop";
 import { FinishCommand } from "../slash/finish";
 import { ForceDropContextCommand, ForceDropSlashCommand } from "../slash/forcedrop";
-import { HostCommand } from "../slash/host";
-import { InfoCommand } from "../slash/info";
+import { ListCommand } from "../slash/list";
 import { TimerCommand } from "../slash/timer";
 import { UpdateCommand } from "../slash/update";
 import { AutocompletableCommand, SlashCommand } from "../SlashCommand";
@@ -32,7 +31,8 @@ export function makeHandler({ organiserRole, timeWizard }: CommandSupport) {
 		new ForceDropSlashCommand(),
 		new DeckCommand(),
 		new FinishCommand(),
-		new CsvCommand()
+		new CsvCommand(),
+		new ListCommand(organiserRole)
 	];
 
 	const contextArray = [new ForceDropContextCommand()];

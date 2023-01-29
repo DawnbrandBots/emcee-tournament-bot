@@ -52,27 +52,20 @@ export class DeckCommand extends AutocompletableCommand {
 		}
 
 		const user = interaction.options.getUser("player", true);
-		const player = tournament.participants.find(p => (p.discordId = user.id));
-		if (!player) {
+		const playerDeck = tournament.decks.find(d => d.discordId === user.id);
+		if (!playerDeck) {
 			await interaction.reply({
-				content: `That player is not in the tournament.`,
+				content: `That player is not in the tournament, or has not submitted a deck.`,
 				ephemeral: true
 			});
 			return;
 		}
 
-		if (!player.deck) {
-			await interaction.reply({
-				content: `That player has not submitted a deck yet.`,
-				ephemeral: true
-			});
-			return;
-		}
 		let outMessage = `__**${userMention(user.id)}'s deck**__:`;
-		if (player.deck.label) {
-			outMessage += `\n**Theme**: ${player.deck.label}`;
+		if (playerDeck.label) {
+			outMessage += `\n**Theme**: ${playerDeck.label}`;
 		}
-		outMessage += `\n${player.deck.content}`;
+		outMessage += `\n${playerDeck.content}`;
 		await interaction.reply(outMessage);
 		// TODO: include button for validation
 	}
