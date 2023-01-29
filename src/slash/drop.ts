@@ -6,7 +6,7 @@ import {
 	SlashCommandBuilder,
 	userMention
 } from "discord.js";
-import { ManualTournament } from "../database/orm";
+import { ManualParticipant } from "../database/orm";
 import { AutocompletableCommand } from "../SlashCommand";
 import { send } from "../util/discord";
 import { getLogger, Logger } from "../util/logger";
@@ -41,30 +41,37 @@ export class DropCommand extends AutocompletableCommand {
 		if (!interaction.inCachedGuild()) {
 			return;
 		}
-		const tournamentName = interaction.options.getString("tournament", true);
-		const tournament = await ManualTournament.findOneOrFail({ where: { name: tournamentName } });
+		// more useful than user since we need to manage roles, still has the id
+		const member = interaction.member;
 
-		const player = await authenticatePlayer(tournament, interaction);
+		const players = await ManualParticipant.find({ where: { discordId: member.id } });
+
+		const tournamentName = interaction.options.getString("tournament", true);
+		const player = players.filter(p => p.tournament.name === tournamentName).pop();
 
 		if (!player) {
+			await interaction.reply({ content: `You are not in that tournament.`, ephemeral: true });
+			return;
+		}
+
+		const tournament = player.tournament;
+
+		if (!(await authenticatePlayer(tournament, interaction))) {
 			// rejection messages handled in helper
 			return;
 		}
 
 		// don't use participantRoleProvider because it's made for ChallongeTournaments with exposed ids
 		// TODO: fix above?
-		const member = interaction.member || interaction.guild.members.fetch(interaction.user.id);
 		await member.roles.remove(tournament.participantRole);
 
 		await player.remove();
-		await interaction.reply(`You have been dropped from ${tournament.name}.`);
+		await interaction.reply(`You have dropped from ${tournament.name}.`);
 		if (tournament.privateChannel) {
-			// is there a better way to do this than the old util?
-			// should we be storing only the channel ID?
 			await send(
 				interaction.client,
 				tournament.privateChannel,
-				`${userMention(interaction.user.id)} has dropped themself from ${tournament.name}.`
+				`${userMention(member.id)} has dropped from ${tournament.name}.`
 			);
 		}
 	}
