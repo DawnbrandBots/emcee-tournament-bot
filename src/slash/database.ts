@@ -84,7 +84,7 @@ export async function dropPlayer(
 	self = false
 ): Promise<void> {
 	// don't use participantRoleProvider because it's made for ChallongeTournaments with exposed ids
-	// TODO: fix above?
+	// TODO: fix above? also handle when can't find role
 	await member.roles.remove(tournament.participantRole);
 
 	await player.remove();

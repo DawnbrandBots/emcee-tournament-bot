@@ -17,7 +17,6 @@ import { ListCommand } from "../slash/list";
 
 export const classes = [
 	// Register here and in events/interaction.ts
-
 	TimerCommand,
 	CreateCommand,
 	HostCommand,
