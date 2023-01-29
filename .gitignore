@@ -109,4 +109,5 @@ dist
 */auth.json
 
 *.cdb
+*.db3*
 backups/

@@ -2,6 +2,11 @@ import { Interaction } from "discord.js";
 import { CommandSupport } from "../Command";
 import { ChannelCommand } from "../slash/channel";
 import { CreateCommand } from "../slash/create";
+import { CsvCommand } from "../slash/csv";
+import { DeckCommand } from "../slash/deck";
+import { DropCommand } from "../slash/drop";
+import { FinishCommand } from "../slash/finish";
+import { ForceDropCommand } from "../slash/forcedrop";
 import { HostCommand } from "../slash/host";
 import { InfoCommand } from "../slash/info";
 import { ListCommand } from "../slash/list";
@@ -23,6 +28,11 @@ export function makeHandler({ organiserRole, timeWizard }: CommandSupport) {
 		new ChannelCommand(),
 		new UpdateCommand(),
 		new InfoCommand(),
+		new ForceDropCommand(), // will include participantRole if adapted later
+		new DropCommand(),
+		new DeckCommand(),
+		new FinishCommand(),
+		new CsvCommand(),
 		new ListCommand(organiserRole)
 	];
 	const commands = new Map<string, SlashCommand>();
