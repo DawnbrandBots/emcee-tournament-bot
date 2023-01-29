@@ -87,7 +87,11 @@ export function makeHandler({ database, challonge }: CommandSupport) {
 			)
 			.getMany();
 		for (const participant of manualParticipants) {
-			await dropPlayer(participant.tournament, participant, member);
+			try {
+				await dropPlayer(participant.tournament, participant, member);
+			} catch (e) {
+				logger.error(e);
+			}
 		}
 	};
 }
