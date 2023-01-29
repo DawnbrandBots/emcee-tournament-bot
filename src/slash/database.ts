@@ -86,8 +86,13 @@ export async function dropPlayer(
 	// don't use participantRoleProvider because it's made for ChallongeTournaments with exposed ids
 	// TODO: fix above? also handle when can't find role
 	await member.roles.remove(tournament.participantRole);
+	if (tournament.status === TournamentStatus.PREPARING) {
+		await player.remove();
+	} else {
+		player.dropped = true;
+		await player.save();
+	}
 
-	await player.remove();
 	if (self) {
 		await interaction.reply(`You have been dropped from ${tournament.name}.`);
 		if (tournament.privateChannel) {
