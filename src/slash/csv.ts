@@ -43,7 +43,7 @@ export class CsvCommand extends AutocompletableCommand {
 	}
 
 	protected override async execute(interaction: ChatInputCommandInteraction): Promise<void> {
-		await interaction.deferReply({ ephemeral: true });
+		await interaction.deferReply();
 		const tournamentName = interaction.options.getString("tournament", true);
 		const tournament = await ManualTournament.findOneOrFail({ where: { name: tournamentName } });
 
