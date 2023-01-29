@@ -1,21 +1,20 @@
 import {
 	ActionRowBuilder,
 	AutocompleteInteraction,
-  CacheType,
 	ButtonBuilder,
 	ButtonInteraction,
 	ButtonStyle,
 	CacheType,
 	ChatInputCommandInteraction,
 	ComponentType,
-  ContextMenuCommandInteraction,
+	ContextMenuCommandInteraction,
 	DiscordAPIError,
 	DiscordjsErrorCodes,
-  GuildMember,
+	GuildMember,
 	Message,
 	ModalBuilder,
 	ModalSubmitInteraction,
-  PartialGuildMember,
+	PartialGuildMember,
 	SlashCommandStringOption,
 	TextInputBuilder,
 	TextInputStyle,
@@ -221,6 +220,7 @@ export function checkParticipantCap(tournament: ManualTournament, capacity?: num
 		return true;
 	}
 	return tournament.decks.length < capacity;
+}
 
 export async function dropPlayer(
 	tournament: ManualTournament,

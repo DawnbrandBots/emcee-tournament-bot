@@ -38,10 +38,11 @@ export function makeHandler({ organiserRole, timeWizard }: CommandSupport) {
 		new OpenCommand(),
 		new CsvCommand(),
 		new StartCommand(),
-    new ListCommand(organiserRole)
+		new ListCommand(organiserRole)
 	];
 	const buttonArray = [new RegisterButtonHandler()];
 	const messageModalArray = [new FriendCodeModalHandler()];
+	const contextArray = [new ForceDropContextCommand()];
 
 	const commands = new Map<string, SlashCommand>();
 	const autocompletes = new Map<string, AutocompletableCommand>();

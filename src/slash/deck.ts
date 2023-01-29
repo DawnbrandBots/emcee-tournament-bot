@@ -74,8 +74,8 @@ export class DeckCommand extends AutocompletableCommand {
 			outMessage += `\n**Theme**: ${playerDeck.label}`;
 		}
 		outMessage += `\n${playerDeck.content}`;
-    
-    if (playerDeck.approved) {
+
+		if (playerDeck.approved) {
 			await interaction.reply(outMessage);
 			return;
 		}
@@ -83,6 +83,6 @@ export class DeckCommand extends AutocompletableCommand {
 		const row = generateDeckValidateButtons();
 		const response = await interaction.reply({ content: outMessage, fetchReply: true, components: [row] });
 		// errors handled by internal callbacks
-		awaitDeckValidationButtons(interaction, response, tournament, this.logger, player.deck);
+		awaitDeckValidationButtons(interaction, response, tournament, this.logger, playerDeck);
 	}
 }
