@@ -38,7 +38,7 @@ export async function autocompleteTournament(interaction: AutocompleteInteractio
 
 export async function authenticateHost(
 	tournament: ManualTournament,
-	interaction: ChatInputCommandInteraction,
+	interaction: ChatInputCommandInteraction | ContextMenuCommandInteraction,
 	isDeferred = false
 ): Promise<boolean> {
 	const func = isDeferred ? "editReply" : "reply";

@@ -2,6 +2,7 @@ import { ApplicationCommandType, RESTPostAPIApplicationCommandsJSONBody } from "
 import {
 	AutocompleteInteraction,
 	CacheType,
+	chatInputApplicationCommandMention,
 	ChatInputCommandInteraction,
 	ContextMenuCommandBuilder,
 	SlashCommandBuilder,
@@ -96,7 +97,19 @@ export class ForceDropContextCommand extends ContextCommand {
 			return;
 		}
 
-		// TODO: if length > 1, modal to select
+		if (players.length > 1) {
+			if (!interaction.guild.commands.cache.size) {
+				await interaction.guild.commands.fetch();
+			}
+			const id = interaction.guild.commands.cache.find(command => command.name === "forcedrop")?.id || "";
+			const mention = chatInputApplicationCommandMention("forcedrop", id);
+			await interaction.reply({
+				content: `That user is in multiple tournaments. Use ${mention} to specify.`,
+				ephemeral: true
+			});
+			return;
+		}
+
 		const player = players[0];
 
 		const tournament = player.tournament;
