@@ -158,7 +158,7 @@ export class RegisterButtonHandler implements ButtonClickHandler {
 				.setCustomId("friendCode")
 				.setLabel("Master Duel Friend Code")
 				.setStyle(TextInputStyle.Short)
-				.setRequired(tournament.requireFriendCode)
+				.setRequired(true)
 				.setPlaceholder("000000000")
 				.setMinLength(9)
 				.setMaxLength(11);
