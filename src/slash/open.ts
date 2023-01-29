@@ -7,29 +7,18 @@ import {
 	CacheType,
 	channelMention,
 	ChatInputCommandInteraction,
-	Collection,
-	Message,
 	ModalBuilder,
 	ModalMessageModalSubmitInteraction,
-	ModalSubmitInteraction,
 	SlashCommandBuilder,
-	TextInputBuilder,
-	userMention
+	TextInputBuilder
 } from "discord.js";
 import { Not } from "typeorm";
 import { TournamentStatus } from "../database/interface";
-import { ManualDeckSubmission, ManualParticipant, ManualTournament } from "../database/orm";
+import { ManualParticipant, ManualTournament } from "../database/orm";
 import { AutocompletableCommand, ButtonClickHandler, MessageModalSubmitHandler } from "../SlashCommand";
 import { send } from "../util/discord";
 import { getLogger, Logger } from "../util/logger";
-import {
-	authenticateHost,
-	autocompleteTournament,
-	awaitDeckValidationButtons,
-	checkParticipantCap,
-	generateDeckValidateButtons,
-	tournamentOption
-} from "./database";
+import { authenticateHost, autocompleteTournament, checkParticipantCap, tournamentOption } from "./database";
 
 export class OpenCommand extends AutocompletableCommand {
 	#logger = getLogger("command:open");
@@ -54,50 +43,6 @@ export class OpenCommand extends AutocompletableCommand {
 
 	override async autocomplete(interaction: AutocompleteInteraction<CacheType>): Promise<void> {
 		autocompleteTournament(interaction);
-	}
-
-	async collectRegisterMessages(
-		messages: Collection<string, Message<boolean>>,
-		player: ManualParticipant,
-		modalInteraction: ModalSubmitInteraction,
-		baseInteraction: ChatInputCommandInteraction,
-		tournament: ManualTournament
-	): Promise<void> {
-		const message = messages.first();
-		if (message) {
-			const images = message.attachments.filter(a => a.contentType?.startsWith("image"));
-			if (images.size < 1) {
-				await message.reply(
-					"You need to upload screenshots of your deck to register. Please click the button and try again."
-				);
-				// TODO: do we need to destroy the player entry here?
-				return;
-			}
-			const deck = new ManualDeckSubmission();
-			deck.approved = false;
-			deck.content = images.map(i => i.url).join("\n");
-			deck.participant = player;
-			deck.tournament = tournament;
-			await deck.save();
-
-			let outMessage = `__**${userMention(modalInteraction.user.id)}'s deck**__:`;
-			outMessage += `\n${deck.content}`;
-
-			const row = generateDeckValidateButtons();
-			// channel *should* exist, but can be removed in the interim. if so, TOs have to check decks manually and that's on them :/
-			if (tournament.privateChannel) {
-				const response = await send(baseInteraction.client, tournament.privateChannel, {
-					content: outMessage,
-					components: [row]
-				});
-				// errors handled by internal callbacks
-				awaitDeckValidationButtons(baseInteraction, response, tournament, this.logger, deck);
-			}
-
-			await message.reply(
-				"Your deck has been submitted to the tournament hosts. Please wait for their approval."
-			);
-		}
 	}
 
 	protected override async execute(interaction: ChatInputCommandInteraction): Promise<void> {
