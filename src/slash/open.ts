@@ -16,6 +16,7 @@ import {
 	TextInputBuilder,
 	userMention
 } from "discord.js";
+import { Not } from "typeorm";
 import { TournamentStatus } from "../database/interface";
 import { ManualDeckSubmission, ManualParticipant, ManualTournament } from "../database/orm";
 import { AutocompletableCommand, ButtonClickHandler, MessageModalSubmitHandler } from "../SlashCommand";
@@ -169,17 +170,40 @@ export class RegisterButtonHandler implements ButtonClickHandler {
 		if (!interaction.inCachedGuild()) {
 			return;
 		}
-
 		const tournament = await ManualTournament.findOneOrFail({
 			where: { owningDiscordServer: interaction.guildId, registerMessage: interaction.message.id }
 		});
-
-		if (tournament.status !== TournamentStatus.PREPARING) {
-			await interaction.user.send("Sorry, registration for the tournament has closed!");
+		// See messageReactionAdd logic
+		const registrations = (
+			await ManualParticipant.find({
+				where: {
+					discordId: interaction.user.id,
+					tournamentId: Not(tournament.tournamentId),
+					tournament: { status: TournamentStatus.PREPARING }
+				},
+				relations: ["tournament"]
+			})
+		).filter(p => !p.deck);
+		if (registrations.length) {
+			await interaction.reply({
+				content: `You can only sign up for one tournament at a time, ${interaction.user}! Please either drop from or complete your registration for **${registrations[0].tournament.name}**!`,
+				ephemeral: true
+			});
 			return;
 		}
-		if (tournament.participantLimit > 0 && tournament.participants?.length >= tournament.participantLimit) {
-			await interaction.user.send("Sorry, the tournament is currently full!");
+		if (tournament.status !== TournamentStatus.PREPARING) {
+			// Shouldn't happen
+			await interaction.reply({
+				content: `Sorry ${interaction.user}, registration for the tournament has closed!`,
+				ephemeral: true
+			});
+			return;
+		}
+		if (tournament.participantLimit > 0 && tournament.decks.length >= tournament.participantLimit) {
+			await interaction.reply({
+				content: `Sorry ${interaction.user}, the tournament is currently full!`,
+				ephemeral: true
+			});
 			return;
 		}
 		if (tournament.requireFriendCode) {
