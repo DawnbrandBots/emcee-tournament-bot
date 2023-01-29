@@ -65,8 +65,7 @@ export class CsvCommand extends AutocompletableCommand {
 			const players = tournament.decks
 				.filter(d => d.approved)
 				.map(async deck => {
-					const tag =
-						(await username(interaction.client, deck.participant.discordId)) || deck.participant.discordId;
+					const tag = (await username(interaction.client, deck.discordId)) || deck.discordId;
 					return {
 						Player: tag,
 						Theme: deck.label || "No theme"
