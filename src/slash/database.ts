@@ -4,6 +4,7 @@ import {
 	ChatInputCommandInteraction,
 	ContextMenuCommandInteraction,
 	GuildMember,
+	PartialGuildMember,
 	SlashCommandStringOption,
 	userMention
 } from "discord.js";
@@ -77,11 +78,9 @@ export async function authenticatePlayer(
 }
 
 export async function dropPlayer(
-	interaction: ChatInputCommandInteraction | ContextMenuCommandInteraction,
 	tournament: ManualTournament,
 	player: ManualParticipant,
-	member: GuildMember,
-	self = false
+	member: GuildMember | PartialGuildMember
 ): Promise<void> {
 	// don't use participantRoleProvider because it's made for ChallongeTournaments with exposed ids
 	// TODO: fix above? also handle when can't find role
@@ -93,20 +92,14 @@ export async function dropPlayer(
 		await player.save();
 	}
 
-	if (self) {
-		await interaction.reply(`You have been dropped from ${tournament.name}.`);
-		if (tournament.privateChannel) {
-			// is there a better way to do this than the old util?
-			// should we be storing only the channel ID?
-			await send(
-				interaction.client,
-				tournament.privateChannel,
-				`${userMention(interaction.user.id)} has dropped themself from ${tournament.name}.`
-			);
-		}
-		return;
-	}
+	await member.send(`You have been dropped from ${tournament.name}.`);
 
-	await member.send(`You have been dropped from ${tournament.name} by the hosts.`);
-	await interaction.reply(`${userMention(member.id)} has been dropped from ${tournament.name}.`);
+	if (tournament.privateChannel) {
+		await send(
+			member.client,
+			tournament.privateChannel,
+			`${userMention(member.user.id)} has been dropped from ${tournament.name}.`
+		);
+	}
+	return;
 }
