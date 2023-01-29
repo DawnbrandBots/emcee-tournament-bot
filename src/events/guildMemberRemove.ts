@@ -77,10 +77,15 @@ export function makeHandler({ database, challonge }: CommandSupport) {
 				}
 			})
 			.catch(logger.error);
-		const manualParticipants = await ManualParticipant.find({
-			where: { discordId: member.id, tournament: { owningDiscordServer: server } },
-			relations: ["tournament"]
-		});
+		const manualParticipants = await ManualParticipant.getRepository()
+			.createQueryBuilder()
+			.innerJoinAndSelect(
+				"ManualParticipant.tournament",
+				"T",
+				"(T.status = 'preparing' OR T.status = 'in progress') AND T.owningDiscordServer = :server AND Participant.discordId = :playerId",
+				{ server: server.id, playerId: member.id }
+			)
+			.getMany();
 		for (const participant of manualParticipants) {
 			await dropPlayer(participant.tournament, participant, member);
 		}
