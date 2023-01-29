@@ -80,7 +80,7 @@ export class UpdateCommand extends AutocompletableCommand {
 			tournament.participantLimit = capacity;
 			updated = true;
 		}
-    
+
 		if (requireCode !== null) {
 			const noCodePlayers = tournament.participants.filter(p => !p.friendCode).length;
 			if (requireCode && noCodePlayers > 0) {
