@@ -79,7 +79,7 @@ export function makeHandler({ database, challonge }: CommandSupport) {
 			.catch(logger.error);
 		const manualParticipants = await ManualParticipant.find({
 			where: { discordId: member.id },
-			relations: ["tournament "]
+			relations: ["tournament"]
 		});
 		for (const participant of manualParticipants) {
 			await dropPlayer(participant.tournament, participant, member);
