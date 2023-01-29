@@ -1,16 +1,9 @@
 import { RESTPostAPIApplicationCommandsJSONBody } from "discord-api-types/v10";
-import {
-	AutocompleteInteraction,
-	CacheType,
-	ChatInputCommandInteraction,
-	SlashCommandBuilder,
-	userMention
-} from "discord.js";
+import { AutocompleteInteraction, CacheType, ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
 import { ManualTournament } from "../database/orm";
 import { AutocompletableCommand } from "../SlashCommand";
-import { send } from "../util/discord";
 import { getLogger, Logger } from "../util/logger";
-import { authenticatePlayer, autocompleteTournament, tournamentOption } from "./database";
+import { authenticatePlayer, autocompleteTournament, dropPlayer, tournamentOption } from "./database";
 
 export class DropCommand extends AutocompletableCommand {
 	#logger = getLogger("command:drop");
@@ -54,18 +47,6 @@ export class DropCommand extends AutocompletableCommand {
 		// don't use participantRoleProvider because it's made for ChallongeTournaments with exposed ids
 		// TODO: fix above?
 		const member = interaction.member || interaction.guild.members.fetch(interaction.user.id);
-		await member.roles.remove(tournament.participantRole);
-
-		await player.remove();
-		await interaction.reply(`You have been dropped from ${tournament.name}.`);
-		if (tournament.privateChannel) {
-			// is there a better way to do this than the old util?
-			// should we be storing only the channel ID?
-			await send(
-				interaction.client,
-				tournament.privateChannel,
-				`${userMention(interaction.user.id)} has dropped themself from ${tournament.name}.`
-			);
-		}
+		await dropPlayer(interaction, tournament, player, member, true);
 	}
 }
