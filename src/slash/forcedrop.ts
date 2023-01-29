@@ -66,7 +66,7 @@ export class ForceDropSlashCommand extends AutocompletableCommand {
 		}
 
 		const member = await interaction.guild.members.fetch({ user: user });
-		await dropPlayer(tournament, player, member);
+		await dropPlayer(tournament, player, member, interaction);
 	}
 }
 
@@ -122,6 +122,6 @@ export class ForceDropContextCommand extends ContextCommand {
 			return;
 		}
 
-		await dropPlayer(tournament, player, member);
+		await dropPlayer(tournament, player, member, interaction);
 	}
 }

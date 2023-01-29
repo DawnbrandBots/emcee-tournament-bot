@@ -45,6 +45,6 @@ export class DropCommand extends AutocompletableCommand {
 		}
 
 		const member = interaction.member || interaction.guild.members.fetch(interaction.user.id);
-		await dropPlayer(tournament, player, member);
+		await dropPlayer(tournament, player, member, interaction);
 	}
 }

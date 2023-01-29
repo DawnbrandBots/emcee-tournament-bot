@@ -80,7 +80,8 @@ export async function authenticatePlayer(
 export async function dropPlayer(
 	tournament: ManualTournament,
 	player: ManualParticipant,
-	member: GuildMember | PartialGuildMember
+	member: GuildMember | PartialGuildMember,
+	interaction?: ChatInputCommandInteraction | ContextMenuCommandInteraction
 ): Promise<void> {
 	// don't use participantRoleProvider because it's made for ChallongeTournaments with exposed ids
 	// TODO: fix above? also handle when can't find role
@@ -92,14 +93,20 @@ export async function dropPlayer(
 		await player.save();
 	}
 
-	await member.send(`You have been dropped from ${tournament.name}.`);
+	const playerMessage = `You have been dropped from ${tournament.name}.`;
 
-	if (tournament.privateChannel) {
-		await send(
-			member.client,
-			tournament.privateChannel,
-			`${userMention(member.user.id)} has been dropped from ${tournament.name}.`
-		);
+	if (interaction?.commandName === "drop") {
+		await interaction.reply(playerMessage);
+	} else {
+		await member.send(playerMessage);
+	}
+
+	const hostMessage = `${userMention(member.user.id)} has been dropped from ${tournament.name}.`;
+
+	if (interaction && interaction.commandName !== "drop") {
+		await interaction.reply(hostMessage);
+	} else if (tournament.privateChannel) {
+		await send(member.client, tournament.privateChannel, hostMessage);
 	}
 	return;
 }
