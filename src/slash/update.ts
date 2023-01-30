@@ -44,12 +44,17 @@ export class UpdateCommand extends AutocompletableCommand {
 
 	protected override async execute(interaction: ChatInputCommandInteraction): Promise<void> {
 		const tournamentName = interaction.options.getString("tournament", true);
-		const tournament = await ManualTournament.findOneOrFail({ where: { name: tournamentName } });
+		const tournament = await ManualTournament.findOneOrFail({
+			where: { name: tournamentName },
+			relations: ["participants"]
+		});
 
 		if (!(await authenticateHost(tournament, interaction))) {
 			// rejection messages handled in helper
 			return;
 		}
+
+		let replyKey: "reply" | "followUp" = "reply";
 
 		const name = interaction.options.getString("name");
 		const description = interaction.options.getString("description");
@@ -71,10 +76,14 @@ export class UpdateCommand extends AutocompletableCommand {
 			// enforce integer cap
 			const capacity = Math.floor(rawCap);
 			// cap 0 means uncapped
-			if (!checkParticipantCap(tournament, capacity)) {
-				await interaction.reply(
-					`You have more players (${tournament.decks.length}) registered than the new cap. Please drop enough players then try again.`
+			if (!checkParticipantCap(tournament, capacity, true)) {
+				await interaction[replyKey](
+					`You have more players (${
+						tournament.participants.filter(p => !!p.deck).length
+					}) registered than the new cap. Please drop enough players then try again.`
 				);
+				// want to update the rest and likely add more replies
+				replyKey = "followUp";
 			}
 
 			tournament.participantLimit = capacity;
@@ -84,23 +93,24 @@ export class UpdateCommand extends AutocompletableCommand {
 		if (requireCode !== null) {
 			const noCodePlayers = tournament.participants.filter(p => !p.friendCode).length;
 			if (requireCode && noCodePlayers > 0) {
-				await interaction.reply({
+				await interaction[replyKey]({
 					content: `${noCodePlayers} players do not have friend codes listed. Please note that they will be grandfathered in.`,
 					ephemeral: true
 				});
+				replyKey = "followUp";
 			}
 			tournament.requireFriendCode = requireCode;
 			updated = true;
 		}
 
 		if (!updated) {
-			await interaction.reply(`You must provide at least one detail to update a tournament.`);
+			await interaction[replyKey](`You must provide at least one detail to update a tournament.`);
 			return;
 		}
 
 		await tournament.save();
 
-		await interaction.reply(
+		await interaction[replyKey](
 			`Tournament updated with the following details:\nName: ${tournament.name}\nDescription: ${
 				tournament.description
 			}\nCapacity: ${

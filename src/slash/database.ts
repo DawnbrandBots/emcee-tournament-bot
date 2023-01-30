@@ -212,14 +212,21 @@ export function awaitDeckValidationButtons(
 		});
 }
 
-export function checkParticipantCap(tournament: ManualTournament, capacity?: number): boolean {
+export function checkParticipantCap(
+	tournament: ManualTournament,
+	capacity?: number,
+	participantsLoaded = false
+): boolean {
 	if (!capacity) {
 		capacity = tournament.participantLimit;
 	}
 	if (capacity === 0) {
 		return true;
 	}
-	return tournament.decks.length < capacity;
+	const referenceArray = participantsLoaded
+		? tournament.participants.filter(p => !!p.deck).map(p => p.deck)
+		: tournament.decks;
+	return referenceArray.length < capacity;
 }
 
 export async function dropPlayer(
