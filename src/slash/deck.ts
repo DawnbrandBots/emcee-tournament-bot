@@ -9,7 +9,13 @@ import {
 import { ManualTournament } from "../database/orm";
 import { AutocompletableCommand } from "../SlashCommand";
 import { getLogger, Logger } from "../util/logger";
-import { authenticateHost, autocompleteTournament, tournamentOption } from "./database";
+import {
+	authenticateHost,
+	autocompleteTournament,
+	awaitDeckValidationButtons,
+	generateDeckValidateButtons,
+	tournamentOption
+} from "./database";
 
 export class DeckCommand extends AutocompletableCommand {
 	#logger = getLogger("command:deck");
@@ -45,8 +51,7 @@ export class DeckCommand extends AutocompletableCommand {
 		}
 		const tournamentName = interaction.options.getString("tournament", true);
 		const tournament = await ManualTournament.findOneOrFail({
-			where: { name: tournamentName },
-			relations: ["participants"]
+			where: { name: tournamentName }
 		});
 
 		if (!(await authenticateHost(tournament, interaction))) {
@@ -69,7 +74,15 @@ export class DeckCommand extends AutocompletableCommand {
 			outMessage += `\n**Theme**: ${playerDeck.label}`;
 		}
 		outMessage += `\n${playerDeck.content}`;
-		await interaction.reply(outMessage);
-		// TODO: include button for validation
+
+		if (playerDeck.approved) {
+			await interaction.reply(outMessage);
+			return;
+		}
+
+		const row = generateDeckValidateButtons();
+		const response = await interaction.reply({ content: outMessage, fetchReply: true, components: [row] });
+		// errors handled by internal callbacks
+		awaitDeckValidationButtons(interaction, response, tournament, this.logger, playerDeck);
 	}
 }

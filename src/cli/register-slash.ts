@@ -12,7 +12,9 @@ import { InfoCommand } from "../slash/info";
 import { TimerCommand } from "../slash/timer";
 import { UpdateCommand } from "../slash/update";
 import { FinishCommand } from "../slash/finish";
+import { OpenCommand } from "../slash/open";
 import { CsvCommand } from "../slash/csv";
+import { StartCommand } from "../slash/start";
 import { ListCommand } from "../slash/list";
 
 export const classes = [
@@ -23,13 +25,15 @@ export const classes = [
 	ChannelCommand,
 	UpdateCommand,
 	InfoCommand,
-	ForceDropSlashCommand,
+  ForceDropSlashCommand,
 	ForceDropContextCommand,
 	DropCommand,
 	DeckCommand,
 	FinishCommand,
+	OpenCommand,
 	CsvCommand,
-	ListCommand
+	StartCommand,
+  ListCommand
 ];
 
 // Register Slash Commands on CI

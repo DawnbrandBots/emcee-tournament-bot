@@ -1,5 +1,6 @@
 import { expect } from "chai";
 import { PostgreSqlContainer, StartedPostgreSqlContainer } from "testcontainers";
+import { getConnection } from "typeorm";
 import { initializeConnection, ManualDeckSubmission, ManualParticipant, ManualTournament } from "../src/database/orm";
 
 describe("Entities for manual tournaments", () => {
@@ -45,6 +46,7 @@ describe("Entities for manual tournaments", () => {
 	});
 
 	after(async () => {
+		await getConnection().destroy();
 		await container.stop();
 	});
 });

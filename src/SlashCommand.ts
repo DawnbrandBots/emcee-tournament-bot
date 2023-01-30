@@ -1,6 +1,11 @@
 // Adapted from https://github.com/DawnbrandBots/bastion-bot/blob/master/src/Command.ts
 import { RESTPostAPIApplicationCommandsJSONBody } from "discord-api-types/v10";
-import { AutocompleteInteraction, ChatInputCommandInteraction } from "discord.js";
+import {
+	AutocompleteInteraction,
+	ButtonInteraction,
+	ChatInputCommandInteraction,
+	ModalMessageModalSubmitInteraction
+} from "discord.js";
 import { serialiseInteraction } from "./util";
 import { Logger } from "./util/logger";
 
@@ -56,4 +61,14 @@ export abstract class SlashCommand {
 
 export abstract class AutocompletableCommand extends SlashCommand {
 	abstract autocomplete(interaction: AutocompleteInteraction): Promise<void>;
+}
+
+export interface ButtonClickHandler {
+	readonly buttonIds: string[];
+	click(interaction: ButtonInteraction): Promise<void>;
+}
+
+export interface MessageModalSubmitHandler {
+	readonly modalIds: string[];
+	submit(interaction: ModalMessageModalSubmitInteraction): Promise<void>;
 }

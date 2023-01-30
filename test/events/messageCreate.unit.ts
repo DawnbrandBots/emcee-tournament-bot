@@ -3,7 +3,10 @@ import { Client, Message } from "discord.js";
 import sinon, { SinonSandbox } from "sinon";
 import sinonChai from "sinon-chai";
 import sinonTest from "sinon-test";
+import { PostgreSqlContainer, StartedPostgreSqlContainer } from "testcontainers";
+import { getConnection } from "typeorm";
 import { TournamentFormat, TournamentStatus } from "../../src/database/interface";
+import { initializeConnection } from "../../src/database/orm";
 import { DeckManager, initializeDeckManager } from "../../src/deck";
 import { onDirectMessage } from "../../src/events/messageCreate";
 import { ParticipantRoleProvider } from "../../src/role/participant";
@@ -40,12 +43,23 @@ const database = new DatabaseWrapperMock();
 let decks: DeckManager;
 const challonge = new WebsiteWrapperChallonge("", "");
 const participantRole = new ParticipantRoleProvider(mockBotClient);
+let container: StartedPostgreSqlContainer;
 
-before(async () => {
-	// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-	decks = await initializeDeckManager(process.env.OCTOKIT_TOKEN!);
-});
 describe("Direct message submissions", function () {
+	before(async () => {
+		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+		decks = await initializeDeckManager(process.env.OCTOKIT_TOKEN!);
+		container = await new PostgreSqlContainer("postgres:13-alpine").start();
+		await initializeConnection(
+			`postgresql://${container.getUsername()}:${container.getPassword()}@${container.getHost()}:${container.getPort()}/${container.getDatabase()}`
+		);
+	});
+
+	after(async () => {
+		await getConnection().destroy();
+		await container.stop();
+	});
+
 	// TODO: test attachment version
 	it(
 		"accepts registrations",

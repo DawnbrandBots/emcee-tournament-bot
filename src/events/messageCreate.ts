@@ -1,11 +1,13 @@
-import { Client, escapeMarkdown, Message } from "discord.js";
+import { Client, escapeMarkdown, Message, userMention } from "discord.js";
 import { CardVector } from "ydeck";
 import { Command, CommandDefinition, CommandSupport } from "../Command";
 import { helpMessage } from "../config";
-import { DatabaseTournament } from "../database/interface";
+import { DatabaseTournament, TournamentStatus } from "../database/interface";
+import { ManualDeckSubmission, ManualParticipant } from "../database/orm";
 import { DatabaseWrapperPostgres } from "../database/postgres";
 import { DeckManager } from "../deck";
 import { ParticipantRoleProvider } from "../role/participant";
+import { generateDeckValidateButtons } from "../slash/database";
 import { send } from "../util/discord";
 import { getLogger } from "../util/logger";
 import { Public } from "../util/types";
@@ -42,7 +44,6 @@ export function makeHandler(
 				.map(s => s.trim());
 			await handlers[cmdName]?.run(msg, args, support);
 		} else if (!msg.guildId) {
-			// Checking guildID is likely more performant than instanceof
 			await onDirectMessage(
 				msg,
 				support.database,
@@ -134,6 +135,81 @@ export async function onDirectMessage(
 			);
 			await msg.reply(error.message);
 		}
+		return;
+	}
+
+	const registrations = await ManualParticipant.find({
+		where: {
+			discordId: msg.author.id,
+			tournament: { status: TournamentStatus.PREPARING }
+		},
+		relations: ["tournament"]
+	});
+
+	const registering: ManualParticipant[] = [];
+	const submitted: ManualParticipant[] = [];
+	for (const p of registrations) {
+		if (p.deck) {
+			submitted.push(p);
+		} else {
+			registering.push(p);
+		}
+	}
+	if (registering.length) {
+		const images = msg.attachments.filter(a => a.contentType?.startsWith("image"));
+		if (images.size < 1) {
+			await msg.reply("You need to upload screenshots of your deck to register. Please try again.");
+			return;
+		}
+		const deck = new ManualDeckSubmission();
+		deck.approved = false;
+		deck.content = images.map(i => i.url).join("\n");
+		deck.participant = registering[0];
+		await deck.save();
+
+		let outMessage = `__**${userMention(msg.author.id)}'s deck**__:`;
+		outMessage += `\n${deck.content}`;
+
+		const row = generateDeckValidateButtons();
+		if (deck.participant.tournament.privateChannel) {
+			await send(msg.client, deck.participant.tournament.privateChannel, {
+				content: outMessage,
+				components: [row]
+			});
+		}
+		await msg.reply("Your deck has been submitted to the tournament hosts. Please wait for their approval.");
+		return;
+	}
+	if (submitted.length > 1) {
+		const out = submitted.map(p => p.tournament.name).join(", ");
+		log("info", msg, { event: "submitted multiple", tournaments: out });
+		await msg.reply(
+			`You're trying to update your deck for a tournament, but you're in multiple! Please choose one by dropping and registering again.\n${out}`
+		);
+		return;
+	}
+	if (submitted.length) {
+		const images = msg.attachments.filter(a => a.contentType?.startsWith("image"));
+		if (images.size < 1) {
+			await msg.reply("You need to upload screenshots of your deck. Please try again.");
+			return;
+		}
+		const d = submitted[0].deck!;
+		d.approved = false;
+		d.content = images.map(i => i.url).join("\n");
+		await d.save();
+
+		let outMessage = `__**${userMention(msg.author.id)}'s deck**__:`;
+		outMessage += `\n${d.content}`;
+
+		const row = generateDeckValidateButtons();
+		if (submitted[0].tournament.privateChannel) {
+			await send(msg.client, submitted[0].tournament.privateChannel, {
+				content: outMessage,
+				components: [row]
+			});
+		}
+		await msg.reply("Your deck has been resubmitted to the tournament hosts. Please wait for their approval.");
 		return;
 	}
 

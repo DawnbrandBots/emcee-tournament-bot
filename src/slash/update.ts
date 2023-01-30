@@ -3,7 +3,7 @@ import { AutocompleteInteraction, CacheType, ChatInputCommandInteraction, SlashC
 import { ManualTournament } from "../database/orm";
 import { AutocompletableCommand } from "../SlashCommand";
 import { getLogger, Logger } from "../util/logger";
-import { authenticateHost, autocompleteTournament, tournamentOption } from "./database";
+import { authenticateHost, autocompleteTournament, checkParticipantCap, tournamentOption } from "./database";
 
 export class UpdateCommand extends AutocompletableCommand {
 	#logger = getLogger("command:update");
@@ -70,13 +70,11 @@ export class UpdateCommand extends AutocompletableCommand {
 		if (rawCap) {
 			// enforce integer cap
 			const capacity = Math.floor(rawCap);
-			const playerCount = tournament.decks.filter(d => d.approved).length;
 			// cap 0 means uncapped
-			if (capacity > 0 && playerCount > capacity) {
-				await interaction.reply({
-					content: `You have more players (${playerCount}) registered than the new cap. Please drop enough players then try again.`,
-					ephemeral: true
-				});
+			if (!checkParticipantCap(tournament, capacity)) {
+				await interaction.reply(
+					`You have more players (${tournament.decks.length}) registered than the new cap. Please drop enough players then try again.`
+				);
 			}
 
 			tournament.participantLimit = capacity;
