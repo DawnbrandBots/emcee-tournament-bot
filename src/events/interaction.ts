@@ -90,7 +90,7 @@ export function makeHandler({ organiserRole, timeWizard }: CommandSupport) {
 					buttonId: interaction.customId
 				})
 			);
-			const [name, args] = decodeCustomId(interaction.customId)[0];
+			const [name, args] = decodeCustomId(interaction.customId);
 			await buttons.get(name)?.click(interaction, ...args);
 		} else if (interaction.isModalSubmit() && interaction.isFromMessage()) {
 			logger.verbose(
@@ -103,7 +103,7 @@ export function makeHandler({ organiserRole, timeWizard }: CommandSupport) {
 					modalId: interaction.customId
 				})
 			);
-			const [name, args] = decodeCustomId(interaction.customId)[0];
+			const [name, args] = decodeCustomId(interaction.customId);
 			await messageModals.get(name)?.submit(interaction, ...args);
 		} else if (interaction.isContextMenuCommand()) {
 			logger.verbose(serialiseInteraction(interaction));
