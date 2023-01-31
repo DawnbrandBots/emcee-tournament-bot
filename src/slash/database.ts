@@ -218,13 +218,11 @@ export class RejectReasonModal implements MessageModalSubmitHandler {
 		}
 		await player.send(message);
 		// log success to TO
-		if (tournament.privateChannel) {
-			await send(
-				interaction.client,
-				tournament.privateChannel,
-				`${userMention}'s deck for ${tournament.name} has been rejected by ${userMention(interaction.user.id)}`
-			);
-		}
+		await interaction.reply(
+			`${userMention(player.id)}'s deck for ${tournament.name} has been rejected by ${userMention(
+				interaction.user.id
+			)}`
+		);
 	}
 }
 
