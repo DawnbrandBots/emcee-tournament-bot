@@ -10,6 +10,7 @@ import * as guildCreate from "./guildCreate";
 import * as guildMemberRemove from "./guildMemberRemove";
 import * as interaction from "./interaction";
 import * as messageCreate from "./messageCreate";
+import * as messageDelete from "./messageDelete";
 
 const logger = getLogger("events");
 
@@ -28,7 +29,7 @@ export function registerEvents(bot: Client, prefix: string, support: CommandSupp
 	bot.on("interactionCreate", interaction.makeHandler(support));
 	bot.on("messageCreate", messageCreate.makeHandler(bot, prefix, commands, support));
 	bot.on("guildMemberRemove", guildMemberRemove.makeHandler(support));
-	bot.on("messageDelete", message => support.database.cleanRegistration(message.channelId, message.id));
+	bot.on("messageDelete", messageDelete.makeHandler(bot, support));
 	bot.on("messageReactionAdd", async (reaction, user) => {
 		// reaction.me is true if the message is cached AND the bot reacted with the same emoji
 		if (user.id !== bot.user?.id && reaction.emoji.name === "✅") {
