@@ -156,33 +156,41 @@ export class AcceptLabelModal implements MessageModalSubmitHandler {
 
 	async submit(interaction: ModalMessageModalSubmitInteraction, ...args: string[]): Promise<void> {
 		const tournamentIdString = args[0];
+		const tournamentId = parseInt(tournamentIdString, 10);
 		const deck = await ManualDeckSubmission.findOneOrFail({
 			where: {
 				discordId: interaction.user.id,
-				tournamentId: parseInt(tournamentIdString, 10)
+				tournamentId: tournamentId
 			},
 			relations: ["tournament"]
 		});
 		const tournament = deck.tournament;
 		const player = await interaction.client.users.fetch(deck.discordId);
-		// mark deck as approved
-		deck.approved = true;
-		const label = interaction.fields.getTextInputValue("acceptDeckLabel");
-		if (label.length > 0) {
-			deck.label = label;
+
+		let label: string | undefined = interaction.fields.getTextInputValue("acceptDeckLabel");
+		if (label.length === 0) {
+			label = undefined;
 		}
-		await deck.save();
+
+		// set deck as approved and add label
+		// manual query to workaround bug
+		await ManualDeckSubmission.createQueryBuilder()
+			.update()
+			.set({ approved: true, label })
+			.where("tournamentId = :tournamentId AND discordId = :discordId", {
+				tournamentId,
+				discordId: interaction.user.id
+			})
+			.execute();
 		// provide feedback to player
 		await player.send(`Your deck has been accepted by the hosts! You are now registered for ${tournament.name}.`);
 		// TODO: Give player participant role
 		// log success to TO
-		if (tournament.privateChannel) {
-			await send(
-				interaction.client,
-				tournament.privateChannel,
-				`${userMention}'s deck for ${tournament.name} has been approved by ${userMention(interaction.user.id)}`
-			);
-		}
+		await interaction.reply(
+			`${userMention(player.id)}'s deck for ${tournament.name} has been approved by ${userMention(
+				interaction.user.id
+			)}`
+		);
 	}
 }
 
