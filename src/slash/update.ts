@@ -28,7 +28,7 @@ export class UpdateCommand extends AutocompletableCommand {
 			)
 			.addBooleanOption(option =>
 				option
-					.setName("requirecode")
+					.setName("require-code")
 					.setDescription("Whether to require a Master Duel friend code from participants.")
 			)
 			.toJSON();
