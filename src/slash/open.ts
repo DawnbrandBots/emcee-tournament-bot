@@ -120,9 +120,12 @@ async function registerParticipant(
 		await setNickname(interaction.member, friendCode);
 	}
 	await player.save();
+
+	const userAction = player.deck ? "update your deck. It will need to be approved again afterwards" : "register";
+
 	await interaction.update({});
 	await interaction.user.send(
-		"Please upload screenshots of your decklist to register.\n**Important**: Please do not delete your message! This can make your decklist invisible to tournament hosts, which they may interpret as cheating."
+		`Please upload screenshots of your decklist to ${userAction}.\n**Important**: Please do not delete your message! This can make your decklist invisible to tournament hosts, which they may interpret as cheating.`
 	);
 }
 
