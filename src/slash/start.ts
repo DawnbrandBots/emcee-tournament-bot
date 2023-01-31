@@ -47,6 +47,17 @@ export class StartCommand extends AutocompletableCommand {
 			return;
 		}
 
+		if (tournament.publicChannel) {
+			const publicChannel = await interaction.client.channels.fetch(tournament.publicChannel);
+			if (publicChannel && publicChannel.isTextBased()) {
+				if (tournament.registerMessage) {
+					const registerMessage = await publicChannel.messages.fetch(tournament.registerMessage);
+					await registerMessage?.delete();
+				}
+				await publicChannel.send(`Registration for ${tournament.name} is now closed!`);
+			}
+		}
+
 		const playersToDrop = tournament.participants.filter(p => !p.deck?.approved);
 
 		if (playersToDrop.length === tournament.participants.length) {
@@ -68,16 +79,5 @@ export class StartCommand extends AutocompletableCommand {
 
 		tournament.status = TournamentStatus.IPR;
 		await tournament.save();
-
-		if (tournament.publicChannel) {
-			const publicChannel = await interaction.client.channels.fetch(tournament.publicChannel);
-			if (publicChannel && publicChannel.isTextBased()) {
-				if (tournament.registerMessage) {
-					const registerMessage = await publicChannel.messages.fetch(tournament.registerMessage);
-					await registerMessage?.delete();
-				}
-				await publicChannel.send(`Registration for ${tournament.name} is now closed!`);
-			}
-		}
 	}
 }
