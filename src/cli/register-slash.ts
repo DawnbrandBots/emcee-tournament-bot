@@ -16,6 +16,7 @@ import { OpenCommand } from "../slash/open";
 import { CsvCommand } from "../slash/csv";
 import { StartCommand } from "../slash/start";
 import { ListCommand } from "../slash/list";
+import { QueueCommand } from "../slash/queue";
 
 export const classes = [
 	// Register here and in events/interaction.ts
@@ -25,7 +26,7 @@ export const classes = [
 	ChannelCommand,
 	UpdateCommand,
 	InfoCommand,
-  ForceDropSlashCommand,
+	ForceDropSlashCommand,
 	ForceDropContextCommand,
 	DropCommand,
 	DeckCommand,
@@ -33,7 +34,8 @@ export const classes = [
 	OpenCommand,
 	CsvCommand,
 	StartCommand,
-  ListCommand
+	ListCommand,
+	QueueCommand
 ];
 
 // Register Slash Commands on CI
