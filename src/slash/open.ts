@@ -7,6 +7,7 @@ import {
 	CacheType,
 	channelMention,
 	ChatInputCommandInteraction,
+	GuildMember,
 	ModalBuilder,
 	ModalMessageModalSubmitInteraction,
 	SlashCommandBuilder,
@@ -93,6 +94,18 @@ export class OpenCommand extends AutocompletableCommand {
 	}
 }
 
+async function setNickname(member: GuildMember, friendCode: number): Promise<void> {
+	// check for redundancy
+	const fcRegex = /\d{3}-\d{3}-\d{3}/;
+	const baseName = member.nickname || member.user.username;
+	if (fcRegex.test(baseName)) {
+		return;
+	}
+	const friendString = friendCode.toString(10);
+	const formatCode = `${friendString.slice(0, 3)}-${friendString.slice(3, 6)}-${friendString.slice(6, 9)}`;
+	await member.setNickname(`${baseName} ${formatCode}`);
+}
+
 async function registerParticipant(
 	interaction: ButtonInteraction | ModalMessageModalSubmitInteraction,
 	tournament: ManualTournament,
@@ -102,6 +115,10 @@ async function registerParticipant(
 	player.discordId = interaction.user.id;
 	player.tournament = tournament;
 	player.friendCode = friendCode;
+	// first check should always be true i think but it's a typeguard on member
+	if (interaction.inCachedGuild() && friendCode) {
+		await setNickname(interaction.member, friendCode);
+	}
 	await player.save();
 	await interaction.update({});
 	await interaction.user.send(
