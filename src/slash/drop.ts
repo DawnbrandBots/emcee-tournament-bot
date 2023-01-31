@@ -46,8 +46,6 @@ export class DropCommand extends AutocompletableCommand {
 			// rejection messages handled in helper
 			return;
 		}
-
-		const member = interaction.member || interaction.guild.members.fetch(interaction.user.id);
-		await dropPlayer(tournament, player, member, interaction);
+		await dropPlayer(tournament, player, interaction.member, interaction);
 	}
 }

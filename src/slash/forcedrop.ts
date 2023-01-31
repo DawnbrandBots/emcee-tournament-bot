@@ -5,6 +5,7 @@ import {
 	chatInputApplicationCommandMention,
 	ChatInputCommandInteraction,
 	ContextMenuCommandBuilder,
+	GuildMember,
 	SlashCommandBuilder,
 	UserContextMenuCommandInteraction
 } from "discord.js";
@@ -64,9 +65,13 @@ export class ForceDropSlashCommand extends AutocompletableCommand {
 			});
 			return;
 		}
-
-		const member = await interaction.guild.members.fetch({ user: user });
-		await dropPlayer(tournament, player, member, interaction);
+		let member: GuildMember | undefined;
+		try {
+			member = await interaction.guild.members.fetch({ user: user });
+		} finally {
+			// disregard error because it's just "no member found"
+			await dropPlayer(tournament, player, member || user, interaction);
+		}
 	}
 }
 

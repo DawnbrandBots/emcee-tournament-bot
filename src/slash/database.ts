@@ -6,6 +6,7 @@ import {
 	GuildMember,
 	PartialGuildMember,
 	SlashCommandStringOption,
+	User,
 	userMention
 } from "discord.js";
 import { ILike } from "typeorm";
@@ -97,12 +98,15 @@ export function checkParticipantCap(
 export async function dropPlayer(
 	tournament: ManualTournament,
 	player: ManualParticipant,
-	member: GuildMember | PartialGuildMember,
+	member: GuildMember | PartialGuildMember | User,
 	interaction?: ChatInputCommandInteraction | ContextMenuCommandInteraction
 ): Promise<void> {
 	// don't use participantRoleProvider because it's made for ChallongeTournaments with exposed ids
 	// TODO: fix above? also handle when can't find role
-	await member.roles.remove(tournament.participantRole);
+	if ("roles" in member) {
+		await member.roles.remove(tournament.participantRole);
+	}
+
 	if (tournament.status === TournamentStatus.PREPARING) {
 		await player.remove();
 	} else {
@@ -118,7 +122,7 @@ export async function dropPlayer(
 		await member.send(playerMessage);
 	}
 
-	const hostMessage = `${userMention(member.user.id)} has been dropped from ${tournament.name}.`;
+	const hostMessage = `${userMention(member.id)} has been dropped from ${tournament.name}.`;
 
 	if (interaction && interaction.commandName !== "drop") {
 		await interaction.reply(hostMessage);
