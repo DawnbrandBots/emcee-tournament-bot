@@ -6,7 +6,6 @@ import {
 	ButtonInteraction,
 	CacheType,
 	ChatInputCommandInteraction,
-	Emoji,
 	ModalBuilder,
 	ModalMessageModalSubmitInteraction,
 	SlashCommandBuilder,
