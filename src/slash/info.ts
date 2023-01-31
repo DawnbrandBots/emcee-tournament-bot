@@ -10,7 +10,7 @@ import {
 import { ManualTournament } from "../database/orm";
 import { AutocompletableCommand } from "../SlashCommand";
 import { getLogger, Logger } from "../util/logger";
-import { authenticateHost, autocompleteTournament, tournamentOption } from "./database";
+import { authenticateHost, autocompleteTournament, printPlayerCap, tournamentOption } from "./database";
 
 export class InfoCommand extends AutocompletableCommand {
 	#logger = getLogger("command:info");
@@ -49,7 +49,7 @@ export class InfoCommand extends AutocompletableCommand {
 		const fields: EmbedField[] = [
 			{
 				name: ":ticket: Capacity",
-				value: `${tournament.participantLimit === 0 ? "Uncapped" : tournament.participantLimit}`,
+				value: printPlayerCap(tournament),
 				inline: true
 			},
 			{

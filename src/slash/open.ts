@@ -19,7 +19,13 @@ import { ManualParticipant, ManualTournament } from "../database/orm";
 import { AutocompletableCommand, ButtonClickHandler, MessageModalSubmitHandler } from "../SlashCommand";
 import { send } from "../util/discord";
 import { getLogger, Logger } from "../util/logger";
-import { authenticateHost, autocompleteTournament, checkParticipantCap, tournamentOption } from "./database";
+import {
+	authenticateHost,
+	autocompleteTournament,
+	checkParticipantCap,
+	printPlayerCap,
+	tournamentOption
+} from "./database";
 
 export class OpenCommand extends AutocompletableCommand {
 	#logger = getLogger("command:open");
@@ -80,7 +86,11 @@ export class OpenCommand extends AutocompletableCommand {
 		row.addComponents(button);
 
 		const message = await send(interaction.client, tournament.publicChannel, {
-			content: `__Registration for **${tournament.name}** is now open!__\nClick the button below to register, then follow the prompts.\nA tournament host will then manually verify your deck.`,
+			content: `__Registration for **${tournament.name}** is now open!__\n${
+				tournament.description
+			}\nPlayer Cap: ${printPlayerCap(
+				tournament
+			)}\nClick the button below to register, then follow the prompts.\nA tournament host will then manually verify your deck.`,
 			components: [row]
 		});
 		tournament.registerMessage = message.id;
@@ -120,9 +130,12 @@ async function registerParticipant(
 		await setNickname(interaction.member, friendCode);
 	}
 	await player.save();
+
+	const userAction = player.deck ? "update your deck. It will need to be approved again afterwards" : "register";
+
 	await interaction.update({});
 	await interaction.user.send(
-		"Please upload screenshots of your decklist to register.\n**Important**: Please do not delete your message! You will be dropped for cheating, as this can make your decklist invisible to hosts."
+		"Please upload screenshots of your decklist to ${userAction}.\n**Important**: Please do not delete your message! You will be dropped for cheating, as this can make your decklist invisible to hosts."
 	);
 }
 

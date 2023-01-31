@@ -127,3 +127,6 @@ export async function dropPlayer(
 	}
 	return;
 }
+
+export const printPlayerCap = (tournament: ManualTournament): string =>
+	tournament.participantLimit === 0 ? "Uncapped" : tournament.participantLimit.toString(10);

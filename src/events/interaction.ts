@@ -25,6 +25,7 @@ import { UpdateCommand } from "../slash/update";
 import { AutocompletableCommand, ButtonClickHandler, MessageModalSubmitHandler, SlashCommand } from "../SlashCommand";
 import { serialiseInteraction } from "../util";
 import { getLogger } from "../util/logger";
+import { QueueCommand } from "../slash/queue";
 
 const logger = getLogger("interaction");
 
@@ -45,7 +46,8 @@ export function makeHandler({ organiserRole, timeWizard }: CommandSupport) {
 		new OpenCommand(),
 		new CsvCommand(),
 		new StartCommand(),
-		new ListCommand(organiserRole)
+		new ListCommand(organiserRole),
+		new QueueCommand()
 	];
 	const buttonArray = [
 		new RegisterButtonHandler(),
