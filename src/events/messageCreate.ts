@@ -7,7 +7,7 @@ import { ManualDeckSubmission, ManualParticipant } from "../database/orm";
 import { DatabaseWrapperPostgres } from "../database/postgres";
 import { DeckManager } from "../deck";
 import { ParticipantRoleProvider } from "../role/participant";
-import { generateDeckValidateButtons } from "../slash/database";
+import { generateDeckValidateButtons } from "../slash/deck";
 import { send } from "../util/discord";
 import { getLogger } from "../util/logger";
 import { Public } from "../util/types";

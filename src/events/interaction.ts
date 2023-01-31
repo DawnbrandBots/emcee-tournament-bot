@@ -4,7 +4,7 @@ import { ContextCommand } from "../ContextCommand";
 import { ChannelCommand } from "../slash/channel";
 import { CreateCommand } from "../slash/create";
 import { CsvCommand } from "../slash/csv";
-import { DeckCommand } from "../slash/deck";
+import { AcceptButtonHandler, AcceptLabelModal, DeckCommand, RejectReasonModal } from "../slash/deck";
 import { DropCommand } from "../slash/drop";
 import { FinishCommand } from "../slash/finish";
 import { ForceDropContextCommand, ForceDropSlashCommand } from "../slash/forcedrop";
@@ -18,13 +18,6 @@ import { UpdateCommand } from "../slash/update";
 import { AutocompletableCommand, ButtonClickHandler, MessageModalSubmitHandler, SlashCommand } from "../SlashCommand";
 import { serialiseInteraction } from "../util";
 import { getLogger } from "../util/logger";
-import {
-	AcceptButtonHandler,
-	AcceptLabelModal,
-	decodeCustomId,
-	RejectButtonHandler,
-	RejectReasonModal
-} from "../slash/database";
 
 const logger = getLogger("interaction");
 
@@ -47,7 +40,7 @@ export function makeHandler({ organiserRole, timeWizard }: CommandSupport) {
 		new StartCommand(),
 		new ListCommand(organiserRole)
 	];
-	const buttonArray = [new RegisterButtonHandler(), new AcceptButtonHandler(), new RejectButtonHandler()];
+	const buttonArray = [new RegisterButtonHandler(), new AcceptButtonHandler(), new RegisterButtonHandler()];
 	const messageModalArray = [new FriendCodeModalHandler(), new AcceptLabelModal(), new RejectReasonModal()];
 	const contextArray = [new ForceDropContextCommand()];
 
@@ -116,4 +109,14 @@ export function makeHandler({ organiserRole, timeWizard }: CommandSupport) {
 			await contexts.get(interaction.commandName)?.run(interaction);
 		}
 	};
+}
+
+export function encodeCustomId(idName: string, ...args: Array<string | number>): string {
+	args.unshift(idName);
+	return args.join("#");
+}
+
+export function decodeCustomId(id: string): [string, string[]] {
+	const [name, ...args] = id.split("#");
+	return [name, args];
 }

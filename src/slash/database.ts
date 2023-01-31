@@ -1,26 +1,17 @@
 import {
-	ActionRowBuilder,
 	AutocompleteInteraction,
-	ButtonBuilder,
-	ButtonInteraction,
-	ButtonStyle,
 	CacheType,
 	ChatInputCommandInteraction,
 	ContextMenuCommandInteraction,
 	GuildMember,
-	ModalBuilder,
-	ModalMessageModalSubmitInteraction,
 	PartialGuildMember,
 	SlashCommandStringOption,
-	TextInputBuilder,
-	TextInputStyle,
 	userMention
 } from "discord.js";
 import { ILike } from "typeorm";
 import { TournamentStatus } from "../database/interface";
-import { ManualDeckSubmission, ManualParticipant, ManualTournament } from "../database/orm";
+import { ManualParticipant, ManualTournament } from "../database/orm";
 import { send } from "../util/discord";
-import { ButtonClickHandler, MessageModalSubmitHandler } from "../SlashCommand";
 
 export const tournamentOption = new SlashCommandStringOption()
 	.setName("tournament")
@@ -84,143 +75,6 @@ export async function authenticatePlayer(
 		return;
 	}
 	return player;
-}
-
-export function encodeCustomId(idName: string, ...args: Array<string | number>): string {
-	args.unshift(idName);
-	return args.join("#");
-}
-
-export function decodeCustomId(id: string): [string, string[]] {
-	const [name, ...args] = id.split("#");
-	return [name, args];
-}
-
-export function generateDeckValidateButtons(tournament: ManualTournament): ActionRowBuilder<ButtonBuilder> {
-	const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-		new ButtonBuilder()
-			.setCustomId(encodeCustomId("accept", tournament.tournamentId))
-			.setLabel("Accept")
-			.setStyle(ButtonStyle.Success),
-		new ButtonBuilder()
-			.setCustomId(encodeCustomId("reject", tournament.tournamentId))
-			.setLabel("Reject")
-			.setStyle(ButtonStyle.Danger)
-	);
-	return row;
-}
-
-export class AcceptButtonHandler implements ButtonClickHandler {
-	readonly buttonIds = ["accept"];
-
-	async click(interaction: ButtonInteraction, ...args: string[]): Promise<void> {
-		const tournamentIdString = args[0];
-		const modal = new ModalBuilder()
-			.setCustomId(encodeCustomId("acceptModal", tournamentIdString))
-			.setTitle("Accept Deck");
-		const deckLabelInput = new TextInputBuilder()
-			.setCustomId("acceptDeckLabel")
-			.setLabel("What is the deck's theme?")
-			.setStyle(TextInputStyle.Short)
-			.setRequired(false);
-		const actionRow = new ActionRowBuilder<TextInputBuilder>().addComponents(deckLabelInput);
-		modal.addComponents(actionRow);
-		await interaction.showModal(modal);
-	}
-}
-
-export class RejectButtonHandler implements ButtonClickHandler {
-	readonly buttonIds = ["reject"];
-
-	async click(interaction: ButtonInteraction, ...args: string[]): Promise<void> {
-		const tournamentIdString = args[0];
-		const modal = new ModalBuilder()
-			.setCustomId(encodeCustomId("rejectModal", tournamentIdString))
-			.setTitle("Reject Deck");
-		const rejectReasonInput = new TextInputBuilder()
-			.setCustomId("rejectReason")
-			.setLabel("Why is the deck illegal?")
-			.setStyle(TextInputStyle.Paragraph)
-			.setRequired(false);
-		const actionRow = new ActionRowBuilder<TextInputBuilder>().addComponents(rejectReasonInput);
-		modal.addComponents(actionRow);
-		await interaction.showModal(modal);
-	}
-}
-
-export class AcceptLabelModal implements MessageModalSubmitHandler {
-	readonly modalIds = ["acceptModal"];
-
-	async submit(interaction: ModalMessageModalSubmitInteraction, ...args: string[]): Promise<void> {
-		const tournamentIdString = args[0];
-		const tournamentId = parseInt(tournamentIdString, 10);
-		const deck = await ManualDeckSubmission.findOneOrFail({
-			where: {
-				discordId: interaction.user.id,
-				tournamentId: tournamentId
-			},
-			relations: ["tournament"]
-		});
-		const tournament = deck.tournament;
-		const player = await interaction.client.users.fetch(deck.discordId);
-
-		let label: string | undefined = interaction.fields.getTextInputValue("acceptDeckLabel");
-		if (label.length === 0) {
-			label = undefined;
-		}
-
-		// set deck as approved and add label
-		// manual query to workaround bug
-		await ManualDeckSubmission.createQueryBuilder()
-			.update()
-			.set({ approved: true, label })
-			.where("tournamentId = :tournamentId AND discordId = :discordId", {
-				tournamentId,
-				discordId: interaction.user.id
-			})
-			.execute();
-		// provide feedback to player
-		await player.send(`Your deck has been accepted by the hosts! You are now registered for ${tournament.name}.`);
-		// TODO: Give player participant role
-		// log success to TO
-		await interaction.reply(
-			`${userMention(player.id)}'s deck for ${tournament.name} has been approved by ${userMention(
-				interaction.user.id
-			)}`
-		);
-	}
-}
-
-export class RejectReasonModal implements MessageModalSubmitHandler {
-	readonly modalIds = ["rejectModal"];
-
-	async submit(interaction: ModalMessageModalSubmitInteraction, ...args: string[]): Promise<void> {
-		const tournamentIdString = args[0];
-		const deck = await ManualDeckSubmission.findOneOrFail({
-			where: {
-				discordId: interaction.user.id,
-				tournamentId: parseInt(tournamentIdString, 10)
-			},
-			relations: ["tournament"]
-		});
-		const tournament = deck.tournament;
-		const player = await interaction.client.users.fetch(deck.discordId);
-		// clear deck submission
-		await deck.remove(); // do we need to update the link on the player's end?
-		// provide feedback to player
-		let message = `Your deck has been rejected by the hosts. Please update your deck and try again.`;
-		const reason = interaction.fields.getTextInputValue("rejectReason");
-		if (reason.length > 0) {
-			message += `\nReason: ${reason}`;
-		}
-		await player.send(message);
-		// log success to TO
-		await interaction.reply(
-			`${userMention(player.id)}'s deck for ${tournament.name} has been rejected by ${userMention(
-				interaction.user.id
-			)}`
-		);
-	}
 }
 
 export function checkParticipantCap(
