@@ -8,6 +8,7 @@ import {
 	AcceptButtonHandler,
 	AcceptLabelModal,
 	DeckCommand,
+	QuickAcceptButtonHandler,
 	RejectButtonHandler,
 	RejectReasonModal
 } from "../slash/deck";
@@ -46,7 +47,12 @@ export function makeHandler({ organiserRole, timeWizard }: CommandSupport) {
 		new StartCommand(),
 		new ListCommand(organiserRole)
 	];
-	const buttonArray = [new RegisterButtonHandler(), new AcceptButtonHandler(), new RejectButtonHandler()];
+	const buttonArray = [
+		new RegisterButtonHandler(),
+		new AcceptButtonHandler(),
+		new QuickAcceptButtonHandler(),
+		new RejectButtonHandler()
+	];
 	const messageModalArray = [new FriendCodeModalHandler(), new AcceptLabelModal(), new RejectReasonModal()];
 	const contextArray = [new ForceDropContextCommand()];
 
