@@ -19,7 +19,13 @@ import { ManualParticipant, ManualTournament } from "../database/orm";
 import { AutocompletableCommand, ButtonClickHandler, MessageModalSubmitHandler } from "../SlashCommand";
 import { send } from "../util/discord";
 import { getLogger, Logger } from "../util/logger";
-import { authenticateHost, autocompleteTournament, checkParticipantCap, tournamentOption } from "./database";
+import {
+	authenticateHost,
+	autocompleteTournament,
+	checkParticipantCap,
+	printPlayerCap,
+	tournamentOption
+} from "./database";
 
 export class OpenCommand extends AutocompletableCommand {
 	#logger = getLogger("command:open");
@@ -80,7 +86,11 @@ export class OpenCommand extends AutocompletableCommand {
 		row.addComponents(button);
 
 		const message = await send(interaction.client, tournament.publicChannel, {
-			content: `__Registration for **${tournament.name}** is now open!__\nClick the button below to register, then follow the prompts.\nA tournament host will then manually verify your deck.`,
+			content: `__Registration for **${tournament.name}** is now open!__\n${
+				tournament.description
+			}\nPlayer Cap: ${printPlayerCap(
+				tournament
+			)}\nClick the button below to register, then follow the prompts.\nA tournament host will then manually verify your deck.`,
 			components: [row]
 		});
 		tournament.registerMessage = message.id;

@@ -3,7 +3,13 @@ import { AutocompleteInteraction, CacheType, ChatInputCommandInteraction, SlashC
 import { ManualTournament } from "../database/orm";
 import { AutocompletableCommand } from "../SlashCommand";
 import { getLogger, Logger } from "../util/logger";
-import { authenticateHost, autocompleteTournament, checkParticipantCap, tournamentOption } from "./database";
+import {
+	authenticateHost,
+	autocompleteTournament,
+	checkParticipantCap,
+	printPlayerCap,
+	tournamentOption
+} from "./database";
 
 export class UpdateCommand extends AutocompletableCommand {
 	#logger = getLogger("command:update");
@@ -113,9 +119,7 @@ export class UpdateCommand extends AutocompletableCommand {
 		await interaction[replyKey](
 			`Tournament updated with the following details:\nName: ${tournament.name}\nDescription: ${
 				tournament.description
-			}\nCapacity: ${
-				tournament.participantLimit === 0 ? "Uncapped" : tournament.participantLimit
-			}\nFriend Code Required: ${tournament.requireFriendCode}`
+			}\nCapacity: ${printPlayerCap(tournament)}\nFriend Code Required: ${tournament.requireFriendCode}`
 		);
 	}
 }
