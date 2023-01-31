@@ -35,7 +35,10 @@ export class DropCommand extends AutocompletableCommand {
 			return;
 		}
 		const tournamentName = interaction.options.getString("tournament", true);
-		const tournament = await ManualTournament.findOneOrFail({ where: { name: tournamentName } });
+		const tournament = await ManualTournament.findOneOrFail({
+			where: { name: tournamentName },
+			relations: ["participants"]
+		});
 
 		const player = await authenticatePlayer(tournament, interaction);
 
