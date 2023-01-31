@@ -7,6 +7,7 @@ import {
 	CacheType,
 	channelMention,
 	ChatInputCommandInteraction,
+	GuildMember,
 	ModalBuilder,
 	ModalMessageModalSubmitInteraction,
 	SlashCommandBuilder,
@@ -93,6 +94,12 @@ export class OpenCommand extends AutocompletableCommand {
 	}
 }
 
+async function setNickname(member: GuildMember, friendCode: number): Promise<void> {
+	const friendString = friendCode.toString(10);
+	const formatCode = `${friendString.slice(0, 3)}-${friendString.slice(3, 6)}-${friendString.slice(6, 9)}`;
+	await member.setNickname(`${member.nickname || member.user.username} ${formatCode}`);
+}
+
 async function registerParticipant(
 	interaction: ButtonInteraction | ModalMessageModalSubmitInteraction,
 	tournament: ManualTournament,
@@ -103,6 +110,10 @@ async function registerParticipant(
 	player.tournament = tournament;
 	player.friendCode = friendCode;
 	await player.save();
+	// first check should always be true i think but it's a typeguard on member
+	if (interaction.inCachedGuild() && friendCode) {
+		await setNickname(interaction.member, friendCode);
+	}
 	await interaction.update({});
 	await interaction.user.send(
 		"Please upload screenshots of your decklist to register.\n**Important**: Please do not delete your message! This can make your decklist invisible to tournament hosts, which they may interpret as cheating."
