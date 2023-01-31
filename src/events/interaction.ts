@@ -4,7 +4,13 @@ import { ContextCommand } from "../ContextCommand";
 import { ChannelCommand } from "../slash/channel";
 import { CreateCommand } from "../slash/create";
 import { CsvCommand } from "../slash/csv";
-import { DeckCommand } from "../slash/deck";
+import {
+	AcceptButtonHandler,
+	AcceptLabelModal,
+	DeckCommand,
+	RejectButtonHandler,
+	RejectReasonModal
+} from "../slash/deck";
 import { DropCommand } from "../slash/drop";
 import { FinishCommand } from "../slash/finish";
 import { ForceDropContextCommand, ForceDropSlashCommand } from "../slash/forcedrop";
@@ -40,8 +46,8 @@ export function makeHandler({ organiserRole, timeWizard }: CommandSupport) {
 		new StartCommand(),
 		new ListCommand(organiserRole)
 	];
-	const buttonArray = [new RegisterButtonHandler()];
-	const messageModalArray = [new FriendCodeModalHandler()];
+	const buttonArray = [new RegisterButtonHandler(), new AcceptButtonHandler(), new RejectButtonHandler()];
+	const messageModalArray = [new FriendCodeModalHandler(), new AcceptLabelModal(), new RejectReasonModal()];
 	const contextArray = [new ForceDropContextCommand()];
 
 	const commands = new Map<string, SlashCommand>();
@@ -89,7 +95,8 @@ export function makeHandler({ organiserRole, timeWizard }: CommandSupport) {
 					buttonId: interaction.customId
 				})
 			);
-			await buttons.get(interaction.customId)?.click(interaction);
+			const [name, args] = decodeCustomId(interaction.customId);
+			await buttons.get(name)?.click(interaction, ...args);
 		} else if (interaction.isModalSubmit() && interaction.isFromMessage()) {
 			logger.verbose(
 				JSON.stringify({
@@ -101,10 +108,21 @@ export function makeHandler({ organiserRole, timeWizard }: CommandSupport) {
 					modalId: interaction.customId
 				})
 			);
-			await messageModals.get(interaction.customId)?.submit(interaction);
+			const [name, args] = decodeCustomId(interaction.customId);
+			await messageModals.get(name)?.submit(interaction, ...args);
 		} else if (interaction.isContextMenuCommand()) {
 			logger.verbose(serialiseInteraction(interaction));
 			await contexts.get(interaction.commandName)?.run(interaction);
 		}
 	};
+}
+
+export function encodeCustomId(idName: string, ...args: Array<string | number>): string {
+	args.unshift(idName);
+	return args.join("#");
+}
+
+export function decodeCustomId(id: string): [string, string[]] {
+	const [name, ...args] = id.split("#");
+	return [name, args];
 }

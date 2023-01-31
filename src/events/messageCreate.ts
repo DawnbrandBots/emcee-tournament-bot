@@ -7,7 +7,7 @@ import { ManualDeckSubmission, ManualParticipant } from "../database/orm";
 import { DatabaseWrapperPostgres } from "../database/postgres";
 import { DeckManager } from "../deck";
 import { ParticipantRoleProvider } from "../role/participant";
-import { generateDeckValidateButtons } from "../slash/database";
+import { generateDeckValidateButtons } from "../slash/deck";
 import { send } from "../util/discord";
 import { getLogger } from "../util/logger";
 import { Public } from "../util/types";
@@ -170,7 +170,7 @@ export async function onDirectMessage(
 		let outMessage = `__**${userMention(msg.author.id)}'s deck**__:`;
 		outMessage += `\n${deck.content}`;
 
-		const row = generateDeckValidateButtons();
+		const row = generateDeckValidateButtons(registering[0].tournament);
 		if (deck.participant.tournament.privateChannel) {
 			await send(msg.client, deck.participant.tournament.privateChannel, {
 				content: outMessage,
@@ -194,6 +194,8 @@ export async function onDirectMessage(
 			await msg.reply("You need to upload screenshots of your deck. Please try again.");
 			return;
 		}
+		// a submitted player should definitely have a deck
+		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 		const d = submitted[0].deck!;
 		d.approved = false;
 		d.content = images.map(i => i.url).join("\n");
@@ -202,7 +204,7 @@ export async function onDirectMessage(
 		let outMessage = `__**${userMention(msg.author.id)}'s deck**__:`;
 		outMessage += `\n${d.content}`;
 
-		const row = generateDeckValidateButtons();
+		const row = generateDeckValidateButtons(submitted[0].tournament);
 		if (submitted[0].tournament.privateChannel) {
 			await send(msg.client, submitted[0].tournament.privateChannel, {
 				content: outMessage,
