@@ -18,6 +18,7 @@ import { UpdateCommand } from "../slash/update";
 import { AutocompletableCommand, ButtonClickHandler, MessageModalSubmitHandler, SlashCommand } from "../SlashCommand";
 import { serialiseInteraction } from "../util";
 import { getLogger } from "../util/logger";
+import { decodeCustomId } from "../slash/database";
 
 const logger = getLogger("interaction");
 
@@ -89,7 +90,8 @@ export function makeHandler({ organiserRole, timeWizard }: CommandSupport) {
 					buttonId: interaction.customId
 				})
 			);
-			await buttons.get(interaction.customId)?.click(interaction);
+			const name = decodeCustomId(interaction.customId)[0];
+			await buttons.get(name)?.click(interaction);
 		} else if (interaction.isModalSubmit() && interaction.isFromMessage()) {
 			logger.verbose(
 				JSON.stringify({
@@ -101,7 +103,8 @@ export function makeHandler({ organiserRole, timeWizard }: CommandSupport) {
 					modalId: interaction.customId
 				})
 			);
-			await messageModals.get(interaction.customId)?.submit(interaction);
+			const name = decodeCustomId(interaction.customId)[0];
+			await messageModals.get(name)?.submit(interaction);
 		} else if (interaction.isContextMenuCommand()) {
 			logger.verbose(serialiseInteraction(interaction));
 			await contexts.get(interaction.commandName)?.run(interaction);

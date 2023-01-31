@@ -90,22 +90,37 @@ export async function authenticatePlayer(
 	return player;
 }
 
-export function generateDeckValidateButtons(): ActionRowBuilder<ButtonBuilder> {
+export function encodeCustomId(idName: string, ...args: Array<string | number>): string {
+	args.unshift(idName);
+	return args.join("#");
+}
+
+export function decodeCustomId(id: string): string[] {
+	return id.split("#");
+}
+
+export function generateDeckValidateButtons(tournament: ManualTournament): ActionRowBuilder<ButtonBuilder> {
 	const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-		new ButtonBuilder().setCustomId("accept").setLabel("Accept").setStyle(ButtonStyle.Success),
-		new ButtonBuilder().setCustomId("reject").setLabel("Reject").setStyle(ButtonStyle.Danger)
+		new ButtonBuilder()
+			.setCustomId(encodeCustomId("accept", tournament.tournamentId))
+			.setLabel("Accept")
+			.setStyle(ButtonStyle.Success),
+		new ButtonBuilder()
+			.setCustomId(encodeCustomId("reject", tournament.tournamentId))
+			.setLabel("Reject")
+			.setStyle(ButtonStyle.Danger)
 	);
 	return row;
 }
 
-async function awaitModalInteraction(
-	modalInteraction: ModalSubmitInteraction<CacheType>,
-	deck: ManualDeckSubmission,
-	tournament: ManualTournament,
-	response: Message
-): Promise<void> {
-	const player = await response.client.users.fetch(deck.discordId);
-	if (modalInteraction.customId === "acceptModal") {
+async function awaitModalInteraction(modalInteraction: ModalSubmitInteraction<CacheType>): Promise<void> {
+	const [name, tournamentIdString] = decodeCustomId(modalInteraction.customId);
+	const deck = await ManualDeckSubmission.findOneOrFail({
+		where: { discordId: modalInteraction.user.id, tournamentId: parseInt(tournamentIdString, 10) }
+	});
+	const tournament = deck.tournament;
+	const player = await modalInteraction.client.users.fetch(deck.discordId);
+	if (name === "acceptModal") {
 		// mark deck as approved
 		deck.approved = true;
 		const label = modalInteraction.fields.getTextInputValue("acceptDeckLabel");
@@ -119,7 +134,7 @@ async function awaitModalInteraction(
 		// log success to TO
 		if (tournament.privateChannel) {
 			await send(
-				response.client,
+				modalInteraction.client,
 				tournament.privateChannel,
 				`${userMention}'s deck for ${tournament.name} has been approved by ${userMention(
 					modalInteraction.user.id
@@ -141,12 +156,46 @@ async function awaitModalInteraction(
 	// log success to TO
 	if (tournament.privateChannel) {
 		await send(
-			response.client,
+			modalInteraction.client,
 			tournament.privateChannel,
 			`${userMention}'s deck for ${tournament.name} has been rejected by ${userMention(modalInteraction.user.id)}`
 		);
 	}
 	return;
+}
+
+async function awaitButtonInteraction(buttonInteraction: ButtonInteraction): Promise<void> {
+	const [name, tournamentIdString] = decodeCustomId(buttonInteraction.customId);
+	if (name) {
+		const modal = new ModalBuilder()
+			.setCustomId(encodeCustomId("acceptModal", tournamentIdString))
+			.setTitle("Accept Deck");
+		const deckLabelInput = new TextInputBuilder()
+			.setCustomId("acceptDeckLabel")
+			.setLabel("What is the deck's theme?")
+			.setStyle(TextInputStyle.Short)
+			.setRequired(false);
+		const actionRow = new ActionRowBuilder<TextInputBuilder>().addComponents(deckLabelInput);
+		modal.addComponents(actionRow);
+		await buttonInteraction.showModal(modal);
+	} else {
+		// if (name === "reject")
+		const modal = new ModalBuilder()
+			.setCustomId(encodeCustomId("rejectModal", tournamentIdString))
+			.setTitle("Reject Deck");
+		const rejectReasonInput = new TextInputBuilder()
+			.setCustomId("rejectReason")
+			.setLabel("Why is the deck illegal?")
+			.setStyle(TextInputStyle.Paragraph)
+			.setRequired(false);
+		const actionRow = new ActionRowBuilder<TextInputBuilder>().addComponents(rejectReasonInput);
+		modal.addComponents(actionRow);
+		await buttonInteraction.showModal(modal);
+	}
+	buttonInteraction
+		.awaitModalSubmit({ componentType: ComponentType.TextInput, time: 15000 })
+		.then(m => awaitModalInteraction(m));
+	//.catch(e => logger.error(e));
 }
 
 export function awaitDeckValidationButtons(
@@ -168,34 +217,7 @@ export function awaitDeckValidationButtons(
 
 	response
 		.awaitMessageComponent({ filter, componentType: ComponentType.Button, time: 60000 })
-		.then(async buttonInteraction => {
-			if (buttonInteraction.customId === "accept") {
-				const modal = new ModalBuilder().setCustomId("acceptModal").setTitle("Accept Deck");
-				const deckLabelInput = new TextInputBuilder()
-					.setCustomId("acceptDeckLabel")
-					.setLabel("What is the deck's theme?")
-					.setStyle(TextInputStyle.Short)
-					.setRequired(false);
-				const actionRow = new ActionRowBuilder<TextInputBuilder>().addComponents(deckLabelInput);
-				modal.addComponents(actionRow);
-				await buttonInteraction.showModal(modal);
-			} else {
-				// if (i.customId === "reject")
-				const modal = new ModalBuilder().setCustomId("rejectModal").setTitle("Reject Deck");
-				const rejectReasonInput = new TextInputBuilder()
-					.setCustomId("rejectReason")
-					.setLabel("Why is the deck illegal?")
-					.setStyle(TextInputStyle.Paragraph)
-					.setRequired(false);
-				const actionRow = new ActionRowBuilder<TextInputBuilder>().addComponents(rejectReasonInput);
-				modal.addComponents(actionRow);
-				await buttonInteraction.showModal(modal);
-			}
-			buttonInteraction
-				.awaitModalSubmit({ componentType: ComponentType.TextInput, time: 15000 })
-				.then(m => awaitModalInteraction(m, deck, tournament, response))
-				.catch(e => logger.error(e));
-		})
+		.then(i => awaitButtonInteraction(i))
 		.catch(async (err: DiscordAPIError) => {
 			// a rejection can just mean the timeout was reached without a response
 			// otherwise, though, we want to treat it as a normal error
