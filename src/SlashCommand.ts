@@ -65,10 +65,10 @@ export abstract class AutocompletableCommand extends SlashCommand {
 
 export interface ButtonClickHandler {
 	readonly buttonIds: string[];
-	click(interaction: ButtonInteraction): Promise<void>;
+	click(interaction: ButtonInteraction, ...args: string[]): Promise<void>;
 }
 
 export interface MessageModalSubmitHandler {
 	readonly modalIds: string[];
-	submit(interaction: ModalMessageModalSubmitInteraction): Promise<void>;
+	submit(interaction: ModalMessageModalSubmitInteraction, ...args: string[]): Promise<void>;
 }

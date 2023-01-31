@@ -6,25 +6,21 @@ import {
 	ButtonStyle,
 	CacheType,
 	ChatInputCommandInteraction,
-	ComponentType,
 	ContextMenuCommandInteraction,
-	DiscordAPIError,
-	DiscordjsErrorCodes,
 	GuildMember,
-	Message,
 	ModalBuilder,
-	ModalSubmitInteraction,
+	ModalMessageModalSubmitInteraction,
 	PartialGuildMember,
 	SlashCommandStringOption,
 	TextInputBuilder,
 	TextInputStyle,
 	userMention
 } from "discord.js";
-import { Logger } from "../util/logger";
 import { ILike } from "typeorm";
 import { TournamentStatus } from "../database/interface";
 import { ManualDeckSubmission, ManualParticipant, ManualTournament } from "../database/orm";
 import { send } from "../util/discord";
+import { ButtonClickHandler, MessageModalSubmitHandler } from "../SlashCommand";
 
 export const tournamentOption = new SlashCommandStringOption()
 	.setName("tournament")
@@ -96,7 +92,11 @@ export function encodeCustomId(idName: string, ...args: Array<string | number>):
 }
 
 export function decodeCustomId(id: string): string[] {
-	return id.split("#");
+	const args = id.split("#");
+	// the result of spllit has at least 1 entry unless the string is empty
+	// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+	const name = args.shift()!;
+	return [name, ...args];
 }
 
 export function generateDeckValidateButtons(tournament: ManualTournament): ActionRowBuilder<ButtonBuilder> {
@@ -113,60 +113,11 @@ export function generateDeckValidateButtons(tournament: ManualTournament): Actio
 	return row;
 }
 
-async function awaitModalInteraction(modalInteraction: ModalSubmitInteraction<CacheType>): Promise<void> {
-	const [name, tournamentIdString] = decodeCustomId(modalInteraction.customId);
-	const deck = await ManualDeckSubmission.findOneOrFail({
-		where: { discordId: modalInteraction.user.id, tournamentId: parseInt(tournamentIdString, 10) }
-	});
-	const tournament = deck.tournament;
-	const player = await modalInteraction.client.users.fetch(deck.discordId);
-	if (name === "acceptModal") {
-		// mark deck as approved
-		deck.approved = true;
-		const label = modalInteraction.fields.getTextInputValue("acceptDeckLabel");
-		if (label.length > 0) {
-			deck.label = label;
-		}
-		await deck.save();
-		// provide feedback to player
-		await player.send(`Your deck has been accepted by the hosts! You are now registered for ${tournament.name}.`);
-		// TODO: Give player participant role
-		// log success to TO
-		if (tournament.privateChannel) {
-			await send(
-				modalInteraction.client,
-				tournament.privateChannel,
-				`${userMention}'s deck for ${tournament.name} has been approved by ${userMention(
-					modalInteraction.user.id
-				)}`
-			);
-		}
-		return;
-	}
-	// if (modalInteraction.customId === "rejectModal")
-	// clear deck submission
-	await deck.remove(); // do we need to update the link on the player's end?
-	// provide feedback to player
-	let message = `Your deck has been rejected by the hosts. Please update your deck and try again.`;
-	const reason = modalInteraction.fields.getTextInputValue("rejectReason");
-	if (reason.length > 0) {
-		message += `\nReason: ${reason}`;
-	}
-	await player.send(message);
-	// log success to TO
-	if (tournament.privateChannel) {
-		await send(
-			modalInteraction.client,
-			tournament.privateChannel,
-			`${userMention}'s deck for ${tournament.name} has been rejected by ${userMention(modalInteraction.user.id)}`
-		);
-	}
-	return;
-}
+export class AcceptButtonHandler implements ButtonClickHandler {
+	readonly buttonIds = ["accept"];
 
-async function awaitButtonInteraction(buttonInteraction: ButtonInteraction): Promise<void> {
-	const [name, tournamentIdString] = decodeCustomId(buttonInteraction.customId);
-	if (name) {
+	async click(interaction: ButtonInteraction, ...args: string[]): Promise<void> {
+		const tournamentIdString = args[0];
 		const modal = new ModalBuilder()
 			.setCustomId(encodeCustomId("acceptModal", tournamentIdString))
 			.setTitle("Accept Deck");
@@ -177,9 +128,15 @@ async function awaitButtonInteraction(buttonInteraction: ButtonInteraction): Pro
 			.setRequired(false);
 		const actionRow = new ActionRowBuilder<TextInputBuilder>().addComponents(deckLabelInput);
 		modal.addComponents(actionRow);
-		await buttonInteraction.showModal(modal);
-	} else {
-		// if (name === "reject")
+		await interaction.showModal(modal);
+	}
+}
+
+export class RejectButtonHandler implements ButtonClickHandler {
+	readonly buttonIds = ["reject"];
+
+	async click(interaction: ButtonInteraction, ...args: string[]): Promise<void> {
+		const tournamentIdString = args[0];
 		const modal = new ModalBuilder()
 			.setCustomId(encodeCustomId("rejectModal", tournamentIdString))
 			.setTitle("Reject Deck");
@@ -190,48 +147,69 @@ async function awaitButtonInteraction(buttonInteraction: ButtonInteraction): Pro
 			.setRequired(false);
 		const actionRow = new ActionRowBuilder<TextInputBuilder>().addComponents(rejectReasonInput);
 		modal.addComponents(actionRow);
-		await buttonInteraction.showModal(modal);
+		await interaction.showModal(modal);
 	}
-	buttonInteraction
-		.awaitModalSubmit({ componentType: ComponentType.TextInput, time: 15000 })
-		.then(m => awaitModalInteraction(m));
-	//.catch(e => logger.error(e));
 }
 
-export function awaitDeckValidationButtons(
-	commandInteraction: ChatInputCommandInteraction,
-	response: Message,
-	tournament: ManualTournament,
-	logger: Logger,
-	deck: ManualDeckSubmission
-): void {
-	const filter = (i: ButtonInteraction): boolean => {
-		if (tournament.hosts.includes(i.user.id)) {
-			return true;
-		}
-		i.reply({ content: `Decks can only be validated by a tournament host.`, ephemeral: true }).catch(e =>
-			logger.error(e)
-		);
-		return false;
-	};
+export class AcceptLabelModal implements MessageModalSubmitHandler {
+	readonly modalIds = ["acceptModal"];
 
-	response
-		.awaitMessageComponent({ filter, componentType: ComponentType.Button, time: 60000 })
-		.then(i => awaitButtonInteraction(i))
-		.catch(async (err: DiscordAPIError) => {
-			// a rejection can just mean the timeout was reached without a response
-			// otherwise, though, we want to treat it as a normal error
-			if (err.code !== DiscordjsErrorCodes.InteractionCollectorError) {
-				logger.error(err);
-			}
-			// remove original button, regardless of error source
-			let outMessage = `__**${userMention(deck.discordId)}'s deck**__:`;
-			if (deck.label) {
-				outMessage += `\n**Theme**: ${deck.label}`;
-			}
-			outMessage += `\n${deck.content}`;
-			commandInteraction.editReply({ content: outMessage, components: [] }).catch(e => logger.error(e));
+	async submit(interaction: ModalMessageModalSubmitInteraction, ...args: string[]): Promise<void> {
+		const tournamentIdString = args[0];
+		const deck = await ManualDeckSubmission.findOneOrFail({
+			where: { discordId: interaction.user.id, tournamentId: parseInt(tournamentIdString, 10) }
 		});
+		const tournament = deck.tournament;
+		const player = await interaction.client.users.fetch(deck.discordId);
+		// mark deck as approved
+		deck.approved = true;
+		const label = interaction.fields.getTextInputValue("acceptDeckLabel");
+		if (label.length > 0) {
+			deck.label = label;
+		}
+		await deck.save();
+		// provide feedback to player
+		await player.send(`Your deck has been accepted by the hosts! You are now registered for ${tournament.name}.`);
+		// TODO: Give player participant role
+		// log success to TO
+		if (tournament.privateChannel) {
+			await send(
+				interaction.client,
+				tournament.privateChannel,
+				`${userMention}'s deck for ${tournament.name} has been approved by ${userMention(interaction.user.id)}`
+			);
+		}
+	}
+}
+
+export class RejectReasonModal implements MessageModalSubmitHandler {
+	readonly modalIds = ["rejectModal"];
+
+	async submit(interaction: ModalMessageModalSubmitInteraction, ...args: string[]): Promise<void> {
+		const tournamentIdString = args[0];
+		const deck = await ManualDeckSubmission.findOneOrFail({
+			where: { discordId: interaction.user.id, tournamentId: parseInt(tournamentIdString, 10) }
+		});
+		const tournament = deck.tournament;
+		const player = await interaction.client.users.fetch(deck.discordId);
+		// clear deck submission
+		await deck.remove(); // do we need to update the link on the player's end?
+		// provide feedback to player
+		let message = `Your deck has been rejected by the hosts. Please update your deck and try again.`;
+		const reason = interaction.fields.getTextInputValue("rejectReason");
+		if (reason.length > 0) {
+			message += `\nReason: ${reason}`;
+		}
+		await player.send(message);
+		// log success to TO
+		if (tournament.privateChannel) {
+			await send(
+				interaction.client,
+				tournament.privateChannel,
+				`${userMention}'s deck for ${tournament.name} has been rejected by ${userMention(interaction.user.id)}`
+			);
+		}
+	}
 }
 
 export function checkParticipantCap(
