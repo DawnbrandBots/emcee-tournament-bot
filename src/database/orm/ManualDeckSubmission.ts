@@ -23,6 +23,10 @@ export class ManualDeckSubmission extends BaseEntity {
 	@Column({ default: false })
 	approved!: boolean;
 
+	/// The ID for the message containing the deck contents, so it can be monitored for deletion.
+	@Column({ length: 20 })
+	message!: string;
+
 	/// An optional custom label for the deck by hosts. Could be used for themes.
 	@Column({ type: "text", nullable: true })
 	label?: string;
