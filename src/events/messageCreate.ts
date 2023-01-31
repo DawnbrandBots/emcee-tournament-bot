@@ -170,7 +170,7 @@ export async function onDirectMessage(
 		let outMessage = `__**${userMention(msg.author.id)}'s deck**__:`;
 		outMessage += `\n${deck.content}`;
 
-		const row = generateDeckValidateButtons(deck.tournament);
+		const row = generateDeckValidateButtons(registering[0].tournament);
 		if (deck.participant.tournament.privateChannel) {
 			await send(msg.client, deck.participant.tournament.privateChannel, {
 				content: outMessage,
