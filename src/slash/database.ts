@@ -91,12 +91,9 @@ export function encodeCustomId(idName: string, ...args: Array<string | number>):
 	return args.join("#");
 }
 
-export function decodeCustomId(id: string): string[] {
-	const args = id.split("#");
-	// the result of spllit has at least 1 entry unless the string is empty
-	// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-	const name = args.shift()!;
-	return [name, ...args];
+export function decodeCustomId(id: string): [string, string[]] {
+	const [name, ...args] = id.split("#");
+	return [name, args];
 }
 
 export function generateDeckValidateButtons(tournament: ManualTournament): ActionRowBuilder<ButtonBuilder> {
