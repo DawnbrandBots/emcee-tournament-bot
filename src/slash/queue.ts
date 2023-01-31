@@ -63,6 +63,8 @@ export class QueueCommand extends AutocompletableCommand {
 		}
 		const players = decks.map(d => userMention(d.discordId));
 
-		await interaction.reply(`${players.length} players are waiting for deck approval. List\n${players.join(", ")}`);
+		await interaction.reply(
+			`${players.length} player(s) are waiting for deck approval. List:\n${players.join(", ")}`
+		);
 	}
 }
