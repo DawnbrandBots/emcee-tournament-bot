@@ -4,7 +4,13 @@ import { ContextCommand } from "../ContextCommand";
 import { ChannelCommand } from "../slash/channel";
 import { CreateCommand } from "../slash/create";
 import { CsvCommand } from "../slash/csv";
-import { AcceptButtonHandler, AcceptLabelModal, DeckCommand, RejectReasonModal } from "../slash/deck";
+import {
+	AcceptButtonHandler,
+	AcceptLabelModal,
+	DeckCommand,
+	RejectButtonHandler,
+	RejectReasonModal
+} from "../slash/deck";
 import { DropCommand } from "../slash/drop";
 import { FinishCommand } from "../slash/finish";
 import { ForceDropContextCommand, ForceDropSlashCommand } from "../slash/forcedrop";
@@ -40,7 +46,7 @@ export function makeHandler({ organiserRole, timeWizard }: CommandSupport) {
 		new StartCommand(),
 		new ListCommand(organiserRole)
 	];
-	const buttonArray = [new RegisterButtonHandler(), new AcceptButtonHandler(), new RegisterButtonHandler()];
+	const buttonArray = [new RegisterButtonHandler(), new AcceptButtonHandler(), new RejectButtonHandler()];
 	const messageModalArray = [new FriendCodeModalHandler(), new AcceptLabelModal(), new RejectReasonModal()];
 	const contextArray = [new ForceDropContextCommand()];
 
