@@ -18,7 +18,13 @@ import { UpdateCommand } from "../slash/update";
 import { AutocompletableCommand, ButtonClickHandler, MessageModalSubmitHandler, SlashCommand } from "../SlashCommand";
 import { serialiseInteraction } from "../util";
 import { getLogger } from "../util/logger";
-import { decodeCustomId } from "../slash/database";
+import {
+	AcceptButtonHandler,
+	AcceptLabelModal,
+	decodeCustomId,
+	RejectButtonHandler,
+	RejectReasonModal
+} from "../slash/database";
 
 const logger = getLogger("interaction");
 
@@ -41,8 +47,8 @@ export function makeHandler({ organiserRole, timeWizard }: CommandSupport) {
 		new StartCommand(),
 		new ListCommand(organiserRole)
 	];
-	const buttonArray = [new RegisterButtonHandler()];
-	const messageModalArray = [new FriendCodeModalHandler()];
+	const buttonArray = [new RegisterButtonHandler(), new AcceptButtonHandler(), new RejectButtonHandler()];
+	const messageModalArray = [new FriendCodeModalHandler(), new AcceptLabelModal(), new RejectReasonModal()];
 	const contextArray = [new ForceDropContextCommand()];
 
 	const commands = new Map<string, SlashCommand>();
