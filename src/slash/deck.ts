@@ -93,6 +93,10 @@ export function generateDeckValidateButtons(tournament: ManualTournament): Actio
 			.setLabel("Accept")
 			.setStyle(ButtonStyle.Success),
 		new ButtonBuilder()
+			.setCustomId(encodeCustomId("quickaccept", tournament.tournamentId))
+			.setLabel("Accept (No Theme)")
+			.setStyle(ButtonStyle.Success),
+		new ButtonBuilder()
 			.setCustomId(encodeCustomId("reject", tournament.tournamentId))
 			.setLabel("Reject")
 			.setStyle(ButtonStyle.Danger)
@@ -116,6 +120,36 @@ export class AcceptButtonHandler implements ButtonClickHandler {
 		const actionRow = new ActionRowBuilder<TextInputBuilder>().addComponents(deckLabelInput);
 		modal.addComponents(actionRow);
 		await interaction.showModal(modal);
+	}
+}
+
+export class QuickAcceptButtonHandler implements ButtonClickHandler {
+	readonly buttonIds = ["quickaccept"];
+
+	async click(interaction: ButtonInteraction, ...args: string[]): Promise<void> {
+		// c/p from AcceptLabelModalHandler
+		const tournamentIdString = args[0];
+		const tournamentId = parseInt(tournamentIdString, 10);
+		const deck = await ManualDeckSubmission.findOneOrFail({
+			where: {
+				discordId: interaction.user.id,
+				tournamentId
+			}
+		});
+		const player = await interaction.client.users.fetch(deck.discordId);
+		deck.approved = true;
+		await deck.save();
+
+		const tournament = await ManualTournament.findOneOrFail({ where: { tournamentId } });
+		// provide feedback to player
+		await player.send(`Your deck has been accepted by the hosts! You are now registered for ${tournament.name}.`);
+		// TODO: Give player participant role
+		// log success to TO
+		await interaction.reply(
+			`${userMention(player.id)}'s deck for ${tournament.name} has been approved by ${userMention(
+				interaction.user.id
+			)}`
+		);
 	}
 }
 
