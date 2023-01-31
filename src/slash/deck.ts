@@ -147,28 +147,18 @@ export class AcceptLabelModal implements MessageModalSubmitHandler {
 		const deck = await ManualDeckSubmission.findOneOrFail({
 			where: {
 				discordId: interaction.user.id,
-				tournamentId: tournamentId
-			},
-			relations: ["tournament"]
+				tournamentId
+			}
 		});
-		const tournament = deck.tournament;
 		const player = await interaction.client.users.fetch(deck.discordId);
-
-		let label: string | undefined = interaction.fields.getTextInputValue("acceptDeckLabel");
-		if (label.length === 0) {
-			label = undefined;
+		deck.approved = true;
+		const label = interaction.fields.getTextInputValue("acceptDeckLabel");
+		if (label.length > 0) {
+			deck.label = label;
 		}
+		await deck.save();
 
-		// set deck as approved and add label
-		// manual query to workaround bug
-		await ManualDeckSubmission.createQueryBuilder()
-			.update()
-			.set({ approved: true, label })
-			.where("tournamentId = :tournamentId AND discordId = :discordId", {
-				tournamentId,
-				discordId: interaction.user.id
-			})
-			.execute();
+		const tournament = await ManualTournament.findOneOrFail({ where: { tournamentId } });
 		// provide feedback to player
 		await player.send(`Your deck has been accepted by the hosts! You are now registered for ${tournament.name}.`);
 		// TODO: Give player participant role
