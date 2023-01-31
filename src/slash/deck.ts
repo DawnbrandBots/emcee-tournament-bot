@@ -6,6 +6,7 @@ import {
 	ButtonInteraction,
 	CacheType,
 	ChatInputCommandInteraction,
+	Emoji,
 	ModalBuilder,
 	ModalMessageModalSubmitInteraction,
 	SlashCommandBuilder,
@@ -91,15 +92,18 @@ export function generateDeckValidateButtons(tournament: ManualTournament): Actio
 		new ButtonBuilder()
 			.setCustomId(encodeCustomId("accept", tournament.tournamentId))
 			.setLabel("Accept")
-			.setStyle(ButtonStyle.Success),
+			.setStyle(ButtonStyle.Success)
+			.setEmoji("✅"),
 		new ButtonBuilder()
 			.setCustomId(encodeCustomId("quickaccept", tournament.tournamentId))
 			.setLabel("Accept (No Theme)")
-			.setStyle(ButtonStyle.Success),
+			.setStyle(ButtonStyle.Success)
+			.setEmoji("⏩"),
 		new ButtonBuilder()
 			.setCustomId(encodeCustomId("reject", tournament.tournamentId))
 			.setLabel("Reject")
 			.setStyle(ButtonStyle.Danger)
+			.setEmoji("❌")
 	);
 	return row;
 }
