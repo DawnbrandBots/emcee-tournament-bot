@@ -157,7 +157,11 @@ export class AcceptLabelModal implements MessageModalSubmitHandler {
 	async submit(interaction: ModalMessageModalSubmitInteraction, ...args: string[]): Promise<void> {
 		const tournamentIdString = args[0];
 		const deck = await ManualDeckSubmission.findOneOrFail({
-			where: { discordId: interaction.user.id, tournamentId: parseInt(tournamentIdString, 10) }
+			where: {
+				discordId: interaction.user.id,
+				tournamentId: parseInt(tournamentIdString, 10)
+			},
+			relations: ["tournament"]
 		});
 		const tournament = deck.tournament;
 		const player = await interaction.client.users.fetch(deck.discordId);
@@ -188,7 +192,11 @@ export class RejectReasonModal implements MessageModalSubmitHandler {
 	async submit(interaction: ModalMessageModalSubmitInteraction, ...args: string[]): Promise<void> {
 		const tournamentIdString = args[0];
 		const deck = await ManualDeckSubmission.findOneOrFail({
-			where: { discordId: interaction.user.id, tournamentId: parseInt(tournamentIdString, 10) }
+			where: {
+				discordId: interaction.user.id,
+				tournamentId: parseInt(tournamentIdString, 10)
+			},
+			relations: ["tournament"]
 		});
 		const tournament = deck.tournament;
 		const player = await interaction.client.users.fetch(deck.discordId);
