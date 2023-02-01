@@ -112,20 +112,24 @@ export function formatFriendCode(friendCode: number): string {
 
 async function setNickname(member: GuildMember, friendCode: number): Promise<void> {
 	// check for redundancy
-	const fcRegex = /\d{3}-\d{3}-\d{3}/;
+	const formatCode = formatFriendCode(friendCode);
 	const baseName = member.nickname || member.user.username;
-	if (fcRegex.test(baseName)) {
+	if (baseName.includes(formatCode)) {
 		return;
 	}
-	const formatCode = formatFriendCode(friendCode);
+
+	const fcRegex = /\d{3}-\d{3}-\d{3}/;
+	let newName = baseName.replace(fcRegex, formatCode);
+	if (newName === baseName) {
+		newName = `${baseName} ${formatCode}`;
+	}
+
 	const NAME_LENGTH_CAP = 32;
-	// add 1 for space
-	const totalLength = baseName.length + formatCode.length + 1;
-	if (totalLength > NAME_LENGTH_CAP) {
+	if (newName.length > NAME_LENGTH_CAP) {
 		// can we notify the user expecting otherwise any way?
 		return;
 	}
-	await member.setNickname(`${baseName} ${formatCode}`);
+	await member.setNickname(newName, `Friend code added by Emcee`);
 }
 
 async function registerParticipant(
