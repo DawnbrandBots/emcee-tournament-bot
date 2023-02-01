@@ -144,9 +144,12 @@ export class QuickAcceptButtonHandler implements ButtonClickHandler {
 		await deck.save();
 
 		const tournament = await ManualTournament.findOneOrFail({ where: { tournamentId } });
-		// provide feedback to player
+		await interaction.guild!.members.addRole({
+			user: interaction.user.id,
+			role: tournament.participantRole,
+			reason: `Deck approved by ${interaction.user.tag}`
+		});
 		await player.send(`Your deck has been accepted by the hosts! You are now registered for ${tournament.name}.`);
-		// TODO: Give player participant role
 		// log success to TO
 		await interaction.reply(
 			`${userMention(player.id)}'s deck for ${tournament.name} has been approved by ${userMention(
@@ -196,9 +199,12 @@ export class AcceptLabelModal implements MessageModalSubmitHandler {
 		await deck.save();
 
 		const tournament = await ManualTournament.findOneOrFail({ where: { tournamentId } });
-		// provide feedback to player
+		await interaction.guild!.members.addRole({
+			user: interaction.user.id,
+			role: tournament.participantRole,
+			reason: `Deck approved by ${interaction.user.tag}`
+		});
 		await player.send(`Your deck has been accepted by the hosts! You are now registered for ${tournament.name}.`);
-		// TODO: Give player participant role
 		// log success to TO
 		await interaction.reply(
 			`${userMention(player.id)}'s deck for ${tournament.name} has been approved by ${userMention(

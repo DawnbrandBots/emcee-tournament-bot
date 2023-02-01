@@ -201,6 +201,14 @@ export async function onDirectMessage(
 		d.content = images.map(i => i.url).join("\n");
 		await d.save();
 
+		await msg.client.guilds.cache
+			.get(submitted[0].tournament.owningDiscordServer)
+			?.members.removeRole({
+				user: msg.author.id,
+				role: submitted[0].tournament.participantRole,
+				reason: "Deck resubmitted."
+			});
+
 		let outMessage = `__**${userMention(msg.author.id)}'s deck**__:`;
 		outMessage += `\n${d.content}`;
 
