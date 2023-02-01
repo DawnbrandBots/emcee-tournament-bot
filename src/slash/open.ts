@@ -135,7 +135,7 @@ async function registerParticipant(
 
 	await interaction.update({});
 	await interaction.user.send(
-		`Please upload screenshots of your decklist to ${userAction}.\n**Important**: Please do not delete your message! This can make your decklist invisible to tournament hosts, which they may interpret as cheating.`
+		`Please upload screenshots of your decklist to ${userAction}.\n**Important**: Please do not delete your message! You will be dropped for cheating, as this can make your decklist invisible to hosts.`
 	);
 }
 
