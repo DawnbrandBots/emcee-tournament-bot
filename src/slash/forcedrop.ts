@@ -66,6 +66,7 @@ export class ForceDropSlashCommand extends AutocompletableCommand {
 			return;
 		}
 
+		// we use the cache instead of fetching from rest because the fetch will throw if the user is not in the server
 		const member = interaction.guild.members.cache.get(user.id);
 		await dropPlayer(tournament, player, member || user, interaction);
 	}
