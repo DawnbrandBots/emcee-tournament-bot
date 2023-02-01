@@ -56,7 +56,11 @@ export class CreateCommand extends SlashCommand {
 		tournament.hosts = [interaction.user.id];
 		tournament.requireFriendCode = requireCode;
 
-		const playerRole = await interaction.guild.roles.create({ name: `${tournament.name} Participant` });
+		const playerRole = await interaction.guild.roles.create({
+			name: `${tournament.name} Participant`,
+			color: 0xe67e22,
+			reason: `Automatically created by Emcee for ${tournament.name}`
+		});
 
 		tournament.participantRole = playerRole.id;
 
