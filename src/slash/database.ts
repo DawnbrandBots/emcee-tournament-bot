@@ -60,7 +60,7 @@ export async function authenticatePlayer(
 		await interaction.reply({ content: `That tournament isn't in this server.`, ephemeral: true });
 		return;
 	}
-	const player = tournament.participants.find(p => (p.discordId = interaction.id));
+	const player = tournament.participants.find(p => p.discordId === interaction.user.id);
 	if (!player) {
 		await interaction.reply({ content: `You are not in that tournament.`, ephemeral: true });
 		return;
