@@ -35,13 +35,10 @@ export async function autocompleteTournament(interaction: AutocompleteInteractio
 
 export async function authenticateHost(
 	tournament: ManualTournament,
-	interaction: ChatInputCommandInteraction | ContextMenuCommandInteraction,
+	interaction: ChatInputCommandInteraction<"cached"> | ContextMenuCommandInteraction<"cached">,
 	isDeferred = false
 ): Promise<boolean> {
 	const func = isDeferred ? "editReply" : "reply";
-	if (!interaction.inCachedGuild()) {
-		return false;
-	}
 	if (tournament.owningDiscordServer !== interaction.guildId) {
 		// ephemeral response preferred but deferred commands have to stay consistent and should be public in success
 		await interaction[func]({ content: `That tournament isn't in this server.`, ephemeral: !isDeferred });
@@ -56,11 +53,8 @@ export async function authenticateHost(
 
 export async function authenticatePlayer(
 	tournament: ManualTournament,
-	interaction: ChatInputCommandInteraction
+	interaction: ChatInputCommandInteraction<"cached">
 ): Promise<ManualParticipant | undefined> {
-	if (!interaction.inCachedGuild()) {
-		return;
-	}
 	if (tournament.owningDiscordServer !== interaction.guildId) {
 		await interaction.reply({ content: `That tournament isn't in this server.`, ephemeral: true });
 		return;

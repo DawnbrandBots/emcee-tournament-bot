@@ -48,7 +48,7 @@ export class UpdateCommand extends AutocompletableCommand {
 		autocompleteTournament(interaction);
 	}
 
-	protected override async execute(interaction: ChatInputCommandInteraction): Promise<void> {
+	protected override async execute(interaction: ChatInputCommandInteraction<"cached">): Promise<void> {
 		const tournamentName = interaction.options.getString("tournament", true);
 		const tournament = await ManualTournament.findOneOrFail({
 			where: { name: tournamentName },
