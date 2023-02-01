@@ -105,6 +105,11 @@ export class OpenCommand extends AutocompletableCommand {
 	}
 }
 
+export function formatFriendCode(friendCode: number): string {
+	const friendString = friendCode.toString(10);
+	return `${friendString.slice(0, 3)}-${friendString.slice(3, 6)}-${friendString.slice(6, 9)}`;
+}
+
 async function setNickname(member: GuildMember, friendCode: number): Promise<void> {
 	// check for redundancy
 	const fcRegex = /\d{3}-\d{3}-\d{3}/;
@@ -112,8 +117,7 @@ async function setNickname(member: GuildMember, friendCode: number): Promise<voi
 	if (fcRegex.test(baseName)) {
 		return;
 	}
-	const friendString = friendCode.toString(10);
-	const formatCode = `${friendString.slice(0, 3)}-${friendString.slice(3, 6)}-${friendString.slice(6, 9)}`;
+	const formatCode = formatFriendCode(friendCode);
 	await member.setNickname(`${baseName} ${formatCode}`);
 }
 
