@@ -77,25 +77,25 @@ export class DeckCommand extends AutocompletableCommand {
 			return;
 		}
 
-		const row = generateDeckValidateButtons(playerDeck);
+		const row = generateDeckValidateButtons(tournament.tournamentId, playerDeck.message);
 		await interaction.reply({ content: outMessage, components: [row] });
 	}
 }
 
-export function generateDeckValidateButtons(deck: ManualDeckSubmission): ActionRowBuilder<ButtonBuilder> {
+export function generateDeckValidateButtons(tournamentId: number, messageId: string): ActionRowBuilder<ButtonBuilder> {
 	const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
 		new ButtonBuilder()
-			.setCustomId(encodeCustomId("accept", deck.tournamentId, deck.message))
+			.setCustomId(encodeCustomId("accept", tournamentId, messageId))
 			.setLabel("Accept")
 			.setStyle(ButtonStyle.Success)
 			.setEmoji("✅"),
 		new ButtonBuilder()
-			.setCustomId(encodeCustomId("quickaccept", deck.tournamentId, deck.message))
+			.setCustomId(encodeCustomId("quickaccept", tournamentId, messageId))
 			.setLabel("Accept (No Theme)")
 			.setStyle(ButtonStyle.Success)
 			.setEmoji("⏩"),
 		new ButtonBuilder()
-			.setCustomId(encodeCustomId("reject", deck.tournamentId, deck.message))
+			.setCustomId(encodeCustomId("reject", tournamentId, messageId))
 			.setLabel("Reject")
 			.setStyle(ButtonStyle.Danger)
 			.setEmoji("❌")
