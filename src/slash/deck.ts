@@ -125,7 +125,7 @@ export class AcceptButtonHandler implements ButtonClickHandler {
 export class QuickAcceptButtonHandler implements ButtonClickHandler {
 	readonly buttonIds = ["quickaccept"];
 
-	async click(interaction: ButtonInteraction, ...args: string[]): Promise<void> {
+	async click(interaction: ButtonInteraction<"cached">, ...args: string[]): Promise<void> {
 		// c/p from AcceptLabelModalHandler
 		const tournamentIdString = args[0];
 		const tournamentId = parseInt(tournamentIdString, 10);
@@ -140,7 +140,7 @@ export class QuickAcceptButtonHandler implements ButtonClickHandler {
 		await deck.save();
 
 		const tournament = await ManualTournament.findOneOrFail({ where: { tournamentId } });
-		await interaction.guild!.members.addRole({
+		await interaction.guild.members.addRole({
 			user: interaction.user.id,
 			role: tournament.participantRole,
 			reason: `Deck approved by ${interaction.user.tag}`
@@ -177,7 +177,7 @@ export class RejectButtonHandler implements ButtonClickHandler {
 export class AcceptLabelModal implements MessageModalSubmitHandler {
 	readonly modalIds = ["acceptModal"];
 
-	async submit(interaction: ModalMessageModalSubmitInteraction, ...args: string[]): Promise<void> {
+	async submit(interaction: ModalMessageModalSubmitInteraction<"cached">, ...args: string[]): Promise<void> {
 		const tournamentIdString = args[0];
 		const tournamentId = parseInt(tournamentIdString, 10);
 		const deck = await ManualDeckSubmission.findOneOrFail({
@@ -195,7 +195,7 @@ export class AcceptLabelModal implements MessageModalSubmitHandler {
 		await deck.save();
 
 		const tournament = await ManualTournament.findOneOrFail({ where: { tournamentId } });
-		await interaction.guild!.members.addRole({
+		await interaction.guild.members.addRole({
 			user: interaction.user.id,
 			role: tournament.participantRole,
 			reason: `Deck approved by ${interaction.user.tag}`
