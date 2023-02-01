@@ -35,7 +35,7 @@ export class StartCommand extends AutocompletableCommand {
 		const tournamentName = interaction.options.getString("tournament", true);
 		const tournament = await ManualTournament.findOneOrFail({
 			where: { name: tournamentName },
-			relations: ["participant"]
+			relations: ["participants"]
 		});
 
 		if (!(await authenticateHost(tournament, interaction))) {
