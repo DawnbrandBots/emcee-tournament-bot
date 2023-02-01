@@ -6,9 +6,11 @@ import {
 	ButtonInteraction,
 	channelMention,
 	ChatInputCommandInteraction,
+	DiscordAPIError,
 	GuildMember,
 	ModalBuilder,
 	ModalMessageModalSubmitInteraction,
+	RESTJSONErrorCodes,
 	SlashCommandBuilder,
 	TextInputBuilder
 } from "discord.js";
@@ -124,14 +126,31 @@ async function registerParticipant(
 	player.discordId = interaction.user.id;
 	player.tournament = tournament;
 	player.friendCode = friendCode;
-	if (friendCode) {
-		await setNickname(interaction.member, friendCode);
-	}
 	await player.save();
 	await interaction.update({});
-	await interaction.user.send(
-		`Please upload screenshots of your decklist to register.\n**Important**: Please do not delete your message! You will be dropped for cheating, as this can make your decklist invisible to hosts.`
-	);
+	try {
+		await interaction.user.send(
+			`Please upload screenshots of your decklist to register.\n**Important**: Please do not delete your message! You will be dropped for cheating, as this can make your decklist invisible to hosts.`
+		);
+		if (friendCode) {
+			await setNickname(interaction.member, friendCode);
+		}
+	} catch (e) {
+		if (
+			tournament.privateChannel &&
+			e instanceof DiscordAPIError &&
+			e.code === RESTJSONErrorCodes.CannotSendMessagesToThisUser
+		) {
+			await send(
+				interaction.client,
+				tournament.privateChannel,
+				`${interaction.user} (${interaction.user.tag}) is trying to sign up for **${tournament.name}**, but I cannot send them DMs. Please ask them to allow DMs from this server.`
+			);
+			await player.remove();
+		} else {
+			throw e;
+		}
+	}
 }
 
 export class RegisterButtonHandler implements ButtonClickHandler {
