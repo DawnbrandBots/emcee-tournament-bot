@@ -82,6 +82,14 @@ export class DeckCommand extends AutocompletableCommand {
 	}
 }
 
+function rejectButton(tournamentId: number, messageId: string): ButtonBuilder {
+	return new ButtonBuilder()
+		.setCustomId(encodeCustomId("reject", tournamentId, messageId))
+		.setLabel("Reject")
+		.setStyle(ButtonStyle.Danger)
+		.setEmoji("❎");
+}
+
 export function generateDeckValidateButtons(tournamentId: number, messageId: string): ActionRowBuilder<ButtonBuilder> {
 	const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
 		new ButtonBuilder()
@@ -94,11 +102,7 @@ export function generateDeckValidateButtons(tournamentId: number, messageId: str
 			.setLabel("Accept (No Theme)")
 			.setStyle(ButtonStyle.Success)
 			.setEmoji("⏩"),
-		new ButtonBuilder()
-			.setCustomId(encodeCustomId("reject", tournamentId, messageId))
-			.setLabel("Reject")
-			.setStyle(ButtonStyle.Danger)
-			.setEmoji("❌")
+		rejectButton(tournamentId, messageId)
 	);
 	return row;
 }
@@ -120,7 +124,8 @@ export class AcceptButtonHandler implements ButtonClickHandler {
 			return;
 		}
 		const modal = new ModalBuilder()
-			.setCustomId(encodeCustomId("acceptModal", tournamentIdString))
+			// acceptModal needs the sourceMessageId to pass onto the rejection button
+			.setCustomId(encodeCustomId("acceptModal", tournamentIdString, sourceMessageId))
 			.setTitle("Accept Deck");
 		const deckLabelInput = new TextInputBuilder()
 			.setCustomId("acceptDeckLabel")
@@ -133,40 +138,57 @@ export class AcceptButtonHandler implements ButtonClickHandler {
 	}
 }
 
+const APPROVED_LABEL = "✅ APPROVED\n";
+async function approveDeck(
+	interaction: ButtonInteraction<"cached"> | ModalMessageModalSubmitInteraction<"cached">,
+	tournamentIdString: string,
+	sourceMessageId: string,
+	label?: string
+): Promise<void> {
+	const tournamentId = parseInt(tournamentIdString, 10);
+	const deck = await ManualDeckSubmission.findOneOrFail({
+		where: {
+			discordId: interaction.user.id,
+			tournamentId
+		}
+	});
+	if (deck.message !== sourceMessageId) {
+		await interaction.reply(`This deck is outdated, the player has submitted a newer one!`);
+		return;
+	}
+	const player = await interaction.client.users.fetch(deck.discordId);
+	deck.approved = true;
+	if (label?.length) {
+		deck.label = label;
+	}
+	await deck.save();
+
+	const tournament = await ManualTournament.findOneOrFail({ where: { tournamentId } });
+	await interaction.guild.members.addRole({
+		user: interaction.user.id,
+		role: tournament.participantRole,
+		reason: `Deck approved by ${interaction.user.tag}`
+	});
+	await player.send(`Your deck has been accepted by the hosts! You are now registered for ${tournament.name}.`);
+	await interaction.update({
+		content: `${APPROVED_LABEL}${interaction.message.content}`,
+		components: [
+			new ActionRowBuilder<ButtonBuilder>().addComponents(rejectButton(tournament.tournamentId, sourceMessageId))
+		]
+	});
+	// log success to TO
+	await interaction.followUp(
+		`${userMention(player.id)}'s deck for ${tournament.name} has been approved by ${userMention(
+			interaction.user.id
+		)}`
+	);
+}
+
 export class QuickAcceptButtonHandler implements ButtonClickHandler {
 	readonly buttonIds = ["quickaccept"];
 
 	async click(interaction: ButtonInteraction<"cached">, ...args: string[]): Promise<void> {
-		// c/p from AcceptLabelModalHandler
-		const [tournamentIdString, sourceMessageId] = args;
-		const tournamentId = parseInt(tournamentIdString, 10);
-		const deck = await ManualDeckSubmission.findOneOrFail({
-			where: {
-				discordId: interaction.user.id,
-				tournamentId
-			}
-		});
-		if (deck.message !== sourceMessageId) {
-			await interaction.reply(`This deck is outdated, the player has submitted a newer one!`);
-			return;
-		}
-		const player = await interaction.client.users.fetch(deck.discordId);
-		deck.approved = true;
-		await deck.save();
-
-		const tournament = await ManualTournament.findOneOrFail({ where: { tournamentId } });
-		await interaction.guild.members.addRole({
-			user: interaction.user.id,
-			role: tournament.participantRole,
-			reason: `Deck approved by ${interaction.user.tag}`
-		});
-		await player.send(`Your deck has been accepted by the hosts! You are now registered for ${tournament.name}.`);
-		// log success to TO
-		await interaction.reply(
-			`${userMention(player.id)}'s deck for ${tournament.name} has been approved by ${userMention(
-				interaction.user.id
-			)}`
-		);
+		await approveDeck(interaction, args[0], args[1]);
 	}
 }
 
@@ -204,35 +226,7 @@ export class AcceptLabelModal implements MessageModalSubmitHandler {
 	readonly modalIds = ["acceptModal"];
 
 	async submit(interaction: ModalMessageModalSubmitInteraction<"cached">, ...args: string[]): Promise<void> {
-		const tournamentIdString = args[0];
-		const tournamentId = parseInt(tournamentIdString, 10);
-		const deck = await ManualDeckSubmission.findOneOrFail({
-			where: {
-				discordId: interaction.user.id,
-				tournamentId
-			}
-		});
-		const player = await interaction.client.users.fetch(deck.discordId);
-		deck.approved = true;
-		const label = interaction.fields.getTextInputValue("acceptDeckLabel");
-		if (label.length > 0) {
-			deck.label = label;
-		}
-		await deck.save();
-
-		const tournament = await ManualTournament.findOneOrFail({ where: { tournamentId } });
-		await interaction.guild.members.addRole({
-			user: interaction.user.id,
-			role: tournament.participantRole,
-			reason: `Deck approved by ${interaction.user.tag}`
-		});
-		await player.send(`Your deck has been accepted by the hosts! You are now registered for ${tournament.name}.`);
-		// log success to TO
-		await interaction.reply(
-			`${userMention(player.id)}'s deck for ${tournament.name} has been approved by ${userMention(
-				interaction.user.id
-			)}`
-		);
+		await approveDeck(interaction, args[0], args[1], interaction.fields.getTextInputValue("acceptDeckLabel"));
 	}
 }
 
@@ -259,8 +253,13 @@ export class RejectReasonModal implements MessageModalSubmitHandler {
 			message += `\nReason: ${reason}`;
 		}
 		await player.send(message);
+		const content = interaction.message.content.startsWith(APPROVED_LABEL)
+			? `❌ REJECTED AFTER APPROVAL\n${interaction.message.content.slice(APPROVED_LABEL.length)}`
+			: `❌ REJECTED\n${interaction.message.content}`;
+
+		await interaction.update({ content, components: [] });
 		// log success to TO
-		await interaction.reply(
+		await interaction.followUp(
 			`${userMention(player.id)}'s deck for ${tournament.name} has been rejected by ${userMention(
 				interaction.user.id
 			)}`
