@@ -107,10 +107,24 @@ export function generateDeckValidateButtons(tournamentId: number, messageId: str
 	return row;
 }
 
+const OUTDATED_LABEL = "🐌 OUTDATED\n";
+async function obsoleteDeck(
+	interaction: ButtonInteraction<"cached"> | ModalMessageModalSubmitInteraction<"cached">
+): Promise<void> {
+	await interaction.update({
+		content: `${OUTDATED_LABEL}${interaction.message.content}`,
+		components: []
+	});
+	await interaction.followUp({
+		content: `This deck is outdated, the player has submitted a newer one!`,
+		ephemeral: true
+	});
+}
+
 export class AcceptButtonHandler implements ButtonClickHandler {
 	readonly buttonIds = ["accept"];
 
-	async click(interaction: ButtonInteraction, ...args: string[]): Promise<void> {
+	async click(interaction: ButtonInteraction<"cached">, ...args: string[]): Promise<void> {
 		const [tournamentIdString, sourceMessageId] = args;
 		const tournamentId = parseInt(tournamentIdString, 10);
 		const deck = await ManualDeckSubmission.findOneOrFail({
@@ -120,7 +134,7 @@ export class AcceptButtonHandler implements ButtonClickHandler {
 			}
 		});
 		if (deck.message !== sourceMessageId) {
-			await interaction.reply(`This deck is outdated, the player has submitted a newer one!`);
+			await obsoleteDeck(interaction);
 			return;
 		}
 		const modal = new ModalBuilder()
@@ -152,8 +166,9 @@ async function approveDeck(
 			tournamentId
 		}
 	});
+	// this is here for quick accept - in the case of full accept, it's preconditioned by the button handler
 	if (deck.message !== sourceMessageId) {
-		await interaction.reply(`This deck is outdated, the player has submitted a newer one!`);
+		await obsoleteDeck(interaction);
 		return;
 	}
 	const player = await interaction.client.users.fetch(deck.discordId);
@@ -195,7 +210,7 @@ export class QuickAcceptButtonHandler implements ButtonClickHandler {
 export class RejectButtonHandler implements ButtonClickHandler {
 	readonly buttonIds = ["reject"];
 
-	async click(interaction: ButtonInteraction, ...args: string[]): Promise<void> {
+	async click(interaction: ButtonInteraction<"cached">, ...args: string[]): Promise<void> {
 		const [tournamentIdString, sourceMessageId] = args;
 		const tournamentId = parseInt(tournamentIdString, 10);
 		const deck = await ManualDeckSubmission.findOneOrFail({
@@ -205,7 +220,7 @@ export class RejectButtonHandler implements ButtonClickHandler {
 			}
 		});
 		if (deck.message !== sourceMessageId) {
-			await interaction.reply(`This deck is outdated, the player has submitted a newer one!`);
+			await obsoleteDeck(interaction);
 			return;
 		}
 		const modal = new ModalBuilder()
