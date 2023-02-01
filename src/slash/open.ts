@@ -120,9 +120,6 @@ async function registerParticipant(
 	tournament: ManualTournament,
 	friendCode?: number
 ): Promise<void> {
-	// use js find instead of database query because we already have the tournament
-	const oldDeck = !!tournament.decks.find(d => d.discordId === interaction.user.id);
-
 	const player: ManualParticipant = new ManualParticipant();
 	player.discordId = interaction.user.id;
 	player.tournament = tournament;
@@ -131,12 +128,9 @@ async function registerParticipant(
 		await setNickname(interaction.member, friendCode);
 	}
 	await player.save();
-
-	const userAction = oldDeck ? "update your deck. It will need to be approved again afterwards" : "register";
-
 	await interaction.update({});
 	await interaction.user.send(
-		`Please upload screenshots of your decklist to ${userAction}.\n**Important**: Please do not delete your message! You will be dropped for cheating, as this can make your decklist invisible to hosts.`
+		`Please upload screenshots of your decklist to register.\n**Important**: Please do not delete your message! You will be dropped for cheating, as this can make your decklist invisible to hosts.`
 	);
 }
 
