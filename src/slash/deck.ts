@@ -107,7 +107,18 @@ export class AcceptButtonHandler implements ButtonClickHandler {
 	readonly buttonIds = ["accept"];
 
 	async click(interaction: ButtonInteraction, ...args: string[]): Promise<void> {
-		const tournamentIdString = args[0];
+		const [tournamentIdString, sourceMessageId] = args;
+		const tournamentId = parseInt(tournamentIdString, 10);
+		const deck = await ManualDeckSubmission.findOneOrFail({
+			where: {
+				discordId: interaction.user.id,
+				tournamentId
+			}
+		});
+		if (deck.message !== sourceMessageId) {
+			await interaction.reply(`This deck is outdated, the player has submitted a newer one!`);
+			return;
+		}
 		const modal = new ModalBuilder()
 			.setCustomId(encodeCustomId("acceptModal", tournamentIdString))
 			.setTitle("Accept Deck");
@@ -127,7 +138,7 @@ export class QuickAcceptButtonHandler implements ButtonClickHandler {
 
 	async click(interaction: ButtonInteraction<"cached">, ...args: string[]): Promise<void> {
 		// c/p from AcceptLabelModalHandler
-		const tournamentIdString = args[0];
+		const [tournamentIdString, sourceMessageId] = args;
 		const tournamentId = parseInt(tournamentIdString, 10);
 		const deck = await ManualDeckSubmission.findOneOrFail({
 			where: {
@@ -135,6 +146,10 @@ export class QuickAcceptButtonHandler implements ButtonClickHandler {
 				tournamentId
 			}
 		});
+		if (deck.message !== sourceMessageId) {
+			await interaction.reply(`This deck is outdated, the player has submitted a newer one!`);
+			return;
+		}
 		const player = await interaction.client.users.fetch(deck.discordId);
 		deck.approved = true;
 		await deck.save();
@@ -159,7 +174,18 @@ export class RejectButtonHandler implements ButtonClickHandler {
 	readonly buttonIds = ["reject"];
 
 	async click(interaction: ButtonInteraction, ...args: string[]): Promise<void> {
-		const tournamentIdString = args[0];
+		const [tournamentIdString, sourceMessageId] = args;
+		const tournamentId = parseInt(tournamentIdString, 10);
+		const deck = await ManualDeckSubmission.findOneOrFail({
+			where: {
+				discordId: interaction.user.id,
+				tournamentId
+			}
+		});
+		if (deck.message !== sourceMessageId) {
+			await interaction.reply(`This deck is outdated, the player has submitted a newer one!`);
+			return;
+		}
 		const modal = new ModalBuilder()
 			.setCustomId(encodeCustomId("rejectModal", tournamentIdString))
 			.setTitle("Reject Deck");
