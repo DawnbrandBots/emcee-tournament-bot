@@ -106,7 +106,7 @@ export class OpenCommand extends AutocompletableCommand {
 }
 
 export function formatFriendCode(friendCode: number): string {
-	const friendString = friendCode.toString(10);
+	const friendString = friendCode.toString(10).padStart(9, "0");
 	return `${friendString.slice(0, 3)}-${friendString.slice(3, 6)}-${friendString.slice(6, 9)}`;
 }
 
