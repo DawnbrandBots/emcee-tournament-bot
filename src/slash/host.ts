@@ -1,7 +1,6 @@
 import { RESTPostAPIApplicationCommandsJSONBody } from "discord-api-types/v10";
 import {
 	AutocompleteInteraction,
-	CacheType,
 	ChatInputCommandInteraction,
 	SlashCommandBuilder,
 	SlashCommandSubcommandBuilder,
@@ -46,11 +45,11 @@ export class HostCommand extends AutocompletableCommand {
 		return this.#logger;
 	}
 
-	override async autocomplete(interaction: AutocompleteInteraction<CacheType>): Promise<void> {
+	override async autocomplete(interaction: AutocompleteInteraction<"cached">): Promise<void> {
 		autocompleteTournament(interaction);
 	}
 
-	protected override async execute(interaction: ChatInputCommandInteraction): Promise<void> {
+	protected override async execute(interaction: ChatInputCommandInteraction<"cached">): Promise<void> {
 		const tournamentName = interaction.options.getString("tournament", true);
 		const tournament = await ManualTournament.findOneOrFail({ where: { name: tournamentName } });
 		const host = interaction.options.getUser("user", true);

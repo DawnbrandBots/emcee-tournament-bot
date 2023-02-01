@@ -1,11 +1,11 @@
+import * as csv from "@fast-csv/format";
 import { RESTPostAPIApplicationCommandsJSONBody } from "discord-api-types/v10";
-import { AutocompleteInteraction, CacheType, ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
+import { AutocompleteInteraction, ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
 import { ManualTournament } from "../database/orm";
 import { AutocompletableCommand } from "../SlashCommand";
+import { username } from "../util/discord";
 import { getLogger, Logger } from "../util/logger";
 import { authenticateHost, autocompleteTournament, tournamentOption } from "./database";
-import * as csv from "@fast-csv/format";
-import { username } from "../util/discord";
 
 export class CsvCommand extends AutocompletableCommand {
 	#logger = getLogger("command:csv");
@@ -38,11 +38,11 @@ export class CsvCommand extends AutocompletableCommand {
 		return this.#logger;
 	}
 
-	override async autocomplete(interaction: AutocompleteInteraction<CacheType>): Promise<void> {
+	override async autocomplete(interaction: AutocompleteInteraction<"cached">): Promise<void> {
 		autocompleteTournament(interaction);
 	}
 
-	protected override async execute(interaction: ChatInputCommandInteraction): Promise<void> {
+	protected override async execute(interaction: ChatInputCommandInteraction<"cached">): Promise<void> {
 		await interaction.deferReply();
 		const tournamentName = interaction.options.getString("tournament", true);
 		const tournament = await ManualTournament.findOneOrFail({ where: { name: tournamentName } });
