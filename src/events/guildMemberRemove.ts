@@ -83,7 +83,7 @@ export function makeHandler({ database, challonge }: CommandSupport) {
 				.innerJoinAndSelect(
 					"ManualParticipant.tournament",
 					"T",
-					"(T.status = 'preparing' OR T.status = 'in progress') AND T.owningDiscordServer = :server AND Participant.discordId = :playerId",
+					"(T.status = 'preparing' OR T.status = 'in progress') AND T.owningDiscordServer = :server AND ManualParticipant.discordId = :playerId",
 					{ server: server.id, playerId: member.id }
 				)
 				.getMany();
