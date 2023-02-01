@@ -120,6 +120,9 @@ async function registerParticipant(
 	tournament: ManualTournament,
 	friendCode?: number
 ): Promise<void> {
+	// use js find instead of database query because we already have the tournament
+	const oldDeck = !!tournament.decks.find(d => d.discordId === interaction.user.id);
+
 	const player: ManualParticipant = new ManualParticipant();
 	player.discordId = interaction.user.id;
 	player.tournament = tournament;
@@ -129,7 +132,7 @@ async function registerParticipant(
 	}
 	await player.save();
 
-	const userAction = player.deck ? "update your deck. It will need to be approved again afterwards" : "register";
+	const userAction = oldDeck ? "update your deck. It will need to be approved again afterwards" : "register";
 
 	await interaction.update({});
 	await interaction.user.send(
