@@ -65,13 +65,9 @@ export class ForceDropSlashCommand extends AutocompletableCommand {
 			});
 			return;
 		}
-		let member: GuildMember | undefined;
-		try {
-			member = await interaction.guild.members.fetch({ user: user });
-		} finally {
-			// disregard error because it's just "no member found"
-			await dropPlayer(tournament, player, member || user, interaction);
-		}
+
+		const member = interaction.guild.members.cache.get(user.id);
+		await dropPlayer(tournament, player, member || user, interaction);
 	}
 }
 
