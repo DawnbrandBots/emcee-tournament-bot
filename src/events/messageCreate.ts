@@ -171,9 +171,9 @@ export async function onDirectMessage(
 		let outMessage = `__**${userMention(msg.author.id)}'s deck**__:`;
 		outMessage += `\n${deck.content}`;
 
-		const row = generateDeckValidateButtons(registering[0].tournament);
-		if (deck.participant.tournament.privateChannel) {
-			await send(msg.client, deck.participant.tournament.privateChannel, {
+		const row = generateDeckValidateButtons(deck);
+		if (deck.tournament.privateChannel) {
+			await send(msg.client, deck.tournament.privateChannel, {
 				content: outMessage,
 				components: [row]
 			});
@@ -197,24 +197,22 @@ export async function onDirectMessage(
 		}
 		// a submitted player should definitely have a deck
 		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-		const d = submitted[0].deck!;
-		d.approved = false;
-		d.content = images.map(i => i.url).join("\n");
-		d.message = msg.id;
-		await d.save();
+		const deck = submitted[0].deck!;
+		deck.approved = false;
+		deck.content = images.map(i => i.url).join("\n");
+		deck.message = msg.id;
+		await deck.save();
 
-		await msg.client.guilds.cache
-			.get(submitted[0].tournament.owningDiscordServer)
-			?.members.removeRole({
-				user: msg.author.id,
-				role: submitted[0].tournament.participantRole,
-				reason: "Deck resubmitted."
-			});
+		await msg.client.guilds.cache.get(submitted[0].tournament.owningDiscordServer)?.members.removeRole({
+			user: msg.author.id,
+			role: submitted[0].tournament.participantRole,
+			reason: "Deck resubmitted."
+		});
 
 		let outMessage = `__**${userMention(msg.author.id)}'s deck**__:`;
-		outMessage += `\n${d.content}`;
+		outMessage += `\n${deck.content}`;
 
-		const row = generateDeckValidateButtons(submitted[0].tournament);
+		const row = generateDeckValidateButtons(deck);
 		if (submitted[0].tournament.privateChannel) {
 			await send(msg.client, submitted[0].tournament.privateChannel, {
 				content: outMessage,
