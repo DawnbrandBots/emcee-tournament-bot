@@ -5,7 +5,6 @@ import {
 	chatInputApplicationCommandMention,
 	ChatInputCommandInteraction,
 	ContextMenuCommandBuilder,
-	GuildMember,
 	SlashCommandBuilder,
 	UserContextMenuCommandInteraction
 } from "discord.js";
