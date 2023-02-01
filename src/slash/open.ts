@@ -178,7 +178,8 @@ export class RegisterButtonHandler implements ButtonClickHandler {
 			where: { tournamentId: tournament.tournamentId, discordId: interaction.user.id }
 		});
 		if (participant.length) {
-			await interaction.reply(
+			await interaction.update({});
+			await interaction.user.send(
 				`You are already registered for this tournament! You can submit a new deck by just sending a new message.`
 			);
 			return;
