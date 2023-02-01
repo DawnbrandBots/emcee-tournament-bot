@@ -118,6 +118,13 @@ async function setNickname(member: GuildMember, friendCode: number): Promise<voi
 		return;
 	}
 	const formatCode = formatFriendCode(friendCode);
+	const NAME_LENGTH_CAP = 32;
+	// add 1 for space
+	const totalLength = baseName.length + formatCode.length + 1;
+	if (totalLength > NAME_LENGTH_CAP) {
+		// can we notify the user expecting otherwise any way?
+		return;
+	}
 	await member.setNickname(`${baseName} ${formatCode}`);
 }
 
