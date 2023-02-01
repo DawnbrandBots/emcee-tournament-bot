@@ -82,7 +82,7 @@ export class OpenCommand extends AutocompletableCommand {
 			.setCustomId("registerButton")
 			.setLabel("Click here to register!")
 			.setStyle(ButtonStyle.Success)
-			.setEmoji("✅");
+			.setEmoji("🎫");
 		row.addComponents(button);
 
 		const message = await send(interaction.client, tournament.publicChannel, {
