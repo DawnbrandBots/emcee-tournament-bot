@@ -1,5 +1,5 @@
 import { RESTPostAPIApplicationCommandsJSONBody } from "discord-api-types/v10";
-import { AutocompleteInteraction, CacheType, ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
+import { AutocompleteInteraction, ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
 import { TournamentStatus } from "../database/interface";
 import { ManualTournament } from "../database/orm";
 import { AutocompletableCommand } from "../SlashCommand";
@@ -27,15 +27,11 @@ export class StartCommand extends AutocompletableCommand {
 		return this.#logger;
 	}
 
-	override async autocomplete(interaction: AutocompleteInteraction<CacheType>): Promise<void> {
+	override async autocomplete(interaction: AutocompleteInteraction<"cached">): Promise<void> {
 		autocompleteTournament(interaction);
 	}
 
-	protected override async execute(interaction: ChatInputCommandInteraction): Promise<void> {
-		if (!interaction.inCachedGuild()) {
-			return;
-		}
-
+	protected override async execute(interaction: ChatInputCommandInteraction<"cached">): Promise<void> {
 		const tournamentName = interaction.options.getString("tournament", true);
 		const tournament = await ManualTournament.findOneOrFail({
 			where: { name: tournamentName },
@@ -44,6 +40,13 @@ export class StartCommand extends AutocompletableCommand {
 
 		if (!(await authenticateHost(tournament, interaction))) {
 			// rejection messages handled in helper
+			return;
+		}
+
+		const playersToDrop = tournament.participants.filter(p => !p.deck?.approved);
+
+		if (playersToDrop.length === tournament.participants.length) {
+			await interaction.reply(`No players have an approved deck, so you cannot start the tournament.`);
 			return;
 		}
 
@@ -56,13 +59,6 @@ export class StartCommand extends AutocompletableCommand {
 				}
 				await publicChannel.send(`Registration for ${tournament.name} is now closed!`);
 			}
-		}
-
-		const playersToDrop = tournament.participants.filter(p => !p.deck?.approved);
-
-		if (playersToDrop.length === tournament.participants.length) {
-			await interaction.reply(`No players have an approved deck, so you cannot start the tournament.`);
-			return;
 		}
 
 		for (const player of playersToDrop) {
@@ -79,5 +75,7 @@ export class StartCommand extends AutocompletableCommand {
 
 		tournament.status = TournamentStatus.IPR;
 		await tournament.save();
+
+		await interaction.reply(`${tournament.name} prepared for commencement!`);
 	}
 }

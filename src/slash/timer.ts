@@ -39,10 +39,7 @@ export class TimerCommand extends SlashCommand {
 		return this.#logger;
 	}
 
-	protected override async execute(interaction: ChatInputCommandInteraction): Promise<void> {
-		if (!interaction.inCachedGuild()) {
-			return;
-		}
+	protected override async execute(interaction: ChatInputCommandInteraction<"cached">): Promise<void> {
 		// Should be replaced by the built-in system
 		const role = await this.organiserRole.get(interaction.guild);
 		if (!interaction.member.roles.cache.has(role)) {

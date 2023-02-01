@@ -39,6 +39,7 @@ describe("Entities for manual tournaments", () => {
 		const deck = new ManualDeckSubmission();
 		deck.participant = participant;
 		deck.content = "foo";
+		deck.message = "1069831269388660796";
 		await deck.save();
 		expect(deck.tournamentId).to.be.greaterThan(0);
 		expect(deck.discordId).to.be.equal("0");

@@ -165,6 +165,7 @@ export async function onDirectMessage(
 		deck.approved = false;
 		deck.content = images.map(i => i.url).join("\n");
 		deck.participant = registering[0];
+		deck.message = msg.id;
 		await deck.save();
 
 		let outMessage = `__**${userMention(msg.author.id)}'s deck**__:`;
@@ -199,6 +200,7 @@ export async function onDirectMessage(
 		const d = submitted[0].deck!;
 		d.approved = false;
 		d.content = images.map(i => i.url).join("\n");
+		d.message = msg.id;
 		await d.save();
 
 		await msg.client.guilds.cache
