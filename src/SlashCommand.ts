@@ -3,13 +3,14 @@ import { RESTPostAPIApplicationCommandsJSONBody } from "discord-api-types/v10";
 import {
 	AutocompleteInteraction,
 	ButtonInteraction,
+	CacheType,
 	ChatInputCommandInteraction,
 	ModalMessageModalSubmitInteraction
 } from "discord.js";
 import { serialiseInteraction } from "./util";
 import { Logger } from "./util/logger";
 
-export abstract class SlashCommand {
+export abstract class SlashCommand<Cached extends CacheType = CacheType> {
 	static get meta(): RESTPostAPIApplicationCommandsJSONBody {
 		throw new Error("Not implemented");
 	}
@@ -27,7 +28,7 @@ export abstract class SlashCommand {
 	 *
 	 * @param interaction
 	 */
-	protected abstract execute(interaction: ChatInputCommandInteraction): Promise<void>;
+	protected abstract execute(interaction: ChatInputCommandInteraction<Cached>): Promise<void>;
 
 	/**
 	 * Run this command in response to user interaction from start to finish.
@@ -35,7 +36,7 @@ export abstract class SlashCommand {
 	 *
 	 * @param interaction
 	 */
-	async run(interaction: ChatInputCommandInteraction): Promise<void> {
+	async run(interaction: ChatInputCommandInteraction<Cached>): Promise<void> {
 		try {
 			this.logger.verbose(
 				serialiseInteraction(interaction, { event: "attempt", ping: interaction.client.ws.ping })
@@ -59,16 +60,16 @@ export abstract class SlashCommand {
 	}
 }
 
-export abstract class AutocompletableCommand extends SlashCommand {
-	abstract autocomplete(interaction: AutocompleteInteraction): Promise<void>;
+export abstract class AutocompletableCommand<Cached extends CacheType = CacheType> extends SlashCommand<Cached> {
+	abstract autocomplete(interaction: AutocompleteInteraction<Cached>): Promise<void>;
 }
 
-export interface ButtonClickHandler {
+export interface ButtonClickHandler<Cached extends CacheType = CacheType> {
 	readonly buttonIds: string[];
-	click(interaction: ButtonInteraction, ...args: string[]): Promise<void>;
+	click(interaction: ButtonInteraction<Cached>, ...args: string[]): Promise<void>;
 }
 
-export interface MessageModalSubmitHandler {
+export interface MessageModalSubmitHandler<Cached extends CacheType = CacheType> {
 	readonly modalIds: string[];
-	submit(interaction: ModalMessageModalSubmitInteraction, ...args: string[]): Promise<void>;
+	submit(interaction: ModalMessageModalSubmitInteraction<Cached>, ...args: string[]): Promise<void>;
 }

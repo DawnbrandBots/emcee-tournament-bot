@@ -4,7 +4,6 @@ import {
 	AutocompleteInteraction,
 	ButtonBuilder,
 	ButtonInteraction,
-	CacheType,
 	channelMention,
 	ChatInputCommandInteraction,
 	GuildMember,
@@ -48,7 +47,7 @@ export class OpenCommand extends AutocompletableCommand {
 		return this.#logger;
 	}
 
-	override async autocomplete(interaction: AutocompleteInteraction<CacheType>): Promise<void> {
+	override async autocomplete(interaction: AutocompleteInteraction<"cached">): Promise<void> {
 		autocompleteTournament(interaction);
 	}
 
@@ -117,7 +116,7 @@ async function setNickname(member: GuildMember, friendCode: number): Promise<voi
 }
 
 async function registerParticipant(
-	interaction: ButtonInteraction | ModalMessageModalSubmitInteraction,
+	interaction: ButtonInteraction<"cached"> | ModalMessageModalSubmitInteraction<"cached">,
 	tournament: ManualTournament,
 	friendCode?: number
 ): Promise<void> {
@@ -125,8 +124,7 @@ async function registerParticipant(
 	player.discordId = interaction.user.id;
 	player.tournament = tournament;
 	player.friendCode = friendCode;
-	// first check should always be true i think but it's a typeguard on member
-	if (interaction.inCachedGuild() && friendCode) {
+	if (friendCode) {
 		await setNickname(interaction.member, friendCode);
 	}
 	await player.save();
@@ -142,10 +140,7 @@ async function registerParticipant(
 export class RegisterButtonHandler implements ButtonClickHandler {
 	readonly buttonIds = ["registerButton"];
 
-	async click(interaction: ButtonInteraction): Promise<void> {
-		if (!interaction.inCachedGuild()) {
-			return;
-		}
+	async click(interaction: ButtonInteraction<"cached">): Promise<void> {
 		const tournament = await ManualTournament.findOneOrFail({
 			where: { owningDiscordServer: interaction.guildId, registerMessage: interaction.message.id }
 		});
@@ -211,11 +206,7 @@ function parseFriendCode(input: string): number | undefined {
 export class FriendCodeModalHandler implements MessageModalSubmitHandler {
 	readonly modalIds = ["registerModal"];
 
-	async submit(interaction: ModalMessageModalSubmitInteraction): Promise<void> {
-		if (!interaction.inCachedGuild()) {
-			return;
-		}
-
+	async submit(interaction: ModalMessageModalSubmitInteraction<"cached">): Promise<void> {
 		const tournament = await ManualTournament.findOneOrFail({
 			where: { owningDiscordServer: interaction.guildId, registerMessage: interaction.message.id }
 		});

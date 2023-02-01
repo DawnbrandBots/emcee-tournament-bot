@@ -17,15 +17,15 @@ import { FinishCommand } from "../slash/finish";
 import { ForceDropContextCommand, ForceDropSlashCommand } from "../slash/forcedrop";
 import { HostCommand } from "../slash/host";
 import { InfoCommand } from "../slash/info";
-import { FriendCodeModalHandler, OpenCommand, RegisterButtonHandler } from "../slash/open";
 import { ListCommand } from "../slash/list";
+import { FriendCodeModalHandler, OpenCommand, RegisterButtonHandler } from "../slash/open";
+import { QueueCommand } from "../slash/queue";
 import { StartCommand } from "../slash/start";
 import { TimerCommand } from "../slash/timer";
 import { UpdateCommand } from "../slash/update";
 import { AutocompletableCommand, ButtonClickHandler, MessageModalSubmitHandler, SlashCommand } from "../SlashCommand";
 import { serialiseInteraction } from "../util";
 import { getLogger } from "../util/logger";
-import { QueueCommand } from "../slash/queue";
 
 const logger = getLogger("interaction");
 
@@ -86,6 +86,9 @@ export function makeHandler({ organiserRole, timeWizard }: CommandSupport) {
 	}
 
 	return async function interactionCreate(interaction: Interaction): Promise<void> {
+		if (!interaction.inCachedGuild()) {
+			return;
+		}
 		if (interaction.isChatInputCommand()) {
 			logger.verbose(serialiseInteraction(interaction));
 			await commands.get(interaction.commandName)?.run(interaction);

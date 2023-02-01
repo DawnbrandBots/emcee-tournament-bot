@@ -1,17 +1,11 @@
 import { ChannelType, RESTPostAPIApplicationCommandsJSONBody, Snowflake } from "discord-api-types/v10";
-import {
-	AutocompleteInteraction,
-	CacheType,
-	channelMention,
-	ChatInputCommandInteraction,
-	SlashCommandBuilder
-} from "discord.js";
+import { AutocompleteInteraction, channelMention, ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
 import { ManualTournament } from "../database/orm";
 import { AutocompletableCommand } from "../SlashCommand";
 import { getLogger, Logger } from "../util/logger";
 import { authenticateHost, autocompleteTournament, tournamentOption } from "./database";
 
-export class ChannelCommand extends AutocompletableCommand {
+export class ChannelCommand extends AutocompletableCommand<"cached"> {
 	#logger = getLogger("command:channel");
 
 	constructor() {
@@ -45,7 +39,7 @@ export class ChannelCommand extends AutocompletableCommand {
 		return this.#logger;
 	}
 
-	override async autocomplete(interaction: AutocompleteInteraction<CacheType>): Promise<void> {
+	override async autocomplete(interaction: AutocompleteInteraction<"cached">): Promise<void> {
 		autocompleteTournament(interaction);
 	}
 

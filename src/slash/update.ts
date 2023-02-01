@@ -1,5 +1,5 @@
 import { RESTPostAPIApplicationCommandsJSONBody } from "discord-api-types/v10";
-import { AutocompleteInteraction, CacheType, ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
+import { AutocompleteInteraction, ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
 import { ManualTournament } from "../database/orm";
 import { AutocompletableCommand } from "../SlashCommand";
 import { getLogger, Logger } from "../util/logger";
@@ -44,7 +44,7 @@ export class UpdateCommand extends AutocompletableCommand {
 		return this.#logger;
 	}
 
-	override async autocomplete(interaction: AutocompleteInteraction<CacheType>): Promise<void> {
+	override async autocomplete(interaction: AutocompleteInteraction<"cached">): Promise<void> {
 		autocompleteTournament(interaction);
 	}
 

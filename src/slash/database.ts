@@ -1,6 +1,5 @@
 import {
 	AutocompleteInteraction,
-	CacheType,
 	ChatInputCommandInteraction,
 	ContextMenuCommandInteraction,
 	GuildMember,
@@ -19,10 +18,7 @@ export const tournamentOption = new SlashCommandStringOption()
 	.setRequired(true)
 	.setAutocomplete(true);
 
-export async function autocompleteTournament(interaction: AutocompleteInteraction<CacheType>): Promise<void> {
-	if (!interaction.inCachedGuild()) {
-		return;
-	}
+export async function autocompleteTournament(interaction: AutocompleteInteraction<"cached">): Promise<void> {
 	const partialName = interaction.options.getFocused();
 	const owningDiscordServer = interaction.guildId;
 	const tournaments = await ManualTournament.find({

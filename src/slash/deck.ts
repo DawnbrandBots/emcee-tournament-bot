@@ -4,7 +4,6 @@ import {
 	AutocompleteInteraction,
 	ButtonBuilder,
 	ButtonInteraction,
-	CacheType,
 	ChatInputCommandInteraction,
 	ModalBuilder,
 	ModalMessageModalSubmitInteraction,
@@ -42,14 +41,11 @@ export class DeckCommand extends AutocompletableCommand {
 		return this.#logger;
 	}
 
-	override async autocomplete(interaction: AutocompleteInteraction<CacheType>): Promise<void> {
+	override async autocomplete(interaction: AutocompleteInteraction<"cached">): Promise<void> {
 		autocompleteTournament(interaction);
 	}
 
 	protected override async execute(interaction: ChatInputCommandInteraction): Promise<void> {
-		if (!interaction.inCachedGuild()) {
-			return;
-		}
 		const tournamentName = interaction.options.getString("tournament", true);
 		const tournament = await ManualTournament.findOneOrFail({
 			where: { name: tournamentName }

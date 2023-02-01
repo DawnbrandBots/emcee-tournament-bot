@@ -1,7 +1,6 @@
 import { RESTPostAPIApplicationCommandsJSONBody } from "discord-api-types/v10";
 import {
 	AutocompleteInteraction,
-	CacheType,
 	ChatInputCommandInteraction,
 	EmbedBuilder,
 	EmbedField,
@@ -33,7 +32,7 @@ export class InfoCommand extends AutocompletableCommand {
 		return this.#logger;
 	}
 
-	override async autocomplete(interaction: AutocompleteInteraction<CacheType>): Promise<void> {
+	override async autocomplete(interaction: AutocompleteInteraction<"cached">): Promise<void> {
 		autocompleteTournament(interaction);
 	}
 
