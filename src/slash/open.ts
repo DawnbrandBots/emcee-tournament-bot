@@ -128,12 +128,9 @@ async function registerParticipant(
 		await setNickname(interaction.member, friendCode);
 	}
 	await player.save();
-
-	const userAction = player.deck ? "update your deck. It will need to be approved again afterwards" : "register";
-
 	await interaction.update({});
 	await interaction.user.send(
-		`Please upload screenshots of your decklist to ${userAction}.\n**Important**: Please do not delete your message! You will be dropped for cheating, as this can make your decklist invisible to hosts.`
+		`Please upload screenshots of your decklist to register.\n**Important**: Please do not delete your message! You will be dropped for cheating, as this can make your decklist invisible to hosts.`
 	);
 }
 
@@ -175,6 +172,16 @@ export class RegisterButtonHandler implements ButtonClickHandler {
 				content: `Sorry ${interaction.user}, the tournament is currently full!`,
 				ephemeral: true
 			});
+			return;
+		}
+		const participant = await ManualParticipant.find({
+			where: { tournamentId: tournament.tournamentId, discordId: interaction.user.id }
+		});
+		if (participant.length) {
+			await interaction.update({});
+			await interaction.user.send(
+				`You are already registered for this tournament! You can submit a new deck by just sending a new message.`
+			);
 			return;
 		}
 		if (tournament.requireFriendCode) {

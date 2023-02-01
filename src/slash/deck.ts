@@ -77,43 +77,69 @@ export class DeckCommand extends AutocompletableCommand {
 			return;
 		}
 
-		const row = generateDeckValidateButtons(tournament);
+		const row = generateDeckValidateButtons(tournament.tournamentId, playerDeck.message);
 		await interaction.reply({ content: outMessage, components: [row] });
 	}
 }
 
-function rejectButton(tournamentId: number): ButtonBuilder {
+function rejectButton(tournamentId: number, messageId: string): ButtonBuilder {
 	return new ButtonBuilder()
-		.setCustomId(encodeCustomId("reject", tournamentId))
+		.setCustomId(encodeCustomId("reject", tournamentId, messageId))
 		.setLabel("Reject")
 		.setStyle(ButtonStyle.Danger)
 		.setEmoji("❎");
 }
 
-export function generateDeckValidateButtons(tournament: ManualTournament): ActionRowBuilder<ButtonBuilder> {
+export function generateDeckValidateButtons(tournamentId: number, messageId: string): ActionRowBuilder<ButtonBuilder> {
 	const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
 		new ButtonBuilder()
-			.setCustomId(encodeCustomId("accept", tournament.tournamentId))
+			.setCustomId(encodeCustomId("accept", tournamentId, messageId))
 			.setLabel("Accept")
 			.setStyle(ButtonStyle.Success)
 			.setEmoji("✅"),
 		new ButtonBuilder()
-			.setCustomId(encodeCustomId("quickaccept", tournament.tournamentId))
+			.setCustomId(encodeCustomId("quickaccept", tournamentId, messageId))
 			.setLabel("Accept (No Theme)")
 			.setStyle(ButtonStyle.Success)
 			.setEmoji("⏩"),
-		rejectButton(tournament.tournamentId)
+		rejectButton(tournamentId, messageId)
 	);
 	return row;
+}
+
+const OUTDATED_LABEL = "🐌 OUTDATED\n";
+async function obsoleteDeck(
+	interaction: ButtonInteraction<"cached"> | ModalMessageModalSubmitInteraction<"cached">
+): Promise<void> {
+	await interaction.update({
+		content: `${OUTDATED_LABEL}${interaction.message.content}`,
+		components: []
+	});
+	await interaction.followUp({
+		content: `This deck is outdated, the player has submitted a newer one!`,
+		ephemeral: true
+	});
 }
 
 export class AcceptButtonHandler implements ButtonClickHandler {
 	readonly buttonIds = ["accept"];
 
-	async click(interaction: ButtonInteraction, ...args: string[]): Promise<void> {
-		const tournamentIdString = args[0];
+	async click(interaction: ButtonInteraction<"cached">, ...args: string[]): Promise<void> {
+		const [tournamentIdString, sourceMessageId] = args;
+		const tournamentId = parseInt(tournamentIdString, 10);
+		const deck = await ManualDeckSubmission.findOneOrFail({
+			where: {
+				discordId: interaction.user.id,
+				tournamentId
+			}
+		});
+		if (deck.message !== sourceMessageId) {
+			await obsoleteDeck(interaction);
+			return;
+		}
 		const modal = new ModalBuilder()
-			.setCustomId(encodeCustomId("acceptModal", tournamentIdString))
+			// acceptModal needs the sourceMessageId to pass onto the rejection button
+			.setCustomId(encodeCustomId("acceptModal", tournamentIdString, sourceMessageId))
 			.setTitle("Accept Deck");
 		const deckLabelInput = new TextInputBuilder()
 			.setCustomId("acceptDeckLabel")
@@ -130,6 +156,7 @@ const APPROVED_LABEL = "✅ APPROVED\n";
 async function approveDeck(
 	interaction: ButtonInteraction<"cached"> | ModalMessageModalSubmitInteraction<"cached">,
 	tournamentIdString: string,
+	sourceMessageId: string,
 	label?: string
 ): Promise<void> {
 	const tournamentId = parseInt(tournamentIdString, 10);
@@ -139,6 +166,11 @@ async function approveDeck(
 			tournamentId
 		}
 	});
+	// this is here for quick accept - in the case of full accept, it's preconditioned by the button handler
+	if (deck.message !== sourceMessageId) {
+		await obsoleteDeck(interaction);
+		return;
+	}
 	const player = await interaction.client.users.fetch(deck.discordId);
 	deck.approved = true;
 	if (label?.length) {
@@ -155,7 +187,9 @@ async function approveDeck(
 	await player.send(`Your deck has been accepted by the hosts! You are now registered for ${tournament.name}.`);
 	await interaction.update({
 		content: `${APPROVED_LABEL}${interaction.message.content}`,
-		components: [new ActionRowBuilder<ButtonBuilder>().addComponents(rejectButton(tournament.tournamentId))]
+		components: [
+			new ActionRowBuilder<ButtonBuilder>().addComponents(rejectButton(tournament.tournamentId, sourceMessageId))
+		]
 	});
 	// log success to TO
 	await interaction.followUp(
@@ -169,15 +203,26 @@ export class QuickAcceptButtonHandler implements ButtonClickHandler {
 	readonly buttonIds = ["quickaccept"];
 
 	async click(interaction: ButtonInteraction<"cached">, ...args: string[]): Promise<void> {
-		await approveDeck(interaction, args[0]);
+		await approveDeck(interaction, args[0], args[1]);
 	}
 }
 
 export class RejectButtonHandler implements ButtonClickHandler {
 	readonly buttonIds = ["reject"];
 
-	async click(interaction: ButtonInteraction, ...args: string[]): Promise<void> {
-		const tournamentIdString = args[0];
+	async click(interaction: ButtonInteraction<"cached">, ...args: string[]): Promise<void> {
+		const [tournamentIdString, sourceMessageId] = args;
+		const tournamentId = parseInt(tournamentIdString, 10);
+		const deck = await ManualDeckSubmission.findOneOrFail({
+			where: {
+				discordId: interaction.user.id,
+				tournamentId
+			}
+		});
+		if (deck.message !== sourceMessageId) {
+			await obsoleteDeck(interaction);
+			return;
+		}
 		const modal = new ModalBuilder()
 			.setCustomId(encodeCustomId("rejectModal", tournamentIdString))
 			.setTitle("Reject Deck");
@@ -196,7 +241,7 @@ export class AcceptLabelModal implements MessageModalSubmitHandler {
 	readonly modalIds = ["acceptModal"];
 
 	async submit(interaction: ModalMessageModalSubmitInteraction<"cached">, ...args: string[]): Promise<void> {
-		await approveDeck(interaction, args[0], interaction.fields.getTextInputValue("acceptDeckLabel"));
+		await approveDeck(interaction, args[0], args[1], interaction.fields.getTextInputValue("acceptDeckLabel"));
 	}
 }
 
