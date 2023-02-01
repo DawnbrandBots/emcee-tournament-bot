@@ -180,6 +180,15 @@ export class RegisterButtonHandler implements ButtonClickHandler {
 			});
 			return;
 		}
+		const participant = await ManualParticipant.find({
+			where: { tournamentId: tournament.tournamentId, discordId: interaction.user.id }
+		});
+		if (participant.length) {
+			await interaction.reply(
+				`You are already registered for this tournament! You can submit a new deck by just sending a new message.`
+			);
+			return;
+		}
 		if (tournament.requireFriendCode) {
 			const modal = new ModalBuilder().setCustomId("registerModal").setTitle(`Register for ${tournament.name}`);
 			const deckLabelInput = new TextInputBuilder()
