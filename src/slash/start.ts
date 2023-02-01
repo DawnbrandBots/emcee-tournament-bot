@@ -47,6 +47,13 @@ export class StartCommand extends AutocompletableCommand {
 			return;
 		}
 
+		const playersToDrop = tournament.participants.filter(p => !p.deck?.approved);
+
+		if (playersToDrop.length === tournament.participants.length) {
+			await interaction.reply(`No players have an approved deck, so you cannot start the tournament.`);
+			return;
+		}
+
 		if (tournament.publicChannel) {
 			const publicChannel = await interaction.client.channels.fetch(tournament.publicChannel);
 			if (publicChannel && publicChannel.isTextBased()) {
@@ -56,13 +63,6 @@ export class StartCommand extends AutocompletableCommand {
 				}
 				await publicChannel.send(`Registration for ${tournament.name} is now closed!`);
 			}
-		}
-
-		const playersToDrop = tournament.participants.filter(p => !p.deck?.approved);
-
-		if (playersToDrop.length === tournament.participants.length) {
-			await interaction.reply(`No players have an approved deck, so you cannot start the tournament.`);
-			return;
 		}
 
 		for (const player of playersToDrop) {
@@ -79,5 +79,7 @@ export class StartCommand extends AutocompletableCommand {
 
 		tournament.status = TournamentStatus.IPR;
 		await tournament.save();
+
+		await interaction.reply(`${tournament.name} prepared for commencement!`);
 	}
 }
