@@ -42,6 +42,7 @@ export class FinishCommand extends AutocompletableCommand {
 		}
 
 		tournament.status = TournamentStatus.COMPLETE;
+		await tournament.save();
 		const role = await interaction.guild.roles.fetch(tournament.participantRole);
 
 		if (tournament.publicChannel && role) {
