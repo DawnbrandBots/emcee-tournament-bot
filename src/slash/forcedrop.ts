@@ -75,7 +75,12 @@ export class ForceDropContextCommand extends ContextCommand {
 	}
 
 	static override get meta(): RESTPostAPIApplicationCommandsJSONBody {
-		return new ContextMenuCommandBuilder().setName("Force Drop").setType(ApplicationCommandType.User).toJSON();
+		return new ContextMenuCommandBuilder()
+			.setName("Force Drop")
+			.setType(ApplicationCommandType.User)
+			.setDMPermission(false)
+			.setDefaultMemberPermissions(0)
+			.toJSON();
 	}
 
 	protected override get logger(): Logger {
