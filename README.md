@@ -1,5 +1,3 @@
-## ❗ [Request for Comments: Emcee's future is uncertain](https://github.com/DawnbrandBots/emcee-tournament-bot/issues/395). Your input is appreciated!
-
 # Emcee
 
 <div align="center">
@@ -8,6 +6,7 @@
 
 </div>
 <!-- Unfortunately, GitHub Markdown sanitizes style attributes, so we will have to use a deprecated HTML attribute. -->
+
 [<img src="https://cdn.discordapp.com/avatars/691882968809209917/1ffd7675f6fb2a4c21b1b356b7856279.png" alt="Emcee avatar" align="right" />](https://yugipedia.com/wiki/MC)
 
 ![Build](https://github.com/DawnbrandBots/emcee-tournament-bot/workflows/Build/badge.svg)&nbsp;
@@ -21,9 +20,12 @@ This frees up hosts to focus on the overall flow of the tournament and any dispu
 It currently supports hosting Swiss tournaments of up to 256 participants (a limitation of Challonge's [standard tier](https://challonge.com/pricing))
 with an optional single-elimination top cut of configurable size.
 
-Currently in use for the [Chalislime Monthly](https://youtu.be/iehvqngGxs0) tournament series.
+Used for the [Master Circuit](https://twitter.com/MCSyugioh) and [Chalislime Monthly](https://youtu.be/iehvqngGxs0) tournament series.
 Thanks to [Joseph Rothschild](https://www.youtube.com/c/MBTYuGiOh) aka [MBT](https://www.twitch.tv/mbtyugioh) for
 sponsoring the development of Emcee.
+
+[Request for Comments: Emcee's future is uncertain](https://github.com/DawnbrandBots/emcee-tournament-bot/issues/395)
+with respect to running a tournament round by round. Your input is appreciated!
 
 ## Discord permissions
 
