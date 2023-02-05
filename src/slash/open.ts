@@ -106,19 +106,30 @@ export class OpenCommand extends AutocompletableCommand {
 }
 
 export function formatFriendCode(friendCode: number): string {
-	const friendString = friendCode.toString(10);
+	const friendString = friendCode.toString(10).padStart(9, "0");
 	return `${friendString.slice(0, 3)}-${friendString.slice(3, 6)}-${friendString.slice(6, 9)}`;
 }
 
 async function setNickname(member: GuildMember, friendCode: number): Promise<void> {
 	// check for redundancy
-	const fcRegex = /\d{3}-\d{3}-\d{3}/;
+	const formatCode = formatFriendCode(friendCode);
 	const baseName = member.nickname || member.user.username;
-	if (fcRegex.test(baseName)) {
+	if (baseName.includes(formatCode)) {
 		return;
 	}
-	const formatCode = formatFriendCode(friendCode);
-	await member.setNickname(`${baseName} ${formatCode}`);
+
+	const fcRegex = /\d{3}-\d{3}-\d{3}/;
+	let newName = baseName.replace(fcRegex, formatCode);
+	if (newName === baseName) {
+		newName = `${baseName} ${formatCode}`;
+	}
+
+	const NAME_LENGTH_CAP = 32;
+	if (newName.length > NAME_LENGTH_CAP) {
+		// can we notify the user expecting otherwise any way?
+		return;
+	}
+	await member.setNickname(newName, `Friend code added by Emcee`);
 }
 
 async function registerParticipant(
