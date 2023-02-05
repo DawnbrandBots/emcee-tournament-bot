@@ -2,8 +2,11 @@
 
 # Emcee
 
-[<img src="https://img.shields.io/static/v1?label=invite%20to&message=Discord&color=informational&style=for-the-badge" alt="Invite to Discord" align="center" />](https://discord.com/api/oauth2/authorize?client_id=691882968809209917&permissions=275146467392&scope=bot)
+<div align="center">
 
+[![Invite to Discord](https://img.shields.io/static/v1?label=invite%20to&message=Discord&color=informational&style=for-the-badge)](https://discord.com/api/oauth2/authorize?client_id=691882968809209917&permissions=275146467392&scope=bot)
+
+</div>
 <!-- Unfortunately, GitHub Markdown sanitizes style attributes, so we will have to use a deprecated HTML attribute. -->
 [<img src="https://cdn.discordapp.com/avatars/691882968809209917/1ffd7675f6fb2a4c21b1b356b7856279.png" alt="Emcee avatar" align="right" />](https://yugipedia.com/wiki/MC)
 
