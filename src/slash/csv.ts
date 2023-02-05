@@ -47,7 +47,7 @@ export class CsvCommand extends AutocompletableCommand {
 		const tournamentName = interaction.options.getString("tournament", true);
 		const tournament = await ManualTournament.findOneOrFail({ where: { name: tournamentName } });
 
-		if (!(await authenticateHost(tournament, interaction, true))) {
+		if (!(await authenticateHost(tournament, interaction))) {
 			// rejection messages handled in helper
 			return;
 		}
