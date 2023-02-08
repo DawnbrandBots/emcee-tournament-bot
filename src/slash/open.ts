@@ -110,36 +110,28 @@ export function formatFriendCode(friendCode: number): string {
 	return `${friendString.slice(0, 3)}-${friendString.slice(3, 6)}-${friendString.slice(6, 9)}`;
 }
 
-async function setNickname(member: GuildMember, friendCode: number): Promise<void> {
-	// check for redundancy
-	const formatCode = formatFriendCode(friendCode);
-	const baseName = member.nickname || member.user.username;
-	if (baseName.includes(formatCode)) {
-		return;
+async function setNickname(member: GuildMember, friendCode: number, ign?: string): Promise<void> {
+	const name = ign || member.user.username;
+	const formattedCode = formatFriendCode(friendCode);
+	// Discord maximum: 32. Friend code plus space takes 12.
+	if (name.length <= 20) {
+		await member.setNickname(`${name} ${formattedCode}`, `Friend code added by Emcee`);
+	} else {
+		const truncated = name.slice(0, 20);
+		await member.setNickname(`${truncated}…${formattedCode}`, `Friend code added by Emcee`);
 	}
-
-	const fcRegex = /\d{3}-\d{3}-\d{3}/;
-	let newName = baseName.replace(fcRegex, formatCode);
-	if (newName === baseName) {
-		newName = `${baseName} ${formatCode}`;
-	}
-
-	const NAME_LENGTH_CAP = 32;
-	if (newName.length > NAME_LENGTH_CAP) {
-		// can we notify the user expecting otherwise any way?
-		return;
-	}
-	await member.setNickname(newName, `Friend code added by Emcee`);
 }
 
 async function registerParticipant(
 	interaction: ButtonInteraction<"cached"> | ModalMessageModalSubmitInteraction<"cached">,
 	tournament: ManualTournament,
-	friendCode?: number
+	friendCode?: number,
+	ign?: string
 ): Promise<void> {
 	const player: ManualParticipant = new ManualParticipant();
 	player.discordId = interaction.user.id;
 	player.tournament = tournament;
+	player.ign = ign;
 	player.friendCode = friendCode;
 	await player.save();
 	await interaction.update({});
@@ -148,7 +140,7 @@ async function registerParticipant(
 			`Please upload screenshots of your decklist to register, all attached to one message. \n**Important**: Please do not delete your message! You will be dropped for cheating, as this can make your decklist invisible to hosts.`
 		);
 		if (friendCode) {
-			await setNickname(interaction.member, friendCode);
+			await setNickname(interaction.member, friendCode, ign);
 		}
 	} catch (e) {
 		if (
@@ -220,7 +212,7 @@ export class RegisterButtonHandler implements ButtonClickHandler {
 		}
 		if (tournament.requireFriendCode) {
 			const modal = new ModalBuilder().setCustomId("registerModal").setTitle(`Register for ${tournament.name}`);
-			const deckLabelInput = new TextInputBuilder()
+			const friendCodeInput = new TextInputBuilder()
 				.setCustomId("friendCode")
 				.setLabel("Master Duel Friend Code")
 				.setStyle(TextInputStyle.Short)
@@ -228,8 +220,18 @@ export class RegisterButtonHandler implements ButtonClickHandler {
 				.setPlaceholder("000000000")
 				.setMinLength(9)
 				.setMaxLength(11);
-			const actionRow = new ActionRowBuilder<TextInputBuilder>().addComponents(deckLabelInput);
-			modal.addComponents(actionRow);
+			const ignInput = new TextInputBuilder()
+				.setCustomId("ign")
+				.setLabel("In-game name, if different")
+				.setStyle(TextInputStyle.Short)
+				.setRequired(false)
+				.setPlaceholder(interaction.user.username.slice(0, 12))
+				.setMinLength(3)
+				.setMaxLength(12);
+			modal.addComponents(
+				new ActionRowBuilder<TextInputBuilder>().addComponents(friendCodeInput),
+				new ActionRowBuilder<TextInputBuilder>().addComponents(ignInput)
+			);
 			await interaction.showModal(modal);
 		} else {
 			await registerParticipant(interaction, tournament);
@@ -244,7 +246,7 @@ function parseFriendCode(input: string): number | undefined {
 	}
 }
 
-export class FriendCodeModalHandler implements MessageModalSubmitHandler {
+export class RegisterModalHandler implements MessageModalSubmitHandler {
 	readonly modalIds = ["registerModal"];
 
 	async submit(interaction: ModalMessageModalSubmitInteraction<"cached">): Promise<void> {
@@ -261,6 +263,6 @@ export class FriendCodeModalHandler implements MessageModalSubmitHandler {
 			});
 			return;
 		}
-		await registerParticipant(interaction, tournament, friendCode);
+		await registerParticipant(interaction, tournament, friendCode, interaction.fields.getTextInputValue("ign"));
 	}
 }

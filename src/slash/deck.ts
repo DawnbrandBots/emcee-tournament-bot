@@ -91,6 +91,9 @@ function rejectButton(tournamentId: number, playerId: string, messageId: string)
 export function generateDeckSubmissionMessage(deck: ManualDeckSubmission, user: User) {
 	// user should match deck.discordId, used for convenience
 	let content = `__**${user} (${escapeMarkdown(user.tag)})'s deck**__:`;
+	if (deck.participant.ign) {
+		content += `\n**IGN**: ${deck.participant.ign}`;
+	}
 	if (deck.participant.friendCode) {
 		content += `\n${formatFriendCode(deck.participant.friendCode)}`;
 	}
