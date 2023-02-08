@@ -1,4 +1,4 @@
-import { Client, escapeMarkdown, Message, userMention } from "discord.js";
+import { Client, escapeMarkdown, Message } from "discord.js";
 import { CardVector } from "ydeck";
 import { Command, CommandDefinition, CommandSupport } from "../Command";
 import { helpMessage } from "../config";
@@ -7,8 +7,7 @@ import { ManualDeckSubmission, ManualParticipant } from "../database/orm";
 import { DatabaseWrapperPostgres } from "../database/postgres";
 import { DeckManager } from "../deck";
 import { ParticipantRoleProvider } from "../role/participant";
-import { generateDeckValidateButtons } from "../slash/deck";
-import { formatFriendCode } from "../slash/open";
+import { generateDeckSubmissionMessage } from "../slash/deck";
 import { send } from "../util/discord";
 import { getLogger } from "../util/logger";
 import { Public } from "../util/types";
@@ -144,11 +143,11 @@ export async function onDirectMessage(
 			discordId: msg.author.id,
 			tournament: { status: TournamentStatus.PREPARING }
 		},
-		relations: ["tournament"]
+		relations: { tournament: true }
 	});
 
-	const registering: ManualParticipant[] = [];
-	const submitted: ManualParticipant[] = [];
+	const registering: ManualParticipant<false>[] = [];
+	const submitted: ManualParticipant<true>[] = [];
 	for (const p of registrations) {
 		if (p.deck) {
 			submitted.push(p);
@@ -163,24 +162,17 @@ export async function onDirectMessage(
 			return;
 		}
 		const deck = new ManualDeckSubmission();
-		deck.approved = false;
 		deck.content = images.map(i => i.url).join("\n");
 		deck.participant = registering[0];
 		deck.message = msg.id;
 		await deck.save();
 
-		let outMessage = `__**${userMention(msg.author.id)}'s deck**__:`;
-		if (registering[0].friendCode) {
-			outMessage += `\n${formatFriendCode(registering[0].friendCode)}`;
-		}
-		outMessage += `\n${deck.content}`;
-
-		const row = generateDeckValidateButtons(registering[0].tournament.tournamentId, msg.author.id, msg.id);
 		if (registering[0].tournament.privateChannel) {
-			await send(msg.client, registering[0].tournament.privateChannel, {
-				content: outMessage,
-				components: [row]
-			});
+			await send(
+				msg.client,
+				registering[0].tournament.privateChannel,
+				generateDeckSubmissionMessage(deck, msg.author)
+			);
 		}
 		await msg.reply(
 			"Your deck has been submitted to the tournament hosts. Please wait for their approval.\nYou can resubmit by sending new screenshots, all attached to one message."
@@ -201,11 +193,12 @@ export async function onDirectMessage(
 			await msg.reply("You need to upload screenshots of your deck. Please try again.");
 			return;
 		}
-		// a submitted player should definitely have a deck
-		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-		const deck = submitted[0].deck!;
-		deck.approved = false;
+
+		// Remove and create a new one to avoid race conditions or approval/label data left over
+		await submitted[0].deck.remove();
+		const deck = new ManualDeckSubmission();
 		deck.content = images.map(i => i.url).join("\n");
+		deck.participant = submitted[0];
 		deck.message = msg.id;
 		await deck.save();
 
@@ -215,15 +208,12 @@ export async function onDirectMessage(
 			reason: "Deck resubmitted."
 		});
 
-		let outMessage = `__**${userMention(msg.author.id)}'s deck**__:`;
-		outMessage += `\n${deck.content}`;
-
-		const row = generateDeckValidateButtons(submitted[0].tournament.tournamentId, msg.author.id, msg.id);
 		if (submitted[0].tournament.privateChannel) {
-			await send(msg.client, submitted[0].tournament.privateChannel, {
-				content: outMessage,
-				components: [row]
-			});
+			await send(
+				msg.client,
+				submitted[0].tournament.privateChannel,
+				generateDeckSubmissionMessage(deck, msg.author)
+			);
 		}
 		await msg.reply("Your deck has been resubmitted to the tournament hosts. Please wait for their approval.");
 		return;

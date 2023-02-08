@@ -3,11 +3,20 @@ import { ManualDeckSubmission } from "./ManualDeckSubmission";
 import { ManualTournament } from "./ManualTournament";
 
 /**
+ * Inspired by CacheTypeReducer from Discord.js.
+ *
+ * true => property is defined
+ * false => property is undefined
+ * true | false => property may or may not be defined
+ */
+type HasPropertyReducer<Has extends boolean, T> = Has extends true ? T : Has extends false ? undefined : T | undefined;
+
+/**
  * A Discord user engaging with Emcee. A user cannot "multiply-engage" with the
  * same tournament so a primary key is declared across the first two columns.
  */
 @Entity()
-export class ManualParticipant extends BaseEntity {
+export class ManualParticipant<HasDeck extends boolean = boolean> extends BaseEntity {
 	/// Explicitly specify the foreign key for the below relation to avoid jank ORM naming.
 	@PrimaryColumn()
 	tournamentId!: number;
@@ -37,5 +46,5 @@ export class ManualParticipant extends BaseEntity {
 		eager: true,
 		onDelete: "CASCADE"
 	})
-	deck?: ManualDeckSubmission;
+	deck!: HasPropertyReducer<HasDeck, ManualDeckSubmission>;
 }

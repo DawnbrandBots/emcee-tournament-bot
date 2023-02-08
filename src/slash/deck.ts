@@ -5,10 +5,13 @@ import {
 	ButtonBuilder,
 	ButtonInteraction,
 	ChatInputCommandInteraction,
+	escapeMarkdown,
+	MessageReplyOptions,
 	ModalBuilder,
 	ModalMessageModalSubmitInteraction,
 	SlashCommandBuilder,
 	TextInputBuilder,
+	User,
 	userMention
 } from "discord.js";
 import { ManualDeckSubmission, ManualTournament } from "../database/orm";
@@ -16,6 +19,7 @@ import { encodeCustomId } from "../events/interaction";
 import { AutocompletableCommand, ButtonClickHandler, MessageModalSubmitHandler } from "../SlashCommand";
 import { getLogger, Logger } from "../util/logger";
 import { authenticateHost, autocompleteTournament, tournamentOption } from "./database";
+import { formatFriendCode } from "./open";
 
 export class DeckCommand extends AutocompletableCommand {
 	#logger = getLogger("command:deck");
@@ -48,7 +52,8 @@ export class DeckCommand extends AutocompletableCommand {
 	protected override async execute(interaction: ChatInputCommandInteraction<"cached">): Promise<void> {
 		const tournamentName = interaction.options.getString("tournament", true);
 		const tournament = await ManualTournament.findOneOrFail({
-			where: { name: tournamentName }
+			where: { name: tournamentName },
+			relations: []
 		});
 
 		if (!(await authenticateHost(tournament, interaction))) {
@@ -57,7 +62,10 @@ export class DeckCommand extends AutocompletableCommand {
 		}
 
 		const user = interaction.options.getUser("player", true);
-		const playerDeck = tournament.decks.find(d => d.discordId === user.id);
+		const playerDeck = await ManualDeckSubmission.findOne({
+			where: { discordId: user.id, tournamentId: tournament.tournamentId },
+			relations: { participant: true }
+		});
 		if (!playerDeck) {
 			await interaction.reply({
 				content: `That player is not in the tournament, or has not submitted a deck.`,
@@ -66,19 +74,8 @@ export class DeckCommand extends AutocompletableCommand {
 			return;
 		}
 
-		let outMessage = `__**${userMention(user.id)}'s deck**__:`;
-		if (playerDeck.label) {
-			outMessage += `\n**Theme**: ${playerDeck.label}`;
-		}
-		outMessage += `\n${playerDeck.content}`;
-
-		if (playerDeck.approved) {
-			await interaction.reply(outMessage);
-			return;
-		}
-
-		const row = generateDeckValidateButtons(tournament.tournamentId, user.id, playerDeck.message);
-		await interaction.reply({ content: outMessage, components: [row] });
+		const reply = generateDeckSubmissionMessage(playerDeck, user);
+		await interaction.reply(playerDeck.approved ? reply.content : reply);
 	}
 }
 
@@ -90,25 +87,31 @@ function rejectButton(tournamentId: number, playerId: string, messageId: string)
 		.setEmoji("❎");
 }
 
-export function generateDeckValidateButtons(
-	tournamentId: number,
-	playerId: string,
-	messageId: string
-): ActionRowBuilder<ButtonBuilder> {
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+export function generateDeckSubmissionMessage(deck: ManualDeckSubmission, user: User) {
+	// user should match deck.discordId, used for convenience
+	let content = `__**${user} (${escapeMarkdown(user.tag)})'s deck**__:`;
+	if (deck.participant.friendCode) {
+		content += `\n${formatFriendCode(deck.participant.friendCode)}`;
+	}
+	if (deck.label) {
+		content += `\n**Theme**: ${deck.label}`;
+	}
+	content += `\n${deck.content}`;
 	const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
 		new ButtonBuilder()
-			.setCustomId(encodeCustomId("accept", tournamentId, playerId, messageId))
+			.setCustomId(encodeCustomId("accept", deck.tournamentId, deck.discordId, deck.message))
 			.setLabel("Accept")
 			.setStyle(ButtonStyle.Success)
 			.setEmoji("✅"),
 		new ButtonBuilder()
-			.setCustomId(encodeCustomId("quickaccept", tournamentId, playerId, messageId))
+			.setCustomId(encodeCustomId("quickaccept", deck.tournamentId, deck.discordId, deck.message))
 			.setLabel("Accept (No Theme)")
 			.setStyle(ButtonStyle.Success)
 			.setEmoji("⏩"),
-		rejectButton(tournamentId, playerId, messageId)
+		rejectButton(deck.tournamentId, deck.discordId, deck.message)
 	);
-	return row;
+	return { content, components: [row] } satisfies MessageReplyOptions;
 }
 
 const OUTDATED_LABEL = "🐌 OUTDATED\n";
