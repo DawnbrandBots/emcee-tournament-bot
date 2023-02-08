@@ -182,7 +182,9 @@ export async function onDirectMessage(
 				components: [row]
 			});
 		}
-		await msg.reply("Your deck has been submitted to the tournament hosts. Please wait for their approval.");
+		await msg.reply(
+			"Your deck has been submitted to the tournament hosts. Please wait for their approval.\nYou can resubmit by sending new screenshots, all attached to one message."
+		);
 		return;
 	}
 	if (submitted.length > 1) {

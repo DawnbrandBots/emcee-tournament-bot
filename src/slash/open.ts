@@ -145,7 +145,7 @@ async function registerParticipant(
 	await interaction.update({});
 	try {
 		await interaction.user.send(
-			`Please upload screenshots of your decklist to register.\n**Important**: Please do not delete your message! You will be dropped for cheating, as this can make your decklist invisible to hosts.`
+			`Please upload screenshots of your decklist to register, all attached to one message. \n**Important**: Please do not delete your message! You will be dropped for cheating, as this can make your decklist invisible to hosts.`
 		);
 		if (friendCode) {
 			await setNickname(interaction.member, friendCode);
