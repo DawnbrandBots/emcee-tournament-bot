@@ -33,6 +33,7 @@ export class FinishCommand extends AutocompletableCommand {
 	}
 
 	protected override async execute(interaction: ChatInputCommandInteraction<"cached">): Promise<void> {
+		await interaction.deferReply();
 		const tournamentName = interaction.options.getString("tournament", true);
 		const tournament = await ManualTournament.findOneOrFail({ where: { name: tournamentName } });
 
@@ -55,6 +56,6 @@ export class FinishCommand extends AutocompletableCommand {
 
 		await role?.delete();
 
-		await interaction.reply(`${tournament.name} successfully concluded`);
+		await interaction.editReply(`${tournament.name} successfully concluded`);
 	}
 }

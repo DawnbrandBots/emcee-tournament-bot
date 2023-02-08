@@ -31,6 +31,7 @@ export class DropCommand extends AutocompletableCommand {
 	}
 
 	protected override async execute(interaction: ChatInputCommandInteraction<"cached">): Promise<void> {
+		await interaction.deferReply();
 		const tournamentName = interaction.options.getString("tournament", true);
 		const tournament = await ManualTournament.findOneOrFail({
 			where: { name: tournamentName },

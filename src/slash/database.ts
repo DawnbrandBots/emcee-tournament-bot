@@ -105,9 +105,9 @@ export async function dropPlayer(
 	}
 
 	const playerMessage = `You have been dropped from ${tournament.name}.`;
-
+	const method = interaction?.deferred ? "editReply" : "reply";
 	if (interaction?.commandName === "drop") {
-		await interaction.reply(playerMessage);
+		await interaction[method](playerMessage);
 	} else {
 		await member.send(playerMessage);
 	}
@@ -115,7 +115,7 @@ export async function dropPlayer(
 	const hostMessage = `${userMention(member.id)} has been dropped from ${tournament.name}.`;
 
 	if (interaction && interaction.commandName !== "drop") {
-		await interaction.reply(hostMessage);
+		await interaction[method](hostMessage);
 	} else if (tournament.privateChannel) {
 		await send(member.client, tournament.privateChannel, hostMessage);
 	}

@@ -32,6 +32,7 @@ export class StartCommand extends AutocompletableCommand {
 	}
 
 	protected override async execute(interaction: ChatInputCommandInteraction<"cached">): Promise<void> {
+		await interaction.deferReply();
 		const tournamentName = interaction.options.getString("tournament", true);
 		const tournament = await ManualTournament.findOneOrFail({
 			where: { name: tournamentName },
@@ -46,7 +47,7 @@ export class StartCommand extends AutocompletableCommand {
 		const playersToDrop = tournament.participants.filter(p => !p.deck?.approved);
 
 		if (playersToDrop.length === tournament.participants.length) {
-			await interaction.reply(`No players have an approved deck, so you cannot start the tournament.`);
+			await interaction.editReply(`No players have an approved deck, so you cannot start the tournament.`);
 			return;
 		}
 
@@ -76,6 +77,6 @@ export class StartCommand extends AutocompletableCommand {
 		tournament.status = TournamentStatus.IPR;
 		await tournament.save();
 
-		await interaction.reply(`${tournament.name} prepared for commencement!`);
+		await interaction.editReply(`${tournament.name} prepared for commencement!`);
 	}
 }
