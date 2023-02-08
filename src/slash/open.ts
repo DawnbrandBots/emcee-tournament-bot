@@ -253,7 +253,7 @@ export class RegisterModalHandler implements MessageModalSubmitHandler {
 		const tournament = await ManualTournament.findOneOrFail({
 			where: { owningDiscordServer: interaction.guildId, registerMessage: interaction.message.id }
 		});
-
+		const ign = interaction.fields.getTextInputValue("ign");
 		const friendCodeString = interaction.fields.getTextInputValue("friendCode");
 		const friendCode = parseFriendCode(friendCodeString);
 		if (!friendCode && tournament.requireFriendCode) {
@@ -263,6 +263,6 @@ export class RegisterModalHandler implements MessageModalSubmitHandler {
 			});
 			return;
 		}
-		await registerParticipant(interaction, tournament, friendCode, interaction.fields.getTextInputValue("ign"));
+		await registerParticipant(interaction, tournament, friendCode, ign);
 	}
 }
