@@ -25,6 +25,10 @@ export class ManualParticipant<HasDeck extends boolean = boolean> extends BaseEn
 	@PrimaryColumn({ length: 20 })
 	discordId!: string;
 
+	/// Master Duel in-game name, if in use
+	@Column({ length: 12, nullable: true })
+	ign?: string;
+
 	/// Master Duel friend code, if in use
 	@Column({ type: "integer", nullable: true })
 	friendCode?: number;

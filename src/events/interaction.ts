@@ -18,7 +18,7 @@ import { ForceDropContextCommand, ForceDropSlashCommand } from "../slash/forcedr
 import { HostCommand } from "../slash/host";
 import { InfoCommand } from "../slash/info";
 import { ListCommand } from "../slash/list";
-import { FriendCodeModalHandler, OpenCommand, RegisterButtonHandler } from "../slash/open";
+import { OpenCommand, RegisterButtonHandler, RegisterModalHandler } from "../slash/open";
 import { QueueCommand } from "../slash/queue";
 import { StartCommand } from "../slash/start";
 import { TimerCommand } from "../slash/timer";
@@ -55,7 +55,7 @@ export function makeHandler({ organiserRole, timeWizard }: CommandSupport) {
 		new QuickAcceptButtonHandler(),
 		new RejectButtonHandler()
 	];
-	const messageModalArray = [new FriendCodeModalHandler(), new AcceptLabelModal(), new RejectReasonModal()];
+	const messageModalArray = [new RegisterModalHandler(), new AcceptLabelModal(), new RejectReasonModal()];
 	const contextArray = [new ForceDropContextCommand()];
 
 	const commands = new Map<string, SlashCommand>();
