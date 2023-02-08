@@ -61,7 +61,8 @@ export class CsvCommand extends AutocompletableCommand {
 				.filter(d => d.approved)
 				.map(d => d.label || "No theme")
 				.reduce((map, theme) => map.set(theme, (map.get(theme) || 0) + 1), new Map<string, number>());
-			file = await csv.writeToBuffer([["Theme", "Count"], ...themes.entries()]);
+			const sortedDescending = [...themes.entries()].sort(([, a], [, b]) => b - a);
+			file = await csv.writeToBuffer([["Theme", "Count"], ...sortedDescending]);
 		} else {
 			const players = tournament.decks
 				.filter(d => d.approved)
