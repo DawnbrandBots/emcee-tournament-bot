@@ -12,6 +12,7 @@ import { ILike } from "typeorm";
 import { TournamentStatus } from "../database/interface";
 import { ManualParticipant, ManualTournament } from "../database/orm";
 import { send } from "../util/discord";
+import { getLogger } from "../util/logger";
 
 export const tournamentOption = new SlashCommandStringOption()
 	.setName("tournament")
@@ -87,16 +88,16 @@ export function checkParticipantCap(
 	return referenceArray.length < capacity;
 }
 
+const logger = getLogger("drop:manual");
+
 export async function dropPlayer(
 	tournament: ManualTournament,
 	player: ManualParticipant,
 	member: GuildMember | PartialGuildMember | User,
 	interaction?: ChatInputCommandInteraction | ContextMenuCommandInteraction
 ): Promise<void> {
-	// don't use participantRoleProvider because it's made for ChallongeTournaments with exposed ids
-	// TODO: fix above? also handle when can't find role
 	if ("roles" in member) {
-		await member.roles.remove(tournament.participantRole, "Dropped from tournament.");
+		await member.roles.remove(tournament.participantRole, "Dropped from tournament.").catch(logger.info);
 	}
 
 	if (tournament.status === TournamentStatus.PREPARING) {
