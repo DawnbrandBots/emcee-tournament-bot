@@ -6,6 +6,7 @@ import { AutocompletableCommand } from "../SlashCommand";
 import { username } from "../util/discord";
 import { getLogger, Logger } from "../util/logger";
 import { authenticateHost, autocompleteTournament, tournamentOption } from "./database";
+import { formatFriendCode } from "./open";
 
 export class CsvCommand extends AutocompletableCommand {
 	#logger = getLogger("command:csv");
@@ -75,7 +76,9 @@ export class CsvCommand extends AutocompletableCommand {
 						Player: tag,
 						Theme: deck.label || "No theme",
 						"In-Game Name": deck.participant.ign || "No IGN",
-						"Friend Code": deck.participant.friendCode || "No friend code"
+						"Friend Code": deck.participant.friendCode
+							? formatFriendCode(deck.participant.friendCode)
+							: "No friend code"
 					};
 				});
 			file = await csv.writeToBuffer(await Promise.all(players), { headers: true });
