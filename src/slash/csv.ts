@@ -6,6 +6,7 @@ import { AutocompletableCommand } from "../SlashCommand";
 import { username } from "../util/discord";
 import { getLogger, Logger } from "../util/logger";
 import { authenticateHost, autocompleteTournament, tournamentOption } from "./database";
+import { formatFriendCode } from "./open";
 
 export class CsvCommand extends AutocompletableCommand {
 	#logger = getLogger("command:csv");
@@ -45,7 +46,10 @@ export class CsvCommand extends AutocompletableCommand {
 	protected override async execute(interaction: ChatInputCommandInteraction<"cached">): Promise<void> {
 		await interaction.deferReply();
 		const tournamentName = interaction.options.getString("tournament", true);
-		const tournament = await ManualTournament.findOneOrFail({ where: { name: tournamentName } });
+		const tournament = await ManualTournament.findOneOrFail({
+			where: { name: tournamentName },
+			relations: { decks: { participant: true } }
+		});
 
 		if (!(await authenticateHost(tournament, interaction))) {
 			// rejection messages handled in helper
@@ -70,7 +74,11 @@ export class CsvCommand extends AutocompletableCommand {
 					const tag = (await username(interaction.client, deck.discordId)) || deck.discordId;
 					return {
 						Player: tag,
-						Theme: deck.label || "No theme"
+						Theme: deck.label || "No theme",
+						"In-Game Name": deck.participant.ign || "No IGN",
+						"Friend Code": deck.participant.friendCode
+							? formatFriendCode(deck.participant.friendCode)
+							: "No friend code"
 					};
 				});
 			file = await csv.writeToBuffer(await Promise.all(players), { headers: true });
