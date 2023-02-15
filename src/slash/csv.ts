@@ -75,7 +75,7 @@ export class CsvCommand extends AutocompletableCommand {
 					return {
 						Player: tag,
 						Theme: deck.label || "No theme",
-						"In-Game Name": deck.participant.ign || "No IGN",
+						"In-Game Name": deck.participant.ign || tag,
 						"Friend Code": deck.participant.friendCode
 							? formatFriendCode(deck.participant.friendCode)
 							: "No friend code"
