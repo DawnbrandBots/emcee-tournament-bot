@@ -20,6 +20,7 @@ import { InfoCommand } from "../slash/info";
 import { ListCommand } from "../slash/list";
 import { OpenCommand, RegisterButtonHandler, RegisterModalHandler } from "../slash/open";
 import { QueueCommand } from "../slash/queue";
+import { ReportWinCommand } from "../slash/report-win";
 import { StartCommand } from "../slash/start";
 import { TimerCommand } from "../slash/timer";
 import { UpdateCommand } from "../slash/update";
@@ -47,7 +48,8 @@ export function makeHandler({ organiserRole, timeWizard }: CommandSupport) {
 		new CsvCommand(),
 		new StartCommand(),
 		new ListCommand(organiserRole),
-		new QueueCommand()
+		new QueueCommand(),
+		new ReportWinCommand()
 	];
 	const buttonArray = [
 		new RegisterButtonHandler(),
