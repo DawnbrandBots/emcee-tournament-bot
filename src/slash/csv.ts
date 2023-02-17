@@ -3,7 +3,6 @@ import { RESTPostAPIApplicationCommandsJSONBody } from "discord-api-types/v10";
 import { AutocompleteInteraction, ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
 import { ManualTournament } from "../database/orm";
 import { AutocompletableCommand } from "../SlashCommand";
-import { username } from "../util/discord";
 import { getLogger, Logger } from "../util/logger";
 import { authenticateHost, autocompleteTournament, tournamentOption } from "./database";
 import { formatFriendCode } from "./open";
@@ -71,11 +70,13 @@ export class CsvCommand extends AutocompletableCommand {
 			const players = tournament.decks
 				.filter(d => d.approved)
 				.map(async deck => {
-					const tag = (await username(interaction.client, deck.discordId)) || deck.discordId;
+					const user = await interaction.client.users.fetch(deck.discordId);
+					const tag = user ? user.tag : deck.discordId;
+					const name = user ? user.username : "No IGN";
 					return {
 						Player: tag,
 						Theme: deck.label || "No theme",
-						"In-Game Name": deck.participant.ign || "No IGN",
+						"In-Game Name": deck.participant.ign || name,
 						"Friend Code": deck.participant.friendCode
 							? formatFriendCode(deck.participant.friendCode)
 							: "No friend code"
