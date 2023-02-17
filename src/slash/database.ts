@@ -112,7 +112,7 @@ export async function dropPlayer(
 	if (interaction?.commandName === "drop") {
 		await interaction[method](playerMessage);
 	} else {
-		await member.send(playerMessage);
+		await member.send(playerMessage).catch(logger.info);
 	}
 
 	const hostMessage = `${userMention(member.id)} has been dropped from ${tournament.name}.`;
