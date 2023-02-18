@@ -4,19 +4,20 @@ import { APIUser, Routes } from "discord-api-types/v10";
 import dotenv from "dotenv";
 import { ChannelCommand } from "../slash/channel";
 import { CreateCommand } from "../slash/create";
+import { CsvCommand } from "../slash/csv";
 import { DeckCommand } from "../slash/deck";
 import { DropCommand } from "../slash/drop";
+import { FinishCommand } from "../slash/finish";
 import { ForceDropContextCommand, ForceDropSlashCommand } from "../slash/forcedrop";
 import { HostCommand } from "../slash/host";
 import { InfoCommand } from "../slash/info";
+import { ListCommand } from "../slash/list";
+import { OpenCommand } from "../slash/open";
+import { QueueCommand } from "../slash/queue";
+import { ReportWinCommand } from "../slash/report-win";
+import { StartCommand } from "../slash/start";
 import { TimerCommand } from "../slash/timer";
 import { UpdateCommand } from "../slash/update";
-import { FinishCommand } from "../slash/finish";
-import { OpenCommand } from "../slash/open";
-import { CsvCommand } from "../slash/csv";
-import { StartCommand } from "../slash/start";
-import { ListCommand } from "../slash/list";
-import { QueueCommand } from "../slash/queue";
 
 export const classes = [
 	// Register here and in events/interaction.ts
@@ -35,7 +36,8 @@ export const classes = [
 	CsvCommand,
 	StartCommand,
 	ListCommand,
-	QueueCommand
+	QueueCommand,
+	ReportWinCommand
 ];
 
 // Register Slash Commands on CI
