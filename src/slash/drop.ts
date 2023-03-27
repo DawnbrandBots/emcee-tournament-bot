@@ -1,5 +1,6 @@
 import { RESTPostAPIApplicationCommandsJSONBody } from "discord-api-types/v10";
 import { AutocompleteInteraction, ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
+import { TournamentStatus } from "../database/interface";
 import { ManualParticipant, ManualTournament } from "../database/orm";
 import { AutocompletableCommand } from "../SlashCommand";
 import { getLogger, Logger } from "../util/logger";
@@ -44,7 +45,10 @@ export class DropCommand extends AutocompletableCommand {
 		const tournamentName = interaction.options.getString("tournament");
 		if (!tournamentName) {
 			const players = await ManualParticipant.find({
-				where: { discordId: interaction.user.id },
+				where: {
+					discordId: interaction.user.id,
+					tournament: [{ status: TournamentStatus.PREPARING }, { status: TournamentStatus.IPR }]
+				},
 				relations: ["tournament"]
 			});
 

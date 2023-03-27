@@ -8,6 +8,7 @@ import {
 	UserContextMenuCommandInteraction
 } from "discord.js";
 import { ContextCommand } from "../ContextCommand";
+import { TournamentStatus } from "../database/interface";
 import { ManualParticipant, ManualTournament } from "../database/orm";
 import { AutocompletableCommand } from "../SlashCommand";
 import { getLogger, Logger } from "../util/logger";
@@ -91,7 +92,13 @@ export class ForceDropContextCommand extends ContextCommand {
 		// more useful than user since we need to manage roles, still has the id
 		const member = interaction.targetMember;
 
-		const players = await ManualParticipant.find({ where: { discordId: member.id }, relations: ["tournament"] });
+		const players = await ManualParticipant.find({
+			where: {
+				discordId: member.id,
+				tournament: [{ status: TournamentStatus.PREPARING }, { status: TournamentStatus.IPR }]
+			},
+			relations: ["tournament"]
+		});
 
 		if (players.length < 1) {
 			await interaction.reply({ content: `That user is not in any tournaments.`, ephemeral: true });
