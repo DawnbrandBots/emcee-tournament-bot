@@ -29,7 +29,7 @@ export class UpdateCommand extends AutocompletableCommand {
 			.addStringOption(option =>
 				option.setName("description").setDescription("The new description of the tournament.")
 			)
-			.addNumberOption(option =>
+			.addIntegerOption(option =>
 				option.setName("capacity").setDescription("The new capacity for the tournament.").setMinValue(0)
 			)
 			.addBooleanOption(option =>
@@ -64,7 +64,7 @@ export class UpdateCommand extends AutocompletableCommand {
 
 		const name = interaction.options.getString("name");
 		const description = interaction.options.getString("description");
-		const rawCap = interaction.options.getNumber("capacity");
+		const capacity = interaction.options.getNumber("capacity");
 		const requireCode = interaction.options.getBoolean("require-code");
 
 		let updated = false;
@@ -78,9 +78,7 @@ export class UpdateCommand extends AutocompletableCommand {
 			updated = true;
 		}
 
-		if (rawCap) {
-			// enforce integer cap
-			const capacity = Math.floor(rawCap);
+		if (capacity) {
 			// cap 0 means uncapped
 			if (!checkParticipantCap(tournament, capacity, true)) {
 				await interaction[replyKey](
