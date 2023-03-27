@@ -1,10 +1,5 @@
 import { RESTPostAPIApplicationCommandsJSONBody } from "discord-api-types/v10";
-import {
-	AutocompleteInteraction,
-	chatInputApplicationCommandMention,
-	ChatInputCommandInteraction,
-	SlashCommandBuilder
-} from "discord.js";
+import { AutocompleteInteraction, ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
 import { ManualParticipant, ManualTournament } from "../database/orm";
 import { AutocompletableCommand } from "../SlashCommand";
 import { getLogger, Logger } from "../util/logger";
@@ -59,13 +54,8 @@ export class DropCommand extends AutocompletableCommand {
 			}
 
 			if (players.length > 1) {
-				if (!interaction.guild.commands.cache.size) {
-					await interaction.guild.commands.fetch();
-				}
-				const id = interaction.guild.commands.cache.find(command => command.name === "drop")?.id || "";
-				const mention = chatInputApplicationCommandMention("forcedrop", id);
 				await interaction.editReply(
-					`You are in multiple tournaments. Use the \`tournament\` option in ${mention} to specify.`
+					`You are in multiple tournaments. Please try again and specify using the \`tournament\` option.`
 				);
 				return;
 			}
