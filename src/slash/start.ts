@@ -1,7 +1,7 @@
 import { RESTPostAPIApplicationCommandsJSONBody } from "discord-api-types/v10";
 import { AutocompleteInteraction, ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
 import { TournamentStatus } from "../database/interface";
-import { ManualTournament } from "../database/orm";
+import { ManualParticipant, ManualTournament } from "../database/orm";
 import { AutocompletableCommand } from "../SlashCommand";
 import { getLogger, Logger } from "../util/logger";
 import { authenticateHost, autocompleteTournament, dropPlayer, tournamentOption } from "./database";
@@ -35,8 +35,7 @@ export class StartCommand extends AutocompletableCommand {
 		await interaction.deferReply();
 		const tournamentName = interaction.options.getString("tournament", true);
 		const tournament = await ManualTournament.findOneOrFail({
-			where: { name: tournamentName },
-			relations: ["participants"]
+			where: { name: tournamentName }
 		});
 
 		if (!(await authenticateHost(tournament, interaction))) {
@@ -44,9 +43,11 @@ export class StartCommand extends AutocompletableCommand {
 			return;
 		}
 
-		const playersToDrop = tournament.participants.filter(p => !p.deck?.approved);
+		const participants = await ManualParticipant.find({ where: { tournament: { name: tournamentName } } });
 
-		if (playersToDrop.length === tournament.participants.length) {
+		const playersToDrop = participants.filter(p => !p.deck?.approved);
+
+		if (playersToDrop.length === participants.length) {
 			await interaction.editReply(`No players have an approved deck, so you cannot start the tournament.`);
 			return;
 		}
