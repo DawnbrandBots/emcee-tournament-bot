@@ -64,7 +64,7 @@ export class UpdateCommand extends AutocompletableCommand {
 
 		const name = interaction.options.getString("name");
 		const description = interaction.options.getString("description");
-		const capacity = interaction.options.getNumber("capacity");
+		const capacity = interaction.options.getInteger("capacity");
 		const requireCode = interaction.options.getBoolean("require-code");
 
 		let updated = false;
