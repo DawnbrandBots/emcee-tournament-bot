@@ -50,7 +50,7 @@ export class CreateCommand extends SlashCommand {
 
 		const name = interaction.options.getString("name", true);
 		const description = interaction.options.getString("description", true);
-		const capacity = interaction.options.getNumber("capacity") || 0;
+		const capacity = interaction.options.getInteger("capacity") || 0;
 		const requireCode = interaction.options.getBoolean("requirecode") || false;
 		const tournament = new ManualTournament();
 		// compared to challonge tournaments, tournamentId autoincrements
