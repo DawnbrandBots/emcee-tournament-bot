@@ -24,6 +24,9 @@ export class CreateCommand extends SlashCommand {
 			.addStringOption(option =>
 				option.setName("description").setDescription("A description of the tournament.").setRequired(true)
 			)
+			.addIntegerOption(option =>
+				option.setName("capacity").setDescription("The new capacity for the tournament.").setMinValue(0)
+			)
 			.addBooleanOption(option =>
 				option
 					.setName("requirecode")
@@ -47,6 +50,7 @@ export class CreateCommand extends SlashCommand {
 
 		const name = interaction.options.getString("name", true);
 		const description = interaction.options.getString("description", true);
+		const capacity = interaction.options.getInteger("capacity") || 0;
 		const requireCode = interaction.options.getBoolean("requirecode") || false;
 		const tournament = new ManualTournament();
 		// compared to challonge tournaments, tournamentId autoincrements
@@ -54,6 +58,7 @@ export class CreateCommand extends SlashCommand {
 		tournament.description = description;
 		tournament.owningDiscordServer = interaction.guild.id;
 		tournament.hosts = [interaction.user.id];
+		tournament.participantLimit = capacity;
 		tournament.requireFriendCode = requireCode;
 
 		const playerRole = await interaction.guild.roles.create({
