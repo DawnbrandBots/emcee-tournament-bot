@@ -59,13 +59,17 @@ export async function authenticatePlayer(
 	tournament: ManualTournament,
 	interaction: ChatInputCommandInteraction<"cached">
 ): Promise<ManualParticipant | undefined> {
+	const method = interaction.deferred ? "editReply" : "reply";
 	if (tournament.owningDiscordServer !== interaction.guildId) {
-		await interaction.reply({ content: `That tournament isn't in this server.`, ephemeral: true });
+		await interaction[method]({
+			content: `That tournament isn't in this server.`,
+			ephemeral: !interaction.deferred // same solution as authenticateHost
+		});
 		return;
 	}
 	const player = tournament.participants.find(p => p.discordId === interaction.user.id);
 	if (!player) {
-		await interaction.reply({ content: `You are not in that tournament.`, ephemeral: true });
+		await interaction[method]({ content: `You are not in that tournament.`, ephemeral: !interaction.deferred });
 		return;
 	}
 	return player;
