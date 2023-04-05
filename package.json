@@ -32,7 +32,7 @@
 		"debug": "^4.3.4",
 		"discord.js": "^14.9.0",
 		"dotenv": "^16.0.3",
-		"make-fetch-happen": "^10.2.1",
+		"make-fetch-happen": "^11.0.3",
 		"node-fetch": "^2.6.9",
 		"pg": "^8.10.0",
 		"reflect-metadata": "^0.1.13",
