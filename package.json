@@ -45,7 +45,7 @@
 	"devDependencies": {
 		"@alphakretin/essentials": "^5.0.0",
 		"@alphakretin/mocha-ecosystem": "^1.1.0",
-		"@types/debug": "^4.1.7",
+		"@types/debug": "^4.1.8",
 		"@types/make-fetch-happen": "^10.0.1",
 		"@types/node-fetch": "^2.6.3",
 		"testcontainers": "^9.8.0"
