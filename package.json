@@ -48,7 +48,7 @@
 		"@types/debug": "^4.1.8",
 		"@types/make-fetch-happen": "^10.0.1",
 		"@types/node-fetch": "^2.6.3",
-		"testcontainers": "^9.9.0"
+		"testcontainers": "^9.9.1"
 	},
 	"resolutions": {
 		"@types/node": "^18.15.11"
