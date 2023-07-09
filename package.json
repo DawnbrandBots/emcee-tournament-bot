@@ -33,7 +33,7 @@
 		"discord.js": "^14.11.0",
 		"dotenv": "^16.3.1",
 		"make-fetch-happen": "^11.1.1",
-		"node-fetch": "^2.6.9",
+		"node-fetch": "^2.6.12",
 		"pg": "^8.11.0",
 		"reflect-metadata": "^0.1.13",
 		"supports-color": "^9.3.1",
@@ -47,7 +47,7 @@
 		"@alphakretin/mocha-ecosystem": "^1.1.0",
 		"@types/debug": "^4.1.8",
 		"@types/make-fetch-happen": "^10.0.1",
-		"@types/node-fetch": "^2.6.3",
+		"@types/node-fetch": "^2.6.4",
 		"testcontainers": "^9.9.1"
 	},
 	"resolutions": {
