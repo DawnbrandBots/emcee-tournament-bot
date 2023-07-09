@@ -995,10 +995,10 @@
     "@types/node" "*"
     "@types/ssh2" "*"
 
-"@types/dockerode@^3.3.16":
-  version "3.3.16"
-  resolved "https://registry.yarnpkg.com/@types/dockerode/-/dockerode-3.3.16.tgz#3f6c90385a34af40ca8e07e20d26dea4d520eb7b"
-  integrity sha512-ZAX2VrkTjwjk1808T8m6vMr+CFXSLiDD+tkEkLThI+v83AfzlYQZEWfZKwFyk1PWopSXkdDunmIhrF7sxt+zWg==
+"@types/dockerode@^3.3.19":
+  version "3.3.19"
+  resolved "https://registry.yarnpkg.com/@types/dockerode/-/dockerode-3.3.19.tgz#59eb07550a102b397a9504083a6c50d811eed04c"
+  integrity sha512-7CC5yIpQi+bHXwDK43b/deYXteP3Lem9gdocVVHJPSRJJLMfbiOchQV3rDmAPkMw+n3GIVj7m1six3JW+VcwwA==
   dependencies:
     "@types/docker-modem" "*"
     "@types/node" "*"
@@ -3505,10 +3505,10 @@ node-abi@^3.3.0:
   dependencies:
     semver "^7.3.5"
 
-node-fetch@^2.6.1, node-fetch@^2.6.7, node-fetch@^2.6.9:
-  version "2.6.9"
-  resolved "https://registry.yarnpkg.com/node-fetch/-/node-fetch-2.6.9.tgz#7c7f744b5cc6eb5fd404e0c7a9fec630a55657e6"
-  integrity sha512-DJm/CJkZkRjKKj4Zi4BsKVZh3ValV5IR5s7LVZnW+6YMh0W1BfNA8XSs6DLMGYlId5F3KnA70uu2qepcR08Qqg==
+node-fetch@^2.6.1, node-fetch@^2.6.11, node-fetch@^2.6.7, node-fetch@^2.6.9:
+  version "2.6.11"
+  resolved "https://registry.yarnpkg.com/node-fetch/-/node-fetch-2.6.11.tgz#cde7fc71deef3131ef80a738919f999e6edfff25"
+  integrity sha512-4I6pdBY1EthSqDmJkiNk3JIT8cswwR9nfeW/cPdUagJYEQG7R95WRH74wpz7ma8Gh/9dI9FP+OU+0E4FvtA55w==
   dependencies:
     whatwg-url "^5.0.0"
 
@@ -4513,14 +4513,14 @@ test-exclude@^6.0.0:
     glob "^7.1.4"
     minimatch "^3.0.4"
 
-testcontainers@^9.9.0:
-  version "9.9.0"
-  resolved "https://registry.yarnpkg.com/testcontainers/-/testcontainers-9.9.0.tgz#42ae8480bcadd4d39d12054dcd43bdbe3ac5cfb8"
-  integrity sha512-QUEz+yqgy4Xl77ztuWhmvBR8Fs0jGOEh7/x+fJbZTNQcIIbG+ft/02X0EQhI5qzTI1qxIz05xarFlH+0EI4rOg==
+testcontainers@^9.9.1:
+  version "9.9.1"
+  resolved "https://registry.yarnpkg.com/testcontainers/-/testcontainers-9.9.1.tgz#0af23e56c52eb7cd0e3bc63cc3e059abf3f1705a"
+  integrity sha512-44iDiyK0JzK5FbqdrKjmE/8QSZhvCFxh0d/OfG+R9fkznU5KVCYeeUsPULkVRIi210X4FAitSXra1ZU591Zlqw==
   dependencies:
     "@balena/dockerignore" "^1.0.2"
     "@types/archiver" "^5.3.2"
-    "@types/dockerode" "^3.3.16"
+    "@types/dockerode" "^3.3.19"
     archiver "^5.3.1"
     async-lock "^1.4.0"
     byline "^5.0.0"
@@ -4528,7 +4528,7 @@ testcontainers@^9.9.0:
     docker-compose "^0.24.1"
     dockerode "^3.3.5"
     get-port "^5.1.1"
-    node-fetch "^2.6.9"
+    node-fetch "^2.6.11"
     properties-reader "^2.2.0"
     ssh-remote-port-forward "^1.0.4"
     tar-fs "^2.1.1"
