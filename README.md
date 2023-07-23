@@ -5,7 +5,9 @@
 <!-- Unfortunately, GitHub Markdown sanitizes style attributes, so we will have to use a deprecated HTML attribute. -->
 [<img src="https://cdn.discordapp.com/avatars/691882968809209917/1ffd7675f6fb2a4c21b1b356b7856279.png" alt="Emcee avatar" align="right" />](https://yugipedia.com/wiki/MC)
 
-![Build](https://github.com/DawnbrandBots/emcee-tournament-bot/workflows/Build/badge.svg)&nbsp;
+[![Compile and test](https://github.com/DawnbrandBots/emcee-tournament-bot/actions/workflows/node.js.yml/badge.svg)](https://github.com/DawnbrandBots/emcee-tournament-bot/actions/workflows/node.js.yml)
+[![Build Docker image](https://github.com/DawnbrandBots/emcee-tournament-bot/actions/workflows/docker.yml/badge.svg)](https://github.com/DawnbrandBots/emcee-tournament-bot/actions/workflows/docker.yml)
+[![CodeQL](https://github.com/DawnbrandBots/emcee-tournament-bot/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/DawnbrandBots/emcee-tournament-bot/actions/workflows/codeql-analysis.yml)
 [![Coverage Status](https://coveralls.io/repos/github/DawnbrandBots/emcee-tournament-bot/badge.svg?t=iUM0Et)](https://coveralls.io/github/DawnbrandBots/emcee-tournament-bot)
 
 A Discord bot to facilitate organising Yu-Gi-Oh! tournaments online using [Challonge](https://challonge.com/) and verify submitted decks.

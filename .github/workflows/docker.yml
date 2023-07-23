@@ -12,14 +12,16 @@ on:
       - .github/workflows/docker.yml
 
 jobs:
+  lint-dockerfile:
+    runs-on: ubuntu-latest
+    permissions: {}
+    steps:
+    - uses: actions/checkout@v3
+    - uses: hadolint/hadolint-action@v3.1.0
   build:
     runs-on: ubuntu-latest
     if: >-
       !(
-        contains(github.event.head_commit.message, '[ci skip]') ||
-        contains(github.event.head_commit.message, '[skip ci]') ||
-        contains(github.event.head_commit.message, '[actions skip]') ||
-        contains(github.event.head_commit.message, '[skip actions]') ||
         contains(github.event.head_commit.message, '[skip build]') ||
         contains(github.event.head_commit.message, '[build skip]')
       )
