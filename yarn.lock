@@ -4530,10 +4530,10 @@ test-exclude@^6.0.0:
     glob "^7.1.4"
     minimatch "^3.0.4"
 
-testcontainers@^9.11.0:
-  version "9.11.0"
-  resolved "https://registry.yarnpkg.com/testcontainers/-/testcontainers-9.11.0.tgz#cd8a51ec663a79f09d62bc2a5ba46d1845e3401a"
-  integrity sha512-U6pUvxz7UiK4TffBMF8qwMJxyHfFi5RiJjfXAfrfOY3xMdEYZABTXhAk2cZUmuxdSVZ5STK9KuqzV+OEAbH9DQ==
+testcontainers@^9.12.0:
+  version "9.12.0"
+  resolved "https://registry.yarnpkg.com/testcontainers/-/testcontainers-9.12.0.tgz#f9f2492af4317f649611005b60fa0bbf6fdd7639"
+  integrity sha512-zmjLTAUqCiDvhDq7TCwcyhI3m/cXXKGnhyLLJ9pgh53VgG9O+P+opX1pIx28aYTUQ7Yu6b5sJf0xoIuxoiclWg==
   dependencies:
     "@balena/dockerignore" "^1.0.2"
     "@types/archiver" "^5.3.2"
