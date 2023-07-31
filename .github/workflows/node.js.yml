@@ -38,8 +38,4 @@ jobs:
           CHALLONGE_TOKEN: ${{ secrets.CHALLONGE_TOKEN }},
           POSTGRESQL_URL: postgresql://localhost/nonexistent
       - run: yarn cover
-      - name: Coveralls
-        uses: coverallsapp/github-action@master
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
       - run: yarn lint
