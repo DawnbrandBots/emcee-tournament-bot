@@ -19,18 +19,11 @@ on:
     branches: [master]
   schedule:
     - cron: "42 1 * * 0"
-
+permissions:
+  security-events: write
 jobs:
   analyze:
     runs-on: ubuntu-latest
-    if: >-
-      !(
-        contains(github.event.head_commit.message, '[ci skip]') ||
-        contains(github.event.head_commit.message, '[skip ci]') ||
-        contains(github.event.head_commit.message, '[actions skip]') ||
-        contains(github.event.head_commit.message, '[skip actions]')
-      ) || github.event_name == 'schedule'
-
     strategy:
       fail-fast: false
       matrix:
@@ -40,7 +33,6 @@ jobs:
         # https://docs.github.com/en/free-pro-team@latest/github/finding-security-vulnerabilities-and-errors-in-your-code/configuring-code-scanning#changing-the-languages-that-are-analyzed
 
     steps:
-      - uses: GitHubSecurityLab/actions-permissions/monitor@v1
       - name: Checkout repository
         uses: actions/checkout@v3
 
