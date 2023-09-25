@@ -1,4 +1,5 @@
-import { Client, GatewayIntentBits, Partials } from "discord.js";
+import { ActivityType, Client, GatewayIntentBits, Partials } from "discord.js";
+import { TournamentManager } from "./TournamentManager";
 import { getConfig } from "./config"; // Must be imported first among first-party modules
 import { initializeDatabase } from "./database/postgres";
 import { initializeDeckManager } from "./deck";
@@ -7,7 +8,6 @@ import { OrganiserRoleProvider } from "./role/organiser";
 import { ParticipantRoleProvider } from "./role/participant";
 import { Templater } from "./templates";
 import { TimeWizard } from "./timer";
-import { TournamentManager } from "./TournamentManager";
 import { send } from "./util/discord";
 import { getLogger } from "./util/logger";
 import { WebsiteWrapperChallonge } from "./website/challonge";
@@ -64,14 +64,11 @@ const logger = getLogger("index");
 		timeWizard
 	});
 
-	let firstReady = true;
 	bot.on("ready", async () => {
 		logger.notify(`Logged in as ${bot.user?.tag} - ${bot.user?.id}`);
-		if (firstReady) {
-			firstReady = false;
-			await timeWizard.load();
-		}
+		bot.user?.setActivity("🕯️ Keeping the lights on", { type: ActivityType.Custom });
 	});
+	bot.once("ready", async () => await timeWizard.load());
 	bot.login().catch(logger.error);
 	process.once("SIGTERM", () => {
 		bot.destroy();
