@@ -46,7 +46,7 @@
 		"@alphakretin/essentials": "^5.1.0",
 		"@alphakretin/mocha-ecosystem": "^1.1.0",
 		"@types/debug": "^4.1.8",
-		"@types/make-fetch-happen": "^10.0.1",
+		"@types/make-fetch-happen": "^10.0.2",
 		"@types/node-fetch": "^2.6.4",
 		"testcontainers": "^9.12.0"
 	},
