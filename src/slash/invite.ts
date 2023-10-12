@@ -54,19 +54,14 @@ export class InviteCommand extends SlashCommand {
 		}
 		const invites = [];
 		for (let i = 0; i < quantity; i++) {
-			try {
-				const invite = await channel.createInvite({
-					maxAge: 0,
-					maxUses,
-					unique: true,
-					reason: "Created with /invite"
-				});
-				this.logger.verbose(serialiseInteraction(interaction, { url: invite.url }));
-				invites.push(invite.url);
-			} catch (e: any) {
-				await interaction.editReply(e);
-				throw e;
-			}
+			const invite = await channel.createInvite({
+				maxAge: 0,
+				maxUses,
+				unique: true,
+				reason: "Created with /invite"
+			});
+			this.logger.verbose(serialiseInteraction(interaction, { url: invite.url }));
+			invites.push(invite.url);
 		}
 		const response = invites.join("\n");
 		if (quantity > 1) {
