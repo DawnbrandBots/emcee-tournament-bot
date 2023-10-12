@@ -1,6 +1,7 @@
 import { Interaction } from "discord.js";
 import { CommandSupport } from "../Command";
 import { ContextCommand } from "../ContextCommand";
+import { AutocompletableCommand, ButtonClickHandler, MessageModalSubmitHandler, SlashCommand } from "../SlashCommand";
 import { ChannelCommand } from "../slash/channel";
 import { CreateCommand } from "../slash/create";
 import { CsvCommand } from "../slash/csv";
@@ -17,6 +18,7 @@ import { FinishCommand } from "../slash/finish";
 import { ForceDropContextCommand, ForceDropSlashCommand } from "../slash/forcedrop";
 import { HostCommand } from "../slash/host";
 import { InfoCommand } from "../slash/info";
+import { InviteCommand } from "../slash/invite";
 import { ListCommand } from "../slash/list";
 import { OpenCommand, RegisterButtonHandler, RegisterModalHandler } from "../slash/open";
 import { QueueCommand } from "../slash/queue";
@@ -24,7 +26,6 @@ import { ReportWinCommand } from "../slash/report-win";
 import { StartCommand } from "../slash/start";
 import { TimerCommand } from "../slash/timer";
 import { UpdateCommand } from "../slash/update";
-import { AutocompletableCommand, ButtonClickHandler, MessageModalSubmitHandler, SlashCommand } from "../SlashCommand";
 import { serialiseInteraction } from "../util";
 import { getLogger } from "../util/logger";
 
@@ -49,7 +50,8 @@ export function makeHandler({ organiserRole, timeWizard }: CommandSupport) {
 		new StartCommand(),
 		new ListCommand(organiserRole),
 		new QueueCommand(),
-		new ReportWinCommand()
+		new ReportWinCommand(),
+		new InviteCommand()
 	];
 	const buttonArray = [
 		new RegisterButtonHandler(),
