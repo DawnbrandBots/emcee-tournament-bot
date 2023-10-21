@@ -5,7 +5,7 @@ import { serialiseInteraction } from "../util";
 import { Logger, getLogger } from "../util/logger";
 
 export class InviteCommand extends SlashCommand {
-	#logger = getLogger("command:channel");
+	#logger = getLogger("command:invite");
 
 	constructor() {
 		super();
@@ -29,6 +29,7 @@ export class InviteCommand extends SlashCommand {
 					.setName("uses")
 					.setDescription("Maximum number of uses, 0 for infinite")
 					.setMinValue(0)
+					.setMaxValue(100)
 					.setRequired(true)
 			)
 			.addIntegerOption(option =>
