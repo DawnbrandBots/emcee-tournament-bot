@@ -12,6 +12,7 @@ import { ForceDropContextCommand, ForceDropSlashCommand } from "../slash/forcedr
 import { HostCommand } from "../slash/host";
 import { InfoCommand } from "../slash/info";
 import { InviteCommand } from "../slash/invite";
+import { KickAllCommand } from "../slash/kickrole";
 import { ListCommand } from "../slash/list";
 import { OpenCommand } from "../slash/open";
 import { QueueCommand } from "../slash/queue";
@@ -39,7 +40,8 @@ export const classes = [
 	ListCommand,
 	QueueCommand,
 	ReportWinCommand,
-	InviteCommand
+	InviteCommand,
+	KickAllCommand
 ];
 
 // Register Slash Commands on CI

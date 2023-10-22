@@ -19,6 +19,7 @@ import { ForceDropContextCommand, ForceDropSlashCommand } from "../slash/forcedr
 import { HostCommand } from "../slash/host";
 import { InfoCommand } from "../slash/info";
 import { InviteCommand } from "../slash/invite";
+import { KickAllCommand } from "../slash/kickrole";
 import { ListCommand } from "../slash/list";
 import { OpenCommand, RegisterButtonHandler, RegisterModalHandler } from "../slash/open";
 import { QueueCommand } from "../slash/queue";
@@ -51,7 +52,8 @@ export function makeHandler({ organiserRole, timeWizard }: CommandSupport) {
 		new ListCommand(organiserRole),
 		new QueueCommand(),
 		new ReportWinCommand(),
-		new InviteCommand()
+		new InviteCommand(),
+		new KickAllCommand()
 	];
 	const buttonArray = [
 		new RegisterButtonHandler(),
