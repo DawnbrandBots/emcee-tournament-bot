@@ -4,7 +4,6 @@ import {
 	AutocompleteInteraction,
 	ButtonBuilder,
 	ButtonInteraction,
-	channelMention,
 	ChatInputCommandInteraction,
 	DiscordAPIError,
 	GuildMember,
@@ -12,14 +11,15 @@ import {
 	ModalMessageModalSubmitInteraction,
 	RESTJSONErrorCodes,
 	SlashCommandBuilder,
-	TextInputBuilder
+	TextInputBuilder,
+	channelMention
 } from "discord.js";
 import { Not } from "typeorm";
+import { AutocompletableCommand, ButtonClickHandler, MessageModalSubmitHandler } from "../SlashCommand";
 import { TournamentStatus } from "../database/interface";
 import { ManualParticipant, ManualTournament } from "../database/orm";
-import { AutocompletableCommand, ButtonClickHandler, MessageModalSubmitHandler } from "../SlashCommand";
 import { send } from "../util/discord";
-import { getLogger, Logger } from "../util/logger";
+import { Logger, getLogger } from "../util/logger";
 import {
 	authenticateHost,
 	autocompleteTournament,
@@ -211,7 +211,10 @@ export class RegisterButtonHandler implements ButtonClickHandler {
 			return;
 		}
 		if (tournament.requireFriendCode) {
-			const modal = new ModalBuilder().setCustomId("registerModal").setTitle(`Register for ${tournament.name}`);
+			// Max title length of 45: https://github.com/DawnbrandBots/emcee-tournament-bot/issues/521
+			const modal = new ModalBuilder()
+				.setCustomId("registerModal")
+				.setTitle(`Register for ${tournament.name.slice(0, 32)}`);
 			const friendCodeInput = new TextInputBuilder()
 				.setCustomId("friendCode")
 				.setLabel("Master Duel Friend Code")
