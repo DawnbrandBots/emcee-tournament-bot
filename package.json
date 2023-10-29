@@ -23,17 +23,17 @@
 	],
 	"license": "AGPL-3.0-or-later",
 	"engines": {
-		"node": ">=18",
+		"node": ">=20",
 		"yarn": "1.22.x"
 	},
 	"dependencies": {
 		"@fast-csv/format": "^4.3.5",
 		"async-mutex": "^0.4.0",
-		"coveralls": "link:.vscode",
+		"coveralls": "link:./node_modules/.NULL",
 		"debug": "^4.3.4",
 		"discord.js": "^14.13.0",
 		"dotenv": "^16.3.1",
-		"jimp": "link:.vscode",
+		"jimp": "link:./node_modules/.NULL",
 		"make-fetch-happen": "^13.0.0",
 		"node-fetch": "^2.7.0",
 		"pg": "^8.11.3",
@@ -45,7 +45,7 @@
 		"ygopro-data": "1.4.1"
 	},
 	"devDependencies": {
-		"@alphakretin/essentials": "^5.1.0",
+		"@alphakretin/essentials": "^6.0.0",
 		"@alphakretin/mocha-ecosystem": "^1.1.0",
 		"@types/debug": "^4.1.10",
 		"@types/make-fetch-happen": "^10.0.3",
@@ -53,13 +53,14 @@
 		"testcontainers": "^9.12.0"
 	},
 	"resolutions": {
-		"@types/node": "^18.18.6",
-		"coveralls": "link:.vscode",
-		"jimp": "link:.vscode",
+		"@types/node": "^20.8.9",
+		"better-sqlite3": "^9.0.0",
+		"coveralls": "link:./node_modules/.NULL",
+		"jimp": "link:./node_modules/.NULL",
 		"string-width": "^4.2.3",
 		"strip-ansi": "^6.0.1",
-		"undici": "^5.26.4",
-		"wrap-ansi": "^6.2.0"
+		"undici": "^5.27.0",
+		"wrap-ansi": "^7.0.0"
 	},
 	"eslintConfig": {
 		"extends": "@alphakretin"

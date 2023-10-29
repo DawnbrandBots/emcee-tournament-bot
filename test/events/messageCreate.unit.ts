@@ -46,7 +46,9 @@ const participantRole = new ParticipantRoleProvider(mockBotClient);
 let container: StartedPostgreSqlContainer;
 
 describe("Direct message submissions", function () {
+	let clock: sinon.SinonFakeTimers;
 	before(async () => {
+		clock = sinon.useFakeTimers();
 		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 		decks = await initializeDeckManager(process.env.OCTOKIT_TOKEN!);
 		container = await new PostgreSqlContainer("postgres:13-alpine").start();
@@ -58,6 +60,7 @@ describe("Direct message submissions", function () {
 	after(async () => {
 		await getConnection().destroy();
 		await container.stop();
+		clock.restore();
 	});
 
 	// TODO: test attachment version
