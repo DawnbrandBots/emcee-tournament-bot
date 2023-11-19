@@ -89,9 +89,9 @@ export class OpenCommand extends AutocompletableCommand {
 		const message = await send(interaction.client, tournament.publicChannel, {
 			content: `__Registration for **${tournament.name}** is now open!__\n${
 				tournament.description
-			}\nPlayer Cap: ${printPlayerCap(
+			}\n\nPlayer Cap: ${printPlayerCap(
 				tournament
-			)}\nClick the button below to register, then follow the prompts.\nA tournament host will then manually verify your deck.`,
+			)}\n\nClick the button below to register, then follow the prompts.\nA tournament host will then manually verify your deck when they are available.`,
 			components: [row]
 		});
 		tournament.registerMessage = message.id;
@@ -134,11 +134,14 @@ async function registerParticipant(
 	player.ign = ign;
 	player.friendCode = friendCode;
 	await player.save();
-	await interaction.update({});
 	try {
 		await interaction.user.send(
 			`Please upload screenshots of your decklist to register, all attached to one message. \n**Important**: Please do not delete your message! You will be dropped for cheating, as this can make your decklist invisible to hosts.`
 		);
+		await interaction.reply({
+			content: "Please check your direct messages for next steps.",
+			ephemeral: true
+		});
 		if (friendCode) {
 			await setNickname(interaction.member, friendCode, ign);
 		}
@@ -148,6 +151,10 @@ async function registerParticipant(
 			e instanceof DiscordAPIError &&
 			e.code === RESTJSONErrorCodes.CannotSendMessagesToThisUser
 		) {
+			await interaction.reply({
+				content: "⚠️ Please allow direct messages from this server to proceed with deck submission.",
+				ephemeral: true
+			});
 			await send(
 				interaction.client,
 				tournament.privateChannel,
@@ -204,9 +211,13 @@ export class RegisterButtonHandler implements ButtonClickHandler {
 			where: { tournamentId: tournament.tournamentId, discordId: interaction.user.id }
 		});
 		if (participant.length) {
-			await interaction.update({});
+			await interaction.reply({
+				content:
+					"You are already registered for this tournament! You can submit a new deck by just sending a new direct message.",
+				ephemeral: true
+			});
 			await interaction.user.send(
-				`You are already registered for this tournament! You can submit a new deck by just sending a new message.`
+				`You are already registered for ${tournament.name}! You can submit a new deck by just sending a new message.`
 			);
 			return;
 		}
