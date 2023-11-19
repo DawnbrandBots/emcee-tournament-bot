@@ -1,8 +1,9 @@
 import { RESTPostAPIApplicationCommandsJSONBody } from "discord-api-types/v10";
 import { AutocompleteInteraction, ChatInputCommandInteraction, SlashCommandBuilder, userMention } from "discord.js";
-import { ManualDeckSubmission, ManualTournament } from "../database/orm";
 import { AutocompletableCommand } from "../SlashCommand";
-import { getLogger, Logger } from "../util/logger";
+import { ManualDeckSubmission, ManualTournament } from "../database/orm";
+import { splitText } from "../deck";
+import { Logger, getLogger } from "../util/logger";
 import { authenticateHost, autocompleteTournament, tournamentOption } from "./database";
 
 export class QueueCommand extends AutocompletableCommand {
@@ -52,9 +53,11 @@ export class QueueCommand extends AutocompletableCommand {
 			return;
 		}
 		const players = decks.map(d => userMention(d.discordId));
-
-		await interaction.reply(
-			`${players.length} player(s) are waiting for deck approval. List:\n${players.join(", ")}`
-		);
+		const text = `${players.length} player(s) are waiting for deck approval:\n${players.join(", ")}`;
+		const [first, ...rest] = splitText(text);
+		await interaction.reply(first);
+		for (const message of rest) {
+			await interaction.followUp(message);
+		}
 	}
 }
