@@ -50,7 +50,7 @@
 		"@types/debug": "^4.1.10",
 		"@types/make-fetch-happen": "^10.0.3",
 		"@types/node-fetch": "^2.6.7",
-		"testcontainers": "^9.12.0"
+		"testcontainers": "^10.3.2"
 	},
 	"resolutions": {
 		"@types/node": "^20.8.9",
