@@ -37,7 +37,7 @@
 		"make-fetch-happen": "^13.0.0",
 		"node-fetch": "^2.7.0",
 		"pg": "^8.11.3",
-		"reflect-metadata": "^0.1.13",
+		"reflect-metadata": "^0.2.1",
 		"supports-color": "^9.4.0",
 		"typeorm": "^0.3.17",
 		"ydeck": "^0.2.10",
