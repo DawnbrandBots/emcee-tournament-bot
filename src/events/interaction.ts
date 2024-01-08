@@ -21,7 +21,13 @@ import { InfoCommand } from "../slash/info";
 import { InviteCommand } from "../slash/invite";
 import { KickAllCommand } from "../slash/kickrole";
 import { ListCommand } from "../slash/list";
-import { OpenCommand, RegisterButtonHandler, RegisterModalHandler } from "../slash/open";
+import {
+	OpenCommand,
+	RegisterButtonHandler,
+	RegisterModalHandler,
+	RenameButtonHandler,
+	RenameModalHandler
+} from "../slash/open";
 import { QueueCommand } from "../slash/queue";
 import { ReportWinCommand } from "../slash/report-win";
 import { StartCommand } from "../slash/start";
@@ -57,11 +63,17 @@ export function makeHandler({ organiserRole, timeWizard }: CommandSupport) {
 	];
 	const buttonArray = [
 		new RegisterButtonHandler(),
+		new RenameButtonHandler(),
 		new AcceptButtonHandler(),
 		new QuickAcceptButtonHandler(),
 		new RejectButtonHandler()
 	];
-	const messageModalArray = [new RegisterModalHandler(), new AcceptLabelModal(), new RejectReasonModal()];
+	const messageModalArray = [
+		new RegisterModalHandler(),
+		new RenameModalHandler(),
+		new AcceptLabelModal(),
+		new RejectReasonModal()
+	];
 	const contextArray = [new ForceDropContextCommand()];
 
 	const commands = new Map<string, SlashCommand>();

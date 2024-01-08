@@ -1,17 +1,17 @@
 import { ApplicationCommandType, RESTPostAPIApplicationCommandsJSONBody } from "discord-api-types/v10";
 import {
 	AutocompleteInteraction,
-	chatInputApplicationCommandMention,
 	ChatInputCommandInteraction,
 	ContextMenuCommandBuilder,
 	SlashCommandBuilder,
-	UserContextMenuCommandInteraction
+	UserContextMenuCommandInteraction,
+	chatInputApplicationCommandMention
 } from "discord.js";
 import { ContextCommand } from "../ContextCommand";
+import { AutocompletableCommand } from "../SlashCommand";
 import { TournamentStatus } from "../database/interface";
 import { ManualParticipant, ManualTournament } from "../database/orm";
-import { AutocompletableCommand } from "../SlashCommand";
-import { getLogger, Logger } from "../util/logger";
+import { Logger, getLogger } from "../util/logger";
 import { authenticateHost, autocompleteTournament, dropPlayer, tournamentOption } from "./database";
 
 export class ForceDropSlashCommand extends AutocompletableCommand {
@@ -94,7 +94,7 @@ export class ForceDropContextCommand extends ContextCommand {
 
 		const players = await ManualParticipant.find({
 			where: {
-				discordId: member.id,
+				discordId: interaction.targetUser.id,
 				tournament: [{ status: TournamentStatus.PREPARING }, { status: TournamentStatus.IPR }]
 			},
 			relations: ["tournament"]
@@ -127,6 +127,6 @@ export class ForceDropContextCommand extends ContextCommand {
 			return;
 		}
 
-		await dropPlayer(tournament, player, member, interaction);
+		await dropPlayer(tournament, player, member ?? interaction.targetUser, interaction);
 	}
 }
