@@ -85,15 +85,6 @@ export class OpenCommand extends AutocompletableCommand {
 			.setStyle(ButtonStyle.Success)
 			.setEmoji("🎫");
 		row.addComponents(button);
-		if (tournament.requireFriendCode) {
-			row.addComponents(
-				new ButtonBuilder()
-					.setCustomId("renameButton")
-					.setLabel("Update friend code or in-game name")
-					.setStyle(ButtonStyle.Secondary)
-					.setEmoji("⌨")
-			);
-		}
 
 		const message = await send(interaction.client, tournament.publicChannel, {
 			content: `__Registration for **${tournament.name}** is now open!__\n${
@@ -148,7 +139,7 @@ async function registerParticipant(
 			`Please upload screenshots of your decklist to register, all attached to one message. \n**Important**: Please do not delete your message! You will be dropped for cheating, as this can make your decklist invisible to hosts.`
 		);
 		await interaction.reply({
-			content: `Please check your direct messages for next steps, ${interaction.user}.`,
+			content: "Please check your direct messages for next steps.",
 			ephemeral: true
 		});
 		if (friendCode) {
@@ -176,34 +167,6 @@ async function registerParticipant(
 	}
 }
 
-function buildRegisterModal(id: string, title: string, interaction: ButtonInteraction<"cached">): ModalBuilder {
-	const modal = new ModalBuilder()
-		.setCustomId(id)
-		// Max title length of 45: https://github.com/DawnbrandBots/emcee-tournament-bot/issues/521
-		.setTitle(title.slice(0, 45));
-	const friendCodeInput = new TextInputBuilder()
-		.setCustomId("friendCode")
-		.setLabel("Master Duel Friend Code")
-		.setStyle(TextInputStyle.Short)
-		.setRequired(true)
-		.setPlaceholder("000000000")
-		.setMinLength(9)
-		.setMaxLength(11);
-	const ignInput = new TextInputBuilder()
-		.setCustomId("ign")
-		.setLabel("In-game name, if different")
-		.setStyle(TextInputStyle.Short)
-		.setRequired(false)
-		.setPlaceholder(interaction.user.username.slice(0, 12))
-		.setMinLength(3)
-		.setMaxLength(12);
-	modal.addComponents(
-		new ActionRowBuilder<TextInputBuilder>().addComponents(friendCodeInput),
-		new ActionRowBuilder<TextInputBuilder>().addComponents(ignInput)
-	);
-	return modal;
-}
-
 export class RegisterButtonHandler implements ButtonClickHandler {
 	readonly buttonIds = ["registerButton"];
 
@@ -225,6 +188,14 @@ export class RegisterButtonHandler implements ButtonClickHandler {
 		if (registrations.length) {
 			await interaction.reply({
 				content: `You can only sign up for one tournament at a time, ${interaction.user}! Please either drop from or complete your registration for **${registrations[0].tournament.name}**!`,
+				ephemeral: true
+			});
+			return;
+		}
+		if (tournament.status !== TournamentStatus.PREPARING) {
+			// Shouldn't happen
+			await interaction.reply({
+				content: `Sorry ${interaction.user}, registration for the tournament has closed!`,
 				ephemeral: true
 			});
 			return;
@@ -251,7 +222,30 @@ export class RegisterButtonHandler implements ButtonClickHandler {
 			return;
 		}
 		if (tournament.requireFriendCode) {
-			const modal = buildRegisterModal("registerModal", `Register for ${tournament.name}`, interaction);
+			// Max title length of 45: https://github.com/DawnbrandBots/emcee-tournament-bot/issues/521
+			const modal = new ModalBuilder()
+				.setCustomId("registerModal")
+				.setTitle(`Register for ${tournament.name.slice(0, 32)}`);
+			const friendCodeInput = new TextInputBuilder()
+				.setCustomId("friendCode")
+				.setLabel("Master Duel Friend Code")
+				.setStyle(TextInputStyle.Short)
+				.setRequired(true)
+				.setPlaceholder("000000000")
+				.setMinLength(9)
+				.setMaxLength(11);
+			const ignInput = new TextInputBuilder()
+				.setCustomId("ign")
+				.setLabel("In-game name, if different")
+				.setStyle(TextInputStyle.Short)
+				.setRequired(false)
+				.setPlaceholder(interaction.user.username.slice(0, 12))
+				.setMinLength(3)
+				.setMaxLength(12);
+			modal.addComponents(
+				new ActionRowBuilder<TextInputBuilder>().addComponents(friendCodeInput),
+				new ActionRowBuilder<TextInputBuilder>().addComponents(ignInput)
+			);
 			await interaction.showModal(modal);
 		} else {
 			await registerParticipant(interaction, tournament);
@@ -284,76 +278,5 @@ export class RegisterModalHandler implements MessageModalSubmitHandler {
 			return;
 		}
 		await registerParticipant(interaction, tournament, friendCode, ign);
-	}
-}
-
-export class RenameButtonHandler implements ButtonClickHandler {
-	readonly buttonIds = ["renameButton"];
-
-	async click(interaction: ButtonInteraction<"cached">): Promise<void> {
-		const participant = await ManualParticipant.findOne({
-			where: {
-				discordId: interaction.user.id,
-				tournament: [
-					{
-						owningDiscordServer: interaction.guildId,
-						registerMessage: interaction.message.id,
-						status: TournamentStatus.PREPARING
-					}
-				]
-			},
-			relations: ["tournament"]
-		});
-		if (!participant) {
-			await interaction.reply({
-				content: "You are not registered for this tournament! Click the other button if you want to register.",
-				ephemeral: true
-			});
-		} else {
-			const modal = buildRegisterModal("renameModal", `Renaming in ${participant.tournament.name}`, interaction);
-			await interaction.showModal(modal);
-		}
-	}
-}
-
-export class RenameModalHandler implements MessageModalSubmitHandler {
-	readonly modalIds = ["renameModal"];
-
-	async submit(interaction: ModalMessageModalSubmitInteraction<"cached">): Promise<void> {
-		const participant = await ManualParticipant.findOneOrFail({
-			where: {
-				discordId: interaction.user.id,
-				tournament: [
-					{
-						owningDiscordServer: interaction.guildId,
-						registerMessage: interaction.message.id,
-						status: TournamentStatus.PREPARING
-					}
-				]
-			},
-			relations: ["tournament"]
-		});
-		// Same as RegisterModalHandler
-		const ign = interaction.fields.getTextInputValue("ign");
-		const friendCodeString = interaction.fields.getTextInputValue("friendCode");
-		const friendCode = parseFriendCode(friendCodeString);
-		if (!friendCode && participant.tournament.requireFriendCode) {
-			await interaction.reply({
-				content: `This tournament requires a Master Duel friend code, and you did not enter a valid one! Please try again, ${interaction.user}!`,
-				ephemeral: true
-			});
-			return;
-		}
-		const oldIgn = participant.ign;
-		const oldFriendCode = participant.friendCode;
-		participant.ign = ign;
-		participant.friendCode = friendCode;
-		await participant.save();
-		await interaction.reply({
-			content: `Done`,
-			ephemeral: true
-		});
-		// ephemeral reply results
-		// notify hosts in private channel with before/after
 	}
 }
