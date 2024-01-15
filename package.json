@@ -27,7 +27,7 @@
 		"yarn": "1.22.x"
 	},
 	"dependencies": {
-		"@fast-csv/format": "^4.3.5",
+		"@fast-csv/format": "^5.0.0",
 		"async-mutex": "^0.4.0",
 		"coveralls": "link:./node_modules/.NULL",
 		"debug": "^4.3.4",
