@@ -680,6 +680,13 @@
   resolved "https://registry.yarnpkg.com/@sqltools/formatter/-/formatter-1.2.5.tgz#3abc203c79b8c3e90fd6c156a0c62d5403520e12"
   integrity sha512-Uy0+khmZqUrUGm5dmMqVlnvufZRSK0FbYzVgp0UMstm+F5+W2/jnEEQyc9vo1ZR/E5ZI/B1WjjoTqBqwJL6Krw==
 
+"@testcontainers/postgresql@^10.6.0":
+  version "10.6.0"
+  resolved "https://registry.yarnpkg.com/@testcontainers/postgresql/-/postgresql-10.6.0.tgz#dfeff325130ab0ed4fd0dbd5dbe5847cddb435d9"
+  integrity sha512-gHYpsXkVLpCkJ0jg7xE5n8pogTNvw2LyhkXeJm04raH1yz020jcHAB2a1tRW1J2D8mM8WhFH+xH6pzH2ZggFdg==
+  dependencies:
+    testcontainers "^10.6.0"
+
 "@tsconfig/node10@^1.0.7":
   version "1.0.9"
   resolved "https://registry.yarnpkg.com/@tsconfig/node10/-/node10-1.0.9.tgz#df4907fc07a886922637b15e02d4cebc4c0021b2"
@@ -1540,9 +1547,11 @@ core-util-is@~1.0.0:
 
 coveralls@^3.1.1:
   version "0.0.0"
+  uid ""
 
 "coveralls@link:./node_modules/.NULL":
   version "0.0.0"
+  uid ""
 
 cpu-features@~0.0.9:
   version "0.0.9"
@@ -2482,9 +2491,11 @@ jackspeak@^2.3.5:
 
 jimp@^0.16.1:
   version "0.0.0"
+  uid ""
 
 "jimp@link:./node_modules/.NULL":
   version "0.0.0"
+  uid ""
 
 js-tokens@^4.0.0:
   version "4.0.0"
