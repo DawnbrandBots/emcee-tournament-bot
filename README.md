@@ -1,5 +1,3 @@
-## ❗ [Request for Comments: Emcee's future is uncertain](https://github.com/DawnbrandBots/emcee-tournament-bot/issues/395). Your input is appreciated!
-
 # Emcee [<img src="https://img.shields.io/static/v1?label=invite%20to&message=Discord&color=informational&style=for-the-badge" alt="Invite to Discord" align="right" />](https://discord.com/api/oauth2/authorize?client_id=691882968809209917&permissions=275146467392&scope=bot)
 
 <!-- Unfortunately, GitHub Markdown sanitizes style attributes, so we will have to use a deprecated HTML attribute. -->
@@ -11,16 +9,24 @@
 [![Coverage Status](https://coveralls.io/repos/github/DawnbrandBots/emcee-tournament-bot/badge.svg?t=iUM0Et)](https://coveralls.io/github/DawnbrandBots/emcee-tournament-bot)
 
 A Discord bot to facilitate organising Yu-Gi-Oh! tournaments online using [Challonge](https://challonge.com/) and verify submitted decks.
-Supports YGOPro deck files (.ydk) and `ydke://` URLs from [Project Ignis: EDOPro](https://github.com/edo9300/edopro) and [YGOPRODECK](https://ygoprodeck.com/).
+Special thanks to [Joseph Rothschild](https://www.youtube.com/c/MBTYuGiOh) aka [MBT](https://www.twitch.tv/mbtyugioh) for
+sponsoring the development of Emcee.
 
 Emcee automates the tedious tasks of the sign-up process, deck checks, and tracking match scores for tournament hosts.
 This frees up hosts to focus on the overall flow of the tournament and any disputes instead of a lot of repetitive work.
 It currently supports hosting Swiss tournaments of up to 256 participants (a limitation of Challonge's [standard tier](https://challonge.com/pricing))
-with an optional single-elimination top cut of configurable size.
+with an optional single-elimination top cut of configurable size. Submitted deck files (.ydk) or `ydke://` URLs are
+automatically verified against the current TCG card pool and Forbidden & Limited List, or a tournament host-provided
+custom card pool. This was used for the [Chalislime Monthly](https://www.youtube.com/playlist?list=PLMr2265yrWMzCGkNlWLuyhv8rXCiN53Oi) tournament series.
 
-Currently in use for the [Chalislime Monthly](https://youtu.be/iehvqngGxs0) tournament series.
-Thanks to [Joseph Rothschild](https://www.youtube.com/c/MBTYuGiOh) aka [MBT](https://www.twitch.tv/mbtyugioh) for
-sponsoring the development of Emcee.
+A secondary manual mode only provides a tournament registration workflow independent of Challonge.
+Prospective participants submit screenshots of their deck, such as from Yu-Gi-Oh! Master Duel,
+and tournament hosts manually approve or reject these submitted decks.
+The registered participant list may be downloaded at any time for use with other tournament software.
+This was used for the [Master Circuit Series](https://www.youtube.com/playlist?list=PLMr2265yrWMzCGkNlWLuyhv8rXCiN53Oi).
+Please contact us in the support server to enable the manual mode in your server.
+
+**❗ [Request for Comments: Emcee's future is uncertain](https://github.com/DawnbrandBots/emcee-tournament-bot/issues/395). Your input is appreciated!**
 
 ## Discord permissions
 
@@ -110,7 +116,7 @@ Please use Australian English spellings.
 
 ## Licence
 
-Copyright © 2020&ndash;2023 Luna Brand, Kevin Lu.
+Copyright © 2020&ndash;2024 Luna Brand, Kevin Lu.
 See [COPYING](https://github.com/DawnbrandBots/emcee-tournament-bot/blob/master/COPYING) for more details.
 
 ```
