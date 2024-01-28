@@ -1,7 +1,7 @@
+import { PostgreSqlContainer, StartedPostgreSqlContainer } from "@testcontainers/postgresql";
 import { expect } from "chai";
-import { PostgreSqlContainer, StartedPostgreSqlContainer } from "testcontainers";
 import { getConnection } from "typeorm";
-import { initializeConnection, ManualDeckSubmission, ManualParticipant, ManualTournament } from "../src/database/orm";
+import { ManualDeckSubmission, ManualParticipant, ManualTournament, initializeConnection } from "../src/database/orm";
 
 describe("Entities for manual tournaments", () => {
 	let container: StartedPostgreSqlContainer;

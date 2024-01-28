@@ -1,9 +1,9 @@
+import { PostgreSqlContainer, StartedPostgreSqlContainer } from "@testcontainers/postgresql";
 import chai, { expect } from "chai";
 import { Client, Message } from "discord.js";
 import sinon, { SinonSandbox } from "sinon";
 import sinonChai from "sinon-chai";
 import sinonTest from "sinon-test";
-import { PostgreSqlContainer, StartedPostgreSqlContainer } from "testcontainers";
 import { getConnection } from "typeorm";
 import { TournamentFormat, TournamentStatus } from "../../src/database/interface";
 import { initializeConnection } from "../../src/database/orm";
