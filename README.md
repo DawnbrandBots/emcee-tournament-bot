@@ -23,7 +23,7 @@ A secondary manual mode only provides a tournament registration workflow indepen
 Prospective participants submit screenshots of their deck, such as from Yu-Gi-Oh! Master Duel,
 and tournament hosts manually approve or reject these submitted decks.
 The registered participant list may be downloaded at any time for use with other tournament software.
-This was used for the [Master Circuit Series](https://www.youtube.com/playlist?list=PLMr2265yrWMzCGkNlWLuyhv8rXCiN53Oi).
+This was used for the [Master Circuit Series](https://www.youtube.com/playlist?list=PLMr2265yrWMyO7fDASPaubxIgCZcAXpKD).
 Please contact us in the support server to enable the manual mode in your server.
 
 **❗ [Request for Comments: Emcee's future is uncertain](https://github.com/DawnbrandBots/emcee-tournament-bot/issues/395). Your input is appreciated!**
@@ -72,7 +72,7 @@ Discord slash commands in future when the feature is stable in Discord.
 
 ## Development
 
-Emcee is written in TypeScript. It targets Node.js 18+ and can be run with or without Docker.
+Emcee is written in TypeScript. It targets Node.js 20+ and can be run with or without Docker.
 It uses Discord.js to talk to Discord and PostgreSQL for persistence.
 
 
