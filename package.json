@@ -34,7 +34,7 @@
 		"discord.js": "^14.14.1",
 		"dotenv": "^16.4.1",
 		"jimp": "link:./node_modules/.NULL",
-		"make-fetch-happen": "^13.0.0",
+		"make-fetch-happen": "^13.0.1",
 		"node-fetch": "^2.7.0",
 		"pg": "^8.11.3",
 		"reflect-metadata": "^0.2.1",
