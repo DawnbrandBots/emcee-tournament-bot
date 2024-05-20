@@ -31,7 +31,7 @@
 		"async-mutex": "^0.5.0",
 		"coveralls": "link:./node_modules/.NULL",
 		"debug": "^4.3.4",
-		"discord.js": "^14.14.1",
+		"discord.js": "^14.15.2",
 		"dotenv": "^16.4.5",
 		"jimp": "link:./node_modules/.NULL",
 		"make-fetch-happen": "^13.0.1",
