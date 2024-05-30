@@ -61,7 +61,8 @@ jobs:
           cache-to: type=local,dest=/tmp/.buildx-cache,mode=max
           sbom: ${{ github.event_name == 'push' }}
       - uses: actions/attest-build-provenance@v1
+        if: ${{ github.event_name == 'push' }}
         with:
           subject-name: ${{ steps.meta.outputs.tags[0] }}
           subject-digest: ${{ steps.build-push.outputs.digest }}
-          push-to-registry: ${{ github.event_name == 'push' }}
+          push-to-registry: true
