@@ -50,6 +50,7 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - uses: docker/build-push-action@v5
+        id: build-push
         with:
           push: ${{ github.event_name == 'push' }}
           tags: ${{ steps.meta.outputs.tags }}
@@ -58,3 +59,10 @@ jobs:
           pull: true
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache,mode=max
+          sbom: ${{ github.event_name == 'push' }}
+      - uses: actions/attest-build-provenance@v1
+        if: ${{ github.event_name == 'push' }}
+        with:
+          subject-name: ${{ steps.meta.outputs.tags[0] }}
+          subject-digest: ${{ steps.build-push.outputs.digest }}
+          push-to-registry: true
