@@ -675,12 +675,12 @@
   resolved "https://registry.yarnpkg.com/@sqltools/formatter/-/formatter-1.2.5.tgz#3abc203c79b8c3e90fd6c156a0c62d5403520e12"
   integrity sha512-Uy0+khmZqUrUGm5dmMqVlnvufZRSK0FbYzVgp0UMstm+F5+W2/jnEEQyc9vo1ZR/E5ZI/B1WjjoTqBqwJL6Krw==
 
-"@testcontainers/postgresql@^10.7.1":
-  version "10.7.1"
-  resolved "https://registry.yarnpkg.com/@testcontainers/postgresql/-/postgresql-10.7.1.tgz#63cd886b7f99a49daf2f765543322073e23a22f7"
-  integrity sha512-2tlrD7vRNdi+nynFCNaGbjTTE7aUNk9Pipcu7PIkPGc8v1AxJdc1BnmI07I1yfW18kOqRi7fo7x4gOlqzAOXJQ==
+"@testcontainers/postgresql@^10.10.0":
+  version "10.10.0"
+  resolved "https://registry.yarnpkg.com/@testcontainers/postgresql/-/postgresql-10.10.0.tgz#8ea3b9367d5c0b4321b1e8f3fcc0013be11f598a"
+  integrity sha512-cgzYnhzsYPVwN370bjJCuyAkkjLhGD6EBoQi4j+xKomMU4e6FWu0SYDolP+tiFGKWaS95SsIY3CPp6bnuxBh/A==
   dependencies:
-    testcontainers "^10.7.1"
+    testcontainers "^10.10.0"
 
 "@tsconfig/node10@^1.0.7":
   version "1.0.9"
@@ -734,13 +734,14 @@
     "@types/node" "*"
     "@types/ssh2" "*"
 
-"@types/dockerode@^3.3.21":
-  version "3.3.23"
-  resolved "https://registry.yarnpkg.com/@types/dockerode/-/dockerode-3.3.23.tgz#07b2084013d01e14d5d97856446f4d9c9f27c223"
-  integrity sha512-Lz5J+NFgZS4cEVhquwjIGH4oQwlVn2h7LXD3boitujBnzOE5o7s9H8hchEjoDK2SlRsJTogdKnQeiJgPPKLIEw==
+"@types/dockerode@^3.3.29":
+  version "3.3.29"
+  resolved "https://registry.yarnpkg.com/@types/dockerode/-/dockerode-3.3.29.tgz#7d3c99a91c381115015587a8a2a71002029e1740"
+  integrity sha512-5PRRq/yt5OT/Jf77ltIdz4EiR9+VLnPF+HpU4xGFwUqmV24Co2HKBNW3w+slqZ1CYchbcDeqJASHDYWzZCcMiQ==
   dependencies:
     "@types/docker-modem" "*"
     "@types/node" "*"
+    "@types/ssh2" "*"
 
 "@types/json-schema@^7.0.12":
   version "7.0.15"
@@ -1150,7 +1151,7 @@ assertion-error@^1.1.0:
   resolved "https://registry.yarnpkg.com/assertion-error/-/assertion-error-1.1.0.tgz#e60b6b0e8f301bd97e5375215bda406c85118c0b"
   integrity sha512-jgsaNduz+ndvGyFt3uSuWqvy4lCnIJiovtouQN5JZHOKCS2QuhEdbcQHFhVksz2N2U9hXJo8odG7ETyWlEeuDw==
 
-async-lock@^1.4.0:
+async-lock@^1.4.1:
   version "1.4.1"
   resolved "https://registry.yarnpkg.com/async-lock/-/async-lock-1.4.1.tgz#56b8718915a9b68b10fce2f2a9a3dddf765ef53f"
   integrity sha512-Az2ZTpuytrtqENulXwO3GGv1Bztugx6TT37NIo7imr/Qo0gsYiGtSdBa2B6fsXhTpVZDNfu1Qn3pk531e3q+nQ==
@@ -1181,6 +1182,39 @@ balanced-match@^1.0.0:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/balanced-match/-/balanced-match-1.0.2.tgz#e83e3a7e3f300b34cb9d87f615fa0cbf357690ee"
   integrity sha512-3oSeUO0TMV67hN1AmbXsK4yaqU7tjiHlbxRDZOpH0KW9+CeX4bRAaX0Anxt0tx2MrpRpWwQaPwIlISEJhYU5Pw==
+
+bare-events@^2.0.0, bare-events@^2.2.0:
+  version "2.4.2"
+  resolved "https://registry.yarnpkg.com/bare-events/-/bare-events-2.4.2.tgz#3140cca7a0e11d49b3edc5041ab560659fd8e1f8"
+  integrity sha512-qMKFd2qG/36aA4GwvKq8MxnPgCQAmBWmSyLWsJcbn8v03wvIPQ/hG1Ms8bPzndZxMDoHpxez5VOS+gC9Yi24/Q==
+
+bare-fs@^2.1.1:
+  version "2.3.1"
+  resolved "https://registry.yarnpkg.com/bare-fs/-/bare-fs-2.3.1.tgz#cdbd63dac7a552dfb2b87d18c822298d1efd213d"
+  integrity sha512-W/Hfxc/6VehXlsgFtbB5B4xFcsCl+pAh30cYhoFyXErf6oGrwjh8SwiPAdHgpmWonKuYpZgGywN0SXt7dgsADA==
+  dependencies:
+    bare-events "^2.0.0"
+    bare-path "^2.0.0"
+    bare-stream "^2.0.0"
+
+bare-os@^2.1.0:
+  version "2.4.0"
+  resolved "https://registry.yarnpkg.com/bare-os/-/bare-os-2.4.0.tgz#5de5e3ba7704f459c9656629edca7cc736e06608"
+  integrity sha512-v8DTT08AS/G0F9xrhyLtepoo9EJBJ85FRSMbu1pQUlAf6A8T0tEEQGMVObWeqpjhSPXsE0VGlluFBJu2fdoTNg==
+
+bare-path@^2.0.0, bare-path@^2.1.0:
+  version "2.1.3"
+  resolved "https://registry.yarnpkg.com/bare-path/-/bare-path-2.1.3.tgz#594104c829ef660e43b5589ec8daef7df6cedb3e"
+  integrity sha512-lh/eITfU8hrj9Ru5quUp0Io1kJWIk1bTjzo7JH1P5dWmQ2EL4hFUlfI8FonAhSlgIfhn63p84CDY/x+PisgcXA==
+  dependencies:
+    bare-os "^2.1.0"
+
+bare-stream@^2.0.0:
+  version "2.1.3"
+  resolved "https://registry.yarnpkg.com/bare-stream/-/bare-stream-2.1.3.tgz#070b69919963a437cc9e20554ede079ce0a129b2"
+  integrity sha512-tiDAH9H/kP+tvNO5sczyn9ZAA7utrSMobyDchsnyyXBuUe2FSQWbxhtuHB8jwpHYYevVo2UJpcmvvjrbHboUUQ==
+  dependencies:
+    streamx "^2.18.0"
 
 base64-js@^1.3.1:
   version "1.5.1"
@@ -1689,10 +1723,10 @@ discord.js@^14.15.3:
     tslib "2.6.2"
     undici "6.13.0"
 
-docker-compose@^0.24.2:
-  version "0.24.3"
-  resolved "https://registry.yarnpkg.com/docker-compose/-/docker-compose-0.24.3.tgz#298d7bb4aaf37b3b45d0e4ef55c7f58ccc39cca9"
-  integrity sha512-x3/QN3AIOMe7j2c8f/jcycizMft7dl8MluoB9OGPAYCyKHHiPUFqI9GjCcsU0kYy24vYKMCcfR6+5ZaEyQlrxg==
+docker-compose@^0.24.8:
+  version "0.24.8"
+  resolved "https://registry.yarnpkg.com/docker-compose/-/docker-compose-0.24.8.tgz#6c125e6b9e04cf68ced47e2596ef2bb93ee9694e"
+  integrity sha512-plizRs/Vf15H+GCVxq2EUvyPK7ei9b/cVesHvjnX4xaXjM9spHe2Ytq0BitndFgvTJ3E3NljPNUEl7BAN43iZw==
   dependencies:
     yaml "^2.2.2"
 
@@ -1893,7 +1927,7 @@ fast-deep-equal@3.1.3, fast-deep-equal@^3.1.1, fast-deep-equal@^3.1.3:
   resolved "https://registry.yarnpkg.com/fast-deep-equal/-/fast-deep-equal-3.1.3.tgz#3a7d56b559d6cbc3eb512325244e619a65c6c525"
   integrity sha512-f3qQ9oQy9j2AhBe/H9VC91wLmKBCCU/gDOnKNAYG5hswO7BLKj09Hc5HYNz9cGI++xlpDCIgDaitVs03ATR84Q==
 
-fast-fifo@^1.1.0, fast-fifo@^1.2.0:
+fast-fifo@^1.1.0, fast-fifo@^1.2.0, fast-fifo@^1.3.2:
   version "1.3.2"
   resolved "https://registry.yarnpkg.com/fast-fifo/-/fast-fifo-1.3.2.tgz#286e31de96eb96d38a97899815740ba2a4f3640c"
   integrity sha512-/d9sfos4yxzpwkDkuN7k2SqFKtYNmCTzgfEpz82x34IM9/zc8KGxQoXg1liNC/izpRM/MBdt44Nmx41ZWqk+FQ==
@@ -3689,6 +3723,17 @@ streamx@^2.15.0:
     fast-fifo "^1.1.0"
     queue-tick "^1.0.1"
 
+streamx@^2.18.0:
+  version "2.18.0"
+  resolved "https://registry.yarnpkg.com/streamx/-/streamx-2.18.0.tgz#5bc1a51eb412a667ebfdcd4e6cf6a6fc65721ac7"
+  integrity sha512-LLUC1TWdjVdn1weXGcSxyTR3T4+acB6tVGXT95y0nGbca4t4o/ng1wKAGTljm9VicuCVLvRlqFYXYy5GwgM7sQ==
+  dependencies:
+    fast-fifo "^1.3.2"
+    queue-tick "^1.0.1"
+    text-decoder "^1.1.0"
+  optionalDependencies:
+    bare-events "^2.2.0"
+
 "string-width-cjs@npm:string-width@^4.2.0":
   version "4.2.3"
   resolved "https://registry.yarnpkg.com/string-width/-/string-width-4.2.3.tgz#269c7117d27b05ad2e536830a8ec895ef9c6d010"
@@ -3796,14 +3841,16 @@ tar-fs@^2.0.0:
     pump "^3.0.0"
     tar-stream "^2.1.4"
 
-tar-fs@^3.0.4:
-  version "3.0.4"
-  resolved "https://registry.yarnpkg.com/tar-fs/-/tar-fs-3.0.4.tgz#a21dc60a2d5d9f55e0089ccd78124f1d3771dbbf"
-  integrity sha512-5AFQU8b9qLfZCX9zp2duONhPmZv0hGYiBPJsyUdqMjzq/mqVpy/rEUSeHk1+YitmxugaptgBh5oDGU3VsAJq4w==
+tar-fs@^3.0.6:
+  version "3.0.6"
+  resolved "https://registry.yarnpkg.com/tar-fs/-/tar-fs-3.0.6.tgz#eaccd3a67d5672f09ca8e8f9c3d2b89fa173f217"
+  integrity sha512-iokBDQQkUyeXhgPYaZxmczGPhnhXZ0CmrqI+MOb/WFGS9DW5wnfrLgtjUJBvz50vQ3qfRwJ62QVoCFu8mPVu5w==
   dependencies:
-    mkdirp-classic "^0.5.2"
     pump "^3.0.0"
     tar-stream "^3.1.5"
+  optionalDependencies:
+    bare-fs "^2.1.1"
+    bare-path "^2.1.0"
 
 tar-fs@~2.0.1:
   version "2.0.1"
@@ -3856,26 +3903,33 @@ test-exclude@^6.0.0:
     glob "^7.1.4"
     minimatch "^3.0.4"
 
-testcontainers@^10.7.1:
-  version "10.7.1"
-  resolved "https://registry.yarnpkg.com/testcontainers/-/testcontainers-10.7.1.tgz#3709ffe43005af705df1798c848e69081cfb9f6f"
-  integrity sha512-JarbT6o7fv1siUts4tGv3wBoYrWKxjla69+5QWG9+bcd4l+ECJ3ikfGD/hpXRmRBsnjzeWyV+tL9oWOBRzk+lA==
+testcontainers@^10.10.0:
+  version "10.10.0"
+  resolved "https://registry.yarnpkg.com/testcontainers/-/testcontainers-10.10.0.tgz#374b82f298efdcf64867b29bbe3d42a0c552881b"
+  integrity sha512-XlAdr6XzxM9ywTc5D6xA97Ug8dCotDnrOgOqmy3vYnAwUYrzhzAwrp791g97QAMvDOYp2pxkJl/P4WxuUbGShw==
   dependencies:
     "@balena/dockerignore" "^1.0.2"
-    "@types/dockerode" "^3.3.21"
+    "@types/dockerode" "^3.3.29"
     archiver "^5.3.2"
-    async-lock "^1.4.0"
+    async-lock "^1.4.1"
     byline "^5.0.0"
-    debug "^4.3.4"
-    docker-compose "^0.24.2"
+    debug "^4.3.5"
+    docker-compose "^0.24.8"
     dockerode "^3.3.5"
     get-port "^5.1.1"
     node-fetch "^2.7.0"
     proper-lockfile "^4.1.2"
     properties-reader "^2.3.0"
     ssh-remote-port-forward "^1.0.4"
-    tar-fs "^3.0.4"
-    tmp "^0.2.1"
+    tar-fs "^3.0.6"
+    tmp "^0.2.3"
+
+text-decoder@^1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/text-decoder/-/text-decoder-1.1.0.tgz#3379e728fcf4d3893ec1aea35e8c2cac215ef190"
+  integrity sha512-TmLJNj6UgX8xcUZo4UDStGQtDiTzF7BzWlzn9g7UWrjkpHr5uJTK1ld16wZ3LXb2vb6jH8qU89dW5whuMdXYdw==
+  dependencies:
+    b4a "^1.6.4"
 
 text-table@^0.2.0:
   version "0.2.0"
@@ -3896,12 +3950,10 @@ thenify-all@^1.0.0:
   dependencies:
     any-promise "^1.0.0"
 
-tmp@^0.2.1:
-  version "0.2.1"
-  resolved "https://registry.yarnpkg.com/tmp/-/tmp-0.2.1.tgz#8457fc3037dcf4719c251367a1af6500ee1ccf14"
-  integrity sha512-76SUhtfqR2Ijn+xllcI5P1oyannHNHByD80W1q447gU3mp9G9PSpGdWmjUOHRDPiHYacIk66W7ubDTuPF3BEtQ==
-  dependencies:
-    rimraf "^3.0.0"
+tmp@^0.2.3:
+  version "0.2.3"
+  resolved "https://registry.yarnpkg.com/tmp/-/tmp-0.2.3.tgz#eb783cc22bc1e8bebd0671476d46ea4eb32a79ae"
+  integrity sha512-nZD7m9iCPC5g0pYmcaxogYKggSfLsdxl8of3Q/oIbqCqLLIO9IAF0GWjX1z9NZRHPiXv8Wex4yDCaZsgEw0Y8w==
 
 to-fast-properties@^2.0.0:
   version "2.0.0"
