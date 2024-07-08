@@ -47,7 +47,7 @@
 	"devDependencies": {
 		"@alphakretin/essentials": "^6.2.0",
 		"@alphakretin/mocha-ecosystem": "^1.1.0",
-		"@testcontainers/postgresql": "^10.10.0",
+		"@testcontainers/postgresql": "^10.10.1",
 		"@types/debug": "^4.1.12",
 		"@types/make-fetch-happen": "^10.0.4",
 		"@types/node-fetch": "^2.6.11"
