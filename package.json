@@ -30,7 +30,7 @@
 		"@fast-csv/format": "^5.0.0",
 		"async-mutex": "^0.5.0",
 		"coveralls": "link:./node_modules/.NULL",
-		"debug": "^4.3.5",
+		"debug": "^4.3.6",
 		"discord.js": "^14.15.3",
 		"dotenv": "^16.4.5",
 		"jimp": "link:./node_modules/.NULL",
