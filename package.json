@@ -30,7 +30,7 @@
 		"@fast-csv/format": "^5.0.0",
 		"async-mutex": "^0.5.0",
 		"coveralls": "link:./node_modules/.NULL",
-		"debug": "^4.3.5",
+		"debug": "^4.3.6",
 		"discord.js": "^14.15.3",
 		"dotenv": "^16.4.5",
 		"jimp": "link:./node_modules/.NULL",
@@ -53,13 +53,12 @@
 		"@types/node-fetch": "^2.6.11"
 	},
 	"resolutions": {
-		"@types/node": "^20.14.9",
-		"better-sqlite3": "^11.1.1",
+		"@types/node": "^20.14.14",
+		"better-sqlite3": "^11.1.2",
 		"coveralls": "link:./node_modules/.NULL",
 		"jimp": "link:./node_modules/.NULL",
 		"string-width": "^4.2.3",
 		"strip-ansi": "^6.0.1",
-		"undici": "^5.28.2",
 		"wrap-ansi": "^7.0.0"
 	},
 	"eslintConfig": {
