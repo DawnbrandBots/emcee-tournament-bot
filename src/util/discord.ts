@@ -4,7 +4,7 @@ import { UserError } from "./errors";
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export async function send(bot: Client, channelId: string, ...args: Parameters<TextChannel["send"]>) {
 	const channel = await bot.channels.fetch(channelId);
-	if (channel?.isTextBased()) {
+	if (channel?.isTextBased() && !channel.isDMBased()) {
 		return await channel.send(...args);
 	}
 	throw new Error(`${channelId} is not a text channel`);
