@@ -94,6 +94,7 @@ describe("Direct message submissions", function () {
 			const send = this.spy();
 			const fetchStub = this.stub(mockBotClient.channels, "fetch").resolves({
 				isTextBased: () => true,
+				isDMBased: () => false,
 				send
 				// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			} as any);
@@ -197,6 +198,7 @@ describe("Direct message submissions", function () {
 			const send = this.spy();
 			const fetchStub = this.stub(mockBotClient.channels, "fetch").resolves({
 				isTextBased: () => true,
+				isDMBased: () => false,
 				send
 				// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			} as any);
