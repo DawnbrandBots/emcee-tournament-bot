@@ -17,6 +17,8 @@ updates:
     groups:
       development:
         dependency-type: development
+        patterns:
+          - "*"
   - package-ecosystem: docker
     directory: /
     schedule:
