@@ -15,8 +15,7 @@ updates:
     allow:
       - dependency-type: all
     groups:
-      development:
-        dependency-type: development
+      all:
         patterns:
           - "*"
   - package-ecosystem: docker

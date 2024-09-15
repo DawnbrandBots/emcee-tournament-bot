@@ -54,7 +54,7 @@ export class StartCommand extends AutocompletableCommand {
 
 		if (tournament.publicChannel) {
 			const publicChannel = await interaction.client.channels.fetch(tournament.publicChannel);
-			if (publicChannel && publicChannel.isTextBased() && !publicChannel.isDMBased()) {
+			if (publicChannel && publicChannel.isSendable()) {
 				if (tournament.registerMessage) {
 					const registerMessage = await publicChannel.messages.fetch(tournament.registerMessage);
 					await registerMessage?.delete();
