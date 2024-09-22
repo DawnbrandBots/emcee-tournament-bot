@@ -36,7 +36,7 @@
 		"jimp": "link:./node_modules/.NULL",
 		"make-fetch-happen": "^13.0.1",
 		"node-fetch": "^2.7.0",
-		"pg": "^8.12.0",
+		"pg": "^8.13.0",
 		"reflect-metadata": "^0.2.2",
 		"supports-color": "^9.4.0",
 		"typeorm": "^0.3.20",
