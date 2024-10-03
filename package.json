@@ -31,7 +31,7 @@
 		"async-mutex": "^0.5.0",
 		"coveralls": "link:./node_modules/.NULL",
 		"debug": "^4.3.7",
-		"discord.js": "^14.16.2",
+		"discord.js": "^14.16.3",
 		"dotenv": "^16.4.5",
 		"jimp": "link:./node_modules/.NULL",
 		"make-fetch-happen": "^13.0.1",
@@ -53,7 +53,7 @@
 		"@types/node-fetch": "^2.6.11"
 	},
 	"resolutions": {
-		"@types/node": "^20.16.5",
+		"@types/node": "^20.16.10",
 		"better-sqlite3": "^11.3.0",
 		"coveralls": "link:./node_modules/.NULL",
 		"jimp": "link:./node_modules/.NULL",
