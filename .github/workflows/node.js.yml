@@ -37,5 +37,9 @@ jobs:
           CHALLONGE_USERNAME: ${{ secrets.CHALLONGE_USERNAME }},
           CHALLONGE_TOKEN: ${{ secrets.CHALLONGE_TOKEN }},
           POSTGRESQL_URL: postgresql://localhost/nonexistent
+        # Rarely, the test suite may hang because a delayed start of the test container causes tests to fail
+        # and container clean-up to not happen, so the Node process does not exit and continues to wait on
+        # the test container.
+        timeout-minutes: 1
       - run: yarn cover
       - run: yarn lint
