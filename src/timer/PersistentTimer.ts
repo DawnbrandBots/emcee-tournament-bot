@@ -32,7 +32,10 @@ export class PersistentTimer {
 	protected interval?: NodeJS.Timeout;
 
 	/// This constructor has side effects as it immediately starts the timer!
-	protected constructor(protected entity: Countdown, protected discord: PersistentTimerDiscordDelegate) {
+	protected constructor(
+		protected entity: Countdown,
+		protected discord: PersistentTimerDiscordDelegate
+	) {
 		this.interval = setInterval(() => this.tick(), 1000);
 	}
 
@@ -123,23 +126,31 @@ export class PersistentTimer {
 	protected async tick(): Promise<void> {
 		const end = this.entity.end;
 		const now = new Date();
+		const iso = now.toISOString();
+		logger.verbose(`tick: ${this.entity.id} now(${iso}) end(${end.toISOString()})`);
 		if (end <= now) {
+			logger.verbose(`tick: ${this.entity.id} now(${iso}) aborting`);
 			await this.abort();
 			try {
+				logger.verbose(`tick: ${this.entity.id} now(${iso}) sending message`);
 				await this.discord.sendMessage(this.entity.channelId, this.entity.finalMessage);
+				logger.verbose(`tick: ${this.entity.id} now(${iso}) finished`);
 			} catch (error) {
 				logger.warn(error);
 			}
 		}
 		const secondsRemaining = Math.ceil((now.getTime() - end.getTime()) / 1000);
-		if (secondsRemaining % this.entity.cronIntervalSeconds == 0) {
+		logger.verbose(`tick: ${this.entity.id} now(${iso}) secondsRemaining(${secondsRemaining})`);
+		if (secondsRemaining % this.entity.cronIntervalSeconds === 0) {
 			const left = PersistentTimer.formatTime(end.getTime() - Date.now());
+			logger.verbose(`tick: ${this.entity.id} now(${iso}) left(${left})`);
 			try {
 				await this.discord.editMessage(
 					this.entity.channelId,
 					this.entity.messageId,
 					`Time left in the round: \`${left}\`. Ends ${time(end)} (${time(end, "R")}).`
 				);
+				logger.verbose(`tick: ${this.entity.id} now(${iso}) edited`);
 			} catch (error) {
 				logger.warn(`tick: could not edit ${this.entity.channelId} ${this.entity.messageId}`);
 				logger.warn(error);
