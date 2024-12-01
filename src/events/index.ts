@@ -15,8 +15,8 @@ import * as messageDelete from "./messageDelete";
 const logger = getLogger("events");
 
 export function registerEvents(bot: Client, prefix: string, support: CommandSupport): void {
-	bot.on(RESTEvents.Debug, logger.verbose);
-	bot.on(RESTEvents.RateLimited, logger.warn);
+	bot.rest.on(RESTEvents.Debug, info => logger.verbose(RESTEvents.Debug, info));
+	bot.rest.on(RESTEvents.RateLimited, rateLimitInfo => logger.warn(RESTEvents.RateLimited, rateLimitInfo));
 	bot.on("warn", logger.warn);
 	bot.on("error", logger.error);
 	bot.on("shardReady", shard => logger.notify(`Shard ${shard} ready`));
