@@ -1,4 +1,4 @@
-import { Client, DiscordAPIError, RESTJSONErrorCodes } from "discord.js";
+import { Client, DiscordAPIError, RESTEvents, RESTJSONErrorCodes } from "discord.js";
 import { CommandSupport } from "../Command";
 import * as commands from "../commands";
 import { Participant, RegisterMessage } from "../database/orm";
@@ -15,6 +15,8 @@ import * as messageDelete from "./messageDelete";
 const logger = getLogger("events");
 
 export function registerEvents(bot: Client, prefix: string, support: CommandSupport): void {
+	bot.on(RESTEvents.Debug, logger.verbose);
+	bot.on(RESTEvents.RateLimited, logger.warn);
 	bot.on("warn", logger.warn);
 	bot.on("error", logger.error);
 	bot.on("shardReady", shard => logger.notify(`Shard ${shard} ready`));
