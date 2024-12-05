@@ -134,10 +134,10 @@ export class PersistentTimer {
 				logger.warn(error);
 			}
 		}
-		// Tick every minute if more than five minutes remain. Within five minutes, tick every five seconds.
+		// Tick every minute if more than three minutes remain. Within three minutes, tick every five seconds.
 		// This is due to Discord rate limits.
 		const secondsRemaining = Math.ceil((end.getTime() - now.getTime()) / 1000);
-		const tick = secondsRemaining > 300 ? 60 : this.entity.cronIntervalSeconds;
+		const tick = secondsRemaining > 180 ? 60 : this.entity.cronIntervalSeconds;
 		logger.verbose(`tick: ${this.entity.id} now(${iso}) secondsRemaining(${secondsRemaining}) rate(${tick})`);
 		if (secondsRemaining % tick === 0) {
 			const message = PersistentTimer.timerMessage(end);
@@ -173,7 +173,7 @@ export class PersistentTimer {
 	public static timerMessage(end: Date): string {
 		const delta = end.getTime() - Date.now();
 		const left = PersistentTimer.formatTime(delta);
-		const accuracy = delta > 300000 ? "1 minute" : "5 seconds";
+		const accuracy = delta > 180000 ? "1 minute" : "5 seconds";
 		return `Time left in the round: \`${left}\` (accuracy ${accuracy}). Ends ${time(end)} (${time(end, "R")}).`;
 	}
 }
