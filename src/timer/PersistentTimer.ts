@@ -157,8 +157,8 @@ export class PersistentTimer {
 	}
 
 	public static formatTime(milli: number): string {
-		let minutes = Math.floor(milli / 1000 / 60);
-		const seconds = Math.floor(milli / 1000) % 60;
+		let minutes = Math.max(Math.floor(milli / 1000 / 60), 0);
+		const seconds = Math.max(Math.floor(milli / 1000) % 60, 0);
 		if (minutes <= 60) {
 			return `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
 		} else {
