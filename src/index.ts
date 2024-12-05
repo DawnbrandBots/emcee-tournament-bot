@@ -44,8 +44,7 @@ const logger = getLogger("index");
 		editMessage: async (channelId, messageId, newMessage) => {
 			const channel = await bot.channels.fetch(channelId);
 			if (channel?.isTextBased()) {
-				const sent = await channel.messages.fetch(messageId);
-				await sent.edit(newMessage);
+				await channel.messages.edit(messageId, newMessage);
 			} else {
 				throw new Error(`${channelId} is not a text channel`);
 			}

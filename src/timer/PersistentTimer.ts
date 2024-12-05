@@ -48,13 +48,8 @@ export class PersistentTimer {
 		tournamentId?: string
 	): Promise<PersistentTimer> {
 		// TODO: check for end <= now
-		const endMilli = end.getTime();
-		const nowMilli = Date.now();
-		const left = this.formatTime(endMilli - nowMilli);
-		const messageId = await discord.sendMessage(
-			channelId,
-			`Time left in the round: \`${left}\`. Ends ${time(end)} (${time(end, "R")}).`
-		);
+		const message = PersistentTimer.timerMessage(end);
+		const messageId = await discord.sendMessage(channelId, message);
 
 		const entity = new Countdown();
 		entity.end = end;
@@ -141,15 +136,13 @@ export class PersistentTimer {
 		}
 		const secondsRemaining = Math.ceil((now.getTime() - end.getTime()) / 1000);
 		logger.verbose(`tick: ${this.entity.id} now(${iso}) secondsRemaining(${secondsRemaining})`);
-		if (secondsRemaining % this.entity.cronIntervalSeconds === 0) {
-			const left = PersistentTimer.formatTime(end.getTime() - Date.now());
-			logger.verbose(`tick: ${this.entity.id} now(${iso}) left(${left})`);
+		// Tick every minute if more than five minutes remain. Within five minutes, tick every five seconds.
+		// This is due to Discord rate limits.
+		if (secondsRemaining % (secondsRemaining > 300 ? 60 : this.entity.cronIntervalSeconds) === 0) {
+			const message = PersistentTimer.timerMessage(end);
+			logger.verbose(`tick: ${this.entity.id} now(${iso}) left(${message})`);
 			try {
-				await this.discord.editMessage(
-					this.entity.channelId,
-					this.entity.messageId,
-					`Time left in the round: \`${left}\`. Ends ${time(end)} (${time(end, "R")}).`
-				);
+				await this.discord.editMessage(this.entity.channelId, this.entity.messageId, message);
 				logger.verbose(`tick: ${this.entity.id} now(${iso}) edited`);
 			} catch (error) {
 				logger.warn(`tick: could not edit ${this.entity.channelId} ${this.entity.messageId}`);
@@ -174,5 +167,12 @@ export class PersistentTimer {
 			minutes = minutes % 60;
 			return `${hours}:${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
 		}
+	}
+
+	public static timerMessage(end: Date): string {
+		const delta = end.getTime() - Date.now();
+		const left = PersistentTimer.formatTime(delta);
+		const accuracy = delta > 300000 ? "1 minute" : "5 seconds";
+		return `Time left in the round: \`${left}\` (accuracy ${accuracy}). Ends ${time(end)} (${time(end, "R")}).`;
 	}
 }
