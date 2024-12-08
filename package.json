@@ -30,9 +30,9 @@
 		"@fast-csv/format": "^5.0.2",
 		"async-mutex": "^0.5.0",
 		"coveralls": "link:./node_modules/.NULL",
-		"debug": "^4.3.7",
+		"debug": "^4.4.0",
 		"discord.js": "^14.16.3",
-		"dotenv": "^16.4.5",
+		"dotenv": "^16.4.7",
 		"jimp": "link:./node_modules/.NULL",
 		"make-fetch-happen": "^14.0.3",
 		"node-fetch": "^2.7.0",
@@ -47,7 +47,7 @@
 	"devDependencies": {
 		"@alphakretin/essentials": "^6.2.0",
 		"@alphakretin/mocha-ecosystem": "^1.1.0",
-		"@testcontainers/postgresql": "^10.15.0",
+		"@testcontainers/postgresql": "^10.16.0",
 		"@types/debug": "^4.1.12",
 		"@types/make-fetch-happen": "^10.0.4",
 		"@types/node-fetch": "^2.6.11"
