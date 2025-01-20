@@ -116,7 +116,7 @@ Please use Australian English spellings.
 
 ## Licence
 
-Copyright © 2020&ndash;2024 Luna Brand, Kevin Lu.
+Copyright © 2020&ndash;2025 Luna Brand, Kevin Lu.
 See [COPYING](https://github.com/DawnbrandBots/emcee-tournament-bot/blob/master/COPYING) for more details.
 
 ```
