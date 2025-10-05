@@ -32,7 +32,7 @@
 		"coveralls": "link:./node_modules/.NULL",
 		"debug": "^4.4.3",
 		"discord.js": "^14.22.1",
-		"dotenv": "^17.2.2",
+		"dotenv": "^17.2.3",
 		"jimp": "link:./node_modules/.NULL",
 		"make-fetch-happen": "^15.0.2",
 		"node-fetch": "^2.7.0",
