@@ -4,3 +4,5 @@ check-leaks: true
 colors: true
 enable-source-maps: true
 timeout: 20000
+node-option:
+  - no-experimental-strip-types
