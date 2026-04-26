@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: © 2020–2025 Luna Brand, Kevin Lu
+# SPDX-FileCopyrightText: © 2020–2026 Luna Brand, Kevin Lu
 # SPDX-Licence-Identifier: AGPL-3.0-or-later
 name: Compile and test
 on:
@@ -20,6 +20,7 @@ jobs:
         node-version:
           - 20
           - 22
+          - 24
     runs-on: ${{ matrix.os }}
     if: >-
       !(
