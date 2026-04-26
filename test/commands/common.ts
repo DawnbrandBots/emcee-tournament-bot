@@ -1,7 +1,8 @@
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { Client, Message } from "discord.js";
-import sinon, { SinonSandbox } from "sinon";
+import type { SinonSandbox } from "sinon";
+import sinon from "sinon";
 import sinonChai from "sinon-chai";
 import sinonTest from "sinon-test";
 import { CommandDefinition, CommandSupport } from "../../src/Command";

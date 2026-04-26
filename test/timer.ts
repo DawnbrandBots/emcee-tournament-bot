@@ -1,6 +1,7 @@
 import chai, { expect } from "chai";
 import proxyquire from "proxyquire";
-import sinon, { SinonSandbox } from "sinon";
+import type { SinonSandbox } from "sinon";
+import sinon from "sinon";
 import sinonChai from "sinon-chai";
 import sinonTest from "sinon-test";
 

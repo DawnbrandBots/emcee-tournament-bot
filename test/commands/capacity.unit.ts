@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import { SinonSandbox } from "sinon";
+import type { SinonSandbox } from "sinon";
 import command from "../../src/commands/capacity";
 import { DatabaseTournament, TournamentFormat, TournamentStatus } from "../../src/database/interface";
 import { ChallongeTournament } from "../../src/database/orm";

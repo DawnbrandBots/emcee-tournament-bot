@@ -1,5 +1,6 @@
 import { expect } from "chai";
-import sinon, { SinonSandbox } from "sinon";
+import type { SinonSandbox } from "sinon";
+import sinon from "sinon";
 import command, { createTournamentEmbed } from "../../src/commands/info";
 import { TournamentFormat, TournamentStatus } from "../../src/database/interface";
 import { ChallongeTournament, ConfirmedParticipant } from "../../src/database/orm";

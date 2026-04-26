@@ -1,6 +1,6 @@
 import { expect } from "chai";
 import dotenv from "dotenv";
-import { SinonSandbox } from "sinon";
+import type { SinonSandbox } from "sinon";
 import command from "../../src/commands/csv";
 import { itRejectsNonHosts, msg, support, test, tournament } from "./common";
 

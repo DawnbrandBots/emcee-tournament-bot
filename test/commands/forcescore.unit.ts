@@ -1,6 +1,6 @@
 import { expect } from "chai";
 import { MessageMentions } from "discord.js";
-import { SinonSandbox } from "sinon";
+import type { SinonSandbox } from "sinon";
 import command from "../../src/commands/forcescore";
 import { msg, support, test } from "./common";
 

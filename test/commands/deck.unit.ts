@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import { MessageMentions } from "discord.js";
 import dotenv from "dotenv";
-import { SinonSandbox } from "sinon";
+import type { SinonSandbox } from "sinon";
 import { Deck } from "ydeck";
 import command from "../../src/commands/deck";
 import { itRejectsNonHosts, msg, support, test } from "./common";
