@@ -2,6 +2,7 @@
 	"extends": "@alphakretin/essentials/tsconfig.json",
 	"include": ["src/**/*.ts"],
 	"compilerOptions": {
+		"erasableSyntaxOnly": false,
 		"rootDir": "./src",
 		"outDir": "./dist"
 	}

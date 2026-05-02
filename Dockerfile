@@ -1,5 +1,4 @@
-# Not bookworm due to https://github.com/nodejs/node/issues/43064
-ARG NODE_VERSION=20-bullseye
+ARG NODE_VERSION=lts
 FROM node:${NODE_VERSION} AS base
 WORKDIR /app
 COPY package*.json yarn.lock ./

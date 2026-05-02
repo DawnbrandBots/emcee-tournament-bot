@@ -8,6 +8,8 @@
 		"cover": "nyc report",
 		"lint": "eslint src test",
 		"build": "tsc",
+		"clean": "tsc --build --clean",
+		"postclean": "rm -rf dist",
 		"delete": "ts-node src/cli/delete",
 		"delete:docker": "node --enable-source-maps cli/delete",
 		"leave": "ts-node src/cli/leave",
@@ -23,7 +25,7 @@
 	],
 	"license": "AGPL-3.0-or-later",
 	"engines": {
-		"node": ">=20",
+		"node": ">=24",
 		"yarn": "1.22.x"
 	},
 	"dependencies": {
@@ -45,16 +47,16 @@
 		"ygopro-data": "1.4.1"
 	},
 	"devDependencies": {
-		"@alphakretin/essentials": "^6.2.0",
+		"@alphakretin/essentials": "^8.0.0",
 		"@alphakretin/mocha-ecosystem": "^1.1.0",
 		"@testcontainers/postgresql": "^10.18.0",
-		"@types/debug": "^4.1.12",
+		"@types/debug": "^4.1.13",
 		"@types/make-fetch-happen": "^10.0.4",
-		"@types/node-fetch": "^2.6.11"
+		"@types/node-fetch": "^2.6.13"
 	},
 	"resolutions": {
-		"@types/node": "^20.16.10",
-		"better-sqlite3": "^11.3.0",
+		"@types/node": "^24.12.2",
+		"better-sqlite3": "^12.9.0",
 		"coveralls": "link:./node_modules/.NULL",
 		"jimp": "link:./node_modules/.NULL",
 		"string-width": "^4.2.3",
