@@ -38,6 +38,7 @@ describe("Entities for manual tournaments", () => {
 		const participant = await ManualParticipant.findOneByOrFail({});
 		const deck = new ManualDeckSubmission();
 		deck.participant = participant;
+		deck.tournamentId = participant.tournamentId;
 		deck.content = "foo";
 		deck.message = "1069831269388660796";
 		await deck.save();

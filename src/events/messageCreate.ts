@@ -164,6 +164,7 @@ export async function onDirectMessage(
 		const deck = new ManualDeckSubmission();
 		deck.content = images.map(i => i.url).join("\n");
 		deck.participant = registering[0];
+		deck.tournamentId = registering[0].tournamentId;
 		deck.message = msg.id;
 		await deck.save();
 
@@ -199,6 +200,7 @@ export async function onDirectMessage(
 		const deck = new ManualDeckSubmission();
 		deck.content = images.map(i => i.url).join("\n");
 		deck.participant = submitted[0];
+		deck.tournamentId = submitted[0].tournamentId;
 		deck.message = msg.id;
 		await deck.save();
 
