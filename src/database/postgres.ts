@@ -83,7 +83,7 @@ export class DatabaseWrapperPostgres {
 	private async findTournament(tournamentId: string, relations: string[] = []): Promise<ChallongeTournament> {
 		try {
 			return await ChallongeTournament.findOneOrFail({ where: { tournamentId }, relations });
-		} catch (err) {
+		} catch {
 			throw new TournamentNotFoundError(tournamentId);
 		}
 	}

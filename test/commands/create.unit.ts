@@ -71,7 +71,7 @@ describe("command:create", function () {
 			try {
 				await command.executor(msg, args, support);
 				expect.fail();
-			} catch (e) {
+			} catch {
 				expect(authStub).to.have.been.called;
 				expect(createStub).to.have.been.calledOnce;
 				expect(msg.reply).to.not.have.been.called;
@@ -91,7 +91,7 @@ describe("command:create", function () {
 			try {
 				await command.executor(msg, args, support);
 				expect.fail();
-			} catch (e) {
+			} catch {
 				expect(authStub).to.have.been.called;
 				expect(createStub).to.have.been.calledOnce;
 				expect(msg.reply).to.have.been.calledOnce;

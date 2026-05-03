@@ -55,7 +55,7 @@ describe.skip("command:finish", function () {
 			try {
 				await command.executor(msg, [...args, "early"], support);
 				expect.fail();
-			} catch (e) {
+			} catch {
 				expect(authStub).to.have.been.called;
 				//expect(finishStub).to.have.been.calledOnceWithExactly("battlecity", true);
 				expect(msg.reply).to.not.have.been.called;
@@ -71,7 +71,7 @@ describe.skip("command:finish", function () {
 			try {
 				await command.executor(msg, args, support);
 				expect.fail();
-			} catch (e) {
+			} catch {
 				expect(authStub).to.have.been.called;
 				//expect(finishStub).to.have.been.calledOnce;
 				expect(msg.reply).to.have.been.calledOnce;

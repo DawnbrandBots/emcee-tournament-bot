@@ -79,7 +79,7 @@ describe("command:csv", function () {
 			try {
 				await command.executor(msg, args, support);
 				expect.fail();
-			} catch (e) {
+			} catch {
 				expect(authStub).to.have.been.called;
 				expect(listStub).to.have.been.calledOnce;
 				expect(msg.reply).to.not.have.been.called;
@@ -95,7 +95,7 @@ describe("command:csv", function () {
 			try {
 				await command.executor(msg, args, support);
 				expect.fail();
-			} catch (e) {
+			} catch {
 				expect(authStub).to.have.been.called;
 				expect(listStub).to.have.been.calledOnce;
 				expect(msg.reply).to.have.been.calledOnceWithExactly("**Tournament 1** has no players!");

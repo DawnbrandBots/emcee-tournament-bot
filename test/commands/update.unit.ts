@@ -35,7 +35,7 @@ describe("command:update", function () {
 			try {
 				await command.executor(msg, ["name", "newName", "newDesc"], support);
 				expect.fail();
-			} catch (e) {
+			} catch {
 				expect(support.database.updateTournament).to.have.been.calledOnceWithExactly(
 					"name",
 					"newName",
