@@ -55,13 +55,15 @@ describe("Direct message submissions", function () {
 		await initializeConnection(
 			`postgresql://${container.getUsername()}:${container.getPassword()}@${container.getHost()}:${container.getPort()}/${container.getDatabase()}`
 		);
+		// testcontainers 11 now needs the timers, set this after
 		clock = sinon.useFakeTimers();
 	});
 
 	after(async () => {
+		clock.restore();
+		// testcontainers 11 now needs the timers, reset clock first
 		await getConnection().destroy();
 		await container.stop();
-		clock.restore();
 	});
 
 	// TODO: test attachment version
