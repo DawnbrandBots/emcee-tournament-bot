@@ -1,7 +1,6 @@
 // Adapted from https://github.com/DawnbrandBots/bastion-bot/blob/master/src/commands/index.ts
 import { REST } from "@discordjs/rest";
 import { APIUser, Routes } from "discord-api-types/v10";
-import dotenv from "dotenv";
 import { ChannelCommand } from "../slash/channel";
 import { CreateCommand } from "../slash/create";
 import { CsvCommand } from "../slash/csv";
@@ -76,7 +75,6 @@ if (require.main === module) {
 		console.error("Missing guild ID arguments!");
 		process.exit(1);
 	}
-	dotenv.config();
 	for (const server of args) {
 		registerSlashCommands(server as `${bigint}`);
 	}

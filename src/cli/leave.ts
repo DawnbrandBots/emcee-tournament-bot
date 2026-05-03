@@ -1,4 +1,3 @@
-import dotenv from "dotenv";
 import fetch from "node-fetch";
 
 const args = process.argv.slice(2);
@@ -7,7 +6,6 @@ if (!args.length) {
 	process.exit(1);
 }
 
-dotenv.config();
 (async () => {
 	for (const snowflake of args) {
 		try {

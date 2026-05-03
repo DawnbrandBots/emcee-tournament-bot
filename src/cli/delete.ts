@@ -1,6 +1,4 @@
 import fetch from "node-fetch";
-import dotenv from "dotenv";
-dotenv.config();
 
 const user = process.env.CHALLONGE_USERNAME;
 const token = process.env.CHALLONGE_TOKEN;

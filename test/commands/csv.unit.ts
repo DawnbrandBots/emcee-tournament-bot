@@ -1,10 +1,8 @@
 import { expect } from "chai";
-import dotenv from "dotenv";
 import type { SinonSandbox } from "sinon";
 import command from "../../src/commands/csv";
 import { itRejectsNonHosts, msg, support, test, tournament } from "./common";
 
-dotenv.config();
 describe("command:csv", function () {
 	const args = ["battlecity"];
 	itRejectsNonHosts(support, command, msg, ["name"]);

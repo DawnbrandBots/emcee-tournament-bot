@@ -1,9 +1,7 @@
 import { Client } from "discord.js";
-import dotenv from "dotenv";
 import { getConnection } from "typeorm";
 import { ConfirmedParticipant, initializeConnection } from "../database/orm";
 import { WebsiteWrapperChallonge } from "../website/challonge";
-dotenv.config();
 
 const args = process.argv.slice(2);
 if (!args.length) {

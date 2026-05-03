@@ -1,6 +1,3 @@
-import dotenv from "dotenv";
-dotenv.config();
-
 function assertEnv(envvar: string): string {
 	const value = process.env[envvar];
 	if (value === undefined) {
