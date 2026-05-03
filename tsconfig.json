@@ -3,6 +3,7 @@
 	"include": ["src/**/*.ts"],
 	"compilerOptions": {
 		"erasableSyntaxOnly": false,
+		"types": ["node", "mocha"],
 		"rootDir": "./src",
 		"outDir": "./dist"
 	}

@@ -52,7 +52,8 @@
 		"@testcontainers/postgresql": "^10.18.0",
 		"@types/debug": "^4.1.13",
 		"@types/make-fetch-happen": "^10.0.4",
-		"@types/node-fetch": "^2.6.13"
+		"@types/node-fetch": "^2.6.13",
+		"ts-node": "^10.9.2"
 	},
 	"resolutions": {
 		"@types/node": "^24.12.2",
