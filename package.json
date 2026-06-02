@@ -36,7 +36,7 @@
 		"debug": "^4.4.3",
 		"discord.js": "^14.26.4",
 		"jimp": "link:./node_modules/.NULL",
-		"make-fetch-happen": "^16.0.0",
+		"make-fetch-happen": "^16.0.1",
 		"node-fetch": "^2.7.0",
 		"pg": "^8.21.0",
 		"reflect-metadata": "^0.2.2",
