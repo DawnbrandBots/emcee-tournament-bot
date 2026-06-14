@@ -56,8 +56,8 @@
 		"ts-node": "^10.9.2"
 	},
 	"resolutions": {
-		"@types/node": "^24.13.1",
-		"better-sqlite3": "^12.10.0",
+		"@types/node": "^24.13.2",
+		"better-sqlite3": "^12.10.1",
 		"coveralls": "link:./node_modules/.NULL",
 		"jimp": "link:./node_modules/.NULL",
 		"string-width": "^4.2.3",
