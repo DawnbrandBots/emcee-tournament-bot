@@ -38,7 +38,7 @@
 		"jimp": "link:./node_modules/.NULL",
 		"make-fetch-happen": "^16.0.1",
 		"node-fetch": "^2.7.0",
-		"pg": "^8.23.0",
+		"pg": "^8.23.1",
 		"reflect-metadata": "^0.2.2",
 		"supports-color": "^11.0.0",
 		"typeorm": "0.3.31",
@@ -56,7 +56,7 @@
 		"ts-node": "^10.9.2"
 	},
 	"resolutions": {
-		"@types/node": "^24.19.0",
+		"@types/node": "^24.19.1",
 		"better-sqlite3": "^12.11.1",
 		"coveralls": "link:./node_modules/.NULL",
 		"jimp": "link:./node_modules/.NULL",
